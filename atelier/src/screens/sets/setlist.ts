@@ -69,6 +69,9 @@ export function setList(d: LegacyExport): SetList {
   const vis: number[] = cards.map((_c: LegacyAny, i: number) => i).filter((i: number) => cardMatch(cards[i], q) && (showAll || usable[i]) && (!!q || !prefs.hide.includes(cards[i].fam)));
   S0._vis = vis;
   const hidden = cards.reduce((n: number, c: LegacyAny, i: number) => n + (usable[i] ? 0 : c.variants.length), 0);
+  // a set just created (push.js createGo): opened as soon as the page has it, whatever was shown meanwhile
+  const pend = S0._openNext;
+  if (pend && pend.char === S0.char && pend.job === S0.job && bypath[pend.path]) { S0.selPath[S0.job] = pend.path; S0._found = null; S0._openNext = null; }
   const job = S0.job, want = S0.selPath[job];
   const found = S0.char + '|' + job + '|' + ((data() || {}).sub || '') + '|';
   if (want && S0._found !== found + want) {

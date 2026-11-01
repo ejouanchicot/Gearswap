@@ -119,13 +119,17 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
     // "+ Set" (add_set.js): every kind of the catalog, its list, the search, the first set to create up to step 3
     await tryIt('add a set window', async () => { S.subs['Tetsouo|WAR'] = 'SAM'; render();
       if (!catalogEntries()) throw new Error('no catalog in the WAR export: run //gs c atelier on WAR');
-      addStep = 0; renderAdd();
-      const fams = [...document.querySelectorAll('[data-addfam]')].map(x => x.dataset.addfam);
+      // the assistant (add_wizard.js): each kind offers something, a subject leads to its questions or its summary
+      awOpen();
+      const fams = [...document.querySelectorAll('[data-awfam]')].map(x => x.dataset.awfam);
       if (!fams.length) throw new Error('no kind offered');
-      for (const f of fams) { addClick({addfam: f}); if (!document.querySelectorAll('.addrow').length) throw new Error('kind ' + f + ' lists nothing'); addStep = 0; }
-      addClick({addfam: fams[0]}); addFilter('a'); addFilter('');
-      const pick = document.querySelector('.addrow[data-addpick]:not([disabled])');
-      if (pick) { addClick({addpick: pick.dataset.addpick}); if (!document.querySelector('[data-addfrom]')) throw new Error('step 3 empty'); }
+      for (const f of fams) { awClick({awfam: f}); if (!document.querySelectorAll('[data-awsubj]').length) throw new Error('kind ' + f + ' lists nothing'); S._aw.step = 0; }
+      awClick({awfam: fams[0]}); awFilter('a'); awFilter('');
+      const subj = document.querySelector('[data-awsubj]');
+      awClick({awsubj: subj.dataset.awsubj});
+      if (S._aw.step === 2) awClick({awnext: ''});
+      if (!document.querySelector('.awrecap')) throw new Error('no summary');
+      awClick({awexpert: ''}); if (!document.querySelector('.awline')) throw new Error('the experts list is empty');
       closeOverlay(); });
     await tryIt('stop a search at once', async () => { open('sets.engaged.Naegling'); optimizeEngaged(shownSet(S._cards[S.sel.WAR], S.sel.WAR)); await wait(300); optStop(); if (S._optBusy) throw new Error('busy after stop'); });
     return out.join('\n');

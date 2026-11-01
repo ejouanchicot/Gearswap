@@ -241,7 +241,7 @@ async function optAllGo(){
     // a support version is written under its buff version: that one must be in the file by now
     const body = rec.v.tier !== 'Full' && !R.by[full].exists ? null : oaBody(R, rec);
     const err = body == null ? t('oaNeed', {p: shortPath(full)}) : await oaWriteOne(body);
-    if (err) failed.push(rec.v.label + ' (' + (T[S.lang]['pushErr_' + err] ? t('pushErr_' + err) : err) + ')'); else { ok++; rec.exists = true; rec.start = rec.res.pieces; }
+    if (err) failed.push(rec.v.label + ' (' + (T[S.lang]['pushErr_' + err] ? t('pushErr_' + err) : err) + ')'); else { ok++; rec.exists = true; rec.start = rec.res.pieces; if (i < todo.length - 1) await osReloadWait(); }
   }
   S._optAll = null; closeOverlay();
   S._toastSet = R.base; S.toast = failed.length ? t('oaDoneErr', {n: ok, x: failed.length, l: failed.join(' · ')}) : t('oaDone', {n: ok});

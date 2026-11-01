@@ -677,7 +677,7 @@ async function optimizeStats(s){
   for (const slot of Object.keys(choices)) choices[slot] = choices[slot].map(p => withVec(p, slot, s));
   // (never a BST's Charm set's: a weapon change loses the TP, the guide's set has none)
   // (sets.EnmityMax: its weapons always searched, the main hand included: enmityMaxSet)
-  if ((o.freeWeapons || enmityMaxSet(s)) && !isCharmSet(s) && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
+  if ((o.freeWeapons || enmityMaxSet(s)) && !combatLocked() && !isCharmSet(s) && !keptSlots(s).some(x => x === 'main' || x === 'sub')) choices.weapons = weaponPairs(base).map(x => ({main: withVec(x.main, 'main'), sub: x.sub ? withVec(x.sub, 'sub') : null}));
   // a movement set (and the Doom set) starts empty but for its locked slots (bareSet): its other pieces go, left to
   // the set under it
   const move = bareSet(s);

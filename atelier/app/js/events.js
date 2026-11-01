@@ -13,7 +13,10 @@ document.addEventListener('toggle', e => { const g = e.target && e.target.datase
 document.addEventListener('click', e => {
   // a click anywhere else closes the slot's menu
   if (!e.target.closest('#slotmenu')) closeSlotMenu();
-  const b = e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-pbtab]'); if (!b) return; const d = b.dataset;
+  // the set's "⋯" menu (TitleBox.svelte .setmore): closed by a choice in it, or by a click anywhere else
+  for (const m of document.querySelectorAll('details.setmore[open]'))
+    if (!m.contains(e.target) || e.target.closest('.setmenu button')) m.open = false;
+  const b =e.target.closest('[data-unslot],[data-folderno],button,[data-close],tr[data-job],[data-pbtab]'); if (!b) return; const d = b.dataset;
   if (d.slotact) { slotMenuAct(d.slotact, +d.card, d.slot); return; }
   if (d.unexclude) { setExcluded(d.unexclude, false); render(); return; }
   if ('listall' in d) { S._listAll = !S._listAll; render(); return; }
@@ -205,18 +208,19 @@ document.addEventListener('click', e => {
       const ex = (JAS[d.ja] || {}).excl;
       if (ex) for (const [n, a] of Object.entries(JAS)) if (n !== d.ja && a.excl === ex) { delete ja[n]; if (n === setDance()) off[n] = 1; } }
     render(); return; }
-  if (d.action==='add') { addStep = 0; renderAdd(); return; }
+  if (d.action==='add') { awOpen(); return; }
   if (d.action==='meritreset') { delete S.meritEdits[meritKey()]; render(); return; }
   if (d.addopen) { S.selPath[S.job] = d.addopen; S._found = null; closeOverlay(); render(); return; }
   if (d.addws) { openCreate(d.addws); return; }
   if ('creatego' in d) { createGo(); return; }
-  if (addClick(d)) return;
+  if (awClick(d) || addClick(d)) return;
   if ('close' in d) closeOverlay();
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'setq') { S.q = e.target.value; render(); }
   if (e.target.id === 'simq') { simState().q = e.target.value; render(); }
   if (e.target.id === 'addq') { addFilter(e.target.value); return; }
+  if (e.target.id === 'awq') { awFilter(e.target.value); return; }
   // the picker's "every item in the game": the catalogue loads once, the drawer is drawn again
   if (e.target.dataset.gpsel && S._drawer) { gpClick({['gp' + e.target.dataset.gpsel]: e.target.value}); return; }
   if ('gpjunk' in e.target.dataset && S._drawer) { S._showJunk = e.target.checked; openSlot(S._drawer.ci, S._drawer.slot); return; }

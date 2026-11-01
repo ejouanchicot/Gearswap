@@ -270,6 +270,14 @@ function topOf(path, fam){
   if (fam==='cure') n = s.findIndex(x => /^Cur/.test(x)) + 1 || s.length;
   return s.slice(0, Math.min(n, s.length));
 }
+// The spell a midcast set on an ally under Composure is for, or null: its keys, the school's and "Composure" set aside,
+// leave one spell's name (not the skill's own Composure set, midcast["Enhancing Magic"].Composure)
+function composureSpell(path){
+  const k = segs(path);
+  if (k[0] !== 'midcast' || !k.includes('Composure')) return null;
+  const rest = k.slice(1).filter(x => x !== 'Composure' && !/ Magic$/.test(x));
+  return rest.length === 1 ? rest[0] : null;
+}
 function buildCards(d){
   // a set shared under several names (sets.idle.MDT = sets.engaged.MDT) is found by each of them
   const bypath = {}; for (const s of d.sets) { bypath[s.path] = s; for (const a of s.aliases || []) bypath[a] = bypath[a] || s; }
@@ -278,9 +286,12 @@ function buildCards(d){
     const fam = cardFamily(s.path, s.pieces);
     // a set named on its family's word (sets.idleRegen) is a version of that family's card: "Regen" under Idle
     const glued = /^sets\.(idle|engaged)([A-Z]\w*)$/.exec(s.path), own = glued && glued[1] === fam;
-    const top = own ? [fam] : topOf(s.path, fam); const key = fam + '|' + top.join('/');
+    // a spell's set on an ally under Composure, whatever its spelling (midcast["Enhancing Magic"].Composure.Haste,
+    // midcast.Composure.Haste): under that spell's card, version "Composure" (SPEC creation-set-2026-11-01 §6)
+    const ally = composureSpell(s.path);
+    const top = own ? [fam] : ally ? ['midcast', ally] : topOf(s.path, fam); const key = fam + '|' + top.join('/');
     if (!index[key]) { index[key] = {fam, name: top[top.length-1], top, variants:[]}; cards.push(index[key]); }
-    const rest = own ? glued[2] : segs(s.path).slice(top.length).join(' · ');
+    const rest = own ? glued[2] : ally ? 'Composure' : segs(s.path).slice(top.length).join(' · ');
     index[key].variants.push({label: rest || 'Base', set: s});
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));

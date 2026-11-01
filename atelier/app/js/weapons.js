@@ -308,7 +308,14 @@ function weaponSkillOf(m, v){
 }
 // A set that wears its own weapons over the weapon modes: not idle, engaged, a weaponskill's or a weapon set (the modes
 // and the held weapon choose those)
-function handsOwn(s){ return !['idle', 'engaged', 'ws', 'weapons'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path); }
+// Combat Mode On (shared/utils/core/combat_mode.lua): GearSwap never changes the weapons, an action's set wears the
+// hands held, not its own (Kaories' RDM Haste on others: 11:37 in game, 12:36 counted with the set's Colada and
+// Ammurapi Shield, 2026-11-01)
+function combatLocked(){
+  const d = data(), g = d && (d.modes || []).find(x => x.name === 'CombatMode');
+  return !!g && /^on$/i.test(g.current || '');
+}
+function handsOwn(s){ return !['idle', 'engaged', 'ws', 'weapons'].includes(family(s.path, s.pieces)) && !isJumpSet(s.path) && !combatLocked(); }
 function applyTrial(s, pieces, from, stance){
   for (const [slot, p] of Object.entries(pieces)) if (isEmpty(p)) delete pieces[slot];
   const tried = {}, tr = S._noTrial ? null : S.trial[trialKey(s)];

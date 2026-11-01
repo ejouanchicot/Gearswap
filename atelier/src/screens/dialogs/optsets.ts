@@ -25,7 +25,7 @@ function rowOf(R: LegacyAny, x: LegacyAny, i: number): OsRow {
   if (!rec) return {path: x.s.path, label, cls: 'osoff', tick: null, obj: '', vs: '', gain: '', n: '', note: R.stopped != null && i >= R.stopped ? t('osStopped', {i: R.stopped + 1, n: R.todo.length}) : ''};
   if (rec.error) return {path: x.s.path, label, cls: 'osoff', tick: null, obj: '', vs: '', gain: '', n: '', note: t('osSkip', {e: rec.error})};
   return {path: x.s.path, label, cls: rec.sel ? 'oson' : 'osoff', tick: rec.n ? !!rec.sel : null, obj: rec.label, vs: `${rec.from} → ${rec.to}`,
-    gain: rec.n ? pct(rec.gain) : t('osSame'), n: rec.n ? String(rec.n) : '', note: rec.n && rec.miss ? t('osMiss') : ''};
+    gain: rec.n ? pct(rec.gain) : t('osSame'), n: rec.n ? String(rec.n) : '', note: [rec.n && rec.miss ? t('osMiss') : '', ...(rec.warn || [])].filter(Boolean).join(' · ')};
 }
 
 /** The window of "Tout optimiser": its start, or its summary once the run is over */

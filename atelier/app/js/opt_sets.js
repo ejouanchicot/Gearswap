@@ -2,7 +2,7 @@
 // own optimizer with its own goals, limits and HP band, then a summary where the player ticks what goes to the file
 // (notes/docs-perso/tout-optimiser-2026-11-01/SPEC.md). The window: atelier/src/screens/dialogs/optsets.ts.
 // (loaded in the order of atelier/src/legacy/files.ts)
-Object.assign(T.fr, {osBtn: '⚡ Tout optimiser', osBtnTip: 'Optimise tous les sets de ce job l’un après l’autre, chacun avec ses objectifs et ses seuils, puis te montre ce qui change avant d’écrire quoi que ce soit.',
+Object.assign(T.fr, {osBtn: 'Tout optimiser', osBtnTip: 'Optimise tous les sets de ce job l’un après l’autre, chacun avec ses objectifs et ses seuils, puis te montre ce qui change avant d’écrire quoi que ce soit.',
   osTitle: 'Tout optimiser', osPick: '{n} set(s) coché(s) · environ {d}', osOnlyStat: 'Sets de stats seulement', osAll: 'Tout', osNone: 'Rien',
   osScratch: 'Repartir de zéro (plus long, parfois meilleur)', osMine: 'Dans tes pièces seulement : un set écrit doit être portable tel quel.',
   osGo: 'Lancer ({n})', osStep: 'Set {i} / {n}', osSkip: 'non calculé : {e}', osSame: 'rien de mieux', osMiss: 'seuils non tenus',
@@ -12,7 +12,7 @@ Object.assign(T.fr, {osBtn: '⚡ Tout optimiser', osBtnTip: 'Optimise tous les s
   osNoLive: 'Le jeu n’est pas connecté : les résultats restent à l’essai sur chaque set, à pousser plus tard.',
   osDone: '{n} set(s) écrit(s).', osDoneErr: '{n} set(s) écrit(s), {x} en échec : {l}', osVersion: 'version de profil, à pousser depuis le set',
   osUndone: 'Tous les sets remis comme avant la course.', osSec: '{n} s', osMin: '{n} min'});
-Object.assign(T.en, {osBtn: '⚡ Optimize all', osBtnTip: 'Optimizes every set of this job one after the other, each with its own goals and limits, then shows what changes before anything is written.',
+Object.assign(T.en, {osBtn: 'Optimize all', osBtnTip: 'Optimizes every set of this job one after the other, each with its own goals and limits, then shows what changes before anything is written.',
   osTitle: 'Optimize all', osPick: '{n} set(s) ticked · about {d}', osOnlyStat: 'Stats sets only', osAll: 'All', osNone: 'None',
   osScratch: 'Start from scratch (longer, sometimes better)', osMine: 'Your pieces only: a set written must be wearable as it is.',
   osGo: 'Start ({n})', osStep: 'Set {i} / {n}', osSkip: 'not computed: {e}', osSame: 'nothing better', osMiss: 'limits not held',
@@ -130,6 +130,9 @@ async function optSetsGo(){
   }
   if (S._optSets !== R) return;
   clearInterval(OPT_RUN_CLOCK); mogStop(); S._optRun = null; S._optProgress = null; searchPark().replaceChildren(); closeOverlay();
+  // what a push's preview would warn of (push.js pushWarnings: a piece not held, out of reach, the sets built on it), no
+  // preview window being shown in a run: said on the set's line
+  for (const rec of Object.values(R.by)) if (rec.n) { try { const s = rec.x.s; rec.warn = pushWarnings(s, pushPlan(s), false).map(w => w.replace(/<[^>]+>/g, '')); } catch (e) { rec.warn = []; } }
   Object.assign(R, {running: false, finished: true, secs: (performance.now() - R.t0) / 1000});
   save(); render(); osPaint();
 }
@@ -161,6 +164,21 @@ function optSetsUndo(){
 }
 
 /* ---- writing the ticked sets (set_push.lua, one request a set, in the run's order: a base before its sets) ---- */
+// GearSwap reloaded after a set written, and waited for: with the job loaded, set_push.lua reads the loaded sets to name
+// a piece by the file's variable (variables, loaded_piece). Left on the sets before the write, the next set could be
+// given another piece's variable, silently (ingame-risk-reviewer, 2026-11-01). Its door is back when /ping says a new
+// boot, or answers again after 3 s; 15 s at most
+async function osReloadWait(){
+  if (!shownJobLoaded()) return;
+  let was = null;
+  try { was = (await liveFetch(S.char, '/ping', {timeout: 1500})).boot; } catch (e) {}
+  await reloadIfLoaded();
+  const t0 = Date.now();
+  while (Date.now() - t0 < 15000) {
+    await new Promise(r => setTimeout(r, 500));
+    try { const p = await liveFetch(S.char, '/ping', {timeout: 1500}); if (p.boot !== was || Date.now() - t0 > 3000) return; } catch (e) {}
+  }
+}
 async function optSetsWrite(){
   const R = S._optSets;
   if (!R || !R.finished || R.writing || !liveWrite()) return;
@@ -181,6 +199,7 @@ async function optSetsWrite(){
     if (map[S.job]) { delete map[S.job][s.path]; if (!Object.keys(map[S.job]).length) delete map[S.job]; }
     if (S.setOv[S.char]) S.setOv[S.char].at = stamp();
     pushedKeep(s, plan); ok++;
+    if (i < todo.length - 1) await osReloadWait();
   }
   S._optSets = null; closeOverlay(); save();
   S.toast = failed.length ? t('osDoneErr', {n: ok, x: failed.length, l: failed.join(' · ')}) : t('osDone', {n: ok});

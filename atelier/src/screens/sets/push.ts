@@ -18,5 +18,7 @@ export function pushBtnView(s: LegacyAny, live: boolean): PushBtn {
   const labelHtml = tg.create ? t('pushToVer', {v: tg.tier}) : full ? t('pushToFull') : t('pushBtn');
   // the game writes into the files of the job it has loaded: another job there is said, not "the game is off"
   const tip = !live ? t('pushNeedsGame') : tg.create ? t('pushToVerTip', {v: tg.tier}) : full ? t('pushToFullTip') : '';
+  // a set just created, the game still writing it and reloading (push.js createdPending): pushed once it is back
+  if (createdPending(s.path)) return {open: false, disabled: true, title: t('createdWait'), labelHtml};
   return {open: false, disabled: !live, title: tip || null, labelHtml};
 }

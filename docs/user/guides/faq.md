@@ -137,6 +137,18 @@ each icon by itself, the first time it shows it, from a file the game writes
 beside the icon; an icon written by an older version stays as it is until the
 game writes it again (`//gs c atelier` on the job).
 
+**Create a set.** On the Sets screen, **+** (top of the list of sets) opens an assistant
+that asks, one step at a time: **when** you want the set (idle, engaged, start of a spell,
+when the spell lands, weaponskill, ability, cures, situations), **what** it is for (the
+spells your job and your subjob cast, by school, tiers together; your weaponskills; your
+abilities), then only the questions that change the set worn (**on whom**: you, or an ally
+under Composure for a Red Mage; **which tier**; **which mode**; **which party profile**).
+A summary says in words when the set is worn, what you wear in its place today, and the one
+name it gets in your file; it starts as a copy of that set, empty, or what you wear in game.
+A set you already have under another name is opened instead of a second one being made.
+**See every possible name (experts)** lists every name the job's code reads, one line each,
+with the other spellings GearSwap reads the same way folded under it.
+
 **Optimize every set of a job at once.** On the Sets screen, **⚡ Optimize all** (**⚡ Tout
 optimiser** in French, top of the list of sets) searches every set of the job shown, one after the other, each with its own
 goals, limits and HP band, among your pieces only. A first window lists the sets by family,

@@ -197,7 +197,9 @@ function legendOf(holds: LegacyAny): CardView['legend'] {
 function weaponLineOf(ctl: CardView['ctl']): CardView['weapons'] {
   const parts = !ctl || ctl.k !== 'picks' ? [] : ctl.menus.map(m => ({cap: m.menu.name, val: ((m.menu.options.find(o => o.selected) || {label: ''}).label || '').replace(/^Auto\s*·\s*/, '')}))
     .concat(ctl.results.map(r => ({cap: r.label, val: r.name}))).filter((x, i, all) => x.val && all.findIndex(y => y.val === x.val) === i);
-  return {line: [...new Set(parts.map(x => x.val))].join(' · '), label: t('wLine'), open: !!st().boxOpen.wfold, parts, change: t('wChange')};
+  // (Combat Mode On: an action's set wears the hands held, said under the weapons: weapons.js combatLocked)
+  const locked = combatLocked() ? [{cap: t('wLockedTip'), val: t('wLocked')}] : [];
+  return {line: [...new Set(parts.map(x => x.val))].join(' · '), label: t('wLine'), open: !!st().boxOpen.wfold, parts: parts.concat(locked), change: t('wChange')};
 }
 
 // The set as its file writes it (the trial's pieces in, as "Copy as Lua" gives them: trial.js trialLua): built on its
@@ -244,6 +246,8 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const foot: string[] = [];
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits', {b: '<b>' + esc(shortPath(s.base)) + '</b>'})} · ${n ? t('changed', {n}) : t('nothingChanged')}`); }
   else foot.push(`<span title="${esc(t('ttDefined'))}">${Object.keys(s.pieces).length ? t('defined', {n: '<b>' + Object.keys(s.pieces).length + '</b>'}) : t('emptySet')}</span>`);
+  // a set just created: the page's copy until the game's export of it comes (push.js createdKeep)
+  if (createdPending(s.path)) foot.push(`<span class="keymiss" title="${esc(t('createdWait'))}">${esc(t('createdTag'))}</span>`);
   if (s.aliases && s.aliases.length) foot.push(`<details><summary>${t('sharedCount', {n: s.aliases.length})}</summary><p>${s.aliases.map((a: string) => esc(shortPath(a))).join(' · ')}</p></details>`);
   const holds: Record<string, string[]> = {missing: [], short: [], porter: []};
   for (const slot of SLOTS) { const h = holdState(slot, eff.pieces[slot]); if (h && !holds[h]!.includes(eff.pieces[slot].name)) holds[h]!.push(eff.pieces[slot].name); }

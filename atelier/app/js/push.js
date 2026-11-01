@@ -135,6 +135,24 @@ function pushedKeep(s, plan){
     plan: plan.map(e => ({slot: e.slot, kind: e.kind, piece: e.piece ? {name: e.piece.name, augs: e.piece.augs} : null}))});
   pushedApply();
 }
+// A set just created, kept the same way: shown at once (the game's export of it comes a few seconds later, built a
+// little a frame after the reload: atelier_export.lua export_spread). Its pieces from what was sent: a copy of its base
+// (set_combine(base, {}): the base's pieces, none of its own), nothing, or what was worn
+function createdKeep(path, body){
+  const lines = body.split('\n').slice(1).filter(Boolean), baseLine = lines.find(l => l.startsWith('#base\t'));
+  const base = baseLine ? baseLine.slice(6) : null, from = base && S._bypath && S._bypath[base], pieces = {};
+  if (from) Object.assign(pieces, JSON.parse(JSON.stringify(from.pieces || {})));
+  for (const l of lines) { if (l.startsWith('#')) continue; const [slot, kind, name, ...augs] = l.split('\t');
+    if (slot) pieces[slot] = kind === 'empty' ? {name: 'empty'} : augs.length ? {name, augs} : {name}; }
+  const made = {path, pieces}; if (from) Object.assign(made, {base, own: []});
+  S.pushed = (S.pushed || []).filter(x => !(x.c === S.char && x.j === S.job && x.path === path));
+  S.pushed.push({c: S.char, j: S.job, path, at: stamp(), made});
+  pushedApply();
+}
+// Whether a set shown is the page's copy of one just created (_made), the export shown not holding it yet: once the
+// game's export of the job played has it, that one is shown. Not "every export of the job is newer": the game
+// exports only the subjob played, the others never come and the set stayed "being written" (2026-11-01)
+const createdPending = path => { const d = data(), s = d && (d.sets || []).find(y => y.path === path); return !!(s && s._made); };
 // A delete kept the same way: the set and the names that went with it leave the page's copies (x.gone)
 function deletedKeep(paths){
   const gone = [...new Set(paths)];
@@ -150,6 +168,8 @@ function pushedApply(){
     const old = Object.values(exportsOf(x.c, x.j)).filter(d => (d.at || '') <= x.at);
     for (const d of old) {
       if (x.gone) { dropSets(d, x.gone); continue; }
+      // a set just created: the page's copy until the game's export has it (createdKeep)
+      if (x.made) { if (!(d.sets || []).some(y => y.path === x.path)) { d.sets = (d.sets || []).concat([Object.assign(JSON.parse(JSON.stringify(x.made)), {_made: true})]); DATA_GEN++; } continue; }
       const s = (d.sets || []).find(y => y.path === x.path);
       if (s) patchSet(s, x.plan);
     }
@@ -291,7 +311,9 @@ async function createGo(){
   let r;
   try { r = await liveFetch(S.char, '/push?mode=write&hash=' + encodeURIComponent(C.hash) + jobQuery(), {method: 'POST', body: C.body || C.path + '\n', timeout: 8000}); } catch (e) { r = {error: 'live'}; }
   if (r.error) return showDialog('pushdlg', t('addTitle'), mogSorryHTML(esc(t('pushErr_' + r.error))), '');
-  S.selPath[S.job] = C.path; S._found = null; S._toastSet = C.path; S.toast = doneText('addDone', r.entry.file);
+  // the new set opens once the page has it (the game writes it, reloads, exports: setlist.ts _openNext)
+  S.selPath[S.job] = C.path; S._found = null; S._openNext = {char: S.char, job: S.job, path: C.path}; S._toastSet = C.path; S.toast = doneText('addDone', r.entry.file);
+  createdKeep(C.path, C.body || C.path + '\n');
   S._create = null; closeOverlay(); save();
   await reloadIfLoaded();
   render();

@@ -89,6 +89,21 @@ function enhTierAny(tiers, job, sub, lv, jp, setName){
   }
   return best;
 }
+// The enhancing kinds the file has a set of their own for (sets.midcast.Haste, sets.midcast.Regen.Composure,
+// sets.midcast["Enhancing Magic"].Composure.Haste): on oneself, a set not for Composure; on the others, any
+function enhOwnKinds(others){
+  const out = new Set();
+  for (const x of ((data() || {}).sets || [])) {
+    if (!/^sets\.midcast\b/.test(x.path) || (!others && /composure/i.test(x.path))) continue;
+    const rest = segs(x.path).slice(1).filter(k => !/^(enhancing magic|composure)$/i.test(k)).join(' ');
+    if (!rest) continue;
+    for (const k of ENH_SPELLS) if (ENH_BASE_KINDS.includes(k[1]) && k[0].test(rest)) out.add(k[1] === 'haste' ? (/flurry/i.test(rest) ? 'flurry' : 'hasteOnly') : k[1]);
+  }
+  // Haste and Flurry share a kind (one duration) but GearSwap finds a set by the spell's name: a Haste set leaves
+  // Flurry to the skill's set. The kind is covered only when both have one
+  if (out.has('hasteOnly') && out.has('flurry')) out.add('haste');
+  return out;
+}
 // The spell of a set's name (its path without "sets.midcast" and "Composure"): {kind, spell, pot, base} or null when
 // the job cannot cast it; "Enhancing Magic" is judged on the shortest spell it can cast
 function enhSpellOf(name, others){
@@ -103,7 +118,13 @@ function enhSpellOf(name, others){
     return a && {kind: hit[1], spell: a.t[0], pot: a.t[1], base: a.t[2], via: a.via};
   }
   if (!/enhancing/i.test(name)) return null;
-  const bases = ENH_SPELLS.filter(k => ENH_BASE_KINDS.includes(k[1])).map(k => enhTierAny(k[2], job, sub, lv, jp)).filter(Boolean).map(a => a.t[2]);
+  // the skill's set is worn only for the spells with no set of their own (MidcastManager: a spell's set comes first):
+  // judged on the shortest of those, never on Regen when sets.midcast.Regen exists (Kaories' Composure set read 5:02
+  // on Regen II, 11:37 in game on Haste, 2026-11-01). On the others (Composure), a spell's set for oneself is worn
+  // there too (P1 base name), so any set of the spell counts
+  const own = enhOwnKinds(others);
+  const left = ENH_SPELLS.filter(k => ENH_BASE_KINDS.includes(k[1]) && !own.has(k[1]));
+  const bases = (left.length ? left : ENH_SPELLS.filter(k => ENH_BASE_KINDS.includes(k[1]))).map(k => enhTierAny(k[2], job, sub, lv, jp)).filter(Boolean).map(a => a.t[2]);
   return bases.length ? {kind: 'enhancing', spell: 'enhancing', pot: 0, base: Math.min(...bases)} : null;
 }
 

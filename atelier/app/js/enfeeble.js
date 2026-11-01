@@ -112,7 +112,14 @@ function enfSetOf(s){
     const mm = s.path.match(ENF_MAP_RE);
     if (mm) return enfMapSet(mm, own);
     const parts = segs(s.path);
-    return parts.length === 2 && own[parts[1]] ? {type: 'spell', spells: [parts[1]]} : null;
+    // a set on a spell's tier-less name (sets.midcast.Poison) is worn for every tier (MidcastManager P1): judged on the
+    // highest the job casts (Poison II: its potency still climbs past 500 skill, Poison I's stops there, 2026-11-01)
+    if (parts.length !== 2) return null;
+    const tiers = Object.keys(own).filter(n => n === parts[1] || (n.startsWith(parts[1] + ' ') && ['II', 'III', 'IV', 'V'].includes(n.slice(parts[1].length + 1))));
+    if (!tiers.length) return null;
+    const rank = n => ({II: 2, III: 3, IV: 4, V: 5})[(n.match(/ (II|III|IV|V)$/) || [])[1]] || 1;
+    const can = enfCastable(tiers.sort((a, b) => rank(b) - rank(a))).spells;
+    return {type: 'spell', spells: [can.length ? can[0] : parts[1]]};
   }
   const sub = m[1];
   if (sub && ENF_TYPES[sub]) return Object.assign({type: sub}, enfCastable(ENF_TYPES[sub]));

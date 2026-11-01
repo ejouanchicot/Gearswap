@@ -2054,3 +2054,113 @@
 .dialog.osdlg > header,.dialog.osdlg > footer{flex:none}
 /* the summary's head stays at the top while its rows scroll */
 .dialog.osdlg .ostbl thead th{position:sticky;top:0;z-index:1;background:var(--panel)}
+/* ---- "+ Set" as an assistant (add_wizard.js, AddSet.svelte), 2026-11-01: maquette notes/docs-perso/creation-set-2026-11-01 ---- */
+.dialog.awdlg{width:min(960px,96vw);max-height:calc(100% - 48px);display:flex;flex-direction:column}
+.awdlg > header{flex:none}
+.awdlg > .body{flex:1 1 auto;min-height:0;overflow:auto;display:grid;gap:12px;align-content:start}
+.awdlg > footer{flex:none}
+.awdlg .steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.awdlg .steps span{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted)}
+.awdlg .steps span.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.awdlg .steps span.done{color:var(--good,#5fbf7f);border-color:color-mix(in srgb,var(--good,#5fbf7f) 55%,transparent)}
+.awdlg .awq{margin:0;font-size:15px;font-weight:700}
+.awdlg .awtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.awdlg .awtile{display:grid;gap:3px;align-content:start;text-align:left;min-height:92px;padding:12px;border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 6%,var(--panel-2)),var(--panel-2));cursor:pointer}
+.awdlg .awtile:hover{border-color:var(--accent);transform:translateY(-1px)}
+.awdlg .awtile .ic{font-size:22px;line-height:1}
+.awdlg .awtile b{font-size:14px}
+.awdlg .awtile small{font-size:12px;color:var(--muted);line-height:1.3}
+.awdlg .awsearch{width:100%}
+.awdlg .awgroup{border:1px solid var(--line);border-radius:11px;background:var(--well);padding:10px 12px}
+.awdlg .awgroup > h4{margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.awdlg .awgroup > h4 em{font-style:normal;color:var(--faint);letter-spacing:0;text-transform:none;font-weight:600}
+.awdlg .awchips{display:flex;flex-wrap:wrap;gap:6px}
+.awdlg .awchip{border:1px solid var(--line-strong);border-radius:8px;padding:5px 10px;background:var(--panel-2);color:var(--ink);font-size:13px;cursor:pointer}
+.awdlg .awchip:hover{border-color:var(--accent)}
+.awdlg .awchip small{color:var(--faint);margin-left:5px;font-size:11px}
+.awdlg .awchip.all{border-style:dashed;color:var(--muted)}
+.awdlg .awchip.has::after{content:"✓";margin-left:6px;color:var(--good,#5fbf7f);font-weight:800}
+.awdlg .awnote{margin:0;color:var(--faint);font-size:12px}
+.awdlg .awask{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--well);display:grid;gap:8px}
+.awdlg .awopts{display:flex;gap:8px;flex-wrap:wrap}
+.awdlg .awopt{flex:1 1 200px;display:grid;gap:2px;text-align:left;border:1px solid var(--line-strong);border-radius:10px;padding:9px 12px;background:var(--panel-2);color:var(--ink);cursor:pointer}
+.awdlg .awopt:hover:not([disabled]){border-color:var(--accent)}
+.awdlg .awopt.on{outline:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel-2))}
+.awdlg .awopt b{font-size:13.5px}
+.awdlg .awopt small{color:var(--muted);font-size:12px}
+.awdlg .awopt .rec{margin-left:8px;font-size:10.5px;font-weight:800;color:var(--good,#5fbf7f);letter-spacing:.06em;text-transform:uppercase}
+.awdlg .awopt[disabled]{opacity:.5;cursor:not-allowed}
+.awdlg .awrecap{border:1px solid var(--line-strong);border-radius:12px;padding:14px 16px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 6%,var(--panel-2)),var(--panel-2))}
+.awdlg .awrecap .say{margin:0 0 10px;font-size:16px}
+.awdlg .awrow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:8px;padding:7px 0;border-top:1px solid var(--line);align-items:start}
+.awdlg .awrow > span{color:var(--muted);font-size:12.5px}
+.awdlg code{font-family:var(--mono,Consolas,monospace);font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.awdlg .awalso{font-size:12px;color:var(--faint);margin-top:4px}
+.awdlg .awalso code{display:block}
+.awdlg .awexp{padding:0}
+.awdlg .awexp > h4{padding:9px 12px 0}
+.awdlg .awline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;padding:9px 12px;border-top:1px solid var(--line)}
+.awdlg .awline > b{grid-column:1;font-size:13.5px;font-weight:600}
+.awdlg .awline > .awtag{grid-column:2;grid-row:1 / span 2;align-self:center;font-size:11.5px;padding:2px 10px;border-radius:999px;border:1px solid var(--line-strong);background:none;color:var(--muted);cursor:pointer}
+.awdlg .awline > .awtag.ok{color:var(--good,#5fbf7f);border-color:color-mix(in srgb,var(--good,#5fbf7f) 60%,transparent)}
+.awdlg .awline > code,.awdlg .awline > .awalso{grid-column:1}
+@media (max-width:640px){.awdlg .awrow{grid-template-columns:1fr}}
+/* the subjects as a grid: every cell the same size, the name on one line, its tiers under it; "every spell" across
+   the row, the families apart under their own small title */
+.awdlg .awchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:6px}
+.awdlg .awchip{display:grid;align-content:center;gap:1px;min-height:42px;text-align:left;padding:5px 10px;position:relative}
+.awdlg .awchip .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:14px}
+.awdlg .awchip small{margin:0;font-size:11px;color:var(--faint)}
+.awdlg .awchip.all{grid-column:1 / -1;min-height:34px}
+.awdlg .awchip.has::after{position:absolute;top:5px;right:8px;margin:0}
+.awdlg .awsub{margin:10px 0 6px;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.awdlg .awchip{height:46px;min-height:0}
+.awdlg .awchip.all{height:34px}
+/* the page's game icons (playerIcon): the tiles' in a framed square in the accent, the button's beside its word */
+.awdlg .awtile > .ico{display:grid;place-items:center;width:40px;height:40px;padding:7px;border-radius:10px;color:var(--accent);margin-bottom:4px;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.awdlg .awtile > .ico svg.gi{width:100%;height:100%;display:block;color:var(--accent)}
+.awdlg .awtile:hover > .ico{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.optsetsbtn{display:flex !important;align-items:center;justify-content:center;gap:7px}
+.optsetsbtn > .ico{width:16px;height:16px;flex:none;display:block}
+.optsetsbtn > .ico svg.gi{width:100%;height:100%;display:block}
+/* the tiles' icon in the Configuration screen's frame (config.css .cfg-hic): one look for the page's icons */
+.awdlg .awtile > .ico{width:44px;height:44px;padding:10px;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--accent) 26%,var(--well)),var(--well) 75%)}
+.awdlg .awtile > .ico svg.gi{color:var(--accent-2)}
+.optsetsbtn > .ico{background:none !important;border:0 !important;box-shadow:none !important;border-radius:0}
+.optsetsbtn > .ico svg.gi{color:currentColor}
+/* "Tout optimiser": its icon in the button's own colour (the dark ink on the gold), the same weight as its word */
+.setsx .optsetsbtn > .ico{width:17px;height:17px;opacity:.9}
+.setsx .optsetsbtn > .ico svg.gi{color:currentColor}
+/* ---- the spells' cells, richer (2026-11-01): a school's colour (--sc) on a lit edge and a glow, the tiers as small
+   pills, a set already there as a green badge; one height for all ---- */
+.awdlg .awgroup{--sc:var(--accent)}
+.awdlg .awgroup > h4{display:flex;align-items:center;gap:8px;color:var(--sc)}
+.awdlg .awgroup > h4::before{content:"";width:8px;height:8px;transform:rotate(45deg);background:var(--sc);box-shadow:0 0 8px color-mix(in srgb,var(--sc) 70%,transparent)}
+.awdlg .awchips{grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:7px}
+.awdlg .awchip{height:50px;padding:6px 10px 6px 13px;border-radius:9px;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--sc) 22%,var(--line-strong));
+  background:linear-gradient(135deg,color-mix(in srgb,var(--sc) 14%,var(--panel-2)) 0%,var(--panel-2) 55%,color-mix(in srgb,#000 12%,var(--panel-2)) 100%);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 7%,transparent),0 1px 3px rgba(0,0,0,.3);transition:transform .12s,border-color .12s,box-shadow .12s}
+.awdlg .awchip::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0;background:var(--sc);
+  box-shadow:0 0 8px color-mix(in srgb,var(--sc) 60%,transparent)}
+.awdlg .awchip:hover{transform:translateY(-1px);border-color:var(--sc);box-shadow:0 4px 12px color-mix(in srgb,var(--sc) 22%,rgba(0,0,0,.35))}
+.awdlg .awchip .nm{font-weight:600;font-size:13.5px;color:var(--ink)}
+.awdlg .awchip .tiers{display:flex;gap:3px;margin-top:2px}
+.awdlg .awchip .tiers i{font-style:normal;font-size:9.5px;font-weight:800;line-height:1;padding:2px 4px;border-radius:4px;color:var(--sc);
+  background:color-mix(in srgb,var(--sc) 14%,transparent);border:1px solid color-mix(in srgb,var(--sc) 30%,transparent)}
+.awdlg .awchip.has::after{content:none}
+.awdlg .awchip .hasb{position:absolute;top:5px;right:6px;font-size:9.5px;font-weight:800;line-height:1;padding:2px 5px;border-radius:999px;
+  color:#0b1a12;background:var(--good,#5fbf7f)}
+.awdlg .awchip.has .nm{padding-right:40px}
+.awdlg .awchip.all{height:38px;border-style:dashed;background:color-mix(in srgb,var(--sc) 8%,var(--panel-2))}
+.awdlg .awchip.all .nm{color:var(--sc)}
+.awdlg .awchip.famc{height:40px;opacity:.92}
+.awdlg .awchip.famc::before{opacity:.5}
+.awdlg .awchip .tiers{gap:4px;margin-top:3px}
+.awdlg .awchip .tiers i{font-size:10.5px;font-weight:700;padding:2px 6px;letter-spacing:.02em}
+.awdlg .awchip .hasb{top:6px;right:6px;width:16px;height:16px;padding:0;display:grid;place-items:center;font-size:10px;
+  box-shadow:0 0 6px color-mix(in srgb,var(--good,#5fbf7f) 55%,transparent)}
+.awdlg .awchip.has .nm{padding-right:20px}

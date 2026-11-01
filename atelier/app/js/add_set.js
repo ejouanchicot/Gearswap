@@ -83,7 +83,8 @@ function renderAdd(){
   const q = $('#addq'); if (q) q.focus();
 }
 // The body sent to the game: the path, #create, the base for a copy, the pieces for what you wear
-async function addFrom(kind){
+// (baseOver: the set the assistant found worn there today, add_wizard.js: the skill's Composure set on an ally)
+async function addFrom(kind, baseOver){
   const e = (catalogEntries() || []).find(x => x.path === addPath);
   if (!e) return;
   let lines = [];
@@ -96,7 +97,7 @@ async function addFrom(kind){
     const owned = ownedOf() || {};
     lines = SLOTS.filter(slot => worn[slot] && worn[slot].name).map(slot => pushLine(pushEntry(slot, worn[slot], owned)));
   }
-  const base = kind === 'copy' && e.base && setThere(e.base) ? e.base : null;
+  const base = kind !== 'copy' ? null : baseOver && setThere(baseOver) ? baseOver : e.base && setThere(e.base) ? e.base : null;
   const body = [e.path, '#create'].concat(base ? ['#base\t' + base] : [], lines).join('\n') + '\n';
   createPreview(e.path, body, base);
 }
