@@ -14,7 +14,7 @@
 import {pushBtnView, type PushBtn} from './push';
 
 export interface TrialRow {
-  saved: boolean; by: string; msgHtml: string; gain: null | {textHtml: string; up: boolean; pct: string};
+  head: string; saved: boolean; by: string; msgHtml: string; gain: null | {textHtml: string; up: boolean; pct: string};
   push: PushBtn | null; cmp: null | {labelHtml: string; kept: string};
   keep: null | {tip: string; labelHtml: string}; save: string; links: Array<{attr: string; labelHtml: string}>; toast: string;
 }
@@ -34,13 +34,12 @@ function gainOf(s: LegacyAny): TrialRow['gain'] {
 export function trialRowView(s: LegacyAny): TrialRow | null {
   const S0 = S as LegacyAny, n = trialCount(s), changed = Object.keys(s.was || {}), dr = S0.drafts[trialKey(s)] || {};
   const toast = S0.toast && S0._toastSet === s.path ? S0.toast : '', kept = (dr.kept || []).length;
-  if (!n && !changed.length && !dr.info && !toast && !kept) return null;
+  if (!n && !changed.length && !toast && !kept) return null;
   const saved = n > 0 && trialSaved(s), live = liveWrite();
   const links: TrialRow['links'] = [];
   if (n) links.push({attr: 'data-trylua', labelHtml: t('tryLua')});
-  if (dr.info && dr.prev) links.push({attr: 'data-tryprev', labelHtml: t('tryPrev')});
   if (n) links.push({attr: 'data-tryundo', labelHtml: t('tryUndo')}); else if (changed.length) links.push({attr: 'data-setrevert', labelHtml: t('setRevert')});
-  return {saved: saved || (!n && changed.length > 0), by: dr.info ? t('tryOptBy', {t: dr.info.tier, at: dr.info.at}) + (dr.info.edited ? ' · ' + t('tryEdited') : '') : '',
+  return {head: t(saved || (!n && changed.length > 0) ? 'tryHeadSaved' : 'tryHead'), saved: saved || (!n && changed.length > 0), by: n && dr.info ? t('tryOptBy', {t: dr.info.tier, at: dr.info.at}) + (dr.info.edited ? ' · ' + t('tryEdited') : '') : '',
     msgHtml: n ? (saved ? t('trySaved', {n: `<b>${n}</b>`}) : t('tryBar', {n: `<b>${n}</b>`})) : changed.length ? t('setChanged', {s: changed.map(x => (SLOT_NAMES[S0.lang] || {})[x] || x).join(', ')}) : '',
     gain: n ? gainOf(s) : null, push: n || changed.length ? pushBtnView(s, live) : null,
     cmp: n || changed.length || kept ? {labelHtml: t('cmpBtn'), kept: kept ? t('keptN', {n: kept}) : ''} : null,
@@ -51,5 +50,5 @@ export function trialRowView(s: LegacyAny): TrialRow | null {
 export function trialBarView(s: LegacyAny): TrialBar {
   const row = trialRowView(s);
   if (row) return {k: 'row', row};
-  return !baseOnly(s) ? {k: 'idle', text: t('tryIdle')} : null;
+  return {k: 'idle', text: t('tryIdle')};
 }

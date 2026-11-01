@@ -18,6 +18,8 @@ export interface StatWhatView {
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; value: string; none: {value: string; label: string; selected: boolean}; groups: Array<{label: string; options: Array<{value: string; label: string; selected: boolean}>}>}>};
   own: null | {tip: string; checked: boolean; label: string}; notes: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
+  // the objectives' list folded in the column beside the set (StatPage compact): open or not, its link's two texts
+  objsOpen: boolean; objsShow: string; objsHide: string;
 }
 export interface StatResultView {
   titleHtml: string; labelHtml: string; value: string; delta: null | {up: boolean; text: string}; wasHtml: string; shield: string;
@@ -81,16 +83,21 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     then: {label: t('statThen'), selects: [1, 2].map(i => thenSelect(i, so.objs, cur, shown))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : ''};
+    notes, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : '',
+    objsOpen: !!S0._optObjsOpen, objsShow: t('optObjsShow'), objsHide: t('optObjsHide')};
 }
 
 /** The right column of a stats search: the first objective big, every line against the file's set (statResultHTML) */
-export function statResultView(s: LegacyAny): StatResultView {
+export function statResultView(s: LegacyAny, compact = false): StatResultView {
   const now = statFigures(s), was = trialCount(s) ? statFigures(s, true) : null, rows = statRows(s), main = rows[0];
   const v = main.get(now), w = was ? main.get(was) : null, d = was ? v - w : null;
   const cell = (r: LegacyAny, x: LegacyAny, y: LegacyAny) => { const a = r.get(x), b = y ? r.get(y) : null;
     return {better: b != null && (r.low ? a < b - 1e-9 : a > b + 1e-9), bad: !!r.floor && !r.floor(a), text: r.fmt(a)}; };
-  const shown = rows.filter((r: LegacyAny, i: number) => i < 3 || r.get(now) || (was && r.get(was)) || r.floor), trial = trialRowView(s);
+  const objs: string[] = statOpts(s).objs, moved = (r: LegacyAny) => !!was && Math.abs((r.get(now) || 0) - (r.get(was) || 0)) > 1e-9;
+  // (beside the set, SPEC page-sets-2026-11-01: the objectives, the floors and what the trial moved, the rest in the
+  // figures' "Every stat"; on the page of its own, every line with a figure)
+  const shown = rows.filter((r: LegacyAny, i: number) => compact ? (objs.includes(r.id) || !!r.on || ['gap', 'ref', 'cure4'].includes(r.id) || moved(r))
+    : (i < 3 || r.get(now) || (was && r.get(was)) || r.floor)), trial = trialRowView(s);
   return {titleHtml: t('opResult'), labelHtml: esc(main.label) + (was ? ' · ' + t('rdvTry') : ''), value: main.fmt(v),
     delta: d ? {up: d >= 0, text: (d >= 0 ? '+' : '−') + main.fmt(Math.abs(d))} : null, wasHtml: was ? `${t('opNow')} : ${main.fmt(w)}` : '',
     shield: now.shield && main.id === 'def' ? ' · DEF ' + t('statShield', {n: now.shield}) : '',

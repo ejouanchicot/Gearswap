@@ -13,6 +13,8 @@ import {capLine, damageTaken, type Line} from './statlines';
 export interface SheetView {
   kickerHtml: string; pickHtml: string; tabs: Array<{key: string; label: string; n: number; title: string; selected: boolean}>;
   body: null | {k: 'lines'; lines: Line[]} | {k: 'cond'; items: Array<{piece: string; text: string}>}; notesHtml: string[];
+  // what the figures' column shows by default (Figures.svelte): the lines of what the set is after, else its first group
+  summary: Line[];
 }
 
 /** The stats sheet of the set s, or null when it has nothing to show (and no filter to undo) */
@@ -53,6 +55,8 @@ export function sheetView(s: LegacyAny): SheetView | null {
   if (!(groups.length || Object.keys(S0.statHide).length || S0.statOnlyWant)) return null;
   // one group at a time, its tab kept from set to set (the first when that group is not there)
   const cur = groups.find(g => g.key === S0._statTab) || groups[0];
+  const first = groups.find(g => g.body.k === 'lines');
   return {kickerHtml: t('setStats'), pickHtml: statPickBtn(), notesHtml, body: cur ? cur.body : null,
+    summary: first && first.body.k === 'lines' ? first.body.lines : [],
     tabs: groups.map(g => ({key: g.key, label: g.label, n: g.n, selected: g === cur, title: (T as LegacyAny)[S0.lang]['ttStatTab_' + g.key] ? t('ttStatTab_' + g.key) : ''}))};
 }

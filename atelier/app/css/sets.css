@@ -884,9 +884,7 @@
 .setsx.ui2 .setctl{align-content:start}
 .setsx.ui2 .setctl > .wpicks{min-height:52px;width:100%;align-content:start}
 @container (min-width:600px){
-  .setsx.ui2 .detail > header:not(.ophead){display:flex;flex-direction:column;min-height:342px}
-  .setsx.ui2 .detail > header > .settop{min-height:200px}
-  .setsx.ui2 .detail > header > .trybar{margin-top:auto;height:100px;box-sizing:border-box;overflow:hidden}
+  .setsx.ui2 .detail > header:not(.ophead){display:flex;flex-direction:column}
   .setsx.ui2 .trybar .tryline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .setsx.ui2 .trybar.idle{display:flex;align-items:center;border-style:dashed;background:none}
   .setsx.ui2 .trybar.idle .tryline{white-space:normal}
@@ -909,9 +907,8 @@
 .setsx.ui2 .globalcol .figtabs .setstats{grid-template-columns:minmax(0,1fr);min-height:0;border:0;padding:6px 0 0;background:none}
 .setsx.ui2 .globalcol .figtabs .setstats .stabs{display:flex;flex-wrap:wrap;gap:4px;height:auto;overflow:visible;grid-column:1}
 .setsx.ui2 .globalcol .figtabs .setstats .stabs button{border-radius:999px;border-right:1px solid var(--line-strong);padding:3px 11px;margin-right:0;box-shadow:none}
-.setsx.ui2 .globalcol .figtabs .setstats .stabbody{grid-column:1;height:auto;min-height:0;max-height:440px;border-radius:12px}
+.setsx.ui2 .globalcol .figtabs .setstats .stabbody{grid-column:1;height:auto;min-height:0;max-height:none;overflow:visible;border-radius:12px}
 .setsx.ui2 .globalcol .figtabs .stabbody .statlist{columns:1}
-.setsx.ui2 .globalcol .figtabs > .boxb:not(.figsheet){max-height:520px;overflow:auto;scrollbar-gutter:stable}
 /* the HP cycle's groups (abilities, Cure, Enmity...): a title row that folds its actions */
 .hpcycle .cygroup th{padding:8px 0 2px;text-align:left}
 .hpcycle .cygroup button{border:0;background:none;padding:0;font:inherit;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);cursor:pointer}
@@ -1660,3 +1657,374 @@
 /* ---- a number as one game stepper: [ − | 50 % MP | + ], same size on every line ---- */
 /* value and unit centred together between − and + */
 .mcval{display:inline-flex;align-items:baseline}
+
+/* ---- the set's card, 2026-11-01 (notes/docs-perso/page-sets-2026-11-01/SPEC.md): no room kept empty, the useful
+   figures first ---- */
+/* its figures under its title: the objectives' (gold edge), then the floors held (green) or not (red) */
+.setchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.setchips .chip{display:inline-flex;align-items:baseline;gap:5px;border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;font-size:12.5px;background:var(--panel-2)}
+.setchips .chip b{color:var(--ink);font-weight:700}
+.setchips .chip small{color:var(--muted);font-size:11px}
+.setchips .chip.obj{border-color:var(--accent)}
+.setchips .chip.ok{border-color:color-mix(in srgb,var(--good,#5fbf7f) 60%,transparent)}
+.setchips .chip.ok i{color:var(--good,#5fbf7f);font-style:normal}
+.setchips .chip.ko{border-color:color-mix(in srgb,var(--bad,#e06060) 70%,transparent)}
+.setchips .chip.ko i{color:var(--bad,#e06060);font-style:normal}
+/* the weapons' menus on one line, each label beside its menu */
+.setsx.ui2 .wpicks{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.setsx.ui2 .setctl > .wpicks{min-height:0}
+.setsx.ui2 .setctl .wpick select{max-width:200px}
+/* bigger slots, the pieces' names beside them */
+.setsx.ui2 .slots{--cell:66px}
+.setsx.ui2 .eqcol{grid-template-columns:auto minmax(0,1fr);column-gap:20px;align-items:start}
+.setsx.ui2 .eqcol > .slotcol{grid-row:1}
+.setsx.ui2 .eqcol > :not(.slotcol):not(.slotnames):not(.setlua){grid-column:1 / -1}
+.slotnames{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 16px;font-size:12.5px;align-content:start}
+.slotnames li{display:flex;gap:8px;min-width:0;padding:3px 0;border-bottom:1px solid var(--line)}
+.slotnames li small{flex:none;width:62px;color:var(--muted);font-size:11px}
+.slotnames li span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slotnames li.tried span{color:var(--try)}
+/* the legend behind a "?" */
+.lgfold > summary{display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid var(--line-strong);border-radius:50%;cursor:pointer;color:var(--muted);font-size:12px;list-style:none}
+.lgfold > summary::-webkit-details-marker{display:none}
+.lgfold[open] > summary{color:var(--accent);border-color:var(--accent)}
+/* deleting the set behind "⋯" */
+.setmore{position:relative}
+.setmore > summary{list-style:none;cursor:pointer;border:1px solid var(--line-strong);border-radius:8px;padding:4px 10px;color:var(--muted)}
+.setmore > summary::-webkit-details-marker{display:none}
+.setmore .setmenu{position:absolute;right:0;top:calc(100% + 4px);z-index:5;background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;padding:8px 12px;white-space:nowrap;box-shadow:var(--shadow)}
+/* no empty row kept for versions a set does not have; the names read down the left column, then the right one; a
+   menu's label on one line */
+.setvers.none{display:none}
+.slotnames{grid-auto-flow:column;grid-template-rows:repeat(8,auto)}
+.setsx.ui2 .wpick .wslbl{white-space:nowrap}
+/* the figures' box as tall as the window leaves it, its content scrolled inside (no half empty column) */
+/* (each tab at its content's height: no scroll inside a tab, the pane scrolls only when the window is too short) */
+.setsx.ui2 .globalcol .figtabs{display:block;height:auto;min-height:0}
+.setsx.ui2 .globalcol .figtabs > .boxb{overflow:visible;max-height:none;padding:6px 0 0}
+.setsx.ui2 .globalcol .figtabs .figsheet .setstats{min-height:0}
+/* the stats optimizer in the column beside the set (OptColumn.svelte): its head, buttons, then what is looked for
+   and the result, one under the other, scrolled inside the column's height */
+.setsx.ui2 .optcol .optcolumn{display:flex;flex-direction:column;padding:12px 14px;gap:10px}
+.optchead{display:flex;align-items:baseline;gap:10px}
+.optchead h3{margin:0;color:var(--accent)}
+.optchead .sp{flex:1}
+.optcolumn .opgo{display:flex;flex-wrap:wrap;gap:8px}
+.optcolumn .optcbody{display:grid;gap:8px;align-content:start}
+.optcobjs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.optcobjs .chip{border:1px solid var(--accent);border-radius:999px;padding:3px 10px;font-size:12.5px}
+.optcolumn .opres{grid-template-columns:minmax(0,1fr)}
+.optcolumn .opres .opside{grid-column:1}
+/* a narrow window: the names under the slots, on one column; the legend's fold as wide as the card */
+.setsx.ui2 .eqcol > .lgfold{grid-column:1 / -1;width:100%;min-width:0}
+@media (max-width:900px){
+  .setsx.ui2 .eqcol{grid-template-columns:minmax(0,1fr)}
+  .setsx.ui2 .eqcol > .slotcol{grid-row:auto}
+  .slotnames{grid-auto-flow:row;grid-template-columns:minmax(0,1fr);grid-template-rows:none}
+  .setchips .chip{font-size:12px}
+}
+/* ---- the Sets screen's panes, 2026-11-01: room under the context line, the set and its figures as panels with a
+   head band like the list's families (panels.css .boxh), the figures' tabs inside without a frame of their own ---- */
+.pane.split > .setsx.ui2{margin-top:12px}
+.setsx.ui2 > .detail,.setsx.ui2 > .globalcol{--c:var(--accent);border-radius:var(--radius);overflow:hidden}
+.setsx.ui2 .panehead{border-radius:0;padding:10px 16px 9px 18px}
+.setsx.ui2 .panehead h3{font-size:11.5px}
+.setsx.ui2 > .globalcol{padding:0;align-self:start}
+.setsx.ui2 > .globalcol .globals{display:flex;flex-direction:column}
+.setsx.ui2 > .globalcol .ui2own{padding:12px 14px 14px;min-height:0}
+.setsx.ui2 .globalcol .figtabs{border:0;box-shadow:none;background:none}
+.setsx.ui2 .globalcol .figtabs > .stabs{padding:0 0 4px}
+.setsx.ui2 .detail > header:not(.ophead){padding-top:12px}
+/* the optimizer's column: the band, then its buttons and content with the panel's room */
+.setsx.ui2 .optcol .optcolumn{padding:0;gap:0}
+.optcolumn .optchead{align-items:center}
+.optcolumn .optchead h3{color:var(--accent)}
+.optcolumn .opgo{padding:12px 14px 8px}
+.optcolumn .optcbody{padding:0 14px 14px}
+/* the three columns down to the same line: the set's card and the figures' pane stretch, the tabs fill the pane */
+@media (min-width:1100px){
+  .split .setsx.ui2 > .detail{align-self:stretch;max-height:100%}
+  .split .setsx.ui2 > .globalcol{align-self:stretch;max-height:100%;overflow:auto}
+}
+/* (the set's card scrolls inside its pane when longer than the window: an engaged set with its attack figures) */
+.setsx.ui2 > .detail{overflow:auto}
+/* no scrollbar's room kept where nothing scrolls; every stat on two columns when the pane is wide enough */
+.setsx.ui2 > .globalcol{scrollbar-gutter:auto}
+.setsx.ui2 .figall .globals{display:block;columns:2 300px;column-gap:16px}
+.setsx.ui2 .figall .globals > *{break-inside:avoid;margin-bottom:12px}
+/* the legend's button: a small pill "ⓘ Légende" on the line of the set's count */
+.lgfold > summary{display:inline-flex;align-items:center;gap:6px;width:auto;height:auto;padding:3px 11px;border:1px solid var(--line-strong);border-radius:999px;
+  font-size:12px;color:var(--muted);background:var(--panel-2);cursor:pointer;list-style:none}
+.lgfold > summary:hover{color:var(--ink);border-color:var(--accent)}
+.lgfold > summary::before{content:"i";display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  font:italic 700 10px Georgia,serif}
+.lgfold[open] > summary{color:var(--accent);border-color:var(--accent)}
+.lgfold[open] > .legend{margin-top:8px}
+/* the legend's hint under its marks, not over them; the figures' pane down to the bottom like the set's card */
+.lgfold .eqhint{margin-top:6px}
+@media (min-width:1100px){.split .setsx.ui2 > .globalcol{height:100%;align-self:stretch}}
+/* ---- organisation of 2026-11-01: the summary on the right, the rest one click away; the weapons in one line ---- */
+.setsx.ui2 .figsum .figlead{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.figlinks{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 0 2px;border-top:1px solid var(--line);margin-top:10px}
+.figlinks .linkbtn{font-size:13px}
+.figback{display:flex;align-items:center;gap:12px;padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.figback b{color:var(--ink);font-size:13px}
+.wline{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:7px 12px;
+  font-size:13px;color:var(--ink);cursor:pointer}
+.wline b{color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.wline .wcaret{margin-left:auto;color:var(--muted)}
+.wline:hover{border-color:var(--accent)}
+.setsx.ui2 .setctl{gap:8px;flex-direction:column;align-items:stretch}
+.optcolumn .wline{margin-top:6px}
+/* ---- 2026-11-01, third pass: panels at their content's height (no void under the gear), real tabs on the right ---- */
+@media (min-width:1100px){
+  .split .setsx.ui2 > .detail,.split .setsx.ui2 > .globalcol{align-self:start;height:auto;max-height:100%}
+}
+.setsx.ui2 .slots{--cell:74px;gap:6px}
+.slotnames{font-size:13.5px;gap:3px 22px}
+.slotnames li{padding:5px 0}
+/* the figures' tabs: a bar under the pane's band, the tab shown underlined in gold, its page under it */
+.setsx.ui2 .globalcol .ui2own{padding:0}
+.setsx.ui2 .globalcol .figtabs{padding:0}
+.figtabbar{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--line-strong);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 5%,var(--panel)),var(--panel))}
+.figtabbar button{position:relative;border:0;background:none;padding:11px 14px 10px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-radius:0}
+.figtabbar button:hover{color:var(--ink)}
+.figtabbar button[aria-selected="true"]{color:var(--accent)}
+.figtabbar button[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:var(--accent);
+  box-shadow:0 0 10px color-mix(in srgb,var(--accent) 70%,transparent)}
+.figpage{padding:14px 16px 16px}
+.figpage > .statlist li{padding:7px 2px}
+.figpage .boxb{padding:0}
+.figpage .figsheet .setstats{padding:0;border:0;background:none}
+/* ---- the equipment, 2026-11-01 fourth pass: a tighter grid, the set as its file writes it beside it ---- */
+.setsx.ui2 .slots{--cell:60px;gap:4px}
+.setsx.ui2 .eqcol{padding:14px 18px;gap:10px;column-gap:18px}
+.setsx.ui2 .slotcol .eqbtn{padding:5px 10px;font-size:12.5px}
+.setlua{display:flex;flex-direction:column;min-width:0;align-self:stretch;background:var(--well);border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  font:12.5px/1.55 var(--mono,Consolas,monospace);color:var(--muted);overflow:hidden}
+.setlua code{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:inherit;background:none;padding:0}
+.setlua .lh{color:var(--accent)}
+.setlua .ll{padding-left:2ch}
+.setlua .lk{color:var(--muted)}
+.setlua .lv{color:var(--ink)}
+.setlua .ll.tried .lv{color:var(--try)}
+.setlua .ln{padding-left:2ch;color:var(--faint,var(--muted));font-style:italic}
+@media (max-width:900px){.setlua{font-size:12px}}
+/* the set's lines beside the slots, not under them */
+.setsx.ui2 .eqcol > .setlua{grid-column:2;grid-row:1}
+@media (max-width:900px){.setsx.ui2 .eqcol > .setlua{grid-column:1;grid-row:auto}}
+/* the slots on the left as in the game, the set's lines on their right, as tall as their text */
+.setsx.ui2 .eqcol > .slotcol{grid-column:1;grid-row:1}
+.setsx.ui2 .eqcol > .setlua{grid-column:2;grid-row:1;align-self:start}
+@media (max-width:900px){.setsx.ui2 .eqcol > .slotcol,.setsx.ui2 .eqcol > .setlua{grid-column:1;grid-row:auto}}
+/* ---- the equipment, fifth pass: cells close to the game's (the icon fills its cell, almost no gap) ---- */
+.setsx.ui2 .slots{--cell:44px;gap:2px}
+.setsx.ui2 .slot{border-radius:4px}
+.setsx.ui2 .slot .ico{width:36px;height:36px}
+.setsx.ui2 .slot .elbl{font-size:7.5px}
+.setsx.ui2 .eqcol{padding:12px 16px;gap:8px;column-gap:16px}
+.setsx.ui2 .setlua{font-size:12px;line-height:1.45;padding:8px 12px}
+/* ---- the page's head, 2026-11-01: less room taken over the sets ----
+   the top bar on one line (the character's name beside its job, a smaller crest) */
+.topbar{padding-top:6px;padding-bottom:6px}
+.hero .crest{width:42px;height:42px}
+.hero .crest .em{width:28px;height:28px}
+.hero .who{display:flex;align-items:center;gap:12px}
+.hero .who > b{font-size:20px}
+/* on the Sets screen, the sections and the line "Calculé avec" share one row */
+@media (min-width:1100px){
+  .inner:has(.pane.split .setsx.ui2){display:grid;grid-template-columns:max-content minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:12px;padding-bottom:12px}
+  .inner:has(.pane.split .setsx.ui2) > .sections{grid-row:1;grid-column:1;margin:0}
+  .inner:has(.pane.split .setsx.ui2) .pane.split{display:contents}
+  .inner:has(.pane.split .setsx.ui2) .pane.split > .ctxbar{grid-row:1;grid-column:2;align-self:stretch;height:auto;border:1px solid var(--line);border-radius:var(--radius)}
+  .inner:has(.pane.split .setsx.ui2) .pane.split > .setsx.ui2{grid-row:2;grid-column:1 / -1;margin-top:10px;min-height:0;height:100%}
+}
+/* the set's count and the legend under the equipment, in its column: no empty band under the grid */
+.setsx.ui2 .slotcol{width:calc(4 * var(--cell) + 6px)}
+.setsx.ui2 .slotcol > footer{margin:0;padding:0;border:0;font-size:12px;line-height:1.4;display:grid;gap:2px}
+.setsx.ui2 .slotcol > .lgfold{justify-self:start}
+.setsx.ui2 .slotcol > .lgfold[open]{justify-self:stretch;width:min(560px,60vw);position:relative;z-index:3}
+/* the top bar on one line (beats themes.css) */
+.app .topbar{padding-top:6px;padding-bottom:6px}
+.app .topbar .hero .crest{width:42px;height:42px}
+.app .topbar .hero .crest .em{width:28px;height:28px}
+.app .topbar .hero .who{display:flex;align-items:center;gap:12px}
+.app .topbar .hero .who > b{font-size:20px}
+/* a long line (a piece with its augments) wraps between its fields, the rest of it indented under its value */
+.setsx.ui2 .setlua .ll{white-space:normal;overflow:visible;text-overflow:clip;padding-left:6ch;text-indent:-4ch}
+/* the equipment's column exactly as wide as its grid (--cell lives on .slots: given here too, or the width is lost and
+   a long footer widens the column, and the button with it); the button a slim bar under the grid */
+.setsx.ui2 .slotcol{--cell:44px;width:calc(4 * var(--cell) + 6px);gap:6px}
+.setsx.ui2 .slotcol .eqbtn{padding:3px 8px;font-size:12px;min-height:0;line-height:1.4}
+/* ---- the set's head, 2026-11-01: framed boxes with a title each, figures as tiles (no technical chips) ---- */
+.setsx.ui2 .settitle .wspath{display:none}
+.hbox{border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--panel-2) 70%,transparent);padding:8px 12px 10px;min-width:0}
+.hbox > h4{margin:0 0 6px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hboxes{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.hboxes > .goals{flex:3 1 260px}
+.hboxes > .floors{flex:4 1 320px}
+.hbox .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}
+.hbox .tile{display:grid;align-content:start;gap:1px;padding:6px 9px;border-radius:7px;background:var(--panel);border:1px solid var(--line);min-width:0}
+.hbox .tile .tl{font-size:11px;color:var(--muted);line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hbox .tile .tv{font-size:18px;font-weight:800;color:var(--ink);line-height:1.2;font-variant-numeric:tabular-nums}
+.hbox .tile.obj .tv{color:var(--accent)}
+.hbox .tile .ts{font-size:11px;color:var(--muted)}
+.hbox .tile .ts i{font-style:normal;font-weight:800}
+.hbox .tile.ok{border-left:3px solid var(--good,#5fbf7f)}
+.hbox .tile.ok .ts i{color:var(--good,#5fbf7f)}
+.hbox .tile.ko{border-left:3px solid var(--bad,#e06060);background:color-mix(in srgb,var(--bad,#e06060) 8%,var(--panel))}
+.hbox .tile.ko .ts i,.hbox .tile.ko .ts{color:var(--bad,#e06060)}
+/* the weapons: a box like the others, each weapon with its menu's name over it, "Changer" at the right */
+.setsx.ui2 .setctl{margin-top:10px}
+.hbox.wbox{padding:8px 12px}
+.hbox.wbox .wline{border:0;background:none;padding:0;gap:6px;flex-wrap:wrap}
+.hbox.wbox .wtag{display:grid;gap:0;padding:4px 10px;border-radius:7px;background:var(--panel);border:1px solid var(--line);line-height:1.25}
+.hbox.wbox .wtag small{font-size:10.5px;color:var(--muted)}
+.hbox.wbox .wtag b{font-size:13px;color:var(--ink);font-weight:700;text-transform:none;letter-spacing:0}
+.hbox.wbox .wcaret{margin-left:auto;font-size:12.5px;color:var(--accent);padding:4px 10px;border:1px solid var(--line-strong);border-radius:999px}
+.hbox.wbox .wline:hover .wcaret{border-color:var(--accent)}
+/* one row of tiles: each box as wide as its tiles' count, every tile the same width */
+.hboxes{flex-wrap:nowrap}
+.hboxes > .goals,.hboxes > .floors{flex:var(--n,1) 1 0}
+.hbox .tiles{display:flex;gap:6px}
+.hbox .tile{flex:1 1 0;padding:5px 8px}
+.hbox .tile .tv{font-size:16px}
+.hbox .tile .tl{-webkit-line-clamp:1;white-space:nowrap;display:block}
+/* the weapons on one line: the box's title at its left, the weapons as tags (what each is: in its tooltip) */
+.hbox.wbox{display:flex;align-items:center;gap:12px;padding:6px 8px 6px 12px}
+.hbox.wbox > h4{margin:0;flex:none}
+.hbox.wbox .wline{flex:1;min-width:0}
+.hbox.wbox .wtag{padding:3px 10px;font-size:13px;font-weight:700;color:var(--ink)}
+.setsx.ui2 .setctl{margin-top:8px}
+@media (max-width:900px){.hboxes{flex-wrap:wrap}.hboxes > .goals,.hboxes > .floors{flex:1 1 100%}.hbox .tiles{flex-wrap:wrap}.hbox .tile{flex:1 1 100px}}
+/* a tile's label on up to two lines, never cut; the values aligned on one line across the tiles */
+.hbox .tile{grid-template-rows:2.5em auto auto}
+.hbox .tile .tl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;overflow:hidden;align-self:start}
+.hbox .tile .ts{white-space:nowrap}
+.hbox.wbox{width:100%;box-sizing:border-box}
+/* the label's second line kept only when some tile of the row needs it; a lone box's tiles no wider than a figure needs */
+.hbox .tile{grid-template-rows:1fr auto auto;max-width:200px}
+/* the boxes stand off the card: a darker well (as the GearSwap code beside the grid), a firmer border, the tiles lighter in it */
+.hbox{background:var(--well);border-color:var(--line-strong);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 4%,transparent)}
+.hbox .tile,.hbox.wbox .wtag{background:var(--panel-2);border-color:var(--line-strong)}
+.hbox .tile.ko{background:color-mix(in srgb,var(--bad,#e06060) 12%,var(--panel-2))}
+/* ---- the trial's box, 2026-11-01: a box of the head's family (title, one line of what waits, its buttons), in the
+   trial's colour; "Pousser dans GearSwap" is the one main button, the others quieter ---- */
+.setsx.ui2 .trybar{margin-top:8px;padding:8px 12px 10px;border:1px solid color-mix(in srgb,var(--try) 60%,var(--line-strong));border-left:3px solid var(--try);
+  border-radius:10px;background:color-mix(in srgb,var(--try) 7%,var(--well))}
+.setsx.ui2 .trybar .tryhead{margin:0 0 4px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--try)}
+.setsx.ui2 .trybar .tryrow.saved .tryhead{color:var(--r-healer)}
+.setsx.ui2 .trybar .tryline{white-space:normal;font-size:13px;color:var(--ink)}
+.setsx.ui2 .trybar .tryby{display:inline-block;margin-right:8px;padding:1px 8px;border-radius:999px;font-size:11px;color:var(--muted);border:1px solid var(--line-strong)}
+.setsx.ui2 .trybar .dacts{margin-top:8px;gap:6px}
+.setsx.ui2 .trybar .dacts .btn{border-radius:999px}
+.setsx.ui2 .trybar .dacts > .btn:not(.ghost):first-child{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.setsx.ui2 .trybar .dlinks{font-size:12.5px}
+/* every tile the same size in both boxes: each box grows by its tile count from a base of its own frame (padding 24 +
+   border 2 + the gaps between its tiles), so the room left is shared tile by tile; the tiles as tall as the tallest */
+.hboxes{align-items:stretch}
+.hboxes > .goals,.hboxes > .floors{flex:var(--n,1) 1 calc(26px + (var(--n,1) - 1) * 6px);display:flex;flex-direction:column;box-sizing:border-box}
+.hboxes .tiles{flex:1}
+.hboxes .tile{max-width:none}
+/* a goal's tile keeps the room of the floors' "max ..." line: the values on one line across both boxes */
+.hbox .tile.obj::after{content:"";display:block;height:calc(11px * 1.4)}
+/* a goal's tile with its own line under the value (the damage taken's whole cap): no room kept for one */
+.hbox .tile.obj:has(.ts)::after{display:none}
+/* the line under a value may take two lines ("plafond −50 % · 3 en trop"), never cut */
+.hbox .tile .ts{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ---- the tiles, 2026-11-01 second pass: the value first and centred, its limit under it, the name last; one rhythm
+   whether a name takes one line or two ---- */
+.hbox .tile{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;gap:0;padding:8px 6px 7px}
+.hbox .tile .tv{order:1;font-size:19px;line-height:1.15;letter-spacing:.01em}
+.hbox .tile .ts{order:2;min-height:15px;line-height:15px;font-size:11px;max-width:100%}
+.hbox .tile.obj::after{order:2;height:15px}
+.hbox .tile .tl{order:3;margin-top:5px;padding-top:5px;border-top:1px solid var(--line);width:100%;font-size:11px;line-height:1.25;color:var(--muted);
+  white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hbox .tile.ok,.hbox .tile.ko{border-left-width:1px;border-top:3px solid var(--good,#5fbf7f)}
+.hbox .tile.ko{border-top-color:var(--bad,#e06060)}
+.hbox .tile.ok .ts{color:var(--good,#5fbf7f)}
+/* ---- the tiles, third pass: finish (depth, a glowing figure, the held/not held mark as a round badge) ---- */
+.hbox > h4{display:flex;align-items:center;gap:7px;padding-bottom:6px;margin-bottom:8px;
+  border-bottom:1px solid;border-image:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,transparent),transparent 70%) 1}
+.hbox > h4::before{content:"";width:7px;height:7px;transform:rotate(45deg);background:var(--accent);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 70%,transparent);flex:none}
+.hbox.wbox > h4{border:0;padding:0;margin:0}
+.hbox .tile{position:relative;border-radius:9px;border:1px solid var(--line-strong);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 6%,var(--panel-2)),var(--panel-2) 55%,color-mix(in srgb,#000 12%,var(--panel-2)));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent),0 2px 6px rgba(0,0,0,.25);transition:transform .12s,box-shadow .12s,border-color .12s}
+.hbox .tile:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--accent) 50%,var(--line-strong));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent),0 4px 12px rgba(0,0,0,.35)}
+.hbox .tile .tv{font-size:20px;color:var(--ink);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.hbox .tile.obj .tv{color:var(--accent);text-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent),0 1px 2px rgba(0,0,0,.6)}
+.hbox .tile .ts{color:var(--muted)}
+.hbox .tile .ts i{display:none}
+/* held or not: a round badge in the corner, the tile's top edge in the same colour */
+.hbox .tile.ok,.hbox .tile.ko{border-top:1px solid var(--line-strong);border-left:1px solid var(--line-strong)}
+.hbox .tile.ok::before,.hbox .tile.ko::before{position:absolute;top:5px;right:5px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;
+  font:800 9px/1 var(--font,system-ui);color:#0b1220}
+.hbox .tile.ok::before{content:"✓";background:var(--good,#5fbf7f);box-shadow:0 0 6px color-mix(in srgb,var(--good,#5fbf7f) 60%,transparent)}
+.hbox .tile.ko::before{content:"✗";background:var(--bad,#e06060);box-shadow:0 0 6px color-mix(in srgb,var(--bad,#e06060) 60%,transparent)}
+.hbox .tile.ok{background:linear-gradient(180deg,color-mix(in srgb,var(--good,#5fbf7f) 10%,var(--panel-2)),var(--panel-2) 45%,color-mix(in srgb,#000 12%,var(--panel-2)))}
+.hbox .tile.ko{background:linear-gradient(180deg,color-mix(in srgb,var(--bad,#e06060) 16%,var(--panel-2)),var(--panel-2) 50%,color-mix(in srgb,#000 12%,var(--panel-2)))}
+.hbox .tile.ok .ts{color:var(--muted)}
+.hbox .tile.ko .ts{color:var(--bad,#e06060)}
+/* the weapons' tags in the same finish */
+.hbox.wbox .wtag{border-radius:8px;border:1px solid var(--line-strong);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 6%,var(--panel-2)),color-mix(in srgb,#000 10%,var(--panel-2)));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent)}
+/* the badge as a seal on the tile's top edge, centred over the figure: never on the figure itself */
+.hbox .tile.ok::before,.hbox .tile.ko::before{top:-8px;right:auto;left:50%;transform:translateX(-50%);border:2px solid var(--well)}
+.hbox .tiles{padding-top:6px}
+.hbox .tile{overflow:visible}
+/* room under the seal: every tile's figure a little lower (the goals too, the figures stay on one line) */
+.hbox .tile{padding-top:15px;padding-bottom:6px}
+/* the tile's content centred both ways, the same room over and under it */
+.hbox .tile{justify-content:center;padding-top:10px;padding-bottom:10px}
+/* a base set's slot no set built on it wears: dimmed, still clickable (its piece changes nothing in game) */
+.slot.unreached .ico{opacity:.32;filter:grayscale(.85)}
+.slot.unreached{border-style:dashed}
+/* a figure of two parts (a Cure's enmity: "579 CE · 3 474 VE"): one per line, centred, a size under the others */
+.hbox .tile .tv > span{display:block}
+.hbox .tile .tv.two{font-size:15px;line-height:1.25}
+/* every figure in a box of the same height (room for a two-line figure), centred in it: the figures, their limits and
+   their names stay on the same lines from a tile to the next, whatever a figure's shape */
+.hbox .tile .tv{min-height:40px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.hbox .tile.obj::after{display:block}
+.hbox .tile.obj:has(.ts)::after{display:none}
+/* one shape for every tile: the figure (and a limit's line on a floor) in the same top part, the figure centred in it;
+   the name always at the bottom on the same line. A goal has no line under its figure (its cap: tooltip), its figure
+   takes the whole top part; a two-part figure keeps the others' size */
+.hbox .tile.obj::after,.hbox .tile.obj:has(.ts)::after{display:none}
+.hbox .tile .tv{min-height:40px}
+.hbox .tile.obj .tv{min-height:55px}
+.hbox .tile .tv.two{font-size:17px;line-height:1.15}
+/* the names' strip the same height in every tile (two lines' room, the name at its top): the separator and the names
+   on one line whatever a name's length; above it, the figure centred in what is left (a floor's limit line under it) */
+.hbox .tile .tl{flex:none;height:calc(2 * 1.25em + 6px);box-sizing:border-box;margin-top:4px}
+.hbox .tile .tv,.hbox .tile.obj .tv{flex:1 1 auto;min-height:40px}
+.hbox .tile .ts{flex:none}
+/* each part of a two-part figure on its own line, never broken ("4 182 VE" stays whole on a narrow window) */
+.hbox .tile .tv > span{white-space:nowrap}
+.hbox .tile .tv.two{font-size:16px}
+/* ---- narrow windows (1280-1440 with the list and the stats beside): the boxes go under one another before their
+   tiles get narrower than a figure needs; a long name never pushes out of its box ---- */
+.hboxes{flex-wrap:wrap}
+.hboxes > .goals,.hboxes > .floors{flex:var(--n,1) 1 calc(26px + (var(--n,1) - 1) * 6px + var(--n,1) * 86px)}
+.hbox .tile{min-width:0}
+.hbox .tile .tl{overflow-wrap:anywhere}
+.setsx.ui2 .setlua .ll{overflow-wrap:anywhere}
+.setsx.ui2 .slotcol > footer,.setsx.ui2 .slotcol > footer *{overflow-wrap:anywhere;min-width:0}
+/* ---- layout check, 2026-11-01 ---- */
+/* the legend, open, wraps in the equipment's column (no wider box over the code beside it) */
+.setsx.ui2 .slotcol > .lgfold[open]{width:auto;justify-self:stretch}
+.setsx.ui2 .slotcol .lgfold .legend{display:flex;flex-wrap:wrap;gap:4px 10px;max-width:100%;min-width:0}
+/* the Sets screen's row of sections and "Calculé avec": the pane laid out as its children (display:contents) clips
+   nothing (base.css gives .pane.split overflow:hidden) */
+@media (min-width:1100px){.inner:has(.pane.split .setsx.ui2) .pane.split{overflow:visible}}
+/* the figures' tabs wrap on a narrow column */
+.figtabbar{flex-wrap:wrap}
+/* a narrow window: the equipment and its code one under the other, one column */
+@media (max-width:900px){.setsx.ui2 .eqcol{grid-template-columns:minmax(0,1fr)}}
+/* the code's head line ("sets.x = set_combine(sets.y, {") wraps too, rather than widening the column on a phone */
+.setsx.ui2 .eqcol > .setlua{min-width:0;max-width:100%}
+.setsx.ui2 .setlua .lh{white-space:normal;overflow-wrap:anywhere}
+/* the legend's button as wide as its column: the legend it opens wraps in that width */
+.setsx.ui2 .slotcol > .lgfold{justify-self:stretch}
+.setsx.ui2 .slotcol > .lgfold > summary{max-width:max-content}

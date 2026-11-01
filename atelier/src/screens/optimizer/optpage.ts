@@ -32,6 +32,9 @@ export type Visual =
 export interface ResultRow { label: string; obj: boolean; cells: Array<{text: string; better: boolean; short: boolean} | null> }
 export interface OptPageView {
   head: {backTitle: string; back: string; title: string; set: string; ctx: string; goHtml: string};
+  settings: string;
+  // the search's settings unfolded (data-fold="optset"), read at each redraw of the page
+  settingsOpen: boolean;
   noEngine: string | null;
   statWhat: StatWhatView | null;
   statResult: StatResultView | null;
@@ -223,9 +226,10 @@ export function optPageView(s: LegacyAny, ws: unknown): OptPageView {
     : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
       (ws ? `<button class="btn ghost" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = {backTitle: t('ttOptBack'), back: t('optBack'), title: t('optPageTitle'), set: shortPath(s.path), ctx: `${buffTier()} · ${enemyKey(b.enemy)}`, goHtml};
-  const out: OptPageView = {head, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
+  const out: OptPageView = {head, settings: t('optSettings'), settingsOpen: !!(S as LegacyAny).boxOpen.optset, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
   if (!engineReady()) return {...out, noEngine: noEngineText()};
   // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
-  if (kind === 'stat') return {...out, statWhat: statWhatView(s), statResult: statResultView(s)};
+  // (beside the set, the column's result keeps the useful lines: card.ts opt)
+  if (kind === 'stat') return {...out, statWhat: statWhatView(s), statResult: statResultView(s, true)};
   return {...out, what: whatOf(s, kind), result: resultOf(s, kind)};
 }

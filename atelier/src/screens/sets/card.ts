@@ -16,7 +16,9 @@ import {optPageView, type OptPageView} from '../optimizer/optpage';
 
 import {trialBarView, type TrialBar} from './trial';
 export interface SlotView { slot: string; ci: number; label: string; empty: boolean; cls: string; aria: string; reset: null | {title: string}; lock: null | {title: string};
-  iconHtml: string; aug: boolean; rank: number | null }
+  iconHtml: string; aug: boolean; rank: number | null; name: string; tried: boolean }
+// the set's figures under its title: its objectives' figures, then its floors held or not (statOpts, statFigures)
+export interface Chips { objs: Array<{label: string; value: string; of: string}>; floors: Array<{label: string; value: string; of: string; ok: boolean; tip: string}>; objsHead: string; floorsHead: string; floorsTip: string }
 export interface VerButton { i: number; pressed: boolean; title: string; label: string }
 export type Versions =
   | {k: 'none'}
@@ -34,17 +36,37 @@ export interface CardView {
   equip: {on: boolean; why: string; label: string};
   footHtml: string[];
   wantsHtml: string;
-  legend: {items: Array<{markHtml: string; label: string; tip: string; off: boolean}>; hintHtml: string};
+  legend: {items: Array<{markHtml: string; label: string; tip: string; off: boolean}>; hintHtml: string; btn: string};
   notes: {fam: null | {textHtml: string; none: boolean}; base: string};
   figures: FiguresView;
+  chips: Chips | null;
+  // the stats optimizer, open in the column beside the card (OptColumn.svelte), or null
+  opt: OptPageView | null;
+  // the pane's head band: "Set · Idle" (its family)
+  pane: string;
+  // the weapons' menus folded in one line (data-fold="wfold"): what they hold now, open or not
+  weapons: {line: string; label: string; open: boolean; parts: Array<{cap: string; val: string}>; change: string};
+  // the set as its file writes it, beside the equipment (setLuaOf)
+  lua: SetLua;
 }
+// The set as GearSwap's file writes it: its head (built on another set or not), one line a slot of its own (the tried
+// pieces in, marked), its tail; a value too long for the line keeps its whole text in `full`
+export interface SetLua { head: string; lines: Array<{slot: string; value: string; full: string; tried: boolean}>; tail: string; note: string }
 export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
 
 const st = (): LegacyAny => S;
 const TIERS3 = ['Group', 'Solo', 'Trust'];
 
-export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string} }
+export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string}; prev: null | {label: string; title: string} }
 export interface TitleView extends TitleActs { kicker: string; name: string; version: string; tag: string; when: string; facts: string[]; factsTip: string; path: string; pathTip: string }
+
+// Undoing the optimizer's last run (events.js data-tryprev: the trial it found replaced by the one before it), in the
+// set's menu; only while that brings something back (an empty trial before it: undoing = "Tout annuler")
+function prevOf(s: LegacyAny): TitleActs['prev'] {
+  const dr = (S as LegacyAny).drafts[trialKey(s)] || {};
+  if (!dr.info || !dr.prev || !Object.keys(dr.prev).length) return null;
+  return {label: t('tryPrev'), title: t('tryOptBy', {t: dr.info.tier, at: dr.info.at})};
+}
 
 // Deleting the set from its file (push.js: the window that asks first): a set the job's code needs is never deleted
 // (deletable, set_push.lua PROTECTED); only with the game, which writes the file
@@ -90,11 +112,43 @@ function slotOf(s: LegacyAny, ci: number, slot: string, own: Set<string>, q: str
   const p = eff.pieces[slot], label = (SLOT_NAMES[st().lang] || {})[slot] || slot, tried = eff.tried[slot];
   const lock = isLocked(s, slot) && LOCKABLE(slot) ? {title: t('lockTip')} : null;
   const reset = tried ? {title: t('tryReset')} : null;
-  if (!p) return {slot, ci, label, empty: true, cls: `slot empty ${tried ? 'tried' : ''} ${lock ? 'locked' : ''}`, aria: `${label} : —`, reset, lock, iconHtml: '', aug: false, rank: null};
+  if (!p) return {slot, ci, label, empty: true, cls: `slot empty ${tried ? 'tried' : ''} ${lock ? 'locked' : ''}`, aria: `${label} : —`, reset, lock, iconHtml: '', aug: false, rank: null, name: '', tried: !!tried};
   const weap = eff.from[slot], inh = !weap && s.base && !own.has(slot), hit = q && nameHas(p.name, q);
   const r = pieceStats(p, slot), hold = holdState(slot, p);
   return {slot, ci, label, empty: false, cls: `slot ${inh ? 'inh' : ''} ${weap ? 'weap' : ''} ${hit ? 'hit' : ''} ${tried ? 'tried' : ''} ${lock ? 'locked' : ''} ${hold ? 'own-' + hold : ''}`,
-    aria: `${label} : ${p.name}${hold ? ' · ' + t('lg_' + hold) : ''}`, reset, lock, iconHtml: icon(p.name), aug: !!(r && Object.keys(r.aug).length), rank: r && r.rank != null ? r.rank : null};
+    aria: `${label} : ${p.name}${hold ? ' · ' + t('lg_' + hold) : ''}`, reset, lock, iconHtml: icon(p.name), aug: !!(r && Object.keys(r.aug).length), rank: r && r.rank != null ? r.rank : null,
+    name: p.name, tried: !!tried};
+}
+
+// The floors a set's figures are held to, as the chips under its title read them: the figure, how it compares, its unit
+const FLOOR_CHIPS: Array<[string, string, (f: LegacyAny) => number, boolean, string]> = [
+  ['pdt', 'floorPdt', f => f.pdt, true, ' %'], ['mdt', 'floorMdt', f => f.mdt, true, ' %'], ['sird', 'SIRD', f => f.sird, false, ' %'],
+  ['fc', 'Fast Cast', f => f.fc, false, ' %'], ['ecrit', 'statObj_ecritRed', f => f.ecrit, true, ' %'], ['enmity', 'Enmity', f => f.enmity, false, ''],
+  ['phalanx', 'Phalanx', f => f.phalanx, false, ''], ['ceLoss', 'statObj_ceLoss', f => f.ceLoss, false, ' %']];
+// A stats set's figures under its title (the page's set, its trial in): each objective's figure, then each floor, held
+// (✓) or not (✗); the HP between its two bounds as one chip. Null on a set the stats optimizer does not take
+function chipsOf(s: LegacyAny): Chips | null {
+  if (!statSet(s) || !engineReady()) return null;
+  const so = statOpts(s), f = statFigures(s), fl = so.floor, set = (v: LegacyAny) => v != null && v !== '' && isFinite(+v) && +v !== 0;
+  // the damage taken, all categories in: under the game's whole cap, -87.5 %
+  const objs = so.objs.map((k: string) => ({label: t('statObj_' + k), value: statFmt(k)(f[k]), of: k === 'pdtRed' || k === 'mdtRed' ? t('capTotal') : ''}));
+  const floors: Chips['floors'] = [];
+  // (a floor on an objective's own figure, Fast Cast on a Fast Cast set: its chip already says it)
+  const same: Record<string, string> = {fc: 'fc', sird: 'sird', ecrit: 'ecritRed', enmity: 'enmity', phalanx: 'phalanx', ceLoss: 'ceLoss'};
+  for (const [k, label, get, low, unit] of FLOOR_CHIPS) if (set(fl[k]) && !so.objs.includes(same[k])) {
+    const v = get(f), ok = low ? v <= +fl[k] : v >= +fl[k];
+    // DT + PDT I (MDT I) held at its cap, -50 %: said as the cap, and what the pieces give past it (lost)
+    const atCap = (k === 'pdt' || k === 'mdt') && +fl[k] === -50, over = Math.round((-50 - v) * 10) / 10;
+    const of = atCap ? t('floorCap', {v: '−50 %'}) : t(low ? 'floorMax' : 'floorMin', {v: fl[k] + unit}), name = /^(statObj_|floor)/.test(label) ? t(label) : label;
+    const value = Math.round(v * 10) / 10 + unit;
+    floors.push({label: name, value, of, ok, tip: `${name} : ${value} (${of})` + (atCap && over > 0 ? ' · ' + t('floorOver', {n: over}) : '')});
+  }
+  if (set(fl.hp) || set(fl.hpMax)) {
+    const lo = set(fl.hp) ? +fl.hp : null, hi = set(fl.hpMax) ? +fl.hpMax : null;
+    const of = lo != null && hi != null ? t('floorRange', {a: lo, b: hi}) : t(lo != null ? 'floorMin' : 'floorMax', {v: lo != null ? lo : hi});
+    floors.push({label: 'HP', value: String(f.hp), of, ok: (lo == null || f.hp >= lo) && (hi == null || f.hp <= hi), tip: `HP : ${f.hp} (${of})`});
+  }
+  return {objs, floors, objsHead: t('headObjs'), floorsHead: t('headFloors'), floorsTip: t('headFloorsTip')};
 }
 
 // the versions of the set shown, under its title: one row of buttons, or a table for a set with versions of two kinds
@@ -132,10 +186,48 @@ function equipOf(): CardView['equip'] {
 // What the marks of the grid mean; the ones about your bags dimmed when no piece of the set has them
 function legendOf(holds: LegacyAny): CardView['legend'] {
   const item = (markHtml: string, label: string, tip: string, off = false) => ({markHtml, label: t(label), tip: t(tip), off});
-  return {hintHtml: t('lgHint'), items: [item('<i></i>', 'lgOwn', 'lgT_own'), item('<i class="inh"></i>', 'lgInh', 'lgT_inh'), item('<i class="weap"></i>', 'lgWeap', 'lgT_weap'),
+  return {hintHtml: t('lgHint'), btn: t('legendBtn'), items: [item('<i></i>', 'lgOwn', 'lgT_own'), item('<i class="inh"></i>', 'lgInh', 'lgT_inh'), item('<i class="weap"></i>', 'lgWeap', 'lgT_weap'),
     item('<i class="try"></i>', 'lgTry', 'lgT_try'), item('<i class="empty"></i>', 'lgEmpty', 'lgT_empty'), item('<i class="lock"></i>', 'lgLock', 'lgT_lock'),
     item('<b class="mk">◆</b>', 'lgAug', 'lgT_aug'), item('<b class="rk">R15</b>', 'lgRank', 'lgT_rank'), item('<i class="miss"></i>', 'lg_missing', 'lgT_missing', !holds.missing.length),
     item('<i class="short"></i>', 'lg_short', 'lgT_short', !holds.short.length), item('<i class="porter"></i>', 'lg_porter', 'lgT_porter', !holds.porter.length)]};
+}
+
+// The weapons' menus in one line, folded: what each holds now ("PDT · Burtgang · Duban · Burtgang"), the menus one click
+// away (SPEC page-sets-2026-11-01: they are rarely changed and took two lines)
+function weaponLineOf(ctl: CardView['ctl']): CardView['weapons'] {
+  const parts = !ctl || ctl.k !== 'picks' ? [] : ctl.menus.map(m => ({cap: m.menu.name, val: ((m.menu.options.find(o => o.selected) || {label: ''}).label || '').replace(/^Auto\s*·\s*/, '')}))
+    .concat(ctl.results.map(r => ({cap: r.label, val: r.name}))).filter((x, i, all) => x.val && all.findIndex(y => y.val === x.val) === i);
+  return {line: [...new Set(parts.map(x => x.val))].join(' · '), label: t('wLine'), open: !!st().boxOpen.wfold, parts, change: t('wChange')};
+}
+
+// The set as its file writes it (the trial's pieces in, as "Copy as Lua" gives them: trial.js trialLua): built on its
+// base, only its own slots inside set_combine(base, {...}); else every slot. Shown beside the equipment, where the
+// pieces' names were (they stay in the slots' tooltips: SPEC page-sets-2026-11-01)
+function setLuaOf(s: LegacyAny): SetLua {
+  // (in double quotes when the name has an apostrophe, as the files write "Sakpata's Gauntlets")
+  // a quoted text never breaks inside (non-breaking spaces): a long line wraps only between a piece's fields or augments
+  const q = (v: string) => (String(v).includes("'") ? '"' + String(v).replace(/"/g, '\\"') + '"' : "'" + String(v) + "'").replace(/ /g, ' ');
+  const tr = st().trial[trialKey(s)] || {}, own = new Set<string>(s.own || Object.keys(s.pieces));
+  const valueOf = (p: LegacyAny) => { if (!p || isEmpty(p)) return 'empty';
+    const f = [`name = ${q(p.name)}`];
+    if (p.augs && p.augs.length) f.push(`augments = {${p.augs.map(q).join(', ')}}`);
+    if (p.bag) f.push(`bag = ${q(p.bag)}`);
+    if (p.priority != null) f.push(`priority = ${p.priority}`);
+    return f.length > 1 ? `{${f.join(', ')}}` : q(p.name); };
+  const slots = SLOTS.filter((slot: string) => slot in tr || (s.base ? own.has(slot) : !!s.pieces[slot]));
+  const lines = slots.map((slot: string) => { const p = slot in tr ? (tr[slot] || {name: 'empty'}) : s.pieces[slot], v = valueOf(p);
+    return {slot, value: v, full: `${slot} = ${v}`, tried: slot in tr}; });
+  const base = s.base ? shortPath(s.base) : '';
+  return {head: s.base ? `${s.path} = set_combine(${s.base}, {` : `${s.path} = {`, lines, tail: s.base ? '})' : '}',
+    note: s.base && !lines.length ? t('luaAllInherited', {b: base}) : ''};
+}
+
+// A base set's note: which of its slots each set built on it wears ("CureOther : dos, pieds · CureSelf : oreille 2"),
+// or that none reaches the game
+function baseNote(s: LegacyAny): string {
+  const names = SLOT_NAMES[st().lang] || {}, reach = baseReach(s);
+  if (!reach.length) return t('baseNone');
+  return t('baseReachNote', {l: reach.map(r => `${shortPath(r.path)} : ${r.slots.map(x => names[x] || x).join(', ')}`).join(' · ')});
 }
 
 /** The card of a set, or its optimizer page when that is open */
@@ -146,6 +238,9 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   S0._curSet = s;
   const own = new Set<string>(s.own || Object.keys(s.pieces)), eff = withWeapons(s);
   const slots = SLOTS.map((slot: string) => slotOf(s, ci, slot, base ? own : new Set(SLOTS), q, eff));
+  // a base set: the slots no set built on it wears from it, dimmed (baseReach)
+  if (baseOnly(s)) { const reached = new Set(baseReach(s).flatMap(r => r.slots));
+    slots.forEach(x => { if (!x.empty && !reached.has(x.slot)) { x.cls += ' unreached'; x.aria += ' · ' + t('baseUnreached'); } }); }
   const foot: string[] = [];
   if (base) { const n = [...own].filter(x => s.pieces[x]).length; foot.push(`${t('inherits', {b: '<b>' + esc(shortPath(s.base)) + '</b>'})} · ${n ? t('changed', {n}) : t('nothingChanged')}`); }
   else foot.push(`<span title="${esc(t('ttDefined'))}">${Object.keys(s.pieces).length ? t('defined', {n: '<b>' + Object.keys(s.pieces).length + '</b>'}) : t('emptySet')}</span>`);
@@ -165,10 +260,15 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const ws = card.fam === 'ws' && family(s.path, s.pieces) === 'ws';
   // a set for weaponskills in general is worked out on one of its weapon's (ws_page.js genericWsOf)
   const wsName = ws && (wsOfSet(s) || genericWsOf(s));
-  const locked = baseOnly(s), optable = !locked && (wsName || isNukeSet(s.path) || roundSet(s) || statSet(s));
-  if (optable && optPageOpen(s)) return {k: 'page', view: optPageView(s, wsName)};
+  // a base set (sets.Cure) is optimized as any set; only never deleted, the sets built on it would lose their base
+  const locked = baseOnly(s), optable = wsName || isNukeSet(s.path) || roundSet(s) || statSet(s);
+  // a set judged by its stats: its optimizer opens beside the card, which stays in sight (SPEC page-sets-2026-11-01);
+  // the damage optimizers (weaponskill, nuke, engaged) keep their page
+  const statOnly = !!optable && !wsName && !isNukeSet(s.path) && !roundSet(s) && statSet(s);
+  if (optable && optPageOpen(s) && !statOnly) return {k: 'page', view: optPageView(s, wsName)};
+  const opt = statOnly && optPageOpen(s) ? optPageView(s, null) : null;
   // its actions on the title line: the optimizer, then deleting it
-  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s)};
+  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s), prev: prevOf(s)};
   // a job ability's set on sets.precast.JA that no piece of the game can boost: nothing to optimize here, the gear it
   // wears is sets.precast.JA's (stat_opt.js jaOverlayBase, jaBoostable)
   if (acts.opt && jaOverlayBase(s) && !jaBoostable(s)) {
@@ -186,8 +286,10 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   }
   // a family's note and a base set's go under the gear, where nothing is left to push down
   const notes = {fam: card.variants.some((v: LegacyAny) => familyNote(v.set)) ? {textHtml: familyNote(s), none: !familyNote(s)} : null,
-    base: locked && !ws ? t('baseOnly', {l: (data() as LegacyAny).sets.filter((x: LegacyAny) => x.base === s.path).map((x: LegacyAny) => shortPath(x.path)).join(', ')}) : ''};
-  const trial = trialBarView(s), equip = equipOf(), wantsHtml = ui2Wants(s);
+    base: locked && !ws ? baseNote(s) : ''};
+  // goals and limits only on a set the optimizer takes: a base others are built from (sets.Cure) is never worn alone,
+  // its figures would be judged against limits it is never held to
+  const trial = trialBarView(s), equip = equipOf(), chips = ws || !optable ? null : chipsOf(s), wantsHtml = chips ? '' : ui2Wants(s);
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view};
+  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s)};
 }

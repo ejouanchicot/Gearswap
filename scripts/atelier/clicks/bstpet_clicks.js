@@ -7,7 +7,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 1000});
   page.on('pageerror', e => errs.push(e.message)); page.on('dialog', d => d.accept());
-  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}})); } catch (e) {} });
+  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}, boxOpen: {optset: true, optobjs: true}})); } catch (e) {} });
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => window.__atelier && window.__atelier.loaded); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
@@ -21,12 +21,12 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const open = p => { S.selPath[S.job] = p; render(); const b = document.querySelector('.detail [data-optview]'); if (b) b.click(); };
   for (const p of ['sets.pet.engaged', 'sets.pet.engaged.PDT'])
     await step(p, open, p, p => {
-      const s = data().sets.find(x => x.path === p), f = statFigures(s), fl = document.querySelector('.oppage [data-statfloor="petAccBase"]');
-      const shown = [...document.querySelectorAll('.oppage [data-statobj]')].length;
-      return 'page ' + !!document.querySelector('.oppage') + ', objectives ' + statOpts(s).objs.join(' > ') + ', objectives shown ' + shown + ', base tile ' + (fl ? fl.value : 'none')
+      const s = data().sets.find(x => x.path === p), f = statFigures(s), fl = document.querySelector(':is(.oppage, .optcolumn) [data-statfloor="petAccBase"]');
+      const shown = [...document.querySelectorAll(':is(.oppage, .optcolumn) [data-statobj]')].length;
+      return 'page ' + !!document.querySelector(':is(.oppage, .optcolumn)') + ', objectives ' + statOpts(s).objs.join(' > ') + ', objectives shown ' + shown + ', base tile ' + (fl ? fl.value : 'none')
         + ', pet lv ' + f.petLv + ' acc ' + f.petAccAll + ' (counted ' + f.petAcc + ') atk ' + f.petAtk + ' haste ' + f.petHaste + ' dt ' + f.petDt; }, 600);
   await step('sets.pet.engagedBoth', open, 'sets.pet.engagedBoth',
-    p => 'page ' + !!document.querySelector('.oppage') + ', engaged objectives ' + document.querySelectorAll('.oppage [data-optobj="engObj"]').length + ', pet DT pass ' + isPetBoth(data().sets.find(x => x.path === p)), 600);
+    p => 'page ' + !!document.querySelector(':is(.oppage, .optcolumn)') + ', engaged objectives ' + document.querySelectorAll(':is(.oppage, .optcolumn) [data-optobj="engObj"]').length + ', pet DT pass ' + isPetBoth(data().sets.find(x => x.path === p)), 600);
   await step('stats search on sets.pet.engaged', p => { S.selPath[S.job] = p; render(); S._optScratch = false; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); }, 'sets.pet.engaged', () => 'busy ' + !!S._optBusy, 500);
   for (let i = 0; i < 240 && await page.evaluate(() => !!S._optBusy); i++) await wait(500);
   await wait(1500);

@@ -317,6 +317,7 @@ declare function fmtDmg(n: number): string;
 declare function shortPath(path: string): string;
 declare function family(path: string, pieces?: unknown): string;
 declare function cardFamily(path: string, pieces?: unknown): string;
+declare const statFmt: (k: string) => (v: unknown) => string;
 declare function jaOverlayBase(s: LegacyAny): LegacyAny;
 declare function jaBoostable(s: LegacyAny): boolean;
 declare function overlaySet(s: LegacyAny): boolean;
@@ -344,6 +345,7 @@ declare function variantGroups(card: LegacyAny): {groups: Map<string, LegacyAny>
 declare function withWeapons(s: LegacyAny, mode?: string): LegacyAny;
 declare function ownedOf(): Record<string, LegacyAny[]>;
 declare function baseOnly(s: LegacyAny): boolean;
+declare function baseReach(s: LegacyAny): Array<{path: string; slots: string[]}>;
 declare function isNukeSet(path: string): boolean;
 declare function statSet(s: LegacyAny): boolean;
 declare function optPageOpen(s: LegacyAny): boolean;

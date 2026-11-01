@@ -71,11 +71,13 @@ Order in which idle is built: town set or stance set, then the weapon, then `set
 then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the stance's shield from
 `PLD_WEAPONS.lua` and the Hoxne ammo.
 
-**In town**, PLD wears `sets.idle` with `sets.idle.Town` on top (`sets.Adoulin` in Adoulin) plus your weapon and the
+**In town**, PLD wears `sets.idle` with `sets.idle.Town` on top (and `sets.Adoulin` over it in Adoulin) plus your weapon and the
 shield of your stance's idle set (Alber Strap with Shining; the stance's shield from
 `PLD_WEAPONS.lua` and the Hoxne ammo still apply), and nothing else: no stance set, no `Xp`, no `Regen`,
-no `sets.MoveSpeed`. In the provided file `sets.idle.Town` is only the movement-speed
-legs, so the other slots keep your `sets.idle` pieces.
+no `sets.MoveSpeed`. In the provided file `sets.idle.Town` is a set of its own built on
+`sets.MoveSpeed` (`set_combine(sets.MoveSpeed, {})`): the movement-speed legs, the other
+slots yours to fill for the city (no hits taken there). `sets.idle` is only the table the
+idle sets hang from, and the Atelier does not list it.
 
 ## Engaged
 
@@ -190,11 +192,12 @@ Normal lookup (spell name, name without tier, family, then
 |---|---|
 | `sets.midcast['Divine Magic']` | Banish, Holy... (not Flash or Enlight, handled above). A spell with its own set (`sets.midcast.Banishga`) uses that |
 | `sets.midcast.Cocoon` | Cocoon (/BLU) |
-| `sets.midcast['Blue Magic']` | Any other blue spell. Provided by name: Jettatura, Geist Wall, Sheep Song, Frightful Roar, Cold Wave, Stinking Gas, Blank Gaze |
+| `sets.midcast['Blue Magic']` | Any other blue spell. Provided by name: Jettatura, Geist Wall, Sheep Song, Frightful Roar, Cold Wave, Stinking Gas, Blank Gaze, Sound Blast, Soporific, Metallic Body |
 
 A blue spell without a set of its own and without `sets.midcast['Blue Magic']` keeps its
-Fast Cast gear during the cast (Sound Blast and Soporific in the provided file, both in
-the `//gs c aoe` rotation).
+Fast Cast gear during the cast. In the provided file every spell of the `//gs c aoe`
+rotation has one (`sets.midcast.SIRDEnmity`); the Atelier lists them under that set, in
+the Enmity family.
 
 ## What the job does by itself
 

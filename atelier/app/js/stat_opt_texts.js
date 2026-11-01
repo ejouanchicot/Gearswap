@@ -28,7 +28,7 @@ Object.assign(T.fr, {
   statEnhSelf: 'sur toi sous Composure (×3, 30 min au plus)', statEnhOthers: 'sur les autres sous Composure (bonus du set Lethargy)', statEnhPlain: 'sans Composure',
   statObj_def: 'DEF', statObj_hp: 'HP', statObj_enmity: 'Enmity', statObj_phalanx: 'Phalanx', statObj_fc: 'Fast Cast', statObj_sird: 'SIRD',
   statObj_cmp: 'Conserve MP', statD_cmp: 'chance de payer moins de MP (6,25 à 50 % de moins) : équipement + trait du job (GEO, BLM, SCH), 100 % au plus',
-  statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts physiques reçus', statObj_mdtRed: 'Dégâts magiques reçus',
+  statObj_meva: 'Évasion magique', statObj_mdb: 'Bonus déf. magique', statObj_pdtRed: 'Dégâts phys. reçus', statObj_mdtRed: 'Dégâts mag. reçus',
   statObj_ecritRed: 'Critiques ennemis', statObj_cure: 'Cure potency', statObj_refresh: 'Refresh', statObj_regen: 'Regen',
   statObj_cureOther: 'Soin du Cure', statD_cureOther: 'HP soignés par le meilleur Cure que ton job lance (Cure VI sur WHM, Cure IV sur RDM, PLD, SCH) : MND, VIT, skill de soin et Cure Potency I (50 % au plus) et II (30 %), formule de BG Wiki (vérifiée en jeu sur le PLD) ; le Cure potency received de la cible n’est pas compté',
   cbTitle: 'Soin', cbHeal: '{s}', cbHealX: 'HP soignés', cbCp: 'Cure potency', cbCp2: 'Cure potency II', cbOf: 'sur {m} %',
@@ -51,9 +51,10 @@ Object.assign(T.fr, {
   statObj_hpLow: 'HP les plus bas', statD_hpLow: 'Fast Cast d’un Cure sur toi : HP bas, le set de Cure les remonte et le Cure remplit l’écart',
   statKeepOwn: 'Garder la pièce de la JA ({p})', statKeepOwnTip: 'Les pièces dont la description nomme {b} restent : la recherche choisit le reste.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP du set moins ceux du Fast Cast {f} ({h} HP), le set classique le plus bas en HP, porté avant chaque sort : '
-    + 'les autres sets visent entre lui et lui + 200 pour qu’un changement de set ne fasse pas perdre de HP (guide Paladin, HP Management : écart de 200 au plus).',
+    + 'c’est le plafond : les autres sets visent entre lui − 100 et lui. Passer au Fast Cast avant un sort ne coupe jamais tes HP, et passer d’un set à l’autre en coupe 100 au plus.',
   statRefLine: 'HP de référence : {h} (Fast Cast {f}) · les sets tank visent {a} à {b}.',
-  figSheetTab: 'Stats du set', cyTitle: 'Cycle des HP',
+  paneSet: 'Set', luaAllInherited: 'tout vient de {b}', legendBtn: 'Légende', figSumTitle: 'Résumé', figSumBack: 'Résumé', figSumEmpty: 'Aucune pièce dans ce set.', wLine: 'Armes', tryHead: 'Essai en cours · pas encore dans GearSwap', tryHeadSaved: 'Changements', wChange: 'Changer', headObjs: 'Objectifs', headFloors: 'Seuils à tenir', headFloorsTip: 'Les limites que l’optimiseur garde : vert = tenu, rouge = pas tenu', floorPdt: 'DT + PDT I', floorMdt: 'DT + MDT I', floorCap: 'cap {v}', floorOver: '{n} en trop (perdus : le plafond est atteint)', capTotal: 'max −87,5 %', floorMax: 'max {v}', floorMin: 'min {v}', floorRange: '{a} à {b}',
+  optSettings: 'Réglages de la recherche', figSheetTab: 'Stats du set', figAllTab: 'Perso', optObjsShow: 'changer', optObjsHide: 'replier la liste', cyTitle: 'Cycle des HP',
   jaNoPiece: 'Aucune pièce du jeu ne renforce {a} : ce set porte celles de {b}, c’est lui qu’il faut optimiser.', cyNote: 'HP max de chaque set, repos {n} ({i}) → precast → midcast → repos. Passer à un set plus bas fait tomber tes HP, '
     + 'revenir ne les rend pas : la perte, c’est ce qui manque en revenant au repos (avant tout soin). Le guide vise 200 d’écart au plus. Tes pièces à l’essai comptent.',
   cyIdleHigh: 'Ton repos est {n} au-dessus : chaque sort te coûte cette différence.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Perte', cyOnPurpose: 'voulu',
@@ -139,9 +140,10 @@ Object.assign(T.en, {
   statObj_hpLow: 'Lowest HP', statD_hpLow: 'Fast Cast of a Cure on yourself: low HP, the Cure set raises them and the Cure fills the gap',
   statKeepOwn: 'Keep the ability’s piece ({p})', statKeepOwnTip: 'The pieces whose description names {b} stay: the search picks the rest.',
   statRef: 'HP vs Fast Cast', statRefTip: 'HP of the set minus those of the Fast Cast {f} ({h} HP), the lowest classic set in HP, worn before every spell: '
-    + 'the other sets aim between it and it + 200 so a set change loses no HP (Paladin guide, HP Management: 200 apart at most).',
+    + 'it is the ceiling: the other sets aim between it − 100 and it. Going to the Fast Cast before a spell never cuts your HP, and going from a set to another cuts 100 at most.',
   statRefLine: 'Reference HP: {h} (Fast Cast {f}) · the tank sets aim at {a} to {b}.',
-  figSheetTab: 'Set stats', cyTitle: 'HP cycle',
+  paneSet: 'Set', luaAllInherited: 'all from {b}', legendBtn: 'Legend', figSumTitle: 'Summary', figSumBack: 'Summary', figSumEmpty: 'No piece in this set.', wLine: 'Weapons', tryHead: 'Trial · not in GearSwap yet', tryHeadSaved: 'Changes', wChange: 'Change', headObjs: 'Goals', headFloors: 'Limits held', headFloorsTip: 'The limits the optimizer keeps: green = held, red = not held', floorPdt: 'DT + PDT I', floorMdt: 'DT + MDT I', floorCap: 'cap {v}', floorOver: '{n} over (lost: the cap is reached)', capTotal: 'max −87.5 %', floorMax: 'max {v}', floorMin: 'min {v}', floorRange: '{a} to {b}',
+  optSettings: 'Search settings', figSheetTab: 'Set stats', figAllTab: 'Character', optObjsShow: 'change', optObjsHide: 'fold the list', cyTitle: 'HP cycle',
   jaNoPiece: 'No piece of the game boosts {a}: this set wears {b}’s, that is the one to optimize.', cyNote: 'Max HP of each set, idle {n} ({i}) → precast → midcast → idle. Going to a lower set drops your HP, coming back '
     + 'does not give them back: the loss is what is missing back at idle (before any heal). The guide aims at 200 apart at most. Your trial pieces count.',
   cyIdleHigh: 'Your idle is {n} above it: every spell costs you that difference.', cyAct: 'Action', cyPre: 'Precast', cyMid: 'Midcast', cyLoss: 'Loss', cyOnPurpose: 'on purpose',

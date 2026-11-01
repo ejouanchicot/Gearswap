@@ -118,7 +118,7 @@ sets['Blurred Shield +1'] = {sub = 'Blurred Shield +1'}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Idle Set (Foundation for all idle variants)
--- Held in a local, and copied into sets.idle rather than being it. Every
+-- Held in a local, not in sets.idle (left empty, see below). Every
 -- variant below attaches itself as a key on sets.idle (sets.idle.PDT, .MDT,
 -- .Town), and set_combine copies every key of its source - so deriving from
 -- sets.idle would carry those variants into the derived set as slots that are
@@ -140,7 +140,10 @@ local IdleBase = {
     back = Rudianos.tank -- PDT -10%, VIT+20, Enmity+10
 }
 
-sets.idle = set_combine(IdleBase, {})
+-- • sets.idle: left empty on purpose. GearSwap never wears it by itself: outside town the stance lays its idle
+--   set over it (idle.PDT / idle.MDT, every slot), in a city sets.idle.Town does (shared/jobs/pld/functions/logic/
+--   set_builder.lua build_idle_set). It only holds .PDT, .MDT and .Town; the Atelier leaves it out of its list.
+sets.idle = {}
 
 -- • PDT Idle (Physical Defense)
 sets.idle.PDT =
@@ -779,9 +782,9 @@ sets.MoveSpeed = {
     legs = 'Carmine Cuisses +1' -- Common item for speed
 }
 
--- • Town Idle: what you wear in a city (the stance's idle sets are for outside), laid over sets.idle; built on the
---   movement set, fill the other slots as you like (no hits taken there)
-sets.idle.Town = set_combine(sets.MoveSpeed, {})
+-- • Town Idle: what you wear in a city (the stance's idle sets are for outside); sets.idle under it is empty, so
+--   it starts from the base idle pieces and the movement set: change the slots as you like (no hits taken there)
+sets.idle.Town = set_combine(IdleBase, sets.MoveSpeed, {})
 
 -- • Adoulin Movement (City-specific speed boost)
 -- Councilor's Garb: Movement speed +25% in Adoulin only. Only the fastest piece of

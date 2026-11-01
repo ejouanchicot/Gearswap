@@ -88,7 +88,12 @@ function trialSaved(s){
 // change it nor count another piece there. Kept by set, in the browser; never written to a file. The hands and the
 // ranged slot are the weapon menus' (the optimizers keep them unless "Free weapons").
 const LOCKABLE = slot => !['main', 'sub', 'range'].includes(slot);
-const lockedSlots = s => Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
+// (a base set, sets.Cure: the slots no set built on it wears count as locked, the optimizer leaves them as they are:
+// a piece found for them would change nothing in game. core.js baseReach)
+const lockedSlots = s => { const own = Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
+  if (!baseOnly(s)) return own;
+  const reached = new Set(baseReach(s).flatMap(r => r.slots));
+  return [...new Set(own.concat(SLOTS.filter(x => LOCKABLE(x) && !reached.has(x))))]; };
 const isLocked = (s, slot) => !!((S.locks || {})[trialKey(s)] || {})[slot];
 function toggleLock(s, slot){
   const k = trialKey(s), mine = Object.assign({}, (S.locks || {})[k]);

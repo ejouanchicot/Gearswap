@@ -195,14 +195,16 @@ function render(){
 // A block whose size follows its content (the set's own figures: an attack block, a tank's defense block, both) is
 // given the tallest size it ever had for this character and job at this width: after the tallest set was seen once,
 // nothing under it moves again, in this visit and the next ones (S.shapes, kept in the browser)
-const SHAPES = {own: '.globalcol .ui2own', top: '.setsx.ui2 .detail > header:not(.ophead) > .settop'};
+// (not the set's head since 2026-11-01: kept at the tallest it had, it left an empty band under a short head)
+const SHAPES = {own: '.globalcol .ui2own'};
 function shapeKeep(){
   S.shapes = S.shapes || {};
   let learnt = false;
   for (const [key, q] of Object.entries(SHAPES)) {
     const el = $(q);
     if (!el || !el.clientWidth) continue;
-    const k = [S.char, S.job, key, Math.round(el.clientWidth / 40)].join('|');
+    // (v2: the head of 2026-11-01, chips and no empty rows: the heights learnt before belong to the old one)
+    const k = [S.char, S.job, key, 'v2', Math.round(el.clientWidth / 40)].join('|');
     el.style.minHeight = '';
     const h = Math.ceil(el.getBoundingClientRect().height);
     if (h > (S.shapes[k] || 0)) { S.shapes[k] = h; learnt = true; }

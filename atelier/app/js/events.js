@@ -30,10 +30,8 @@ document.addEventListener('click', e => {
   if (d.jobtab) { S.jobTab = d.jobtab; save(); render(); return; }
   if (d.pick) { S.sel[S.job] = +d.pick; if (d.vpick != null) S.variant[S.job+'|'+d.pick] = +d.vpick; render(); return; }
   if (d.variant) { S.variant[S.job+'|'+d.card] = +d.variant; render(); return; }
-  // a base set (sets.Cure: never worn, only built on) is shown, not changed
   if ('equipset' in d) { equipShownSet(); return; }
   if (d.slot) { const c = S._cards[+d.card], v = c && c.variants[Math.min(S.variant[S.job + '|' + d.card] ?? 0, c.variants.length - 1)];
-    if (v && baseOnly(v.set)) { S.toast = t('baseOnlyToast'); render(); return; }
     // the slot's menu (choose, lock, empty); Ctrl+click locks or unlocks at once
     if ((e.ctrlKey || e.metaKey) && LOCKABLE(d.slot)) { toggleLock(v.set, d.slot); render(); return; }
     openSlotMenu(b, +d.card, d.slot); return; }
@@ -78,6 +76,8 @@ document.addEventListener('click', e => {
   if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
   if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
+  // the objectives' list of the stats optimizer beside the set, folded but the first (StatPage.svelte compact)
+  if ('optobjs' in d) { S._optObjsOpen = !S._optObjsOpen; render(); return; }
   // the page's subjob set to the game's (atelier/src/screens/sets/sets.ts subWarn)
   if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; render(); return; }
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)

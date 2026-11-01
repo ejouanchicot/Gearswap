@@ -7,7 +7,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 900});
   page.on('pageerror', e => errs.push(e.message));
-  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}})); } catch (e) {} });
+  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}, boxOpen: {figtab: 'all'}})); } catch (e) {} });
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
@@ -16,12 +16,12 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   await page.evaluate(() => { S.motion = false; S._ui2AllOpen = true; S.boxOpen = Object.assign({}, S.boxOpen, {you: true, attr: true, caps: true}); }); 
   for (const [c, j] of [['Tetsouo', 'WAR'], ['Tetsouo', 'PLD'], ['Kaories', 'COR'], ['Tetsouo', 'BLM'], ['Hysoka', 'RUN']]) {
     await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render(); }, c, j); await wait(400);
-    out.push(`${c} ${j} sets: ` + await read('.ui2all .globals'));
+    out.push(`${c} ${j} sets: ` + await read('.globalcol .figpage .figall'));
     await page.evaluate(() => { S.section = 'perso'; S.persoView = 'stats'; render(); }); await wait(400);
     out.push(`${c} ${j} perso: ` + await read('.persogrid'));
   }
-  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); document.querySelector('.ui2all [data-fold="attr"]').click(); }); await wait(300);
-  out.push('folded attr: ' + await read('.ui2all .globals'));
+  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); const f = document.querySelector('.globalcol .figpage [data-fold="attr"]'); if (f) f.click(); }); await wait(300);
+  out.push('attr (the Perso tab does not fold) : ' + await read('.globalcol .figpage .figall'));
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();
 })();

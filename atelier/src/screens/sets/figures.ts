@@ -23,6 +23,8 @@ export interface FiguresView {
   luopan: LuopanView | null;
   sheet: SheetView | null;
   sheetTab: string;
+  allTab: string;
+  summaryTitle: string; summaryBack: string; emptyNote: string;
   all: {open: boolean; title: string; label: string; globals: GlobalsView};
 }
 
@@ -265,5 +267,5 @@ export function figuresView(s: LegacyAny): FiguresView {
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
   const hp = hpCycle(s), luopan = luopanOf(s), sheet = sheetView(s);
-  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), all};
+  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), allTab: t('figAllTab'), summaryTitle: t('figSumTitle'), summaryBack: t('figSumBack'), emptyNote: t('figSumEmpty'), all};
 }

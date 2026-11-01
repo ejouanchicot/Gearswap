@@ -8,6 +8,9 @@
 
 Object.assign(T.fr, {
   baseOnly: 'Jamais porté : GearSwap ne met jamais ce set, il sert seulement de base à {l}. Changer une pièce ici changerait ces sets-là : modifie-les eux.',
+baseReachNote: 'Set de base, jamais porté seul. Seuls ces emplacements arrivent en jeu — {l}. Les autres (grisés) sont remplacés par les sets qui en héritent.',
+baseNone: 'Set de base, jamais porté seul : chaque set qui en hérite remplace tous ses emplacements, aucune de ses pièces n’arrive en jeu.',
+baseUnreached: 'jamais porté (remplacé par les sets qui en héritent)',
   baseOnlyToast: 'Set de base, jamais porté : modifie plutôt les sets qui en héritent.',
   porterTitle: 'PorterPacker', porterOk: 'à jour', porterToDo: '{n} à revoir',
   porterIntro: 'Sa liste « unpack » ({f}) : ce que PorterPacker sort pour ce job, et ne range pas quand tu changes de job.',
@@ -23,6 +26,9 @@ Object.assign(T.fr, {
 });
 Object.assign(T.en, {
   baseOnly: 'Never worn: GearSwap never puts this set on, it is only the base of {l}. A piece changed here would change those sets: change them instead.',
+baseReachNote: 'A base set, never worn alone. Only these slots reach the game — {l}. The others (dimmed) are replaced by the sets built on it.',
+baseNone: 'A base set, never worn alone: every set built on it replaces all its slots, none of its pieces reaches the game.',
+baseUnreached: 'never worn (replaced by the sets built on it)',
   baseOnlyToast: 'A base set, never worn: change the sets built on it instead.',
   porterTitle: 'PorterPacker', porterOk: 'up to date', porterToDo: '{n} to review',
   porterIntro: 'Its unpack list ({f}): what PorterPacker takes out for this job, and keeps out when you change jobs.',

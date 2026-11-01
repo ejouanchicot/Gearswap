@@ -25,8 +25,10 @@ const STAT_PCT = new Set(['holyWater', 'absorb', 'fc', 'sird', 'cmp', 'pdtRed', 
 // a spell's length reads as minutes and seconds (12:36)
 const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}`;
 // (the least enmity is ranked by its opposite: shown as the Enmity it is)
+// the figures kept as a reduction (68 = 68 % less damage taken): written as the game writes them, "−68 %"
+const STAT_NEG = new Set(['ecritRed', 'pdtRed', 'mdtRed']);
 const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' || k === 'charmDur' ? enhTimeText(v)
-  : (k === 'ecritRed' && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
+  : (STAT_NEG.has(k) && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
 // the weapon sets
@@ -238,6 +240,8 @@ function statOpts(s){
 const healerCure = s => !['PLD', 'RUN'].includes(S.job) && family(s.path, s.pieces) === 'midcast' && !/self|sird/i.test(setNames(s))
   && (/cur(e|a|aga)/i.test(setNames(s)) || /healing magic/i.test(s.path));
 function statFloorDefault(s, first){
+  // a base set (sets.Cure, core.js baseOnly) is never worn alone: the sets built on it hold the limits, not it
+  if (baseOnly(s)) return {};
   // SIRD 102 on a set named for it, and on a tank's Cure sets (cast while taking hits)
   const fam = family(s.path, s.pieces), cureSet = fam === 'midcast' && /cur(e|a)/i.test(setNames(s)) && ['PLD', 'RUN'].includes(S.job);
   const sird = /sird/i.test(setNames(s)) || cureSet ? {sird: 102} : {};
@@ -256,8 +260,9 @@ function statFloorDefault(s, first){
   // a movement set: laid over the idle set, which keeps its damage taken (moveSet)
   if (moveSet(s) || doomSet(s)) return {};
   // a job ability's set on sets.precast.JA: only its boosting pieces over the base, worn for the use alone; the base
-  // holds the floors (Rev. Coronet took Cover to DT+PDT -37: "floors not reached", 2026-11-01)
-  if (jaOverlayBase(s)) return {};
+  // holds the damage taken floors (Rev. Coronet took Cover to DT+PDT -37: "floors not reached", 2026-11-01). A tank's
+  // keeps the HP band all the same: a piece that takes it over the Fast Cast cuts HP when the next set goes on
+  if (jaOverlayBase(s)) return hpBand(s);
   if (enmityMaxSet(s)) return {};
   // a BST's Charm set: worn for the ability's instant (bst_pet.js isCharmSet)
   if (isCharmSet(s)) return {};
@@ -266,7 +271,7 @@ function statFloorDefault(s, first){
   const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
-  const ref = hpRef(s), hp = ref && !cureGap(s) ? {hp: ref.hp, hpMax: ref.hp + HP_SPREAD} : {};
+  const hp = hpBand(s);
   // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
   // (Shell V -29.3 %: -21 left to the gear)
   // (not on a Phalanx set: its Phalanx comes first, the damage taken after it as objectives)
@@ -281,13 +286,19 @@ function statFloorDefault(s, first){
   const ecrit = ['idle', 'special'].includes(fam) && need > 0 ? {ecrit: -need} : {};
   return Object.assign(dt, ecrit, sird, hp);
 }
-// The reference HP of a tank's sets (Guide_Paladin HP Management): the lowest of the classic Fast Cast sets
-// (sets.precast.FC and its spells', not the self Cure's, low on purpose), the lowest in HP of the sets worn in the cycle
-// (idle, Fast Cast, midcast or ability, idle) and worn before every spell.
-// Swapping to a set with fewer max HP cuts the current HP, and swapping back does not give them back: the other sets
-// keep within HP_SPREAD over it (the guide: idle 3197, Fast Cast 3044, Full Enmity 3045). Not for the Fast Cast sets
+// The reference HP of a tank's sets: the lowest of the classic Fast Cast sets (sets.precast.FC and its spells', not
+// the self Cure's, low on purpose), worn before every spell.
+// Swapping to a set with fewer max HP cuts the current HP, and swapping back does not give them back. The Fast Cast is
+// the ceiling (the player's rule, 2026-11-01): going to it before a spell never cuts HP, and the other sets keep within
+// HP_SPREAD under it, so going from one to another cuts 100 at most (Guide_Paladin HP Management put the Fast Cast at
+// the bottom, the others up to 200 over it: every spell then cut what they had over it). Not for the Fast Cast sets
 // themselves, nor the self Cure pair (its gap is on purpose: cureGap). {hp, path} or null
-const HP_SPREAD = 200;
+const HP_SPREAD = 100;
+// A tank's set between HP_SPREAD under the Fast Cast and the Fast Cast ({hp, hpMax} as floors), or none
+function hpBand(s){
+  const ref = ['PLD', 'RUN'].includes(S.job) ? hpRef(s) : null;
+  return ref && !cureGap(s) ? {hp: ref.hp - HP_SPREAD, hpMax: ref.hp} : {};
+}
 function hpRef(s){
   if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) === 'fc') return null;
   const d = data(), list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
@@ -704,17 +715,20 @@ function statRows(s){
   const lim = {hp: v => (!on('hp') || v >= fl.hp) && (!on('hpMax') || v <= fl.hpMax), sird: v => !on('sird') || v >= fl.sird, fc: v => !on('fc') || v >= fl.fc,
     ecritRed: v => !on('ecrit') || -v <= fl.ecrit, enmity: v => !on('enmity') || v >= fl.enmity, phalanx: v => !on('phalanx') || v >= fl.phalanx,
     ceLoss: v => !on('ceLoss') || v >= fl.ceLoss, luDt: v => !on('luDt') || v >= fl.luDt};
-  for (const r of rows) if (lim[r.id]) r.floor = lim[r.id];
-  rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null},
-    {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null});
+  // (r.on: a floor given a value, the line kept in the short result beside the set: statpage.ts)
+  const onOf = {hp: ['hp', 'hpMax'], sird: ['sird'], fc: ['fc'], ecritRed: ['ecrit'], enmity: ['enmity'], phalanx: ['phalanx'], ceLoss: ['ceLoss'], luDt: ['luDt']};
+  for (const r of rows) if (lim[r.id]) { r.floor = lim[r.id]; r.on = onOf[r.id].some(on); }
+  rows.push({id: 'pdt', label: on('pdt') ? `DT+PDT ≤ ${fl.pdt}` : 'DT+PDT', get: f => f.pdt, fmt: v => String(Math.round(v)), low: true, floor: on('pdt') ? v => v <= fl.pdt : null, on: !!on('pdt')},
+    {id: 'mdt', label: on('mdt') ? `DT+MDT ≤ ${fl.mdt}` : 'DT+MDT', get: f => f.mdt, fmt: v => String(Math.round(v)), low: true, floor: on('mdt') ? v => v <= fl.mdt : null, on: !!on('mdt')});
   // the enmity each action of the set makes with it (its Enmity counted, cap x3)
   for (const n of setActions(s).slice(0, 4)) { const [ve, ce] = ACTION_ENMITY[n];
     rows.push({id: 'act:' + n, label: t('statAct', {a: n}), get: f => ve * (1 + f.enmity / 100), fmt: v => `${Math.round(v)} VE · ${Math.round(v * ce / ve)} CE`,
       tip: t('statActTip', {a: n, ve, ce})}); }
-  const pair = cureGap(s), ref = pair ? null : hpRef(s);
+  // (the gap to the Fast Cast only on a set held to the HP band: not on one laid over another, sets.Adoulin)
+  const pair = cureGap(s), ref = pair || !(on('hp') || on('hpMax')) ? null : hpRef(s);
   if (pair && family(s.path, s.pieces) !== 'fc') rows.push({id: 'cure4', label: t('statCure4'), get: f => f.cureIV, fmt: v => String(Math.round(v)), tip: t('statCure4Tip')});
   if (ref) rows.push({id: 'ref', label: t('statRef'), get: f => f.hp - ref.hp, fmt: v => (v > 0 ? '+' : '') + Math.round(v), tip: t('statRefTip', {f: shortPath(ref.path), h: ref.hp}),
-    floor: v => v >= 0 && v <= HP_SPREAD});
+    floor: v => v <= 0 && v >= -HP_SPREAD});
   rows.push(...enfRows(s));
   if (pair) rows.push({id: 'gap', label: t('statGap'), get: f => pair.gap(f), fmt: v => String(Math.round(v)), tip: t('statGapTip', {m: shortPath(pair.mid), f: shortPath(pair.pre)})});
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);

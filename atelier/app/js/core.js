@@ -262,10 +262,23 @@ function cardFamily(path, pieces){
   return f;
 }
 // A Cure set named at the top (sets.Cure) that other sets are built on: never worn (GearSwap wears the sets.midcast
-// and sets.precast ones, no job's code names it), only inherited from; the page shows it and does not change it
+// and sets.precast ones, no job's code names it), only inherited from. It is changed and optimized as any set; its card
+// says which of its slots reach the game (baseReach)
 function baseOnly(s){
   const d = data();
   return !!s && /^sets(\.\w+|\["[^"]+"\])$/.test(s.path) && CURE_SET.test(s.path) && !!d && d.sets.some(x => x.base === s.path);
+}
+// The slots of a base set that reach the game: for each set built on it (and on those, down the chain), the slots it
+// does not set itself, [{path, slots}] in the export's order. A slot every heir sets is never worn from the base
+function baseReach(s){
+  const d = data(), out = [];
+  if (!s || !d) return out;
+  const walk = (path, slots) => d.sets.filter(x => x.base === path).forEach(h => {
+    const own = new Set(h.own || Object.keys(h.pieces || {})), pass = slots.filter(x => !own.has(x));
+    if (pass.length) { out.push({path: h.path, slots: pass}); walk(h.path, pass); }
+  });
+  walk(s.path, Object.keys(s.pieces || {}));
+  return out;
 }
 function segs(path){ return path.match(/\.[\w-]+|\["[^"]+"\]/g).map(s => s.startsWith('.') ? s.slice(1) : s.slice(2,-2)); }
 function shortPath(p){ return p ? p.replace(/^sets\./,'') : ''; }
