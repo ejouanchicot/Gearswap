@@ -63,6 +63,9 @@ Object.assign(T.en, {
   awAlsoFirst: 'GearSwap reads first: {p}', awCreate: 'create', awExists: 'there · open', awExpertTitle: 'Every possible name',
   awNoWay: 'The game must be linked to create a set.', awParent: 'Create {p} first: this set goes in it.'});
 
+// The spells a piece gives (shared/utils/atelier/set_catalog.lua GEAR_SPELLS): offered only to a character holding one
+const AW_GEAR_SPELLS = {Dispelga: ['Daybreak'], Impact: ['Twilight Cloak', 'Crepuscular Cloak'], 'Honor March': ['Marsyas'], 'Aria of Passion': ['Loughnashade']};
+const awHolds = names => { const o = ownedOf() || {}; return Object.values(o).some(list => (list || []).some(x => names.includes(x.name))); };
 // The keys of a set's path that only say where it is (the family's root)
 const AW_ROOT = new Set(['midcast', 'precast', 'FC', 'WS', 'JA', 'RA']);
 const AW_PROFILES = new Set(['Group', 'Solo', 'Trust']);
@@ -138,6 +141,7 @@ function awSituations(){
     if (subj.kind === 'spell' && !subj.school && typeof SPELL_SKILL === 'object') {
       const sk = SPELL_SKILL[subj.name] || SPELL_SKILL[subj.name + ' II'] || SPELL_SKILL[tier || ''];
       if (sk && sk !== '(N/A)') subj.school = sk; }
+    if (subj.kind === 'spell' && AW_GEAR_SPELLS[subj.name] && !isThere(e) && !awHolds(AW_GEAR_SPELLS[subj.name])) continue;
     list.push({e, fam: catFamily(e), subject: subj, q, tier});
   }
   AW_CACHE = {cat, list};
@@ -184,14 +188,19 @@ function awClick(d){
   if (d.awfam) { Object.assign(A, {fam: d.awfam, step: 1, subj: null, ans: {}, expert: false, q: '', tab: null, sub: null}); awRender(); return true; }
   if (d.awtab != null) { Object.assign(A, {tab: d.awtab, sub: null}); awRender(); return true; }
   if (d.awsub != null) { A.sub = d.awsub; awRender(); return true; }
-  if (d.awsubj) { Object.assign(A, {subj: d.awsubj, ans: {}}); A.step = awQuestions(awOfSubject()).length ? 2 : 3; awRender(); return true; }
+  if (d.awsubj && d.awsubj.startsWith('addw:')) { const [, mode, ...n] = d.awsubj.split(':'), name = n.join(':');
+    A.addw = awWeaponChoices().find(x => x.mode === mode && x.name === name) || null; A.step = 3; awRender(); return true; }
+  if (d.awsubj) { Object.assign(A, {subj: d.awsubj, ans: {}, addw: null}); A.step = awQuestions(awOfSubject()).length ? 2 : 3; awRender(); return true; }
   if (d.awans) { const [k, ...v] = d.awans.split(':'); A.ans[k] = v.join(':'); awRender(); return true; }
   if ('awnext' in d) { A.step = 3; awRender(); return true; }
   if ('awexpert' in d) { A.expert = !A.expert; awRender(); return true; }
   if (d.awpick) { const x = (awSituations() || []).find(y => y.e.path === d.awpick); if (x) { Object.assign(A, {subj: awSubjKey(x.subject), ans: Object.fromEntries(['target', 'buff', 'scope', 'profile', 'variant'].map(k => [k, x.q[k] || '']).concat([['mode', x.q.mode ? x.q.mode.state + '=' + x.q.mode.value : '']])), step: 3, expert: false, pick: x.e.path}); awRender(); } return true; }
   if (d.awfrom) { addPath = A.path; addFrom(d.awfrom, A.base); return true; }
+  if ('awaddw' in d) { awAddWeapon(); return true; }
+  if ('awdelw' in d) { awDelWeapon(); return true; }
   if ('back' in d && $('#overlay .awdlg')) {
     if (A.expert) A.expert = false;
+    else if (A.step === 3 && A.addw) { A.addw = null; A.step = 1; }
     else if (A.step === 3) A.step = awQuestions(awOfSubject()).length ? 2 : 1;
     else A.step = Math.max(0, A.step - 1);
     A.pick = null; awRender(); return true; }
@@ -204,4 +213,70 @@ function awFilter(q){
   S._aw.q = q; q = q.trim().toLowerCase();
   for (const r of document.querySelectorAll('.awdlg [data-awq]')) r.hidden = !!q && !r.dataset.awq.includes(q);
   for (const g of document.querySelectorAll('.awdlg .awgroup')) g.hidden = ![...g.querySelectorAll('[data-awq]')].some(r => !r.hidden);
+}
+
+/* ---- "Add a weapon" (notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md): a weapon you hold, not in any of the job's
+   weapon cycles, added at the end of one through the Atelier's own layer over the states files
+   (<Char>/atelier/overrides/mode_overrides.lua '+Mode', shared/utils/core/mode_overrides.lua), then its set created ---- */
+Object.assign(T.fr, {awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
+  awAddWhy: 'Le cycle est changé dans atelier/overrides/mode_overrides.lua, par-dessus ton fichier de modes (jamais réécrit) : retirer l’arme le rend tel quel.',
+  awAddGo: 'Ajouter', awAddedSay: '{w} a été ajoutée à ton cycle {m} depuis l’Atelier.', awDelGo: 'Retirer du cycle', awDelWhy: 'Son set reste (supprimable par le menu « ⋯ » du set).',
+  awAdding: 'Ajout au cycle {m}, GearSwap recharge…', awAddFail: 'Le jeu n’a pas pris l’ajout au cycle : rien n’a été créé.', awRemoved: '{w} retirée du cycle {m}.'});
+Object.assign(T.en, {awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
+  awAddWhy: 'The cycle changes in atelier/overrides/mode_overrides.lua, over your modes file (never rewritten): removing the weapon puts it back as it was.',
+  awAddGo: 'Add', awAddedSay: '{w} was added to your {m} cycle from the Atelier.', awDelGo: 'Remove from the cycle', awDelWhy: 'Its set stays (deleted from the set’s “⋯” menu).',
+  awAdding: 'Adding to the {m} cycle, GearSwap reloads…', awAddFail: 'The game did not take the cycle change: nothing was created.', awRemoved: '{w} removed from the {m} cycle.'});
+// The job's weapon cycles and the slot each fills (its values' sets), the values from the states file
+function awWeaponCycles(){
+  const d = data();
+  if (!d) return [];
+  return weaponModes(d).filter(m => !/^slot:/.test(m.name) && !m.onlyEmpty).map(m => {
+    const slots = new Set(m.values.flatMap(v => Object.keys((m.sets[v] || {}).pieces || {})));
+    const slot = ['main', 'sub', 'range', 'ammo'].find(s => slots.has(s));
+    const full = (d.modes.find(x => x.name === m.name) || {}).values || m.values;
+    return slot ? {name: m.name, desc: m.desc || m.name, slot, values: full, sets: m.sets} : null;
+  }).filter(Boolean);
+}
+// The values the Atelier added to a cycle (the layer as the page holds it)
+const awAdded = mode => ((modeOverrides()[S.job] || {})['+' + mode] || []).slice();
+// The weapons you hold that the job wears in a cycle's slot and no cycle holds yet: [{mode, desc, slot, name, added}]
+function awWeaponChoices(){
+  const cycles = awWeaponCycles(), owned = ownedOf() || {}, rows = (catalog() || {}).row || {}, out = [];
+  const held = new Set(cycles.flatMap(c => c.values.flatMap(v => [v].concat(Object.values((c.sets[v] || {}).pieces || {}).map(p => p && p.name)))));
+  const wears = (name, slot) => { const r = rows[name]; return !!r && r[2].split(' ').includes(slot) && r[3].split(' ').includes(S.job); };
+  for (const c of cycles) {
+    const added = new Set(awAdded(c.name));
+    for (const name of [...new Set((owned[c.slot] || []).map(x => x.name))].sort())
+      if (added.has(name) || (!held.has(name) && wears(name, c.slot))) out.push({mode: c.name, desc: c.desc, slot: c.slot, name, added: added.has(name)});
+  }
+  return out;
+}
+const awWeaponPath = name => /^[A-Za-z_]\w*$/.test(name) ? 'sets.' + name : 'sets["' + name + '"]';
+// Add: the layer saved (no reload yet), GearSwap reloaded and waited for (opt_sets.js osReloadWait), then the set's
+// creation as any (push.js createPreview: preview, backup, history): the game's catalog holds the new value by then
+async function awAddWeapon(){
+  const A = S._aw, w = A && A.addw;
+  if (!w || A.busy || !liveWrite()) return;
+  A.busy = true; S.toast = t('awAdding', {m: w.desc}); render();
+  const map = modeOverrides(), scope = S.job, key = '+' + w.mode;
+  map[scope] = map[scope] || {};
+  map[scope][key] = awAdded(w.mode).concat([w.name]);
+  const done = await saveFile('mode_overrides.lua', modesLua(map), true);
+  if (done !== 'live') { A.busy = false; S.toast = t('awAddFail'); render(); return; }
+  S.modeDirty[S.char] = false; S.modeOv[S.char].at = stamp();
+  await osReloadWait();
+  A.busy = false;
+  const path = awWeaponPath(w.name), owned = ownedOf() || {};
+  createPreview(path, [path, '#create', pushLine(pushEntry(w.slot, {name: w.name}, owned))].join('\n') + '\n', null);
+}
+// Remove: the weapon leaves the layer, GearSwap reloads; its set stays
+async function awDelWeapon(){
+  const A = S._aw, w = A && A.addw;
+  if (!w || A.busy) return;
+  const map = modeOverrides(), scope = S.job, key = '+' + w.mode, left = awAdded(w.mode).filter(n => n !== w.name);
+  if (map[scope]) { if (left.length) map[scope][key] = left; else delete map[scope][key]; if (!Object.keys(map[scope]).length) delete map[scope]; }
+  const done = await saveFile('mode_overrides.lua', modesLua(map), false);
+  if (done === null) return;
+  S.modeDirty[S.char] = false; S.modeOv[S.char].at = stamp();
+  S._aw = null; closeOverlay(); S.toast = t('awRemoved', {w: w.name, m: w.desc}); render();
 }

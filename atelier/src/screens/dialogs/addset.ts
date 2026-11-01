@@ -19,6 +19,7 @@ export type AddBody =
   | {kind: 'ask'; questions: Array<{k: string; label: string; opts: AwOpt[]}>; next: string}
   | {kind: 'sum'; say: string; has: null | {path: string; open: string; game: string}; today: string; todayLabel: string; startLabel: string;
       opts: Array<{k: string; a: string; b: string; rec: boolean}>; nameLabel: string; name: string; also: string; alsoList: string[]; file: string; block: string}
+  | {kind: 'addw'; say: string; set: string; why: string; added: boolean; go: string; block: string}
   | {kind: 'expert'; ph: string; groups: Array<{label: string; rows: AwRow[]}>; create: string; open: string}
   | {kind: 'paths'; paths: string[]}
   | {kind: 'html'; html: string};
@@ -119,6 +120,13 @@ function subjectsBody(list: LegacyAny[]): AddBody {
     const packed = new Set(packs.flatMap(p => p.chips));
     return {label, color: colors.get(label) || '', count: String(chips.filter(c => !c.fam && !c.all).length), chips: sorted(chips.filter(c => !c.fam && !packed.has(c))), packs, fams: sorted(chips.filter(c => c.fam))}; });
   out.sort((a, b) => (a.label === t('awSets') ? 1 : 0) - (b.label === t('awSets') ? 1 : 0) || b.chips.length - a.chips.length);
+  // the weapons: a tab "Add a weapon", a sub-tab a cycle (add_wizard.js awWeaponChoices)
+  if (A().fam === 'weapons') {
+    const choices = awWeaponChoices(), modes = [...new Set(choices.map(c => c.desc))];
+    if (choices.length) out.push({label: t('awAddW'), color: '', count: String(choices.length), chips: [],
+      packs: modes.map(m => ({label: m, chips: choices.filter(c => c.desc === m).map(c => ({key: 'addw:' + c.mode + ':' + c.name, label: c.name, tierList: [], tiers: '',
+        has: c.added, q: c.name.toLowerCase(), all: false, fam: false}))})), fams: []});
+  }
   const st = A(), q = (st.q || '').trim().toLowerCase();
   // the search: every school at once, a name or one of its words starting with what is typed (Paralyze, not
   // Barparalyze); the names that start with it first
@@ -217,12 +225,21 @@ function oldBody(cards: LegacyAny[]): AddBody {
   return {kind: 'paths', paths: cards.filter((c: LegacyAny) => c.fam === A().fam).flatMap((c: LegacyAny) => c.variants.map((v: LegacyAny) => v.set.path))};
 }
 
+// The summary of a weapon added to a cycle (add_wizard.js awAddWeapon / awDelWeapon)
+function addwBody(): AddBody {
+  const w = A().addw, cycle = awWeaponCycles().find((c: LegacyAny) => c.name === w.mode), last = cycle && cycle.values.length ? cycle.values[cycle.values.length - 1] : '';
+  const set = `${awWeaponPath(w.name)} = { ${w.slot} = '${w.name}' }`;
+  return w.added ? {kind: 'addw', say: t('awAddedSay', {w: w.name, m: w.desc}), set: '', why: t('awDelWhy'), added: true, go: t('awDelGo'), block: ''}
+    : {kind: 'addw', say: last ? t('awAddSay', {w: w.name, m: w.desc, a: last}) : t('awAddSayFirst', {w: w.name, m: w.desc}), set, why: t('awAddWhy'), added: false,
+      go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay')};
+}
+
 /** The "+ Set" window at its step (add_wizard.js awRender) */
 export function addStepView(): AddSetView {
   const st = A(), list = awSituations(), cards = (S as LegacyAny)._cards || buildCards(data() as LegacyAny).cards;
   const xs = list && st.subj ? awOfSubject() : [];
   const body: AddBody = st.expert && list ? expertBody(list) : st.step === 0 ? famsBody(list, cards) : !list ? oldBody(cards)
-    : st.step === 1 ? subjectsBody(list) : st.step === 2 ? askBody(xs) : sumBody(xs, list);
+    : st.step === 1 ? subjectsBody(list) : st.addw ? addwBody() : st.step === 2 ? askBody(xs) : sumBody(xs, list);
   const steps = ['awStepWhen', 'awStepWhat', 'awStepAsk', 'awStepSum'].map((k, i) => ({label: `${i + 1}. ${t(k)}`, on: i === st.step && !st.expert, done: i < st.step}));
-  return {title: t('awTitle') + (st.subj && xs[0] && st.step >= 2 ? ' · ' + subjLabel(xs[0]) : ''), steps, body, first: st.step === 0 && !st.expert, back: st.expert ? t('awBackToWizard') : t('back'), cancel: t('cancel'), exists: t('exists'), rec: t('awRec')};
+  return {title: t('awTitle') + (st.addw && st.step >= 2 ? ' · ' + st.addw.name : st.subj && xs[0] && st.step >= 2 ? ' · ' + subjLabel(xs[0]) : ''), steps, body, first: st.step === 0 && !st.expert, back: st.expert ? t('awBackToWizard') : t('back'), cancel: t('cancel'), exists: t('exists'), rec: t('awRec')};
 }

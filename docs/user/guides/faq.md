@@ -149,6 +149,14 @@ A set you already have under another name is opened instead of a second one bein
 **See every possible name (experts)** lists every name the job's code reads, one line each,
 with the other spellings GearSwap reads the same way folded under it.
 
+**Add a weapon to a weapon cycle.** A weapon set (`sets.Daybreak`) is only worn while the
+weapon is in one of the job's cycles (Main Weapon, Sub Weapon...). In **+**, **Weapons**,
+the tab **Add a weapon** lists the weapons you hold that the job can wear and that no cycle
+has yet, by cycle. Choosing one adds it at the end of that cycle and creates its set. The
+cycle is changed in `atelier/overrides/mode_overrides.lua` (`['+MainWeapon'] = {'Daybreak'}`),
+laid over your states file, which is never rewritten; the same tab removes it again (its set
+stays). The game must be linked.
+
 **Optimize every set of a job at once.** On the Sets screen, **⚡ Optimize all** (**⚡ Tout
 optimiser** in French, top of the list of sets) searches every set of the job shown, one after the other, each with its own
 goals, limits and HP band, among your pieces only. A first window lists the sets by family,

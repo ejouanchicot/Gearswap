@@ -105,6 +105,11 @@ local function spell_map(spell)
     return type(maps) == 'table' and type(maps[spell.english]) == 'string' and maps[spell.english] or nil
 end
 
+-- The spells a piece of gear gives while worn, never learned (BG Wiki: Daybreak, Twilight / Crepuscular Cloak,
+-- Marsyas, Loughnashade): in the list whatever the spells learned say; the Atelier shows them only to a
+-- character holding the piece (atelier/app/js/add_wizard.js AW_GEAR_SPELLS)
+local GEAR_SPELLS = {Dispelga = true, Impact = true, ['Honor March'] = true, ['Aria of Passion'] = true}
+
 -- The spells main job and subjob can cast: {name = {skill = ..., base = ...}}. Main job: its
 -- job point spells too (level above 99); subjob: up to its level.
 local function spells(res, main, sub, sub_level)
@@ -117,7 +122,7 @@ local function spells(res, main, sub, sub_level)
     if not (ok and type(known) == 'table' and next(known)) then known = nil end
     for id, s in pairs(res.spells) do
         local lv = type(s) == 'table' and type(s.levels) == 'table' and s.levels
-        if lv and s.en and s.type ~= 'Trust' and (not known or known[s.id or id]) and ((mid and lv[mid]) or (sid and lv[sid] and lv[sid] <= (sub_level or 49))) then
+        if lv and s.en and s.type ~= 'Trust' and (not known or known[s.id or id] or GEAR_SPELLS[s.en]) and ((mid and lv[mid]) or (sid and lv[sid] and lv[sid] <= (sub_level or 49))) then
             local sk = res.skills[s.skill]
             if sk and sk.en then
                 out[s.en] = {skill = sk.en, base = SetCatalog.base_name(s.en), type = s.type,

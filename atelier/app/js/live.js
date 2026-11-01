@@ -11,7 +11,9 @@ function overridesLua(map){
 }
 const luaKey = k => /^[A-Za-z_]\w*$/.test(k) ? k : '[' + luaStr(k) + ']';
 function modesLua(map){
-  const block = scope => `    ${luaKey(scope)} = {\n` + Object.keys(map[scope]).sort().map(n => `        ${luaKey(n)} = ${luaStr(map[scope][n])},`).join('\n') + `\n    },`;
+  // a value, or the values the Atelier adds to a cycle ('+MainWeapon' = {'Daybreak'}: add_wizard.js awAddWeapon)
+  const val = v => Array.isArray(v) ? '{' + v.map(luaStr).join(', ') + '}' : luaStr(v);
+  const block = scope => `    ${luaKey(scope)} = {\n` + Object.keys(map[scope]).sort().map(n => `        ${luaKey(n)} = ${val(map[scope][n])},`).join('\n') + `\n    },`;
   return `-- Mode start values chosen in the Atelier page (data/atelier.html, Modes & keys tab), laid over the states\n` +
     `-- files when a job loads (shared/utils/core/mode_overrides.lua). Delete this file to go back to them.\n` +
     `-- Written ${stamp()}.\nreturn {\n${Object.keys(map).sort().map(block).join('\n')}\n}\n`;

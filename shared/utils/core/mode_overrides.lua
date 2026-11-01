@@ -57,11 +57,39 @@ local function mode_of(st, name)
     return track and track._class == 'mode' and track._type ~= 'string' and mode or nil
 end
 
---- Lay one scope's values; the names refused are added to `bad`.
+-- The values the Atelier added to each mode ('+Mode' entries), for its export
+local added_values = {}
+
+--- Add values at the end of a list mode, keeping its current value (Mote's options() goes back to the first).
+--- A value the mode holds already is left where it is.
+--- @return boolean true when laid
+local function add_values(mode, name, values)
+    if rawget(mode, '_track')._type ~= 'list' then return false end
+    local list, have = {}, {}
+    for _, v in ipairs(mode) do list[#list + 1] = v; have[v] = true end
+    local added = {}
+    for _, v in ipairs(values) do
+        if type(v) == 'string' and not have[v] then list[#list + 1] = v; have[v] = true; added[#added + 1] = v end
+    end
+    added_values[name] = values
+    if #added == 0 then return true end
+    local current = tostring(mode.current)
+    if not pcall(mode.options, mode, (table.unpack or unpack)(list)) then return false end
+    pcall(mode.set, mode, current)
+    return true
+end
+
+--- Lay one scope's values; the names refused are added to `bad`. A '+Mode' entry adds its values to the mode
+--- (an Atelier weapon added to MainWeapon: notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md).
 local function lay(st, values, silent_missing, bad)
     for name, value in pairs(type(values) == 'table' and values or {}) do
-        local mode = type(name) == 'string' and mode_of(st, name)
-        if mode and type(value) == 'string' then
+        local plus = type(name) == 'string' and name:match('^%+(.+)$')
+        local mode = type(name) == 'string' and mode_of(st, plus or name)
+        if plus then
+            if not (mode and type(value) == 'table' and add_values(mode, plus, value)) and not (silent_missing and not mode) then
+                bad[#bad + 1] = name
+            end
+        elseif mode and type(value) == 'string' then
             local before = tostring(mode.current)
             if pcall(mode.set, mode, value) then
                 if file_values[name] == nil then file_values[name] = before end
@@ -91,6 +119,12 @@ function ModeOverrides.apply(job)
             MessageFormatter.show_error('Atelier start values ignored (' .. FILE .. '): ' .. table.concat(bad, ', '))
         end
     end
+end
+
+--- The values the Atelier added to each mode (for its export): {Mode = {value, ...}}
+--- @return table
+function ModeOverrides.added_values()
+    return added_values
 end
 
 --- The value each overridden mode had from its states file before the override (for the Atelier export).
