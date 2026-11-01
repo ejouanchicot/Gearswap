@@ -9,12 +9,13 @@
 // @file    atelier/src/screens/dialogs/addset.ts
 // @author  ejouanchicot
 
-export interface AwChip { key: string; label: string; tiers: string; tierList: string[]; has: boolean; q: string; all: boolean; fam: boolean }
+export interface AwChip { key: string; label: string; tiers: string; tierList: string[]; has: boolean; q: string; all: boolean; fam: boolean; color?: string; where?: string }
+export interface AwTab { key: string; label: string; color: string; count: string; on: boolean }
 export interface AwOpt { value: string; label: string; desc: string; rec: boolean; on: boolean }
 export interface AwRow { q: string; say: string; path: string; there: boolean; others: string[]; why: string }
 export type AddBody =
   | {kind: 'fams'; ask: string; warn: string; fams: Array<{f: string; icon: string; label: string; when: string}>}
-  | {kind: 'subjects'; ask: string; ph: string; groups: Array<{label: string; color: string; count: string; chips: AwChip[]; packs: Array<{label: string; chips: AwChip[]}>; fams: AwChip[]}>; expert: string; hasTip: string; famLabel: string; hasLabel: string}
+  | {kind: 'subjects'; ask: string; ph: string; tabs: AwTab[]; color: string; all: AwChip | null; subs: AwTab[]; chips: AwChip[]; results: AwChip[] | null; none: string; expert: string; hasTip: string}
   | {kind: 'ask'; questions: Array<{k: string; label: string; opts: AwOpt[]}>; next: string}
   | {kind: 'sum'; say: string; has: null | {path: string; open: string; game: string}; today: string; todayLabel: string; startLabel: string;
       opts: Array<{k: string; a: string; b: string; rec: boolean}>; nameLabel: string; name: string; also: string; alsoList: string[]; file: string; block: string}
@@ -96,7 +97,7 @@ function famsBody(list: LegacyAny[] | null, cards: LegacyAny[]): AddBody {
 
 // Step 2: the subjects of the kind, by group (a school for the spells)
 function subjectsBody(list: LegacyAny[]): AddBody {
-  const mine = list.filter(x => x.fam === A().fam), by = new Map<string, LegacyAny[]>();
+  const mine = list.filter(x => awInFam(x, A().fam)), by = new Map<string, LegacyAny[]>();
   for (const x of mine) { const k = awSubjKey(x.subject); if (!by.has(k)) by.set(k, []); by.get(k)!.push(x); }
   const groups = new Map<string, AwChip[]>(), colors = new Map<string, string>();
   const rank = (c: AwChip) => (c.all ? 0 : 1);
@@ -117,8 +118,26 @@ function subjectsBody(list: LegacyAny[]): AddBody {
     const packs = PACKS.map(p => ({label: t(p[0]), chips: sorted(chips.filter(c => packOf(c) === p))})).filter(p => p.chips.length > 1);
     const packed = new Set(packs.flatMap(p => p.chips));
     return {label, color: colors.get(label) || '', count: String(chips.filter(c => !c.fam && !c.all).length), chips: sorted(chips.filter(c => !c.fam && !packed.has(c))), packs, fams: sorted(chips.filter(c => c.fam))}; });
-  out.sort((a, b) => (a.label === t('awSets') ? -1 : 0) - (b.label === t('awSets') ? -1 : 0) || b.chips.length - a.chips.length);
-  return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'), groups: out, expert: t('awExpert'), hasTip: t('awHas'), famLabel: t('awFamilies'), hasLabel: t('awHasShort')};
+  out.sort((a, b) => (a.label === t('awSets') ? 1 : 0) - (b.label === t('awSets') ? 1 : 0) || b.chips.length - a.chips.length);
+  const st = A(), q = (st.q || '').trim().toLowerCase();
+  // the search: every school at once, a name or one of its words starting with what is typed (Paralyze, not
+  // Barparalyze); the names that start with it first
+  if (q) {
+    const hit = (c: AwChip) => { const l = c.label.toLowerCase(); return l.startsWith(q) || l.split(/[\s\-\/·()]+/).some(w => w.startsWith(q)); };
+    const results = out.flatMap(g => [...g.chips, ...g.packs.flatMap(p => p.chips), ...g.fams].filter(c => !c.all && hit(c)).map(c => ({...c, color: g.color, where: g.label})))
+      .sort((a, b) => Number(!a.label.toLowerCase().startsWith(q)) - Number(!b.label.toLowerCase().startsWith(q)) || a.label.localeCompare(b.label));
+    return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'), tabs: [], color: '', all: null, subs: [], chips: [], results, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas')};
+  }
+  // a tab a school (Sets last); in it a tab its spells, a tab each long series, a tab its families
+  const cur = out.find(g => g.label === st.tab) || out[0]!;
+  const all = cur.chips.find(c => c.all) || null, spells = cur.chips.filter(c => !c.all);
+  const subsAll: Array<{key: string; label: string; chips: AwChip[]}> = [{key: 'spells', label: t(cur.label === t('awSets') ? 'awSets' : 'awSpells'), chips: spells},
+    ...cur.packs.map(p => ({key: p.label, label: p.label, chips: p.chips})), ...(cur.fams.length ? [{key: 'fams', label: t('awFamilies'), chips: cur.fams}] : [])].filter(s => s.chips.length);
+  const sub = subsAll.find(s => s.key === st.sub) || subsAll[0] || {key: '', label: '', chips: []};
+  return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'),
+    tabs: out.map(g => ({key: g.label, label: g.label, color: g.color, count: String(g.chips.filter(c => !c.all).length + g.packs.reduce((n, p) => n + p.chips.length, 0)), on: g === cur})),
+    color: cur.color, all, subs: subsAll.length > 1 ? subsAll.map(s => ({key: s.key, label: s.label, color: '', count: String(s.chips.length), on: s === sub})) : [],
+    chips: sub.chips, results: null, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas')};
 }
 
 // the label and words of an answer
@@ -177,7 +196,7 @@ function cardName(path: string): string { return shortPath(path).replace(/\["([^
 
 // The experts' list: every situation of the kind, one line each (the one name first, the others folded)
 function expertBody(list: LegacyAny[]): AddBody {
-  const mine = list.filter(x => x.fam === A().fam), bySubj = new Map<string, LegacyAny[]>();
+  const mine = list.filter(x => awInFam(x, A().fam)), bySubj = new Map<string, LegacyAny[]>();
   for (const x of mine) { const k = awSubjKey(x.subject); if (!bySubj.has(k)) bySubj.set(k, []); bySubj.get(k)!.push(x); }
   const groups = [...bySubj.values()].map(xs => {
     const bySit = new Map<string, LegacyAny[]>();

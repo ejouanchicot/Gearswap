@@ -351,6 +351,7 @@ declare function awSubjKey(s: LegacyAny): string;
 declare function awSchoolName(s: string | null): string;
 declare function awFamName(s: string): string;
 declare function awOfSubject(): LegacyAny[];
+declare function awInFam(x: LegacyAny, fam: string): boolean;
 declare function awQuestions(list: LegacyAny[]): Array<{k: string; values: string[]}>;
 declare function awMatching(list: LegacyAny[], ans: LegacyAny): LegacyAny[];
 declare function awPreferred(list: LegacyAny[]): LegacyAny;

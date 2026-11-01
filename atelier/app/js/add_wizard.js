@@ -15,7 +15,7 @@ Object.assign(T.fr, {
   awBackToWizard: '← Retour à l’assistant', awHas: 'tu as déjà un set pour ça', awHasShort: 'set', awNext: 'Suivant →', awAll: 'Tous', awOpen: 'Ouvrir ce set',
   awSchoolAll: 'Tous les sorts : {s}', awSchoolAllD: 'Pour chaque sort qui n’a pas de set à lui', awFamily: 'Famille', awGeneral: 'Général',
   awFamName: {duration: 'Durée', potency: 'Puissance', macc: 'Précision magique', int_potency: 'Puissance (INT)', mnd_potency: 'Puissance (MND)', skill_potency: 'Puissance (skill)', skill_mnd_potency: 'Puissance (skill et MND)', StatusRemoval: 'Soins d’altération'},
-  awSets: 'Sets', awFamilies: 'Familles de sorts', awPackBar: 'Bar-éléments et bar-statuts', awPackGain: 'Gain / Boost', awPackEn: 'Enspells', awPackSpikes: 'Spikes', awPackTele: 'Téléportation', awPackStorm: 'Tempêtes', awPackNa: 'Soins d’altération (-na)', awAbilities: 'Abilities', awOtherWs: 'Toutes les WS',
+  awSets: 'Sets', awSpells: 'Sorts', awNone: 'Rien ne correspond. Essaie le début du nom du sort.', awFamilies: 'Familles de sorts', awPackBar: 'Bar-éléments et bar-statuts', awPackGain: 'Gain / Boost', awPackEn: 'Enspells', awPackSpikes: 'Spikes', awPackTele: 'Téléportation', awPackStorm: 'Tempêtes', awPackNa: 'Soins d’altération (-na)', awAbilities: 'Abilities', awOtherWs: 'Toutes les WS',
   awQTarget: 'Sur qui ?', awSelf: 'Sur toi', awSelfD: 'Le sort lancé sur toi-même.', awOthers: 'Sur un allié', awOthersComp: 'sous Composure',
   awOthersD: 'Composure actif : la durée sur un allié profite du bonus Lethargy.', awOthersCure: 'Sur un autre', awOthersCureD: 'Le sort lancé sur quelqu’un d’autre.', awAnyone: 'Sur n’importe qui', awAnyoneD: 'Quelle que soit la cible.',
   awQScope: 'Quel tier ?', awAllTiers: 'Tous les tiers', awAllTiersD: '{l}', awOnly: 'Seulement {s}', awOnlyD: 'Les autres tiers gardent le set d’aujourd’hui.',
@@ -43,7 +43,7 @@ Object.assign(T.en, {
   awBackToWizard: '← Back to the assistant', awHas: 'you have a set for it already', awHasShort: 'set', awNext: 'Next →', awAll: 'All', awOpen: 'Open this set',
   awSchoolAll: 'Every spell: {s}', awSchoolAllD: 'For each spell with no set of its own', awFamily: 'Family', awGeneral: 'General',
   awFamName: {duration: 'Duration', potency: 'Potency', macc: 'Magic accuracy', int_potency: 'Potency (INT)', mnd_potency: 'Potency (MND)', skill_potency: 'Potency (skill)', skill_mnd_potency: 'Potency (skill and MND)', StatusRemoval: 'Status removal'},
-  awSets: 'Sets', awFamilies: 'Spell families', awPackBar: 'Bar-elements and bar-statuses', awPackGain: 'Gain / Boost', awPackEn: 'Enspells', awPackSpikes: 'Spikes', awPackTele: 'Teleport', awPackStorm: 'Storms', awPackNa: 'Status cures (-na)', awAbilities: 'Abilities', awOtherWs: 'Every WS',
+  awSets: 'Sets', awSpells: 'Spells', awNone: 'Nothing matches. Try the start of the spell’s name.', awFamilies: 'Spell families', awPackBar: 'Bar-elements and bar-statuses', awPackGain: 'Gain / Boost', awPackEn: 'Enspells', awPackSpikes: 'Spikes', awPackTele: 'Teleport', awPackStorm: 'Storms', awPackNa: 'Status cures (-na)', awAbilities: 'Abilities', awOtherWs: 'Every WS',
   awQTarget: 'On whom?', awSelf: 'On you', awSelfD: 'The spell cast on yourself.', awOthers: 'On an ally', awOthersComp: 'under Composure',
   awOthersD: 'Composure up: the duration on an ally gets the Lethargy bonus.', awOthersCure: 'On someone else', awOthersCureD: 'The spell cast on someone else.', awAnyone: 'On anyone', awAnyoneD: 'Whoever the target is.',
   awQScope: 'Which tier?', awAllTiers: 'Every tier', awAllTiersD: '{l}', awOnly: 'Only {s}', awOnlyD: 'The other tiers keep today\'s set.',
@@ -94,7 +94,11 @@ function awSituations(){
   const allTiers = new Set(cat.filter(e => /\{(spellbase|spellplain)\}$/.test(e.group)).map(e => e.path));
   const list = [];
   for (const e of cat) {
-    const gp = awParts(e.group), keys = segs(e.path);
+    const gp = awParts(e.group);
+    let keys = segs(e.path);
+    // a {set:...} part names a set of several keys (engaged.{set:engaged}: engaged.Acc.DW.Solo): its keys joined in one
+    const si = gp.findIndex(g => g.startsWith('{set:'));
+    if (si >= 0 && keys.length > gp.length) keys = keys.slice(0, si).concat([keys.slice(si, si + keys.length - gp.length + 1).join(' · ')], keys.slice(si + keys.length - gp.length + 1));
     if (gp.length !== keys.length) continue;
     const q = {}, lit = []; let subj = null, sch = null, tier = null, weaponLine = WEAPON_LINE.test(e.group);
     gp.forEach((g, i) => {
@@ -119,14 +123,21 @@ function awSituations(){
       if (!AW_NOT_MODE.has(p)) { q.mode = {state: p, value: k}; return; }
       lit.push(k);
     });
+    // a key the job file names on its own (sets.midcast.Flash, a family named as its only spell: Phalanx, Stoneskin,
+    // Aquaveil, Raise): the spell it is, with the other sets of that spell (the game's skill of it: job_access_data.js)
+    const isSpell = n => typeof SPELL_SKILL === 'object' && SPELL_SKILL[n] && SPELL_SKILL[n] !== '(N/A)';
+    if (!subj && lit.length === 1 && AW_SPELL_FAMS.has(catFamily(e)) && isSpell(lit[0])) { subj = {kind: 'spell', name: lit[0]}; lit.length = 0; }
+    if (subj && subj.kind === 'family' && isSpell(subj.name)) subj = {kind: 'spell', name: subj.name};
     if (!subj && sch) subj = {kind: 'school', name: sch};
     // the keys left over: the set's own name when nothing else names it (engaged.DPS, idleXp), else a version
     if (!subj) subj = {kind: 'set', name: lit.length ? lit.join(' · ') : ''};
     else if (lit.length) q.variant = lit.join(' · ');
     if (subj.kind !== 'school' && subj.kind !== 'set') subj.school = sch || school[subj.name] || (subj.kind === 'spell' ? school[awBase(subj.name)] : null) || null;
     if (subj.kind === 'school') subj.school = subj.name;
-    // a spell no line ties to a school: an enhancing spell's kind (enh_jobs.js ENH_SPELLS) says Enhancing Magic
-    if (subj.kind === 'spell' && !subj.school && typeof ENH_SPELLS !== 'undefined' && ENH_SPELLS.some(k => k[0].test(subj.name))) subj.school = 'Enhancing Magic';
+    // a spell no line ties to a school (Cure, in the Cures' own kind): the game's skill of the spell (job_access_data.js)
+    if (subj.kind === 'spell' && !subj.school && typeof SPELL_SKILL === 'object') {
+      const sk = SPELL_SKILL[subj.name] || SPELL_SKILL[subj.name + ' II'] || SPELL_SKILL[tier || ''];
+      if (sk && sk !== '(N/A)') subj.school = sk; }
     list.push({e, fam: catFamily(e), subject: subj, q, tier});
   }
   AW_CACHE = {cat, list};
@@ -138,9 +149,13 @@ const awSchoolName = s => s ? ((T[S.lang].awSchool || {})[s] || s) : '';
 
 /* ---- the window's state: S._aw = {step, fam, subj, ans: {}, expert, path} ---- */
 function awOpen(){ S._aw = {step: 0, fam: null, subj: null, ans: {}, expert: false, q: ''}; awRender(); }
-function awRender(){ ATELIER_DIALOG.show({cls: 'awdlg', titleHtml: '', addSet: ATELIER_DIALOG.addStepView()}); const q = $('#awq'); if (q) { q.focus(); q.value = S._aw.q || ''; } }
+function awRender(){ const spec = {cls: 'awdlg', titleHtml: '', addSet: ATELIER_DIALOG.addStepView()};
+  if ($('#overlay .awdlg') && !$('#overlay').hidden) ATELIER_DIALOG.update(spec); else ATELIER_DIALOG.show(spec); const q = $('#awq'); if (q) { q.focus(); q.value = S._aw.q || ''; } }
 // The situations of the subject chosen
-const awOfSubject = () => (awSituations() || []).filter(x => x.fam === S._aw.fam && awSubjKey(x.subject) === S._aw.subj);
+// The situations a kind shows: its own; "when the spell lands" also holds the Cures' (their own kind in the list of
+// sets): every school has all its spells, Cure and Curaga under Healing (the player, 2026-11-01)
+const awInFam = (x, fam) => x.fam === fam || (fam === 'midcast' && x.fam === 'cure');
+const awOfSubject = () => (awSituations() || []).filter(x => awInFam(x, S._aw.fam) && awSubjKey(x.subject) === S._aw.subj);
 // The questions whose answers change the set: each with its options (the situations' values, "none" for those without)
 function awQuestions(list){
   const out = [], vals = k => [...new Set(list.map(x => k === 'mode' ? (x.q.mode ? x.q.mode.state + '=' + x.q.mode.value : '') : (x.q[k] || '')))];
@@ -166,7 +181,9 @@ function awPreferred(list){
 function awClick(d){
   const A = S._aw;
   if (!A) return false;
-  if (d.awfam) { Object.assign(A, {fam: d.awfam, step: 1, subj: null, ans: {}, expert: false, q: ''}); awRender(); return true; }
+  if (d.awfam) { Object.assign(A, {fam: d.awfam, step: 1, subj: null, ans: {}, expert: false, q: '', tab: null, sub: null}); awRender(); return true; }
+  if (d.awtab != null) { Object.assign(A, {tab: d.awtab, sub: null}); awRender(); return true; }
+  if (d.awsub != null) { A.sub = d.awsub; awRender(); return true; }
   if (d.awsubj) { Object.assign(A, {subj: d.awsubj, ans: {}}); A.step = awQuestions(awOfSubject()).length ? 2 : 3; awRender(); return true; }
   if (d.awans) { const [k, ...v] = d.awans.split(':'); A.ans[k] = v.join(':'); awRender(); return true; }
   if ('awnext' in d) { A.step = 3; awRender(); return true; }
@@ -182,6 +199,8 @@ function awClick(d){
 }
 // The search box of steps 2 and the experts' list: rows hidden in place
 function awFilter(q){
+  // the subjects: drawn again from the search (every school at once); the experts' list: rows hidden in place
+  if (!S._aw.expert) { S._aw.q = q; awRender(); return; }
   S._aw.q = q; q = q.trim().toLowerCase();
   for (const r of document.querySelectorAll('.awdlg [data-awq]')) r.hidden = !!q && !r.dataset.awq.includes(q);
   for (const g of document.querySelectorAll('.awdlg .awgroup')) g.hidden = ![...g.querySelectorAll('[data-awq]')].some(r => !r.hidden);
