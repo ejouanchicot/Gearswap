@@ -131,7 +131,13 @@ export function setList(d: LegacyExport): SetList {
     const code = (v: LegacyAny) => S0.listPaths ? v.set.path : null;
     // its names folded under it: a line to open them (a search opens them)
     const aliasFold = (v: LegacyAny, k: number) => {
-      const mine = aliases.filter(a => a.i === i && a.k === k);
+      let mine = aliases.filter(a => a.i === i && a.k === k);
+      // the spells an enmity set is worn for (sets.midcast['Geist Wall'] = sets.midcast.SIRDEnmity: a PLD's /BLU spells,
+      // Flash, Jettatura) listed open under it, each by its name: folded, a new player did not find them (2026-11-01)
+      if (c.fam === 'enmity') {
+        for (const a of mine.filter(a => a.fam === 'midcast')) out.push(aliasEntry({...a, label: segs(a.path).pop() as string}));
+        mine = mine.filter(a => a.fam !== 'midcast');
+      }
       if (!mine.length) return;
       const key = job + '|' + v.set.path, open = !!q || !!(S0._aliasOpen || {})[key];
       out.push({k: 'aliasfold', path: v.set.path, open, title: t('ttAlias'), label: `${open ? '▾' : '▸'} ${t('aliasCount', {n: mine.length})}`});

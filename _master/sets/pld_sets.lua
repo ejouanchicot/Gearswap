@@ -740,6 +740,11 @@ sets.midcast['Frightful Roar'] = sets.midcast.SIRDEnmity
 sets.midcast['Cold Wave'] = sets.midcast.SIRDEnmity
 sets.midcast['Stinking Gas'] = sets.midcast.SIRDEnmity
 sets.midcast['Blank Gaze'] = sets.midcast.SIRDEnmity
+-- the rotation's other spells (pld/combat/PLD_BLU_MAGIC.lua) and Metallic Body: without a set they were cast in the
+-- Fast Cast set (no Blue Magic set to fall back on)
+sets.midcast['Sound Blast'] = sets.midcast.SIRDEnmity
+sets.midcast['Soporific'] = sets.midcast.SIRDEnmity
+sets.midcast['Metallic Body'] = sets.midcast.SIRDEnmity
 
 -- ───────────────────────────────────────────────────────────────────────────
 -- PLD Specific Spells (Divine & Enhancing)
