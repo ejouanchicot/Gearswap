@@ -21,6 +21,8 @@ const walkLabel = w => /^mix\d+$/.test(w) ? t('orWalk_mix', {n: w.slice(3)}) : t
 // The search running: a new one or a stop moves it on, so what an older one sends is dropped
 let OPT_SEQ = 0;
 function optStop(){
+  // a run over every set (opt_sets.js) waits for this search: told it was stopped
+  osSearchEnd({stopped: true});
   OPT_SEQ++;
   OPT_WORKERS.forEach(w => w.terminate()); OPT_WORKERS = [];
   if (OPT_PAGE_STOP) { OPT_PAGE_STOP(); OPT_PAGE_STOP = null; }
@@ -260,7 +262,7 @@ async function optLaunch(s, k, input, o){
   S._optBusy = true; S._optProgress = null; render();
   const seq = ++OPT_SEQ, at = S.char + '|' + S.job, mine = () => seq === OPT_SEQ && S._optBusy;
   // a case our engine does not compute says why (atelier/calc/calc_bridge.js; fight_stats.js notComputedText)
-  const fail = msg => { if (!mine()) return; optStop(); S._toastSet = s.path; S.toast = notComputedText(msg); render(); };
+  const fail = msg => { if (!mine()) return; osSearchEnd({error: notComputedText(msg)}); optStop(); S._toastSet = s.path; S.toast = notComputedText(msg); render(); };
   const why = notComputedFor(input);
   if (why) return fail(why);
   // the walks shared among the cores, round robin
@@ -498,6 +500,8 @@ function optResult(s, k, res, gains, o){
   if (o.stat) S.toast = `${buffTier()} · ` + (res.best.miss ? t('optMiss') + ' ' : '') + statDoneText(s, res, tr) + weapons + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
   save();
   S._optBusy = false; render();
+  // a run over every set (opt_sets.js) takes the result and goes on to the next set: no result window, no Compare
+  if (osSearchEnd({res, tr, o})) { searchPark().replaceChildren(); S._optRun = null; return; }
   // the search window still open: the result in it, with what to do next; else Compare
   if (S._optRun && $('#overlay .optrun')) optRunResult(s, res, tr, plain, gains);
   else if (Object.keys(tr).length) openCompare(s);

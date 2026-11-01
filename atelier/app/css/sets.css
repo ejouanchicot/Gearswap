@@ -2028,3 +2028,29 @@
 /* the legend's button as wide as its column: the legend it opens wraps in that width */
 .setsx.ui2 .slotcol > .lgfold{justify-self:stretch}
 .setsx.ui2 .slotcol > .lgfold > summary{max-width:max-content}
+/* ---- "Tout optimiser" (opt_sets.js, OptSets.svelte), 2026-11-01 ---- */
+.optsetsbtn{display:block;width:calc(100% - 20px);margin:0 10px 8px;padding:6px 10px;font-size:12.5px;font-weight:700;border-radius:8px}
+.osdlg{width:min(980px,96vw)}
+.osdlg .osbody{display:grid;gap:12px;max-height:min(70vh,640px);overflow:auto}
+.osdlg .osshort{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.osdlg .osshort .btn{padding:4px 12px;font-size:12.5px;border-radius:999px}
+.osdlg .osscratch,.osdlg .osset,.osdlg .osfamhead{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);font-size:12.5px;text-align:left;padding:2px 4px;border-radius:5px;cursor:pointer}
+.osdlg .osscratch{margin-left:auto;color:var(--muted)}
+.osdlg :is(.osscratch,.osset,.osfamhead) i{display:inline-grid;place-items:center;width:15px;height:15px;flex:none;border:1px solid var(--line-strong);border-radius:4px;font-style:normal;font-size:10px;color:var(--accent-ink);background:var(--panel)}
+.osdlg :is(.osscratch,.osset,.osfamhead)[aria-pressed="true"] i{background:var(--accent);border-color:var(--accent)}
+.osdlg :is(.osscratch,.osset,.osfamhead):hover{background:var(--hover)}
+.osdlg .osset[aria-pressed="false"]{color:var(--muted)}
+.osdlg .osfams{columns:3 220px;column-gap:14px}
+.osdlg .osfam{break-inside:avoid;margin:0 0 10px;padding:8px 8px 6px;border:1px solid var(--line);border-radius:9px;background:var(--well)}
+.osdlg .osfamhead{width:100%;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.osdlg .osset{width:100%;overflow-wrap:anywhere}
+.osdlg .oswriting{margin:0;font-weight:700;color:var(--accent)}
+.osdlg .ostbl tr.osoff th,.osdlg .ostbl tr.osoff td{opacity:.65}
+.osdlg .ostbl tr.osnote td{padding-top:0}
+/* the window is the search window's frame (a column of fixed height): its body takes what is left and scrolls in it,
+   the header and the buttons stay */
+.dialog.osdlg .osbody{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}
+.dialog.osdlg .osbody .oascroll{overflow:visible}
+.dialog.osdlg > header,.dialog.osdlg > footer{flex:none}
+/* the summary's head stays at the top while its rows scroll */
+.dialog.osdlg .ostbl thead th{position:sticky;top:0;z-index:1;background:var(--panel)}

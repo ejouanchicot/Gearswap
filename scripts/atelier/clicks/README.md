@@ -43,4 +43,5 @@ after `--` in `quick`).
 | `home`, `nx`, `settings`, `pkg`, `sim`, `prof` | home, a job with no export, settings, packages, simulate, buff profiles |
 | `newplayer` | a brand-new player: nothing exported, the game linked on a job with no file, "+ Add a job" sent |
 | `lh`, `list`, `sw` | the list of sets and its head menu, the subjob warning |
+| `optsets` | "Tout optimiser": its start window, a run of two stats sets, its summary, Undo all, a run stopped (1 to 2 min) |
 | `tip`, `weap`, `wshead` | the hover card, the weapon menus, a weaponskill set's head (the longest: 2 to 6 min) |

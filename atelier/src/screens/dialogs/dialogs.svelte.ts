@@ -15,12 +15,13 @@ import type {PushView} from './pushview';
 import type {TierCostView} from './tiercost';
 import type {HistoryView} from './history';
 import type {OptAllView} from './optall';
+import type {OptSetsView} from './optsets';
 import type {StatPickView} from './statpick';
 import type {AddSetView} from './addset';
 import type {BagDialogView} from './bagdlg';
 import type {ModPickView} from './modpick';
 
-export interface DialogSpec { cls: string; titleHtml: string; ariaLabel?: string; lua?: string; optAll?: OptAllView; statPick?: StatPickView; addSet?: AddSetView; bags?: BagDialogView; modPick?: ModPickView; bodyHtml?: string; buttonsHtml?: string; compare?: CompareView; gearPick?: GearPickView; target?: TargetView; partyPick?: PartyPickView; push?: PushView; tierCost?: TierCostView; history?: HistoryView }
+export interface DialogSpec { cls: string; titleHtml: string; ariaLabel?: string; lua?: string; optAll?: OptAllView; optSets?: OptSetsView; statPick?: StatPickView; addSet?: AddSetView; bags?: BagDialogView; modPick?: ModPickView; bodyHtml?: string; buttonsHtml?: string; compare?: CompareView; gearPick?: GearPickView; target?: TargetView; partyPick?: PartyPickView; push?: PushView; tierCost?: TierCostView; history?: HistoryView }
 
 export const dialogState = $state({version: 0, opened: 0});
 let current: DialogSpec | null = null;

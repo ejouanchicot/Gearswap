@@ -75,9 +75,18 @@ then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the stance's shi
 shield of your stance's idle set (Alber Strap with Shining; the stance's shield from
 `PLD_WEAPONS.lua` and the Hoxne ammo still apply), and nothing else: no stance set, no `Xp`, no `Regen`,
 no `sets.MoveSpeed`. In the provided file `sets.idle.Town` is a set of its own built on
-`sets.MoveSpeed` (`set_combine(sets.MoveSpeed, {})`): the movement-speed legs, the other
-slots yours to fill for the city (no hits taken there). `sets.idle` is only the table the
-idle sets hang from, and the Atelier does not list it.
+the base idle pieces and `sets.MoveSpeed` (`set_combine(IdleBase, sets.MoveSpeed, {})`):
+the movement-speed legs, the other slots yours to change for the city (no hits taken
+there). `sets.idle` is left empty: it is only the table the idle sets hang from, never worn
+by itself (outside town your stance's idle set covers every slot, in town `sets.idle.Town`
+does), and the Atelier does not list it.
+
+In the Atelier, every tank set is kept between your Fast Cast set's HP minus 100 and your
+Fast Cast set's HP (`sets.precast.FC`, the ceiling): putting the Fast Cast set on before a
+spell then never lowers your current HP, and going from one set to another loses 100 at most.
+The abilities' sets and `sets.idle.Town` follow it too; not the Fast Cast sets themselves, the
+Cure Self pair (its gap is on purpose), `sets.EnmityMax`, `sets.buff.Doom`, `sets.MoveSpeed`,
+`sets.Adoulin` and `sets.Cure`.
 
 ## Engaged
 

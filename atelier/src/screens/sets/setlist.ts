@@ -34,7 +34,9 @@ const st = (): LegacyAny => S;
 /** The list for the job shown, worked out as the old page did, with the same marks left in the page's state */
 export type ListMenuItem = {k: 'hr'} | {k: 'small'; label: string} | {k: 'show'; f: string; label: string; em: string}
   | {k: 'item'; attrs: Record<string, string>; label: string; on: boolean | null; tip: string};
-export interface ListHead { q: string; ph: string; tip: string; addTip: string; menuOpen: boolean; menuTip: string; fold: null | {tip: string; open: string; close: string}; menu: ListMenuItem[] | null }
+export interface ListHead { q: string; ph: string; tip: string; addTip: string; menuOpen: boolean; menuTip: string; fold: null | {tip: string; open: string; close: string}; menu: ListMenuItem[] | null;
+  // "Tout optimiser" (opt_sets.js): every set of the job searched in one go, once the engine is there
+  optAll: null | {label: string; tip: string} }
 
 // The list's menu (list_prefs.js keeps what each choice does): open or close all, the paths, every set, a new group,
 // the groups hidden (a button each to show it again), and saving to the files when the choices are in the browser only
@@ -49,7 +51,8 @@ function listMenu(): ListMenuItem[] {
 // The search, + and ⋯, then open or close every group (in sight, not only in the menu), and the menu when open
 function listHead(q: string): ListHead {
   return {q: (S as LegacyAny).q, ph: t('searchShort'), tip: t('lpSearchTip'), addTip: t('ttAdd'), menuOpen: !!(S as LegacyAny)._listMenu, menuTip: t('ttMenu'),
-    fold: q ? null : {tip: t('lpFoldTip'), open: t('lpOpenAll'), close: t('lpCloseAll')}, menu: (S as LegacyAny)._listMenu ? listMenu() : null};
+    fold: q ? null : {tip: t('lpFoldTip'), open: t('lpOpenAll'), close: t('lpCloseAll')}, menu: (S as LegacyAny)._listMenu ? listMenu() : null,
+    optAll: engineReady() ? {label: t('osBtn'), tip: t('osBtnTip')} : null};
 }
 
 // A base set the job never wears by itself, left out of the list: a PLD's sets.idle (its stance wears idle.PDT /

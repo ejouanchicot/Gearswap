@@ -70,6 +70,13 @@ document.addEventListener('click', e => {
   if (d.help) { S._help = S._help === d.help ? null : d.help; render(); return; }
   if ('optall' in d) { optAllOpen(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('oago' in d) { optAllGo(); return; }
+  // "Tout optimiser" (opt_sets.js): open, its start window's ticks, start, the summary's ticks, write, undo
+  if ('optsets' in d) { optSetsOpen(); return; }
+  if (d.osset != null || d.osfam != null || d.osonly != null || 'osscratch' in d) { optSetsClick(d); return; }
+  if ('osgo' in d) { optSetsGo(); return; }
+  if (d.ossel) { optSetsTick(d.ossel); return; }
+  if ('oswrite' in d) { optSetsWrite(); return; }
+  if ('osundo' in d) { optSetsUndo(); return; }
   if (d.oasel) { optAllToggle(d.oasel); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }

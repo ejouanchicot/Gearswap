@@ -17,6 +17,7 @@ import {pushView, delView, addSetView, createView} from './screens/dialogs/pushv
 import {tierCostView} from './screens/dialogs/tiercost';
 import {historyView} from './screens/dialogs/history';
 import {optAllView} from './screens/dialogs/optall';
+import {optSetsView} from './screens/dialogs/optsets';
 import {statPickView} from './screens/dialogs/statpick';
 import {addStepView} from './screens/dialogs/addset';
 import {placesView, porterView, bagSendView} from './screens/dialogs/bagdlg';
@@ -37,7 +38,7 @@ const dialogBox = document.createElement('div');
 dialogBox.className = 'dialogbox';
 dialogBox.style.display = 'contents';
 mount(Dialog, {target: dialogBox});
-window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView, pushView, delView, addSetView, tierCostView, historyView, optAllView, statPickView, addStepView, placesView, porterView, bagSendView, modPickView, createView};
+window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), update: dialogUpdate, compareView, gearPickView, targetView, pickView, addView, pushView, delView, addSetView, tierCostView, historyView, optAllView, optSetsView, statPickView, addStepView, placesView, porterView, bagSendView, modPickView, createView};
 // the menu of a slot of the sets' grid (trial.js openSlotMenu places it)
 window.ATELIER_SLOTMENU = {view: slotMenuView, show: slotMenuShow};
 // the hover card's content (events.js showTip places it)

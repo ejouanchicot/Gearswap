@@ -303,7 +303,8 @@ function hpRef(s){
   if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) === 'fc') return null;
   const d = data(), list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
   let low = null;
-  for (const x of list) { const hp = statFigures(x, true).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
+  // (during a run over every set, opt_sets.js, the Fast Cast as just found: the sets after it follow its new HP)
+  for (const x of list) { const hp = statFigures(x, !S._optChain).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
   return low;
 }
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay

@@ -137,6 +137,18 @@ each icon by itself, the first time it shows it, from a file the game writes
 beside the icon; an icon written by an older version stays as it is until the
 game writes it again (`//gs c atelier` on the job).
 
+**Optimize every set of a job at once.** On the Sets screen, **⚡ Optimize all** (**⚡ Tout
+optimiser** in French, top of the list of sets) searches every set of the job shown, one after the other, each with its own
+goals, limits and HP band, among your pieces only. A first window lists the sets by family,
+all ticked, with the time it should take (a few seconds a stats set, about 25 s a
+weaponskill or engaged set): untick what you want to keep as it is, or use **Stats sets
+only**. The Fast Cast sets go first (they set the other tank sets' HP), and a set comes after
+the set it is built on. **Stop** ends the run at any time. Then a summary shows each set's
+goal before and after, the gain and the pieces changed: the sets that gain and hold their
+limits are ticked, **Push to GearSwap** writes them one after the other (same preview,
+backup and history as a single push). Without the game linked, the results stay on trial on
+each set. **Undo all** puts every set back as it was before the run.
+
 ## Quick table
 
 | Problem | Command |
