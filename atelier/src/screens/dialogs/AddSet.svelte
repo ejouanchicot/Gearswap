@@ -35,6 +35,7 @@
   </div>
   {#if b.block}<p class="kwarn small">{b.block}</p>{:else if !b.has}<p class="awnote">{b.file}</p>{/if}
 {:else if b.kind === 'addw'}
+  <section class="awask"><p class="awq">{b.where}</p><div class="awopts">{#each b.cycles as c (c.mode)}<button class="awopt {c.on ? 'on' : ''}" data-awaddcyc={c.mode} aria-pressed={c.on} disabled={!!c.off}><b>{c.label}</b><small>{c.desc}</small></button>{/each}</div></section>
   <div class="awrecap"><p class="say">{b.say}</p>{#if b.set}<div class="awrow"><span></span><code>{b.set}</code></div>{/if}</div>
   <p class="awnote">{b.why}</p>{#if b.block}<p class="kwarn small">{b.block}</p>{/if}
 {:else if b.kind === 'cyc'}

@@ -193,8 +193,10 @@ function awClick(d){
   if (d.awsub != null) { A.sub = d.awsub; awRender(); return true; }
   if (d.awsubj && d.awsubj.startsWith('cyc:')) { const [, mode, ...n] = d.awsubj.split(':'), name = n.join(':');
     A.cyc = awCycleItems().find(x => x.mode === mode && x.name === name) || null; A.addw = null; A.step = 3; awRender(); return true; }
-  if (d.awsubj && d.awsubj.startsWith('addw:')) { const [, mode, ...n] = d.awsubj.split(':'), name = n.join(':');
-    A.addw = awWeaponChoices().find(x => x.mode === mode && x.name === name) || null; A.step = 3; awRender(); return true; }
+  // a weapon: its summary, on the cycle it was added to here, else the first it can join (data-awaddcyc picks another)
+  if (d.awsubj && d.awsubj.startsWith('addw:')) { const name = d.awsubj.slice(5), all = awWeaponChoices().filter(x => x.name === name);
+    A.addw = all.find(x => x.added) || all[0] || null; A.step = 3; awRender(); return true; }
+  if (d.awaddcyc != null && A.addw) { A.addw = awWeaponChoices().find(x => x.name === A.addw.name && x.mode === d.awaddcyc) || A.addw; awRender(); return true; }
   if (d.awsubj) { Object.assign(A, {subj: d.awsubj, ans: {}, addw: null}); A.step = awQuestions(awOfSubject()).length ? 2 : 3; awRender(); return true; }
   if (d.awans) { const [k, ...v] = d.awans.split(':'); A.ans[k] = v.join(':'); awRender(); return true; }
   if ('awnext' in d) { A.step = 3; awRender(); return true; }
@@ -225,11 +227,11 @@ function awFilter(q){
 /* ---- "Add a weapon" (notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md): a weapon you hold, not in any of the job's
    weapon cycles, added at the end of one through the Atelier's own layer over the states files
    (<Char>/atelier/overrides/mode_overrides.lua '+Mode', shared/utils/core/mode_overrides.lua), then its set created ---- */
-Object.assign(T.fr, {awAddSayOnly: '{w} sera ajoutée à ton cycle {m}, après {a} :', awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
+Object.assign(T.fr, {awAlready: 'déjà dans ce cycle', awWhere: 'Dans quel cycle ?', awInCycle: 'déjà ajoutée ici', awSetThereShort: 'son set existe déjà', awAddSayOnly: '{w} sera ajoutée à ton cycle {m}, après {a} :', awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
   awAddWhy: 'Le cycle est changé dans atelier/overrides/mode_overrides.lua, par-dessus ton fichier de modes (jamais réécrit) : retirer l’arme le rend tel quel.',
   awAddGo: 'Ajouter', awAddedSay: '{w} a été ajoutée à ton cycle {m} depuis l’Atelier.', awDelGo: 'Retirer du cycle', awDelWhy: 'Son set reste (supprimable par le menu « ⋯ » du set).',
   awAdding: 'Ajout au cycle {m}, GearSwap recharge…', awAddLater: '{w} ajoutée au cycle {m} dans ton fichier : elle sera là au prochain chargement du job (//gs reload). Son set n’a pas été créé : refais-le avec le jeu connecté.', awAddedOnly: '{w} ajoutée à ton cycle {m} (son set existait déjà). GearSwap recharge.', awSetThere: 'Son set existe déjà : seul le cycle change.', awAddFail: 'Le jeu n’a pas pris l’ajout au cycle : rien n’a été créé.', awRemoved: '{w} retirée du cycle {m}.'});
-Object.assign(T.en, {awAddSayOnly: '{w} will join your {m} cycle, after {a}:', awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
+Object.assign(T.en, {awAlready: 'in this cycle already', awWhere: 'In which cycle?', awInCycle: 'added here already', awSetThereShort: 'its set is there already', awAddSayOnly: '{w} will join your {m} cycle, after {a}:', awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
   awAddWhy: 'The cycle changes in atelier/overrides/mode_overrides.lua, over your modes file (never rewritten): removing the weapon puts it back as it was.',
   awAddGo: 'Add', awAddedSay: '{w} was added to your {m} cycle from the Atelier.', awDelGo: 'Remove from the cycle', awDelWhy: 'Its set stays (deleted from the set’s “⋯” menu).',
   awAdding: 'Adding to the {m} cycle, GearSwap reloads…', awAddLater: '{w} added to the {m} cycle in your file: it is there at the job\u2019s next load (//gs reload). Its set was not created: do it again with the game linked.', awAddedOnly: '{w} added to your {m} cycle (its set was there already). GearSwap reloads.', awSetThere: 'Its set is there already: only the cycle changes.', awAddFail: 'The game did not take the cycle change: nothing was created.', awRemoved: '{w} removed from the {m} cycle.'});

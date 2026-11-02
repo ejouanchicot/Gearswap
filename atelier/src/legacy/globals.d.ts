@@ -355,6 +355,7 @@ declare function awInFam(x: LegacyAny, fam: string): boolean;
 declare function awWeaponChoices(): Array<{mode: string; desc: string; slot: string; name: string; value: string; added: boolean}>;
 declare function awWeaponCycles(): Array<{name: string; desc: string; slot: string; values: string[]; sets: LegacyAny}>;
 declare function awWeaponPath(name: string): string;
+declare function awItemOf(c: LegacyAny, value: string): string;
 declare function awCycleItems(): Array<{mode: string; desc: string; slot: string; name: string; out: boolean; count: number}>;
 declare function awQuestions(list: LegacyAny[]): Array<{k: string; values: string[]}>;
 declare function awMatching(list: LegacyAny[], ans: LegacyAny): LegacyAny[];
