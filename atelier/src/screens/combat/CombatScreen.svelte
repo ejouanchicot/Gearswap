@@ -15,7 +15,8 @@
   import TargetCard from './TargetCard.svelte';
   import {legacy} from '../../stores/legacy.svelte';
   import {combatView} from './combat';
-  import type {FxCard} from './member';
+  import {itemIcon, type FxCard} from './member';
+  import type {Item} from './panel';
   import Panel from './Panel.svelte';
   import Ctl from './Ctl.svelte';
   import Eff from './Eff.svelte';
@@ -31,6 +32,7 @@
 </script>
 
 {#snippet fxcard(c: FxCard)}<div class="kfxc" class:foe={c.foe} title={c.title || undefined}><div class="kfxt"><span>{c.label}</span><b>{c.value}{#if c.cap}<small>max</small>{/if}</b></div>{#if c.p != null}<i class="kfxbar" style="--p:{c.p}%"></i>{/if}{#if c.sources.length}<div class="kfxs">{#each c.sources as x, k (k)}<span>{@html x.emblemHtml}{x.name}<em>{x.value}</em></span>{/each}</div>{/if}</div>{/snippet}
+{#snippet opt(it: Item)}{#if it.k === 'row' || it.k === 'am'}<div class="kop"><span class="kopl">{@html itemIcon(it)}{it.label}</span><span class="kopc">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.k === 'row' && it.effects.length}<span class="kqe">{#each it.effects as e, j (j)}<Eff {e} />{/each}</span>{:else if it.k === 'am' && it.said}<span class="kqe"><span class="muted amwho">{it.said}</span></span>{/if}</div>{/if}{/snippet}
 {#snippet band(n: string, title: string, hint: string)}<div class="kband">{#if n}<span class="kn">{n}</span>{/if}<b>{title}</b>{#if hint}<small>{hint}</small>{/if}</div>{/snippet}
 
 {#if view}
@@ -64,18 +66,21 @@
         <section class="kcard kedit">
           <div class="kband"><b>{ed.tab.label}{#if ed.tab.sub} · {ed.tab.sub}{/if}</b><small>{ed.hint}</small>{#if ed.tab.del}<button class="kx" data-pbdel={ed.tab.key} title={ed.removeTitle} aria-label={ed.removeTitle}>✕</button>{/if}</div>
           <div class="ked">
-            <div class="kslots">
+            <div class="kslots" style="--n:{Math.min(4, Math.max(2, ed.slots.length))}">
               {#each ed.slots as sl, i (i)}
-                {#if sl.k === 'pick'}<button class="ksl" class:on={sl.open} class:set={sl.set} data-pbslot={sl.key} aria-expanded={sl.open}><small>{sl.label}</small><b>{sl.value}<i>{sl.open ? '▴' : '▾'}</i></b><span class="kqe">{#each sl.gives as e, j (j)}<Eff {e} />{/each}</span></button>
-                {:else}{@const it = sl.item}<div class="ksl item">{#if it.k === 'row'}<small>{it.label}</small><span class="kqc">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.effects.length}<span class="kqe">{#each it.effects as e, j (j)}<Eff {e} />{/each}</span>{/if}{:else if it.k === 'am'}<small>{it.label}</small><span class="kqc pbfam">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.said}<span class="kqe"><span class="muted amwho">{it.said}</span></span>{/if}{/if}</div>{/if}
+                {#if sl.k === 'pick'}<button class="ksl" class:on={sl.open} class:set={sl.set} data-pbslot={sl.key} aria-expanded={sl.open}><span class="kslic" class:on={sl.icon.on}>{@html sl.icon.html}</span><span class="kslb"><small>{sl.label}</small><b>{sl.value}<i>{sl.open ? '▴' : '▾'}</i></b><span class="kqe">{#each sl.gives as e, j (j)}<Eff {e} />{/each}</span></span></button>
+                {:else}{@const it = sl.item}<div class="ksl item" class:set={sl.icon.on}><span class="kslic" class:on={sl.icon.on}>{@html sl.icon.html}</span><span class="kslb">{#if it.k === 'row'}<small>{it.label}</small><span class="kqc">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.effects.length}<span class="kqe">{#each it.effects as e, j (j)}<Eff {e} />{/each}</span>{/if}{:else if it.k === 'am'}<small>{it.label}</small><span class="kqc pbfam">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.said}<span class="kqe"><span class="muted amwho">{it.said}</span></span>{/if}{/if}</span></div>{/if}
               {/each}
             </div>
             {#if ed.grid}{@const g = ed.grid}
               <div class="kgrid"><div class="kgh"><b>{g.title}</b><input type="search" placeholder={g.qPh} bind:value={tq}>{#if g.none}<button class="btn ghost" data-pbchoose={g.none.value}>{g.none.label}</button>{/if}</div>
-                {#each g.groups as gr (gr.title)}{@const tl = gr.tiles.filter(x => !tq.trim() || (x.label + ' ' + x.hint).toLowerCase().includes(tq.trim().toLowerCase()))}{#if tl.length}<div class="kgrow"><span class="kgf">{gr.title}</span><div class="ktl">{#each tl as x (x.value)}<button class="ktile2" class:on={x.on} class:used={x.used} data-pbchoose={x.value} title={x.hint || undefined}><b>{x.label}</b>{#if x.hint}<small>{x.hint}</small>{/if}</button>{/each}</div></div>{/if}{/each}
+                {#each g.groups as gr (gr.title)}{@const tl = gr.tiles.filter(x => !tq.trim() || (x.label + ' ' + x.hint).toLowerCase().includes(tq.trim().toLowerCase()))}{#if tl.length}<div class="kgrow"><span class="kgf">{gr.title}</span><div class="ktl">{#each tl as x (x.value)}<button class="ktile2" class:on={x.on} class:used={x.used} data-pbchoose={x.value} title={x.hint || undefined}>{@html x.icon}<b>{x.label}</b>{#if x.hint}<small>{x.hint}</small>{/if}</button>{/each}</div></div>{/if}{/each}
               </div>
             {/if}
-            {#if ed.rest}<div class="krest pbbody" class:pbyou={ed.tab.key === 'you'}><Panel view={ed.rest} /></div>{/if}
+            {#if ed.rest}{#each ed.rest.left.concat(ed.rest.right) as bl, i (i)}
+              {#if bl.k === 'section' && bl.items.every(it => it.k !== 'extra')}<div class="kopt"><h4>{bl.title}</h4><div class="koptg">{#each bl.items as it, j (j)}{@render opt(it)}{/each}</div></div>
+              {:else}<div class="krest pbbody" class:pbyou={ed.tab.key === 'you'}><Panel view={{left: [bl], right: []}} /></div>{/if}
+            {/each}{/if}
           </div>
         </section>
         {/if}
