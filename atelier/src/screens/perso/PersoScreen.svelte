@@ -23,7 +23,7 @@
 {#if view}
   {@const h = view.head}
   <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.bags !== null && view.bags.none === null}<BagSide view={view.bags} />{:else if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
-    <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl></header>
+    <header class="kcard phead"><div class="kband"><b>{h.char}</b><small>{h.why}</small></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}
       <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps porterbox" title={p.title} meta={p.meta}>
