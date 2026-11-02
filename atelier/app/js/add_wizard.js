@@ -205,7 +205,6 @@ function awClick(d){
   if (d.awfrom) { addPath = A.path; addFrom(d.awfrom, A.base); return true; }
   if ('awaddw' in d) { awAddWeapon(); return true; }
   if ('awcycout' in d) { awCycleGo(true); return true; }
-  if ('awcycin' in d) { awCycleGo(false); return true; }
   if ('awdelw' in d) { awDelWeapon(); return true; }
   if ('back' in d && $('#overlay .awdlg')) {
     if (A.expert) A.expert = false;
@@ -227,21 +226,28 @@ function awFilter(q){
 /* ---- "Add a weapon" (notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md): a weapon you hold, not in any of the job's
    weapon cycles, added at the end of one through the Atelier's own layer over the states files
    (<Char>/atelier/overrides/mode_overrides.lua '+Mode', shared/utils/core/mode_overrides.lua), then its set created ---- */
-Object.assign(T.fr, {awAlready: 'déjà dans ce cycle', awWhere: 'Dans quel cycle ?', awInCycle: 'déjà ajoutée ici', awSetThereShort: 'son set existe déjà', awAddSayOnly: '{w} sera ajoutée à ton cycle {m}, après {a} :', awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
+Object.assign(T.fr, {awWasThere: 'y était, retirée', awAlready: 'déjà dans ce cycle', awWhere: 'Dans quel cycle ?', awInCycle: 'déjà ajoutée ici', awSetThereShort: 'son set existe déjà', awAddSayOnly: '{w} sera ajoutée à ton cycle {m}, après {a} :', awAddW: 'Ajouter une arme', awAddSay: '{w} sera ajoutée à ton cycle {m}, après {a}, et son set créé :', awAddSayFirst: '{w} sera ajoutée à ton cycle {m}, et son set créé :',
   awAddWhy: 'Le cycle est changé dans atelier/overrides/mode_overrides.lua, par-dessus ton fichier de modes (jamais réécrit) : retirer l’arme le rend tel quel.',
   awAddGo: 'Ajouter', awAddedSay: '{w} a été ajoutée à ton cycle {m} depuis l’Atelier.', awDelGo: 'Retirer du cycle', awDelWhy: 'Son set reste (supprimable par le menu « ⋯ » du set).',
   awAdding: 'Ajout au cycle {m}, GearSwap recharge…', awAddLater: '{w} ajoutée au cycle {m} dans ton fichier : elle sera là au prochain chargement du job (//gs reload). Son set n’a pas été créé : refais-le avec le jeu connecté.', awAddedOnly: '{w} ajoutée à ton cycle {m} (son set existait déjà). GearSwap recharge.', awSetThere: 'Son set existe déjà : seul le cycle change.', awAddFail: 'Le jeu n’a pas pris l’ajout au cycle : rien n’a été créé.', awRemoved: '{w} retirée du cycle {m}.'});
-Object.assign(T.en, {awAlready: 'in this cycle already', awWhere: 'In which cycle?', awInCycle: 'added here already', awSetThereShort: 'its set is there already', awAddSayOnly: '{w} will join your {m} cycle, after {a}:', awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
+Object.assign(T.en, {awWasThere: 'was there, taken out', awAlready: 'in this cycle already', awWhere: 'In which cycle?', awInCycle: 'added here already', awSetThereShort: 'its set is there already', awAddSayOnly: '{w} will join your {m} cycle, after {a}:', awAddW: 'Add a weapon', awAddSay: '{w} will join your {m} cycle, after {a}, and its set be created:', awAddSayFirst: '{w} will join your {m} cycle, and its set be created:',
   awAddWhy: 'The cycle changes in atelier/overrides/mode_overrides.lua, over your modes file (never rewritten): removing the weapon puts it back as it was.',
   awAddGo: 'Add', awAddedSay: '{w} was added to your {m} cycle from the Atelier.', awDelGo: 'Remove from the cycle', awDelWhy: 'Its set stays (deleted from the set’s “⋯” menu).',
   awAdding: 'Adding to the {m} cycle, GearSwap reloads…', awAddLater: '{w} added to the {m} cycle in your file: it is there at the job\u2019s next load (//gs reload). Its set was not created: do it again with the game linked.', awAddedOnly: '{w} added to your {m} cycle (its set was there already). GearSwap reloads.', awSetThere: 'Its set is there already: only the cycle changes.', awAddFail: 'The game did not take the cycle change: nothing was created.', awRemoved: '{w} removed from the {m} cycle.'});
 // The job's weapon cycles and the slot each fills (its values' sets), the values from the states file
+// The weapon states GearSwap lays (shared/utils/core/combat_mode.lua WEAPON_STATES) and their slot
+const AW_WEAPON_STATES = {MainWeapon: 'main', SubWeapon: 'sub', RangeWeapon: 'range', Shield: 'sub', StanceWeapon: 'main'};
 function awWeaponCycles(){
   const d = data();
   if (!d) return [];
-  return weaponModes(d).filter(m => !/^slot:/.test(m.name) && !m.onlyEmpty).map(m => {
+  // the weapon modes the page shows, and a weapon state whose sets hold no weapon yet (Kaories' BRD SubWeapon:
+  // sets.Genmei empty, no sets.Demersal), by its name: the states shared/utils/core/combat_mode.lua knows
+  const shown = weaponModes(d).filter(m => !/^slot:/.test(m.name) && !m.onlyEmpty);
+  const bare = d.modes.filter(m => AW_WEAPON_STATES[m.name] && !shown.some(x => x.name === m.name))
+    .map(m => ({name: m.name, desc: m.desc || m.name, values: m.values, sets: {}, slot: AW_WEAPON_STATES[m.name]}));
+  return shown.concat(bare).map(m => {
     const slots = new Set(m.values.flatMap(v => Object.keys((m.sets[v] || {}).pieces || {})));
-    const slot = ['main', 'sub', 'range', 'ammo'].find(s => slots.has(s));
+    const slot = ['main', 'sub', 'range', 'ammo'].find(s => slots.has(s)) || m.slot;
     // the values as the layer leaves them now (the export's, read after the last load, with what was added or taken
     // out since): the list right at once, before the game's next export
     const minus = awRemovedOf(m.name), seen = (d.modes.find(x => x.name === m.name) || {}).values || m.values;
@@ -273,11 +279,14 @@ function awWeaponChoices(){
   const cycles = awWeaponCycles(), owned = ownedOf() || {}, rows = (catalog() || {}).row || {}, out = [];
   const wears = (name, slot) => { const r = rows[name]; return !!r && r[2].split(' ').includes(slot) && r[3].split(' ').includes(S.job); };
   for (const c of cycles) {
-    const row = (name, value, added) => ({mode: c.name, desc: c.desc, slot: c.slot, name, value, added});
+    const row = (name, value, added, back) => ({mode: c.name, desc: c.desc, slot: c.slot, name, value, added, back});
     const added = awAdded(c.name), held = new Set(c.values.flatMap(v => [v, awItemOf(c, v)]));
-    for (const v of added) out.push(row(awItemOf(c, v), v, true));
+    for (const v of added) out.push(row(awItemOf(c, v), v, true, false));
+    // (one taken out of the cycle here: its value of before, put back by the layer: back)
+    const removed = awRemovedOf(c.name);
+    for (const v of removed) if (!held.has(v)) { out.push(row(awItemOf(c, v), v, false, true)); held.add(awItemOf(c, v)); }
     for (const name of [...new Set((owned[c.slot] || []).map(x => x.name))].sort())
-      if (!held.has(name) && wears(name, c.slot)) out.push(row(name, awValueFor(c, name), false));
+      if (!held.has(name) && wears(name, c.slot)) out.push(row(name, awValueFor(c, name), false, false));
   }
   return out;
 }
@@ -295,6 +304,8 @@ function awStay(toast){
 async function awAddWeapon(){
   const A = S._aw, w = A && A.addw;
   if (!w || A.busy || !liveWrite()) return;
+  // taken out before: only its '-' leaves the layer (awCycleGo)
+  if (w.back) { A.cyc = {mode: w.mode, desc: w.desc, name: w.value}; return awCycleGo(false); }
   A.busy = true; S.toast = t('awAdding', {m: w.desc}); render();
   const map = modeOverrides(), scope = S.job, key = '+' + w.mode;
   map[scope] = map[scope] || {};
@@ -325,20 +336,20 @@ async function awDelWeapon(){
 
 /* ---- "My cycles": any weapon of a cycle taken out (the states file's too) or put back, through the same layer
    ('-MainWeapon' = {'Colada'}: shared/utils/core/mode_overrides.lua remove_values); the states file never rewritten ---- */
-Object.assign(T.fr, {awCycles: 'Mes cycles', awCycSay: '{w} est dans ton cycle {m}.', awCycOutSay: '{w} a été retirée de ton cycle {m} depuis l’Atelier.',
-  awCycOut: 'Retirer du cycle', awCycIn: 'Remettre dans le cycle', awCycOutWhy: 'Retirée par-dessus ton fichier de modes (jamais réécrit), dans atelier/overrides/mode_overrides.lua : « Remettre » la rend. Son set reste.',
-  awCycLast: 'C’est la seule arme de ce cycle : un cycle en garde une au moins.', awCycOutTag: 'retirée', awCycDone: '{w} retirée du cycle {m}.', awCycBack: '{w} remise dans le cycle {m}.',
-  awCycGone: 'plus dans tes sacs', delCycle: ' Et retirée du cycle {m}.'});
-Object.assign(T.en, {awCycles: 'My cycles', awCycSay: '{w} is in your {m} cycle.', awCycOutSay: '{w} was taken out of your {m} cycle from the Atelier.',
-  awCycOut: 'Take out of the cycle', awCycIn: 'Put back in the cycle', awCycOutWhy: 'Taken out over your modes file (never rewritten), in atelier/overrides/mode_overrides.lua: “Put back” brings it back. Its set stays.',
-  awCycLast: 'It is the only weapon of this cycle: a cycle keeps one at least.', awCycOutTag: 'taken out', awCycDone: '{w} taken out of the {m} cycle.', awCycBack: '{w} put back in the {m} cycle.',
-  awCycGone: 'no longer in your bags', delCycle: ' And taken out of the {m} cycle.'});
+Object.assign(T.fr, {awCycles: 'Mes cycles', awCycSay: '{w} est dans ton cycle {m}.',
+  awCycOut: 'Retirer du cycle', awCycOutWhy: 'Retirée par-dessus ton fichier de modes (jamais réécrit), dans atelier/overrides/mode_overrides.lua. Son set reste : pour la remettre, « Ajouter une arme ».',
+  awCycLast: 'C’est la seule arme de ce cycle : un cycle en garde une au moins.', awCycDone: '{w} retirée du cycle {m}.', awCycBack: '{w} remise dans le cycle {m}.',
+  awBackSay: '{w} a été retirée de ton cycle {m} : elle y revient, avec son set d’avant.', delCycle: ' Et retirée du cycle {m}.'});
+Object.assign(T.en, {awCycles: 'My cycles', awCycSay: '{w} is in your {m} cycle.',
+  awCycOut: 'Take out of the cycle', awCycOutWhy: 'Taken out over your modes file (never rewritten), in atelier/overrides/mode_overrides.lua. Its set stays: to bring it back, “Add a weapon”.',
+  awCycLast: 'It is the only weapon of this cycle: a cycle keeps one at least.', awCycDone: '{w} taken out of the {m} cycle.', awCycBack: '{w} put back in the {m} cycle.',
+  awBackSay: '{w} was taken out of your {m} cycle: it comes back, with its set of before.', delCycle: ' And taken out of the {m} cycle.'});
 // The values the Atelier took out of a cycle (the layer as the page holds it)
 const awRemovedOf = mode => ((modeOverrides()[S.job] || {})['-' + mode] || []).slice();
-// Every weapon of every cycle: [{mode, desc, slot, name, out}] (the ones taken out here after the others)
+// Every weapon of every cycle: [{mode, desc, slot, name, count}]. One taken out is no longer there: it is offered
+// again under "Add a weapon" (awWeaponChoices, back)
 function awCycleItems(){
-  return awWeaponCycles().flatMap(c => c.values.map(name => ({mode: c.name, desc: c.desc, slot: c.slot, name, out: false, count: c.values.length}))
-    .concat(awRemovedOf(c.name).filter(n => !c.values.includes(n)).map(name => ({mode: c.name, desc: c.desc, slot: c.slot, name, out: true, count: c.values.length}))));
+  return awWeaponCycles().flatMap(c => c.values.map(name => ({mode: c.name, desc: c.desc, slot: c.slot, name, count: c.values.length})));
 }
 // The layer changed for one value of a cycle: out (the Atelier's own addition dropped, else '-'), or back in
 function awCycleLayer(mode, name, out){

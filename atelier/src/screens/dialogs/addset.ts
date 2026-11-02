@@ -21,7 +21,7 @@ export type AddBody =
       opts: Array<{k: string; a: string; b: string; rec: boolean}>; nameLabel: string; name: string; also: string; alsoList: string[]; file: string; block: string}
   | {kind: 'addw'; say: string; set: string; why: string; added: boolean; go: string; block: string;
       where: string; cycles: Array<{mode: string; label: string; desc: string; on: boolean; off?: boolean}>}
-  | {kind: 'cyc'; say: string; why: string; out: boolean; go: string; block: string}
+  | {kind: 'cyc'; say: string; why: string; go: string; block: string}
   | {kind: 'expert'; ph: string; groups: Array<{label: string; rows: AwRow[]}>; create: string; open: string}
   | {kind: 'paths'; paths: string[]}
   | {kind: 'html'; html: string};
@@ -125,11 +125,11 @@ function subjectsBody(list: LegacyAny[]): AddBody {
   // the weapons: a tab "Add a weapon", every weapon once; the cycle it joins is chosen in its summary (addwBody)
   if (A().fam === 'weapons') {
     const choices = awWeaponChoices(), names = [...new Set(choices.map(c => c.name))].sort();
-    // a tab "My cycles": every weapon of every cycle, to take out (the states file's too) or put back
+    // a tab "My cycles": every weapon of every cycle, to take out (the states file's too)
     const items = awCycleItems();
-    if (items.length) out.push({label: t('awCycles'), color: '', count: String(items.filter((c: LegacyAny) => !c.out).length), chips: [],
+    if (items.length) out.push({label: t('awCycles'), color: '', count: String(items.length), chips: [],
       packs: [...new Set(items.map((c: LegacyAny) => c.desc))].map(m => ({label: m as string, chips: items.filter((c: LegacyAny) => c.desc === m).map((c: LegacyAny) => ({key: 'cyc:' + c.mode + ':' + c.name,
-        label: c.name, tierList: [], tiers: '', has: !c.out, q: c.name.toLowerCase(), all: false, fam: c.out, where: c.out ? t('awCycOutTag') : undefined}))})), fams: []});
+        label: c.name, tierList: [], tiers: '', has: true, q: c.name.toLowerCase(), all: false, fam: false}))})), fams: []});
     if (names.length) out.push({label: t('awAddW'), color: '', count: String(names.length), packs: [], fams: [],
       chips: names.map(n => ({key: 'addw:' + n, label: n, tierList: [], tiers: '', has: choices.some(c => c.name === n && c.added),
         q: n.toLowerCase(), all: false, fam: false}))});
@@ -235,8 +235,7 @@ function oldBody(cards: LegacyAny[]): AddBody {
 // A weapon of a cycle: take it out, or put it back (add_wizard.js awCycleGo)
 function cycBody(): AddBody {
   const c = A().cyc, live = liveWrite();
-  if (c.out) return {kind: 'cyc', say: t('awCycOutSay', {w: c.name, m: c.desc}), why: t('awCycOutWhy'), out: true, go: t('awCycIn'), block: live ? '' : t('awNoWay')};
-  return {kind: 'cyc', say: t('awCycSay', {w: c.name, m: c.desc}), why: t('awCycOutWhy'), out: false, go: t('awCycOut'),
+  return {kind: 'cyc', say: t('awCycSay', {w: c.name, m: c.desc}), why: t('awCycOutWhy'), go: t('awCycOut'),
     block: c.count < 2 ? t('awCycLast') : live ? '' : t('awNoWay')};
 }
 
@@ -246,13 +245,14 @@ function addwBody(): AddBody {
   const there = setThere(awWeaponPath(w.value)), set = there ? t('awSetThere') : `${awWeaponPath(w.value)} = { ${w.slot} = '${w.name}' }`;
   // the cycles this weapon can join (or was added to here), one to choose
   const cycles = awWeaponChoices().filter(c => c.name === w.name).map(c => ({mode: c.mode, label: c.desc, on: c.mode === w.mode,
-    desc: c.added ? t('awInCycle') : setThere(awWeaponPath(c.value)) ? t('awSetThereShort') : awWeaponPath(c.value)}));
+    desc: c.added ? t('awInCycle') : c.back ? t('awWasThere') : setThere(awWeaponPath(c.value)) ? t('awSetThereShort') : awWeaponPath(c.value)}));
   // and the cycles that hold it already, greyed
   const held = awWeaponCycles().filter((c: LegacyAny) => !cycles.some(x => x.mode === c.name) && c.values.some((v: string) => awItemOf(c, v) === w.name))
     .map((c: LegacyAny) => ({mode: c.name, label: c.desc, on: false, off: true, desc: t('awAlready')}));
   const order = awWeaponCycles().map((c: LegacyAny) => c.name);
   const pick = {where: t('awWhere'), cycles: cycles.concat(held).sort((x, y) => order.indexOf(x.mode) - order.indexOf(y.mode))};
   return w.added ? {kind: 'addw', say: t('awAddedSay', {w: w.name, m: w.desc}), set: '', why: t('awDelWhy'), added: true, go: t('awDelGo'), block: '', ...pick}
+    : w.back ? {kind: 'addw', say: t('awBackSay', {w: w.name, m: w.desc}), set: '', why: t('awAddWhy'), added: false, go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay'), ...pick}
     : {kind: 'addw', say: last ? t(there ? 'awAddSayOnly' : 'awAddSay', {w: w.name, m: w.desc, a: last}) : t('awAddSayFirst', {w: w.name, m: w.desc}), set, why: t('awAddWhy'), added: false,
       go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay'), ...pick};
 }
