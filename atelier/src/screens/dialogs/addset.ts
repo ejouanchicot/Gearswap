@@ -15,13 +15,12 @@ export interface AwOpt { value: string; label: string; desc: string; rec: boolea
 export interface AwRow { q: string; say: string; path: string; there: boolean; others: string[]; why: string }
 export type AddBody =
   | {kind: 'fams'; ask: string; warn: string; fams: Array<{f: string; icon: string; label: string; when: string}>}
-  | {kind: 'subjects'; ask: string; ph: string; tabs: AwTab[]; color: string; all: AwChip | null; subs: AwTab[]; chips: AwChip[]; results: AwChip[] | null; none: string; expert: string; hasTip: string}
+  | {kind: 'subjects'; ask: string; ph: string; tabs: AwTab[]; color: string; all: AwChip | null; subs: AwTab[]; chips: AwChip[]; results: AwChip[] | null; none: string; expert: string; hasTip: string;
+      /** the weapons: where their cycles are edited (weapon_cycles.js, in the job's settings) */
+      where: string}
   | {kind: 'ask'; questions: Array<{k: string; label: string; opts: AwOpt[]}>; next: string}
   | {kind: 'sum'; say: string; has: null | {path: string; open: string; game: string}; today: string; todayLabel: string; startLabel: string;
       opts: Array<{k: string; a: string; b: string; rec: boolean}>; nameLabel: string; name: string; also: string; alsoList: string[]; file: string; block: string}
-  | {kind: 'addw'; say: string; set: string; why: string; added: boolean; go: string; block: string;
-      where: string; cycles: Array<{mode: string; label: string; desc: string; on: boolean; off?: boolean}>}
-  | {kind: 'cyc'; say: string; why: string; go: string; block: string}
   | {kind: 'expert'; ph: string; groups: Array<{label: string; rows: AwRow[]}>; create: string; open: string}
   | {kind: 'paths'; paths: string[]}
   | {kind: 'html'; html: string};
@@ -122,18 +121,6 @@ function subjectsBody(list: LegacyAny[]): AddBody {
     const packed = new Set(packs.flatMap(p => p.chips));
     return {label, color: colors.get(label) || '', count: String(chips.filter(c => !c.fam && !c.all).length), chips: sorted(chips.filter(c => !c.fam && !packed.has(c))), packs, fams: sorted(chips.filter(c => c.fam))}; });
   out.sort((a, b) => (a.label === t('awSets') ? 1 : 0) - (b.label === t('awSets') ? 1 : 0) || b.chips.length - a.chips.length);
-  // the weapons: a tab "Add a weapon", every weapon once; the cycle it joins is chosen in its summary (addwBody)
-  if (A().fam === 'weapons') {
-    const choices = awWeaponChoices(), names = [...new Set(choices.map(c => c.name))].sort();
-    // a tab "My cycles": every weapon of every cycle, to take out (the states file's too)
-    const items = awCycleItems();
-    if (items.length) out.push({label: t('awCycles'), color: '', count: String(items.length), chips: [],
-      packs: [...new Set(items.map((c: LegacyAny) => c.desc))].map(m => ({label: m as string, chips: items.filter((c: LegacyAny) => c.desc === m).map((c: LegacyAny) => ({key: 'cyc:' + c.mode + ':' + c.name,
-        label: c.name, tierList: [], tiers: '', has: true, q: c.name.toLowerCase(), all: false, fam: false}))})), fams: []});
-    if (names.length) out.push({label: t('awAddW'), color: '', count: String(names.length), packs: [], fams: [],
-      chips: names.map(n => ({key: 'addw:' + n, label: n, tierList: [], tiers: '', has: choices.some(c => c.name === n && c.added),
-        q: n.toLowerCase(), all: false, fam: false}))});
-  }
   const st = A(), q = (st.q || '').trim().toLowerCase();
   // the search: every school at once, a name or one of its words starting with what is typed (Paralyze, not
   // Barparalyze); the names that start with it first
@@ -141,7 +128,7 @@ function subjectsBody(list: LegacyAny[]): AddBody {
     const hit = (c: AwChip) => { const l = c.label.toLowerCase(); return l.startsWith(q) || l.split(/[\s\-\/·()]+/).some(w => w.startsWith(q)); };
     const results = out.flatMap(g => [...g.chips, ...g.packs.flatMap(p => p.chips), ...g.fams].filter(c => !c.all && hit(c)).map(c => ({...c, color: g.color, where: g.label})))
       .sort((a, b) => Number(!a.label.toLowerCase().startsWith(q)) - Number(!b.label.toLowerCase().startsWith(q)) || a.label.localeCompare(b.label));
-    return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'), tabs: [], color: '', all: null, subs: [], chips: [], results, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas')};
+    return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'), tabs: [], color: '', all: null, subs: [], chips: [], results, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas'), where: A().fam === 'weapons' ? t('awCyclesWhere') : ''};
   }
   // a tab a school (Sets last); in it a tab its spells, a tab each long series, a tab its families
   const cur = out.find(g => g.label === st.tab) || out[0]!;
@@ -152,7 +139,7 @@ function subjectsBody(list: LegacyAny[]): AddBody {
   return {kind: 'subjects', ask: t('awWhatQ'), ph: t('awSearch'),
     tabs: out.map(g => ({key: g.label, label: g.label, color: g.color, count: String(g.chips.filter(c => !c.all).length + g.packs.reduce((n, p) => n + p.chips.length, 0)), on: g === cur})),
     color: cur.color, all, subs: subsAll.length > 1 ? subsAll.map(s => ({key: s.key, label: s.label, color: '', count: String(s.chips.length), on: s === sub})) : [],
-    chips: sub.chips, results: null, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas')};
+    chips: sub.chips, results: null, none: t('awNone'), expert: t('awExpert'), hasTip: t('awHas'), where: A().fam === 'weapons' ? t('awCyclesWhere') : ''};
 }
 
 // the label and words of an answer
@@ -232,37 +219,12 @@ function oldBody(cards: LegacyAny[]): AddBody {
   return {kind: 'paths', paths: cards.filter((c: LegacyAny) => c.fam === A().fam).flatMap((c: LegacyAny) => c.variants.map((v: LegacyAny) => v.set.path))};
 }
 
-// A weapon of a cycle: take it out, or put it back (add_wizard.js awCycleGo)
-function cycBody(): AddBody {
-  const c = A().cyc, live = liveWrite();
-  return {kind: 'cyc', say: t('awCycSay', {w: c.name, m: c.desc}), why: t('awCycOutWhy'), go: t('awCycOut'),
-    block: c.count < 2 ? t('awCycLast') : live ? '' : t('awNoWay')};
-}
-
-// The summary of a weapon added to a cycle (add_wizard.js awAddWeapon / awDelWeapon)
-function addwBody(): AddBody {
-  const w = A().addw, cycle = awWeaponCycles().find((c: LegacyAny) => c.name === w.mode), last = cycle && cycle.values.length ? cycle.values[cycle.values.length - 1] : '';
-  const there = setThere(awWeaponPath(w.value)), set = there ? t('awSetThere') : `${awWeaponPath(w.value)} = { ${w.slot} = '${w.name}' }`;
-  // the cycles this weapon can join (or was added to here), one to choose
-  const cycles = awWeaponChoices().filter(c => c.name === w.name).map(c => ({mode: c.mode, label: c.desc, on: c.mode === w.mode,
-    desc: c.added ? t('awInCycle') : c.back ? t('awWasThere') : setThere(awWeaponPath(c.value)) ? t('awSetThereShort') : awWeaponPath(c.value)}));
-  // and the cycles that hold it already, greyed
-  const held = awWeaponCycles().filter((c: LegacyAny) => !cycles.some(x => x.mode === c.name) && c.values.some((v: string) => awItemOf(c, v) === w.name))
-    .map((c: LegacyAny) => ({mode: c.name, label: c.desc, on: false, off: true, desc: t('awAlready')}));
-  const order = awWeaponCycles().map((c: LegacyAny) => c.name);
-  const pick = {where: t('awWhere'), cycles: cycles.concat(held).sort((x, y) => order.indexOf(x.mode) - order.indexOf(y.mode))};
-  return w.added ? {kind: 'addw', say: t('awAddedSay', {w: w.name, m: w.desc}), set: '', why: t('awDelWhy'), added: true, go: t('awDelGo'), block: '', ...pick}
-    : w.back ? {kind: 'addw', say: t('awBackSay', {w: w.name, m: w.desc}), set: '', why: t('awAddWhy'), added: false, go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay'), ...pick}
-    : {kind: 'addw', say: last ? t(there ? 'awAddSayOnly' : 'awAddSay', {w: w.name, m: w.desc, a: last}) : t('awAddSayFirst', {w: w.name, m: w.desc}), set, why: t('awAddWhy'), added: false,
-      go: t('awAddGo'), block: liveWrite() ? '' : t('awNoWay'), ...pick};
-}
-
 /** The "+ Set" window at its step (add_wizard.js awRender) */
 export function addStepView(): AddSetView {
   const st = A(), list = awSituations(), cards = (S as LegacyAny)._cards || buildCards(data() as LegacyAny).cards;
   const xs = list && st.subj ? awOfSubject() : [];
   const body: AddBody = st.expert && list ? expertBody(list) : st.step === 0 ? famsBody(list, cards) : !list ? oldBody(cards)
-    : st.step === 1 ? subjectsBody(list) : st.cyc ? cycBody() : st.addw ? addwBody() : st.step === 2 ? askBody(xs) : sumBody(xs, list);
+    : st.step === 1 ? subjectsBody(list) : st.step === 2 ? askBody(xs) : sumBody(xs, list);
   const steps = ['awStepWhen', 'awStepWhat', 'awStepAsk', 'awStepSum'].map((k, i) => ({label: `${i + 1}. ${t(k)}`, on: i === st.step && !st.expert, done: i < st.step}));
-  return {title: t('awTitle') + (st.cyc && st.step >= 2 ? ' · ' + st.cyc.name : st.addw && st.step >= 2 ? ' · ' + st.addw.name : st.subj && xs[0] && st.step >= 2 ? ' · ' + subjLabel(xs[0]) : ''), steps, body, first: st.step === 0 && !st.expert, back: st.expert ? t('awBackToWizard') : t('back'), cancel: t('cancel'), exists: t('exists'), rec: t('awRec')};
+  return {title: t('awTitle') + (st.subj && xs[0] && st.step >= 2 ? ' · ' + subjLabel(xs[0]) : ''), steps, body, first: st.step === 0 && !st.expert, back: st.expert ? t('awBackToWizard') : t('back'), cancel: t('cancel'), exists: t('exists'), rec: t('awRec')};
 }

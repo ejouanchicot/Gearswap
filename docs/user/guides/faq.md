@@ -149,16 +149,18 @@ A set you already have under another name is opened instead of a second one bein
 **See every possible name (experts)** lists every name the job's code reads, one line each,
 with the other spellings GearSwap reads the same way folded under it.
 
-**Add a weapon to a weapon cycle.** A weapon set (`sets.Daybreak`) is only worn while the
-weapon is in one of the job's cycles (Main Weapon, Sub Weapon...). In **+**, **Weapons**,
-the tab **Add a weapon** lists the weapons you hold that the job can wear and that no cycle
-has yet, by cycle. Choosing one adds it at the end of that cycle and creates its set. The
-cycle is changed in `atelier/overrides/mode_overrides.lua` (`['+MainWeapon'] = {'Daybreak'}`),
-laid over your states file, which is never rewritten. The tab **My cycles** lists every
-weapon of every cycle, your states file's too: **Take out of the cycle** removes it
-(`['-MainWeapon'] = {'Colada'}`, its set stays), **Put back in the cycle** brings it back; a
-cycle always keeps one weapon. Deleting a weapon's set (its "⋯" menu) takes the weapon out of
-its cycle too. The game must be linked.
+**Edit a weapon cycle (order, add, take out).** A weapon set (`sets.Daybreak`) is only worn while
+the weapon is in one of the job's cycles (Main Weapon, Sub Weapon...). In **Configuration**, **Modes & keys**,
+**Equipment**, click Main Weapon or Sub Weapon: its cycle opens under the modes, its weapons as tiles in the order its
+key goes through them (1, 2, 3, then back to 1), the one worn on load framed in gold, an empty or missing set in
+orange. Drag a weapon to move it, or use its **◀ ▶**; **✕** takes it out (its set stays); **File order** puts your
+states file's order back. Under them, **Add** lists the weapons you hold that the job can wear in that slot and the
+cycle does not have yet (type to filter); one taken out earlier is marked "was there". A weapon whose set holds it in
+another hand gets its own set: Colada added to Sub Weapon, while `sets.Colada` is its main hand, gets
+`sets["Colada Sub"] = { sub = 'Colada' }`. Every change goes to `atelier/overrides/mode_overrides.lua`
+(`['+SubWeapon']` added, `['-MainWeapon']` taken out, `['=MainWeapon']` the order), laid over your states file, which
+is never rewritten, and GearSwap reloads. A cycle always keeps one weapon. Creating a weapon's set needs the game
+linked. Deleting a weapon's set (its "⋯" menu) takes the weapon out of its cycle too.
 
 **Optimize every set of a job at once.** On the Sets screen, **⚡ Optimize all** (**⚡ Tout
 optimiser** in French, top of the list of sets) searches every set of the job shown, one after the other, each with its own

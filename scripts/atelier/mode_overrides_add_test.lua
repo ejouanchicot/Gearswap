@@ -101,5 +101,21 @@ ModeOverrides.apply('RDM')
 check('the last kept', list(state.MainWeapon), 'Naegling')
 check('the entry named', #errors, 1)
 
+-- 9. a cycle reordered ('=Mode'): the values named first, in that order, the others after them; the one worn kept;
+-- a name the mode does not hold skipped; taken out, added, then ordered (the weapon added can be placed)
+state = {MainWeapon = M{'Naegling', 'Colada', 'Maxentius'}}
+state.MainWeapon:set('Colada')
+errors = {}
+ModeOverrides.read = function() return {RDM = {['=MainWeapon'] = {'Maxentius', 'Nothing', 'Naegling'}}} end
+ModeOverrides.apply('RDM')
+check('reordered', list(state.MainWeapon), 'Maxentius,Naegling,Colada')
+check('the one worn kept when reordered', state.MainWeapon.current, 'Colada')
+check('an unknown name skipped, not refused', #errors, 0)
+state = {MainWeapon = M{'Naegling', 'Colada', 'Maxentius'}}
+ModeOverrides.read = function() return {RDM = {['-MainWeapon'] = {'Colada'}, ['+MainWeapon'] = {'Daybreak'}, ['=MainWeapon'] = {'Daybreak', 'Colada', 'Naegling'}}} end
+ModeOverrides.apply('RDM')
+check('out, in, then ordered', list(state.MainWeapon), 'Daybreak,Naegling,Maxentius')
+check('the states file values kept for the export', table.concat(ModeOverrides.base_values().MainWeapon, ','), 'Naegling,Colada,Maxentius')
+
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

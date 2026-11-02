@@ -367,6 +367,13 @@ local function build_stages(data)
             local ok_m, ModeOverrides = pcall(require, 'shared/utils/core/mode_overrides')
             data.mode_overrides = ok_m and ModeOverrides.read() or nil
             data.mode_file = ok_m and ModeOverrides.file_values() or nil
+            -- the weapon cycles as their states file lists them, before the page's entries (weapon_cycles.js)
+            -- (only the job exported's: the module may outlive a job change; a job that never laid the file keeps
+            -- the last job's lists, never sent as its own)
+            if ok_m then
+                local base, base_job = ModeOverrides.base_values()
+                data.mode_base = base_job ~= nil and player and base_job == player.main_job and base or nil
+            end
             -- the keys //gs c tb bound for this game session (shared/utils/keybinds/temp_binds.lua)
             local ok_t, TempBinds = pcall(require, 'shared/utils/keybinds/temp_binds')
             data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil

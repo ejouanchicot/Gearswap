@@ -20,6 +20,9 @@ stay in your hands.
 
 - Add a weapon: add its name to `MainWeapon` in `DNC_STATES.lua` and a set with that
   exact name, holding `main` and `sub`.
+  Or in the Atelier, **Configuration**, **Modes & keys**, **Equipment**: the weapon mode chosen shows its
+  cycle, to order, add to (its set created) or take out of, without your states file being rewritten
+  ([FAQ](../../guides/faq.md)).
 - Add an off-hand override: a value in `SubWeaponOverride` and a set of that name with
   a `sub` piece. A set without `sub` gives a warning and the off-hand is left alone.
 - A value with no set of that name forces no weapon. If your

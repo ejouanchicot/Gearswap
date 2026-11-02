@@ -23,7 +23,7 @@
   {#if b.results}<section class="awgroup awres">{#if b.results.length}<div class="awchips">{#each b.results as c (c.key)}{@render chip(c)}{/each}</div>{:else}<p class="awnote">{b.none}</p>{/if}</section>
   {:else}<div class="awtabs" role="tablist">{#each b.tabs as x (x.key)}<button role="tab" class="awtab" aria-selected={x.on} style={x.color ? `--sc:${x.color}` : undefined} data-awtab={x.key}>{x.label}<em>{x.count}</em></button>{/each}</div>
   <section class="awgroup awpane" style={b.color ? `--sc:${b.color}` : undefined}>{#if b.all}{@render chip(b.all)}{/if}{#if b.subs.length}<div class="awsubs" role="tablist">{#each b.subs as x (x.key)}<button role="tab" class="awsubt" aria-selected={x.on} data-awsub={x.key}>{x.label} <em>{x.count}</em></button>{/each}</div>{/if}<div class="awchips">{#each b.chips as c (c.key)}{@render chip(c)}{/each}</div></section>{/if}
-  <p class="awnote">✓ : {b.hasTip}. <button class="linkbtn" data-awexpert>{b.expert}</button></p>
+  <p class="awnote">✓ : {b.hasTip}. <button class="linkbtn" data-awexpert>{b.expert}</button></p>{#if b.where}<p class="awnote">{b.where}</p>{/if}
 {:else if b.kind === 'ask'}
   {#each b.questions as q (q.k)}<section class="awask"><p class="awq">{q.label}</p><div class="awopts">{#each q.opts as o (o.value)}<button class="awopt {o.on ? 'on' : ''}" data-awans={q.k + ':' + o.value} aria-pressed={o.on}><b>{o.label}{#if o.rec}<span class="rec">{view.rec}</span>{/if}</b>{#if o.desc}<small>{o.desc}</small>{/if}</button>{/each}</div></section>{/each}
 {:else if b.kind === 'sum'}
@@ -34,12 +34,6 @@
   <div class="awrow"><span>{b.nameLabel}</span><div><code>{b.name}</code>{#if b.also}<details class="awalso"><summary>{b.also}</summary>{#each b.alsoList as p (p)}<code>{p}</code>{/each}</details>{/if}</div></div>{/if}
   </div>
   {#if b.block}<p class="kwarn small">{b.block}</p>{:else if !b.has}<p class="awnote">{b.file}</p>{/if}
-{:else if b.kind === 'addw'}
-  <section class="awask"><p class="awq">{b.where}</p><div class="awopts">{#each b.cycles as c (c.mode)}<button class="awopt {c.on ? 'on' : ''}" data-awaddcyc={c.mode} aria-pressed={c.on} disabled={!!c.off}><b>{c.label}</b><small>{c.desc}</small></button>{/each}</div></section>
-  <div class="awrecap"><p class="say">{b.say}</p>{#if b.set}<div class="awrow"><span></span><code>{b.set}</code></div>{/if}</div>
-  <p class="awnote">{b.why}</p>{#if b.block}<p class="kwarn small">{b.block}</p>{/if}
-{:else if b.kind === 'cyc'}
-  <div class="awrecap"><p class="say">{b.say}</p></div><p class="awnote">{b.why}</p>{#if b.block}<p class="kwarn small">{b.block}</p>{/if}
 {:else if b.kind === 'expert'}
   <input id="awq" class="gpq awsearch" type="search" placeholder={b.ph} autocomplete="off" spellcheck="false">
   {#each b.groups as g (g.label)}<section class="awgroup awexp"><h4>{g.label}</h4>{#each g.rows as r (r.path)}<div class="awline" data-awq={r.q}><b>{r.say}</b>{#if r.there}<button class="awtag ok" data-addopen={r.path}>{b.open}</button>{:else}<button class="awtag" data-awpick={r.path} disabled={!!r.why} title={r.why || undefined}>{b.create}</button>{/if}<code>{r.path}</code>{#if r.others.length}<details class="awalso"><summary>+{r.others.length}</summary>{#each r.others as p (p)}<code>{p}</code>{/each}</details>{/if}</div>{/each}</section>{/each}
@@ -47,4 +41,4 @@
   {#each b.paths as p, i (i)}<button class="opt" data-addopen={p}><span style="font-family:var(--mono);font-size:13px">{p}</span><span class="state">{@html view.exists + ' ›'}</span></button>{/each}
 {:else}{@html b.html}{/if}
 </div>
-<footer><button class="btn ghost" data-back disabled={view.first}>{@html view.back}</button><button class="btn ghost" data-close>{@html view.cancel}</button><span class="sp"></span>{#if b.kind === 'ask'}<button class="btn" data-awnext>{b.next}</button>{/if}{#if b.kind === 'cyc'}<button class="btn" data-awcycout disabled={!!b.block}>{b.go}</button>{/if}{#if b.kind === 'addw'}{#if b.added}<button class="btn" data-awdelw>{b.go}</button>{:else}<button class="btn" data-awaddw disabled={!!b.block}>{b.go}</button>{/if}{/if}{#if b.kind === 'sum' && b.has}<button class="btn" data-addopen={b.has.path}>{b.has.open}</button>{/if}</footer></div>
+<footer><button class="btn ghost" data-back disabled={view.first}>{@html view.back}</button><button class="btn ghost" data-close>{@html view.cancel}</button><span class="sp"></span>{#if b.kind === 'ask'}<button class="btn" data-awnext>{b.next}</button>{/if}{#if b.kind === 'sum' && b.has}<button class="btn" data-addopen={b.has.path}>{b.has.open}</button>{/if}</footer></div>

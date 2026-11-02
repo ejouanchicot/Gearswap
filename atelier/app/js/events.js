@@ -213,7 +213,7 @@ document.addEventListener('click', e => {
   if (d.addopen) { S.selPath[S.job] = d.addopen; S._found = null; closeOverlay(); render(); return; }
   if (d.addws) { openCreate(d.addws); return; }
   if ('creatego' in d) { createGo(); return; }
-  if (awClick(d) || addClick(d)) return;
+  if (awClick(d) || addClick(d) || wcClick(d)) return;
   if ('close' in d) closeOverlay();
 });
 document.addEventListener('input', e => {

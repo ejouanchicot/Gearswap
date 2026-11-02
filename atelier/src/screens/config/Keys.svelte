@@ -12,6 +12,7 @@
 -->
 <script lang="ts">
   import ProFrame from './ProFrame.svelte';
+  import CycleEdit from './CycleEdit.svelte';
   import type {KeysView, ModeRow} from './keys';
 
   let {view}: {view: KeysView} = $props();
@@ -36,6 +37,7 @@
 <ProFrame nav={p.nav} head={p.head} detail={p.detail} foot={p.foot} credit={view.credit}>
   {#if !p.keys}
     <div class="cfg-grp">{#each g.rows as m (m.name)}{@render option(m)}{/each}</div>
+    {#if view.cycle}<CycleEdit c={view.cycle} />{/if}
   {:else}
     {@const L = view.list}
     <div class="kfilters">{#each L.filters as fl (fl.id)}<button type="button" class:on={fl.on} class:bad={fl.bad} data-keysfilter={fl.id}>{fl.label}</button>{/each}{#if view.bar.others}<button type="button" class="kothers" data-keysall title={view.bar.others.title}>{@html view.bar.others.textHtml}</button>{/if}</div>

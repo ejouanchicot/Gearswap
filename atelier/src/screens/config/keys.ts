@@ -40,6 +40,7 @@ export interface ModeRow {
 }
 import type {ProNav, ProDetail, ProFoot} from './pro';
 import {iconCredit} from './pro';
+import {cycleView, type CycleView} from './cycle';
 
 /** The part in the frame of the three parts (ProFrame.svelte): its categories, its title, the detail, the bar */
 export interface KeysPro { nav: ProNav; head: {iconHtml: string; title: string; sub: string}; detail: ProDetail | null; foot: ProFoot; keys: boolean }
@@ -62,6 +63,8 @@ export interface KeysView {
   change: {text: string; tip: string; none: string};
   /** the icons' authors, under the categories (pro.ts iconCredit) */
   credit: string;
+  /** the weapon cycle of the mode chosen (MainWeapon, SubWeapon...), under the modes (cycle.ts) */
+  cycle: CycleView | null;
 }
 
 const GROUPS = ['job', 'custom', 'combat', 'treasure', 'common'];
@@ -108,7 +111,9 @@ function modeRow(d: LegacyExport, m: LegacyMode, keyOfSt: Record<string, string>
   // the values keep the game's words (the HUD's, the chat's); a player's words are the tooltip
   const w = playerMode(m.name, S.job);
   const meant = (v: string) => (w && w.vals[v] && w.vals[v] !== v ? w.vals[v] : '');
-  const vals = m.values, at = Math.max(0, vals.findIndex(v => v.toLowerCase() === start)), cur = vals[at] || String(modeStart(d, m));
+  // a weapon cycle: its values as the Atelier's layer leaves them now (weapon_cycles.js: added, taken out, ordered)
+  const cyc = typeof wcCycle === 'function' ? wcCycle(m.name) : null;
+  const vals = cyc ? cyc.values : m.values, at = Math.max(0, vals.findIndex(v => v.toLowerCase() === start)), cur = vals[at] || String(modeStart(d, m));
   const lows = vals.map(v => v.toLowerCase()), toggle = vals.length === 2 && lows.includes('on') && lows.includes('off');
   const pick = (v: string) => m.name + '|' + v;
   // a few values, short enough: each a button; many, or long ones: a list
@@ -246,6 +251,12 @@ export function keysView(d: LegacyExport): KeysView {
     pro: proOf(game, modes, dirty, keysShown(d).length, list.conflicts ? list.conflicts.items.length : 0),
     list,
     change: {text: t('kChange'), tip: t('kChangeTip'), none: t('kNoKey')},
+    cycle: game.part === 'keys' ? null : cycleOf(d, game.rows.find(r => r.sel)),
     credit: iconCredit()
   };
+}
+
+// The cycle of the weapon mode chosen, its key as text (the row's caps)
+function cycleOf(d: LegacyExport, sel: ModeRow | undefined): CycleView | null {
+  return sel ? cycleView(d, sel.name, sel.keyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()) : null;
 }

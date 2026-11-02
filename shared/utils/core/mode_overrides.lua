@@ -10,6 +10,8 @@
 ---   return {
 ---       common = { AutoMedicine = 'On' },     -- every job (the shared modes)
 ---       WHM    = { IdleMode = 'Refresh' },
+---       BRD    = { ['+SubWeapon'] = {'Naegling Sub'}, ['-MainWeapon'] = {'Twashtar'},
+---                  ['=MainWeapon'] = {'Carnwenhan', 'Naegling'} },  -- added, taken out, ordered
 ---   }
 --- Applied once per job load, when the job's keys are assembled
 --- (shared/utils/keybinds/keybind_manager.lua create): every mode exists by
@@ -60,6 +62,16 @@ end
 -- The values the Atelier added to each mode ('+Mode' entries) and took out of it ('-Mode'), for its export
 local added_values, removed_values = {}, {}
 
+-- Each list mode's values from its states file, before the Atelier's entries changed them: the page rebuilds the cycle
+-- from them (file + added - taken out, in its order) right after a change, before the game's next export
+local base_values, base_job = {}, nil
+local function keep_base(mode, name)
+    if base_values[name] ~= nil then return end
+    local list = {}
+    for _, v in ipairs(mode) do list[#list + 1] = v end
+    base_values[name] = list
+end
+
 --- A list mode's values made again (Mote's options()), its current value kept when it is still there, else the
 --- first. Mote's options() alone goes back to the first.
 --- @return boolean true when laid
@@ -76,6 +88,7 @@ end
 --- @return boolean true when laid
 local function add_values(mode, name, values)
     if rawget(mode, '_track')._type ~= 'list' then return false end
+    keep_base(mode, name)
     local list, have, added = {}, {}, 0
     for _, v in ipairs(mode) do list[#list + 1] = v; have[v] = true end
     for _, v in ipairs(values) do
@@ -90,6 +103,7 @@ end
 --- @return boolean true when laid
 local function remove_values(mode, name, values)
     if rawget(mode, '_track')._type ~= 'list' then return false end
+    keep_base(mode, name)
     local out, list = {}, {}
     for _, v in ipairs(values) do if type(v) == 'string' then out[v] = true end end
     for _, v in ipairs(mode) do if not out[v] then list[#list + 1] = v end end
@@ -99,20 +113,37 @@ local function remove_values(mode, name, values)
     return relist(mode, list)
 end
 
---- Lay one scope's entries of one kind ('remove': '-Mode', 'add': '+Mode', 'start': a start value); the names
+--- Put a list mode's values in the order the Atelier gave ('=Mode': a weapon cycle reordered), keeping its current
+--- value. The values named come first, in that order; the ones not named follow in the order they had; a name the
+--- mode does not hold is skipped.
+--- @return boolean true when laid
+local function order_values(mode, name, values)
+    if rawget(mode, '_track')._type ~= 'list' then return false end
+    keep_base(mode, name)
+    local have, list, taken = {}, {}, {}
+    for _, v in ipairs(mode) do have[v] = true end
+    for _, v in ipairs(values) do
+        if type(v) == 'string' and have[v] and not taken[v] then list[#list + 1] = v; taken[v] = true end
+    end
+    for _, v in ipairs(mode) do if not taken[v] then list[#list + 1] = v end end
+    return relist(mode, list)
+end
+
+--- Lay one scope's entries of one kind ('remove': '-Mode', 'add': '+Mode', 'order': '=Mode', 'start': a start value); the names
 --- refused are added to `bad`. A weapon added to or taken out of a cycle in the Atelier:
 --- notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md.
 local function lay(st, values, silent_missing, bad, kind)
     for name, value in pairs(type(values) == 'table' and values or {}) do
         local sign, base = nil, name
-        if type(name) == 'string' then sign, base = name:match('^([%+%-])(.+)$') end
+        if type(name) == 'string' then sign, base = name:match('^([%+%-=])(.+)$') end
         base = base or name
-        local entry = sign == '+' and 'add' or sign == '-' and 'remove' or 'start'
+        local entry = sign == '+' and 'add' or sign == '-' and 'remove' or sign == '=' and 'order' or 'start'
         local mode = type(base) == 'string' and mode_of(st, base)
         if entry ~= kind then
             -- another pass's entry
         elseif sign then
-            local laid = mode and type(value) == 'table' and (sign == '+' and add_values or remove_values)(mode, base, value)
+            local lay_fn = sign == '+' and add_values or sign == '-' and remove_values or order_values
+            local laid = mode and type(value) == 'table' and lay_fn(mode, base, value)
             if not laid and not (silent_missing and not mode) then bad[#bad + 1] = name end
         elseif mode and type(value) == 'string' then
             local before = tostring(mode.current)
@@ -133,11 +164,15 @@ function ModeOverrides.apply(job)
     local st = rawget(_G, 'state')
     if type(st) ~= 'table' or applied[st] then return end
     applied[st] = true
+    -- (a job's own: never the last job's MainWeapon taken for this one's)
+    for k in pairs(base_values) do base_values[k] = nil end
+    base_job = job
     local data = ModeOverrides.read()
     if not data then return end
     local bad = {}
-    -- the values taken out, then the ones added, then the start values (a start value may name a value added)
-    for _, kind in ipairs({'remove', 'add', 'start'}) do
+    -- the values taken out, then the ones added, then their order, then the start values (a start value may name a
+    -- value added)
+    for _, kind in ipairs({'remove', 'add', 'order', 'start'}) do
         lay(st, data.common, true, bad, kind)
         lay(st, data[job], false, bad, kind)
     end
@@ -159,6 +194,13 @@ end
 --- @return table
 function ModeOverrides.removed_values()
     return removed_values
+end
+
+--- The values each mode changed by a '+', '-' or '=' entry had in its states file (for the Atelier export).
+--- @return table {Mode = {value, ...}}
+--- @return string|nil The job they are of (the job of the last apply)
+function ModeOverrides.base_values()
+    return base_values, base_job
 end
 
 --- The value each overridden mode had from its states file before the override (for the Atelier export).
