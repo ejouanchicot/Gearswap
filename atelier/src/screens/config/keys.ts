@@ -125,7 +125,8 @@ function modeRow(d: LegacyExport, m: LegacyMode, keyOfSt: Record<string, string>
         tip: [meant(v), v.toLowerCase() === start ? t('modeStartTip') : v.toLowerCase() === file ? t('modeFileTip') : t('modePickTip')].filter(Boolean).join(' · ')}))};
   // its icon: the item the value names (a weapon), the one of the value chosen, or the mode's own
   const wi = w ? w.icon : null;
-  const icon = wi === 'value' ? (iconIds()[cur] || (catalog() || {id: {}} as LegacyAny).id[cur]) : wi && typeof wi === 'object' ? (wi as Record<string, LegacyAny>)[cur] : wi;
+  const icon = (wi === 'value' ? (iconIds()[cur] || (catalog() || {id: {}} as LegacyAny).id[cur]) : wi && typeof wi === 'object' ? (wi as Record<string, LegacyAny>)[cur] : wi)
+    || modeIconGuess(m.name, S.job);
   return {name: m.name, title: m.desc || m.name, help: stateHelp(m.name), changed: start !== file,
     values: m.values.map(v => ({value: v, start: v.toLowerCase() === start, file: v.toLowerCase() === file && start !== file,
       tip: v.toLowerCase() === start ? t('modeStartTip') : v.toLowerCase() === file ? t('modeFileTip') : t('modePickTip')})),

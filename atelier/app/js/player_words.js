@@ -142,6 +142,20 @@ function playerMode(name, job){
   for (const [v, labels] of Object.entries(w.vals || {})) vals[v] = labels[l];
   return {name: (l ? w.en : w.fr)[0], desc: (l ? w.en : w.fr)[1], icon: w.icon, vals, group: w.group || 'tech'};
 }
+// The icon of a mode with none of its own (no words above, or 'value' on a value that is no item: Genmei, Free), by
+// its name, the first that fits; a cog last
+const MODE_ICON_GUESS = [[/^subweapon|shield|subset/i, 'gi:shield'], [/^rangeweapon|rangelock/i, 'gi:revolver'],
+  [/^ammoset/i, 'gi:paw-print'], [/weapon|^aby/i, 'gi:sword-brandish'], [/instrument/i, 'gi:lyre'],
+  [/song|march|carol|etude|threnody|nitro|pianissimo|marcato|madrigal|minuet/i, 'gi:musical-notes'],
+  [/step|samba|climactic|dance/i, 'gi:footsteps'], [/^pet|ecosystem|bst/i, 'gi:wolf-head'], [/aftermath|^ws\d/i, 'gi:sword-clash'],
+  [/death/i, 'gi:skull-crossed-bones'], [/storm/i, 'gi:lightning-storm'], [/regen/i, 'gi:heart-plus'],
+  [/burst|helix|klimaform|aoe|tier|spell|element|nuke/i, 'gi:magic-swirl'], [/defense/i, 'gi:shield'], [/lock|equipstop/i, 'gi:padlock'],
+  [/moving/i, 'gi:sprint'], [/target|selectnpc/i, 'gi:on-target'], [/resting/i, 'gi:meditation'], [/engaged|stance/i, 'gi:crossed-swords'],
+  [/^auto/i, 'gi:gears']];
+function modeIconGuess(name, job){
+  if (job === 'PUP' && /^pet/i.test(name)) return 'gi:robot-golem';
+  return (MODE_ICON_GUESS.find(([re]) => re.test(name || '')) || [])[1] || 'gi:cog';
+}
 // An icon of the options screen: 'gi:<name>' one of game-icons.net (game_icons.js, drawn in the page's gold), a number
 // an item of the game (atelier/icons, written by the export: the weapons); an empty frame without one
 function playerIcon(id){

@@ -7,25 +7,25 @@
 // (loaded in the order of atelier/src/legacy/files.ts)
 
 Object.assign(T.fr, {wcyTitle: 'Cycle {m}', wcyCount: '{n} armes · {k} les fait défiler dans cet ordre', wcyCountNoKey: '{n} armes, dans l’ordre où elles défilent',
-  wcyLoop: '↺ retour au 1', wcyStart: 'au chargement', wcyEmpty: 'set vide : n’équipe rien', wcyNoSet: 'pas de set : n’équipe rien',
-  wcyUp: 'Plus tôt dans le cycle', wcyDown: 'Plus tard dans le cycle', wcyOut: 'Retirer du cycle (son set reste)', wcyLast: 'La seule arme du cycle : un cycle en garde une au moins.',
-  wcyReset: 'Ordre du fichier', wcyResetTip: 'Remet l’ordre de ton fichier de modes', wcyAdd: 'Ajouter', wcyAddPh: 'tape le nom d’une arme…', wcyBack: 'y était', wcyBackTip: 'Retirée du cycle depuis l’Atelier : elle y revient avec son set',
-  wcyNewSet: 'son set sera créé : {p}', wcyNone: 'Aucune autre arme de tes sacs ne va dans ce slot.',
-  wcyNote: 'Glisse une arme pour la déplacer, ou ◀ ▶ ; ✕ la retire. Enregistré par-dessus ton fichier de modes (jamais réécrit), dans atelier/overrides/mode_overrides.lua, et GearSwap recharge.',
-  wcyMoved: '{w} mise en {n} dans le cycle {m}.', wcyResetDone: 'Cycle {m} remis dans l’ordre de ton fichier.', wcyOutDone: '{w} retirée du cycle {m}.', wcyBackDone: '{w} remise dans le cycle {m}.',
-  wcyAdding: 'Ajout au cycle {m}, GearSwap recharge…', wcyAddedOnly: '{w} ajoutée à ton cycle {m} (son set existait déjà).', wcyAddFail: 'Le jeu n’a pas pris le changement : rien n’a été créé.',
-  wcyAddLater: '{w} ajoutée au cycle {m} dans ton fichier : elle sera là au prochain chargement du job (//gs reload). Son set n’a pas été créé : refais-le avec le jeu connecté.',
-  wcyNeedGame: 'Il faut le jeu connecté pour créer le set d’une arme.', awCyclesWhere: 'L’ordre de tes armes, en ajouter ou en retirer : Configuration → Modes & touches → Équipement, puis Main / Sub Weapon.', delCycle: ' Et retirée du cycle {m}.'});
+  wcyLoop: '↺ retour au 1', wcyStart: 'au chargement', wcyEmpty: 'vide : n’équipe rien', wcyNoSet: 'vide : n’équipe rien',
+  wcyUp: 'Plus tôt dans le cycle', wcyDown: 'Plus tard dans le cycle', wcyOut: 'Retirer du cycle', wcyLast: 'La seule arme du cycle : un cycle en garde une au moins.',
+  wcyReset: 'Ordre d’origine', wcyResetTip: 'Remet les armes dans leur ordre de départ', wcyAdd: 'Ajouter', wcyAddPh: 'tape le nom d’une arme…', wcyBack: 'y était', wcyBackTip: 'Elle était dans ce cycle : elle y revient',
+  wcyNewSet: 'Elle rejoint le cycle, prête à être équipée', wcyNone: 'Aucune autre arme de tes sacs ne va dans ce slot.',
+  wcyNote: 'Glisse une arme pour la déplacer, ou ◀ ▶ ; ✕ la retire. C’est pris en compte en jeu tout de suite.',
+  wcyMoved: '{w} mise en {n} dans le cycle {m}.', wcyResetDone: 'Cycle {m} remis dans son ordre d’origine.', wcyOutDone: '{w} retirée du cycle {m}.', wcyBackDone: '{w} remise dans le cycle {m}.',
+  wcyAdding: 'Ajout au cycle {m}…', wcyAddedOnly: '{w} ajoutée à ton cycle {m}.', wcyAddFail: 'Le jeu n’a pas pris le changement : rien n’a changé.',
+  wcyAddLater: '{w} ajoutée au cycle {m} : elle sera là au prochain chargement du job. Ajoute-la de nouveau le jeu connecté pour qu’elle s’équipe.',
+  wcyNeedGame: 'Connecte le jeu pour ajouter une nouvelle arme.', awCyclesWhere: 'L’ordre de tes armes, en ajouter ou en retirer : Configuration → Modes & touches → Équipement, puis Main / Sub Weapon.', delCycle: ' Et retirée du cycle {m}.'});
 Object.assign(T.en, {wcyTitle: '{m} cycle', wcyCount: '{n} weapons · {k} goes through them in this order', wcyCountNoKey: '{n} weapons, in the order they come',
-  wcyLoop: '↺ back to 1', wcyStart: 'on load', wcyEmpty: 'empty set: equips nothing', wcyNoSet: 'no set: equips nothing',
-  wcyUp: 'Earlier in the cycle', wcyDown: 'Later in the cycle', wcyOut: 'Take out of the cycle (its set stays)', wcyLast: 'The cycle’s only weapon: a cycle keeps one at least.',
-  wcyReset: 'File order', wcyResetTip: 'Back to your modes file’s order', wcyAdd: 'Add', wcyAddPh: 'type a weapon’s name…', wcyBack: 'was there', wcyBackTip: 'Taken out of the cycle from the Atelier: it comes back with its set',
-  wcyNewSet: 'its set will be created: {p}', wcyNone: 'No other weapon of your bags goes in this slot.',
-  wcyNote: 'Drag a weapon to move it, or ◀ ▶; ✕ takes it out. Saved over your modes file (never rewritten), in atelier/overrides/mode_overrides.lua, and GearSwap reloads.',
-  wcyMoved: '{w} put at {n} in the {m} cycle.', wcyResetDone: '{m} cycle back to your file’s order.', wcyOutDone: '{w} taken out of the {m} cycle.', wcyBackDone: '{w} put back in the {m} cycle.',
-  wcyAdding: 'Adding to the {m} cycle, GearSwap reloads…', wcyAddedOnly: '{w} added to your {m} cycle (its set was there already).', wcyAddFail: 'The game did not take the change: nothing was created.',
-  wcyAddLater: '{w} added to the {m} cycle in your file: it is there at the job’s next load (//gs reload). Its set was not created: do it again with the game linked.',
-  wcyNeedGame: 'The game must be linked to create a weapon’s set.', awCyclesWhere: 'Your weapons’ order, adding or taking one out: Configuration → Modes & keys → Equipment, then Main / Sub Weapon.', delCycle: ' And taken out of the {m} cycle.'});
+  wcyLoop: '↺ back to 1', wcyStart: 'on load', wcyEmpty: 'empty: equips nothing', wcyNoSet: 'empty: equips nothing',
+  wcyUp: 'Earlier in the cycle', wcyDown: 'Later in the cycle', wcyOut: 'Take out of the cycle', wcyLast: 'The cycle’s only weapon: a cycle keeps one at least.',
+  wcyReset: 'Original order', wcyResetTip: 'Puts the weapons back in their starting order', wcyAdd: 'Add', wcyAddPh: 'type a weapon’s name…', wcyBack: 'was there', wcyBackTip: 'It was in this cycle: it comes back',
+  wcyNewSet: 'It joins the cycle, ready to be worn', wcyNone: 'No other weapon of your bags goes in this slot.',
+  wcyNote: 'Drag a weapon to move it, or ◀ ▶; ✕ takes it out. It applies in game right away.',
+  wcyMoved: '{w} put at {n} in the {m} cycle.', wcyResetDone: '{m} cycle back to its original order.', wcyOutDone: '{w} taken out of the {m} cycle.', wcyBackDone: '{w} put back in the {m} cycle.',
+  wcyAdding: 'Adding to the {m} cycle…', wcyAddedOnly: '{w} added to your {m} cycle.', wcyAddFail: 'The game did not take the change: nothing changed.',
+  wcyAddLater: '{w} added to the {m} cycle: it is there at the job’s next load. Add it again with the game linked for it to be worn.',
+  wcyNeedGame: 'Link the game to add a new weapon.', awCyclesWhere: 'Your weapons’ order, adding or taking one out: Configuration → Modes & keys → Equipment, then Main / Sub Weapon.', delCycle: ' And taken out of the {m} cycle.'});
 
 // The weapon states GearSwap lays (shared/utils/core/combat_mode.lua WEAPON_STATES) and their slot
 const WC_STATES = {MainWeapon: 'main', SubWeapon: 'sub', RangeWeapon: 'range', Shield: 'sub', StanceWeapon: 'main'};

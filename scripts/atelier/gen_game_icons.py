@@ -12,7 +12,9 @@ NAMES = ['checked-shield', 'magic-potion', 'heart-plus', 'meditation', 'heart-bo
          'shield-reflect', 'sword-brandish', 'bullseye', 'invisible', 'rune-stone', 'upgrade', 'rolling-dices', 'dice-six-faces-six',
          'revolver', 'ring', 'crystal-ball', 'orb-wand', 'sun', 'moon', 'stairs-goal', 'magic-portal', 'poison-bottle', 'lightning-helix',
          'magic-palm', 'fire-ray', 'muscle-up', 'spiked-shell', 'tornado', 'magic-swirl', 'spell-book', 'open-book', 'chest-armor', 'bookmark',
-         'gears', 'armor-vest', 'tied-scroll', 'backpack', 'tv', 'two-shadows', 'plug', 'belt', 'chat-bubble', 'gear-hammer', 'standing-potion']
+         'gears', 'armor-vest', 'tied-scroll', 'backpack', 'tv', 'two-shadows', 'plug', 'belt', 'chat-bubble', 'gear-hammer', 'standing-potion',
+         # the modes with no words of their own (player_words.js MODE_ICON_GUESS): songs, instruments, pets, steps, death, storms
+         'musical-notes', 'lyre', 'wolf-head', 'robot-golem', 'footsteps', 'skull-crossed-bones', 'lightning-storm', 'sword-clash']
 icons = json.load(open(os.path.join(SRC, 'icons.json'), encoding='utf-8'))
 info = json.load(open(os.path.join(SRC, 'info.json'), encoding='utf-8'))
 size = icons.get('width', 512)

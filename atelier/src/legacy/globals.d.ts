@@ -640,3 +640,4 @@ declare function wcPath(name: string): string;
 declare function wcSetAt(path: string): LegacyAny;
 declare function wcOrder(mode: string): string[];
 declare function wcMove(mode: string, from: number, to: number): Promise<void>;
+declare function modeIconGuess(name: string, job: string | null): string;

@@ -152,10 +152,10 @@ document.addEventListener('click', e => {
   if (row && !e.target.closest('button')) { S._modeSel = row.dataset.modesel; render(); }
 });
 Object.assign(T.fr, {modesTitle: 'Modes : valeur de départ et touche', modesHint: 'Clique une valeur : le mode la prendra à chaque chargement du job. La valeur entourée en pointillé est celle de ton fichier ; la choisir à nouveau enlève ton choix. En jeu, la touche fait toujours défiler le mode.',
-  modesAway: 'Modes d’un autre subjob que {s}', modeCommon: 'tous les jobs', modeFileTip: 'Valeur de départ dans ton fichier', modeStartTip: 'Valeur de départ choisie', modePickTip: 'Démarrer sur cette valeur',
+  modesAway: 'Modes d’un autre subjob que {s}', modeCommon: 'tous les jobs', modeFileTip: 'Valeur de départ d’origine', modeStartTip: 'Valeur de départ choisie', modePickTip: 'Démarrer sur cette valeur',
   modesSaved: '{n} valeur(s) de départ choisie(s) (atelier/overrides/mode_overrides.lua).', savedModes: 'Enregistré dans {p}. En jeu : //gs reload ou change de job.', modesDirty: 'Valeurs de départ changées, pas encore enregistrées.', keysOther: 'Autres touches'});
 Object.assign(T.en, {modesTitle: 'Modes: start value and key', modesHint: 'Click a value: the mode takes it at every load of the job. The value outlined with dots is your file’s; choosing it again removes your choice. In game, the key still cycles the mode.',
-  modesAway: 'Modes of another subjob than {s}', modeCommon: 'every job', modeFileTip: 'Start value in your file', modeStartTip: 'Start value chosen', modePickTip: 'Start on this value',
+  modesAway: 'Modes of another subjob than {s}', modeCommon: 'every job', modeFileTip: 'Original start value', modeStartTip: 'Start value chosen', modePickTip: 'Start on this value',
   modesSaved: '{n} start value(s) chosen (atelier/overrides/mode_overrides.lua).', savedModes: 'Saved in {p}. In game: //gs reload or change job.', modesDirty: 'Start values changed, not saved yet.', keysOther: 'Other keys'});
 // A key bound with the subjob shown: its subjob(s), less the ones it excludes (exclude_subjob), and not
 // hidden by its own condition when the game exported it (visible: CombatMode where its settings hide it,

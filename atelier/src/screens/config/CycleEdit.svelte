@@ -28,7 +28,6 @@
         <span class="wce-n">{i + 1}</span>
         <span class="wce-i">{@html w.iconHtml}</span>
         <b title={w.item}>{w.item}</b>
-        <code title={w.set}>{w.set}</code>
         <small class:warn={w.warn}>{w.tag}</small>
         <span class="wce-b">
           <button type="button" data-wcup={c.mode + '|' + w.value} disabled={w.first} title={c.tips.up}>◀</button>
