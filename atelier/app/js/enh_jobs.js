@@ -36,7 +36,8 @@ const ENH_SPELLS = [
   [/enspell|\ben(fire|blizzard|aero|stone|thunder|water)\b/i, 'enspell', [[/^En(fire|blizzard|aero|stone|thunder|water)$/, 0, 180]]],
   [/barelement|\bbar(fir|blizz|aer|ston|thund|wat)\w*/i, 'barele', [[/^Bar(fir|blizz|aer|ston|thund|wat)\w*$/, 0, 480]]],
   [/barailment|barstatus|\bbar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*/i, 'barail', [[/^Bar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*$/, 0, 480]]],
-  [/spikes/i, 'spikes', [[/^(Blaze|Ice|Shock) Spikes$/, 0, 180]]],
+  // (not Dread Spikes: dark magic, dark_magic.js)
+  [/(?<!dread ?)spikes/i, 'spikes', [[/^(Blaze|Ice|Shock) Spikes$/, 0, 180]]],
   [/blink/i, 'blink', [['Blink', 0, 300]]],
   [/haste|flurry/i, 'haste', [[/^(Haste|Flurry)( II)?$/, 0, 180]]],
   // Sneak and Invisible: 450 to 600 s, the Dream +1 pieces setting it to 600 (BG Wiki Sneak, Invisible); Auspice 3 min

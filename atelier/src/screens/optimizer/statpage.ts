@@ -74,6 +74,8 @@ export function statWhatView(s: LegacyAny): StatWhatView {
   const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [];
   // Burn and the other elemental debuffs: what the figures take (ele_debuff.js)
   if (edNote(s)) notes.push(edNote(s));
+  // a dark magic set: the spell, skill and INT the figures take (dark_magic.js)
+  if (darkNote(s)) notes.push(darkNote(s));
   if (ref) notes.push(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}));
   // an enhancing set: the spell and its base length, with or without Composure, and the job's bonuses counted (enh_jobs.js)
   if (enh) notes.push(t('statEnhNote', {s: enh.spell === 'enhancing' ? enh.name : enh.spell, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : enh.comp === 'self' ? 'statEnhSelf' : 'statEnhPlain')}), ...(enh.notes || []));

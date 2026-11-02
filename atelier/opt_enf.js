@@ -139,4 +139,34 @@
         f.enfAcc = all[0].acc; f.enfSkill = all[0].skill; f.enfTime = first("time"); f.enfPot = first("pot");
         f.enfEff = t.enfeff || 0;
     };
+    // Dark magic (the page's app/js/dark_magic.js, BG Wiki read 2026-11-02: Dark_Magic, Drain, Aspir, Aspir_III, Bio
+    // to Bio_III, Dread_Spikes, Endark, Endark_II). Every figure of the set, its kind (b.darkKind) choosing which come
+    // first. Drain II / III and Aspir II have no formula on BG: Drain's and Aspir's stand in. The Absorbs' 90 s with the
+    // duration pieces added up (ours: BG does not say how they add)
+    var bioDot = function (tier, skill) {
+        if (tier === 3) return Math.min(17, Math.floor((skill + 59) / 27));
+        if (tier === 2) return skill >= 291 ? 8 : skill >= 269 ? 7 : skill >= 211 ? 6 : 5;
+        return 3;
+    };
+    var endark = function (two, skill) {
+        if (!two) return 12 + Math.floor(skill / 20) * 3 - Math.floor(skill / 40);
+        return skill >= 500 ? Math.floor((Math.floor((skill + 2) * 5 / 66) + 7) * 2.5) : Math.floor(Math.floor((skill + 400) / 20) * 2.5);
+    };
+    O.darkFigures = function (f, t, b) {
+        if (!b.darkKind) return;
+        var g = function (k) { return t[k] || 0; };
+        var skill = (b.darkSkill || 0) + g("darkskill"), int = (b.int || 0) + g("int"), pot = 1 + g("drainpot") / 100;
+        f.darkSkill = skill;
+        f.darkAcc = skill + g("macc") + g("maccskill") + dstatAcc(int - (b.tInt || 0));
+        f.drainPot = Math.floor((skill <= 300 ? skill + 20 : skill * 5 / 8 + 132.5) * pot + 1e-9);
+        var asp = b.aspirIII ? skill * 0.8 : skill <= 300 ? skill / 3 + 20 : skill * 0.4;
+        f.aspirPot = Math.floor(asp * pot * (1 + g("darkmab") / 100) + 1e-9);
+        f.absorbPot = g("absorbpot");
+        f.darkTime = Math.floor((b.darkDur || 0) * (1 + (g("absorbdur") + g("darkdur")) / 100) + 1e-9);
+        f.absorbTp = g("abstp");
+        f.bioDot = bioDot(b.bioTier || 1, skill);
+        // the HP of the set worn at the cast (f.hp): BG Wiki "Current HP x 0.5 x (1 + Equipment Modifiers) + Job Point Trait"
+        f.dreadSpikes = Math.floor(f.hp * (0.5 * (1 + g("dreadpot") / 100) + (b.dreadJp ? 0.1 : 0)));
+        f.endark = endark(b.endarkII, skill) + g("endark");
+    };
 });

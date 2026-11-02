@@ -8,6 +8,8 @@
 
 const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enmityLow', 'phalanx', 'fc', 'sird', 'meva', 'mdb', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'cmp', 'refresh', 'regen', 'enhdur', 'stoneskin', 'enlight', 'enhSkill', 'divSkill', 'enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'aquaveil', 'cureEnm', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'eleCover', 'luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill', 'enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill', 'edDown', 'edDot', 'edTime', 'edAcc',
   'cursna', 'healSkill', 'auspice', 'barStatus', 'esunaPlus', 'erasePlus', 'naVeil', 'divAcc', 'mab',
+  // dark magic (dark_magic.js)
+  'darkSkill', 'darkAcc', 'drainPot', 'aspirPot', 'absorbPot', 'darkTime', 'absorbTp', 'bioDot', 'dreadSpikes', 'endark',
   // a BST's pet (bst_pet.js)
   'petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur',
   // a movement set's (moveSet)
@@ -27,7 +29,7 @@ const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).pad
 // (the least enmity is ranked by its opposite: shown as the Enmity it is)
 // the figures kept as a reduction (68 = 68 % less damage taken): written as the game writes them, "−68 %"
 const STAT_NEG = new Set(['ecritRed', 'pdtRed', 'mdtRed']);
-const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' || k === 'charmDur' ? enhTimeText(v)
+const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' || k === 'darkTime' || k === 'charmDur' ? enhTimeText(v)
   : (STAT_NEG.has(k) && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -165,6 +167,8 @@ function statDefaultOf(s){
   if (doomSet(s)) return ['holyWater', 'cursnaRecv'];
   if (xpSet(s)) return segs(s.path)[0] === 'meleeXp' ? ['blockGear', 'absorb', 'def'] : ['absorb', 'def', 'meva'];
   if (enmityMaxSet(s)) return ['enmity'];
+  // a dark magic set (dark_magic.js): Drain, Aspir, the Absorbs, Stun, Bio, Dread Spikes, Endark
+  if (darkObjectives(s)) return darkObjectives(s);
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) return ENH_OBJS[enh.kind] || ENH_PLAIN;
   // Burn and the other elemental debuffs (ele_debuff.js)
@@ -268,7 +272,7 @@ function statFloorDefault(s, first){
   if (isCharmSet(s)) return {};
   // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
   if (readyKind(s)) return readyKind(s) === 'phys' || readyKind(s) === 'multi' ? {petAccBase: PET_ENG.accBase} : {};
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const hp = hpBand(s);
@@ -402,7 +406,7 @@ function cureSpellOf(){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'absorb', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['jaPlus', 'enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'holyWater', 'cursnaRecv', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['move', ['move']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['move', ['move']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
@@ -418,6 +422,7 @@ function statRelevant(s, chosen){
     ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }
   if (enfContext(s)) { add(enfRelevant(s)); return out; }
   if (edContext(s)) { add(edRelevant()); return out; }
+  if (darkContext(s)) { add(darkRelevant(s)); return out; }
   const sp = spellObjectives(s);
   if (sp) { add([...sp, 'pdtRed', 'mdtRed', 'cmp', 'hp', 'sird', 'divSkill', 'healSkill', 'enmity']); return out; }
   const tank = ['PLD', 'RUN'].includes(S.job);
@@ -553,7 +558,7 @@ function statVec(p, slot){
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
   if (S.job === 'BST') Object.assign(out, petVec(r, slot));
-  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), healerVec(p.name, slot), castVec(r));
+  Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), darkVec(r, all), healerVec(p.name, slot), castVec(r));
   if (v('mab')) out.mab = v('mab');
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
   if (ENMITY_LOSS_GEAR[p.name]) out.lossRed = ENMITY_LOSS_GEAR[p.name];
@@ -636,6 +641,8 @@ function statContext(s){
   if (enf) Object.assign(base, enf);
   const ed = edBase(s);
   if (ed) Object.assign(base, ed);
+  const dark = darkBase(s);
+  if (dark) Object.assign(base, dark);
   const pet = petBase(s);
   if (pet) Object.assign(base, pet);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,

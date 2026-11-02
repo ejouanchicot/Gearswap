@@ -743,6 +743,9 @@
         // Perpetuance's figure of the Bracers (the page's enh_jobs.js enhPerpOf); the elemental debuffs' effect,
         // elemental magic skill and Tonban (the page's ele_debuff.js edVec)
         "perp", "edeff", "edskill", "edtonban",
+        // dark magic (the page's dark_magic.js darkVec): skill, Drain / Aspir potency, the Absorbs' potency and duration, the
+        // dark magic duration, Absorb-TP, Dread Spikes, Endark, the dark magic attack
+        "darkskill", "drainpot", "absorbpot", "absorbdur", "darkdur", "abstp", "dreadpot", "endark", "darkmab",
         // a healer's spell pieces read by name (the page's stat_opt.js HEALER_PLUS), Magic Attack Bonus, magic accuracy
         "cursna", "auspice", "sneaksec", "invissec", "barstat", "esuna", "erase", "naveil", "mab", "macc",
         // the casting time cuts of one kind of spell (the page's stat_opt.js castVec): cc_<kind>
@@ -949,6 +952,8 @@
         if (O.enfeeblingFigures) O.enfeeblingFigures(f, t, b);
         // Burn, Frost and the other elemental debuffs (atelier/opt_enf.js)
         if (O.eleDebuffFigures) O.eleDebuffFigures(f, t, b);
+        // dark magic (atelier/opt_enf.js): after the HP, Dread Spikes reading them
+        if (O.darkFigures) O.darkFigures(f, t, b);
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;
@@ -999,6 +1004,7 @@
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
+        "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "bioDot", "dreadSpikes", "endark",
         "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb"];
     function statShort(f, fl) {
         if (!fl) return 0;
