@@ -65,13 +65,26 @@ function wcCycles(){
   }).filter(Boolean);
 }
 const wcCycle = mode => wcCycles().find(c => c.name === mode) || null;
-// The value a weapon takes in a cycle: its own name, unless a set of that name holds it in another slot. GearSwap
-// equips sets[value] as it is (shared/utils/equipment/weapon_resolver.lua): sets.Colada chosen as the sub would move
-// the main hand
+// A weapon set of the job that puts this weapon in this slot and nothing else (sets.Demersal = {sub = 'Demers. Degen
+// +1'}: the template's nicknames), its own name's first: its name, or null
+function wcSetHolding(c, item){
+  const only = s => { const k = Object.keys(s.pieces || {}).filter(sl => s.pieces[sl] && !isEmpty(s.pieces[sl]));
+    return k.length === 1 && k[0] === c.slot && s.pieces[c.slot].name === item; };
+  const sets = ((data() || {}).sets || []).filter(s => segs(s.path).length === 1 && only(s));
+  const own = sets.find(s => s.path === wcPath(item)) || sets[0];
+  return own ? segs(own.path)[0] : null;
+}
+// The value a weapon takes in a cycle: a set that holds it there already (no second set for the same weapon), else its
+// own name, unless a set of that name holds it in another slot. GearSwap equips sets[value] as it is
+// (shared/utils/equipment/weapon_resolver.lua): sets.Colada chosen as the sub would move the main hand
 function wcValueFor(c, item){
+  const held = wcSetHolding(c, item);
+  if (held) return held;
   const s = wcSetAt(wcPath(item)), p = s && s.pieces[c.slot];
   return !s || (p && p.name === item) ? item : item + ' ' + WC_SLOT_TAG[c.slot];
 }
+// Whether a value of a cycle puts something on: its set holds a piece in the cycle's slot
+const wcEquips = (c, v) => { const s = wcSetAt(wcPath(v)), p = s && s.pieces[c.slot]; return !!p && !isEmpty(p); };
 // The weapon a value of a cycle puts on: its set's piece in the cycle's slot, else the value less its slot tag
 function wcItemOf(c, value){
   const s = wcSetAt(wcPath(value)), p = s && s.pieces[c.slot];
@@ -84,7 +97,8 @@ function wcChoices(mode){
   if (!c) return out;
   const wears = name => { const r = rows[name]; return !!r && r[2].split(' ').includes(c.slot) && r[3].split(' ').includes(S.job); };
   const held = new Set(c.values.flatMap(v => [v, wcItemOf(c, v)]));
-  for (const v of wcRemoved(mode)) if (!held.has(v)) { out.push({name: wcItemOf(c, v), value: v, back: true}); held.add(wcItemOf(c, v)); }
+  // (a value that puts nothing on is not offered back: the template's names with no set, Demersal, Genmei...)
+  for (const v of wcRemoved(mode)) if (!held.has(v) && wcEquips(c, v)) { out.push({name: wcItemOf(c, v), value: v, back: true}); held.add(wcItemOf(c, v)); }
   for (const name of [...new Set((owned[c.slot] || []).map(x => x.name))].sort())
     if (!held.has(name) && wears(name)) out.push({name, value: wcValueFor(c, name), back: false});
   return out;
@@ -140,7 +154,8 @@ async function wcRemove(mode, value){
 async function wcAdd(mode, name){
   const c = wcCycle(mode), w = wcChoices(mode).find(x => x.name === name);
   if (!c || !w) return;
-  if (w.back) { await wcSave(wcPut(modeOverrides(), '-' + mode, wcRemoved(mode).filter(v => v !== w.value)), t('wcyBackDone', {w: w.name, m: c.desc})); return; }
+  // (a value taken out before, reached through its set: it comes back the same way)
+  if (w.back || wcRemoved(mode).includes(w.value)) { await wcSave(wcPut(modeOverrides(), '-' + mode, wcRemoved(mode).filter(v => v !== w.value)), t('wcyBackDone', {w: w.name, m: c.desc})); return; }
   const path = wcPath(w.value), there = setThere(path);
   if (!there && !liveWrite()) { S.toast = t('wcyNeedGame'); render(); return; }
   S.toast = t('wcyAdding', {m: c.desc}); render();
