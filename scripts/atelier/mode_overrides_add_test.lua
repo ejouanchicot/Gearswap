@@ -75,5 +75,31 @@ ModeOverrides.apply('RDM')
 check('start value on the weapon added', state.MainWeapon.current, 'Daybreak')
 check('start value not refused', #errors, 0)
 
+-- 6. a weapon of the states file taken out ('-Mode'): gone from the cycle; the one worn kept when it stays
+state = {MainWeapon = M{'Naegling', 'Colada', 'Maxentius'}}
+state.MainWeapon:set('Maxentius')
+errors = {}
+ModeOverrides.read = function() return {RDM = {['-MainWeapon'] = {'Colada'}}} end
+ModeOverrides.apply('RDM')
+check('taken out', list(state.MainWeapon), 'Naegling,Maxentius')
+check('the one worn kept', state.MainWeapon.current, 'Maxentius')
+check('told to the export', ModeOverrides.removed_values().MainWeapon[1], 'Colada')
+
+-- 7. the one worn taken out: the first left; out and in again in the same file: out first, then added at the end
+state = {MainWeapon = M{'Naegling', 'Colada', 'Maxentius'}}
+state.MainWeapon:set('Colada')
+ModeOverrides.read = function() return {RDM = {['-MainWeapon'] = {'Colada', 'Naegling'}, ['+MainWeapon'] = {'Daybreak'}}} end
+ModeOverrides.apply('RDM')
+check('out then in', list(state.MainWeapon), 'Maxentius,Daybreak')
+check('the one worn gone: the first left', state.MainWeapon.current, 'Maxentius')
+
+-- 8. never the last value: a mode keeps one at least, the entry named
+state = {MainWeapon = M{'Naegling'}}
+errors = {}
+ModeOverrides.read = function() return {RDM = {['-MainWeapon'] = {'Naegling'}}} end
+ModeOverrides.apply('RDM')
+check('the last kept', list(state.MainWeapon), 'Naegling')
+check('the entry named', #errors, 1)
+
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

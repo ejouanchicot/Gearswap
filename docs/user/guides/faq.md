@@ -154,8 +154,11 @@ weapon is in one of the job's cycles (Main Weapon, Sub Weapon...). In **+**, **W
 the tab **Add a weapon** lists the weapons you hold that the job can wear and that no cycle
 has yet, by cycle. Choosing one adds it at the end of that cycle and creates its set. The
 cycle is changed in `atelier/overrides/mode_overrides.lua` (`['+MainWeapon'] = {'Daybreak'}`),
-laid over your states file, which is never rewritten; the same tab removes it again (its set
-stays). The game must be linked.
+laid over your states file, which is never rewritten. The tab **My cycles** lists every
+weapon of every cycle, your states file's too: **Take out of the cycle** removes it
+(`['-MainWeapon'] = {'Colada'}`, its set stays), **Put back in the cycle** brings it back; a
+cycle always keeps one weapon. Deleting a weapon's set (its "⋯" menu) takes the weapon out of
+its cycle too. The game must be linked.
 
 **Optimize every set of a job at once.** On the Sets screen, **⚡ Optimize all** (**⚡ Tout
 optimiser** in French, top of the list of sets) searches every set of the job shown, one after the other, each with its own

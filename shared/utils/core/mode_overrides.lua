@@ -57,40 +57,63 @@ local function mode_of(st, name)
     return track and track._class == 'mode' and track._type ~= 'string' and mode or nil
 end
 
--- The values the Atelier added to each mode ('+Mode' entries), for its export
-local added_values = {}
+-- The values the Atelier added to each mode ('+Mode' entries) and took out of it ('-Mode'), for its export
+local added_values, removed_values = {}, {}
 
---- Add values at the end of a list mode, keeping its current value (Mote's options() goes back to the first).
---- A value the mode holds already is left where it is.
+--- A list mode's values made again (Mote's options()), its current value kept when it is still there, else the
+--- first. Mote's options() alone goes back to the first.
 --- @return boolean true when laid
-local function add_values(mode, name, values)
-    if rawget(mode, '_track')._type ~= 'list' then return false end
-    local list, have = {}, {}
-    for _, v in ipairs(mode) do list[#list + 1] = v; have[v] = true end
-    local added = {}
-    for _, v in ipairs(values) do
-        if type(v) == 'string' and not have[v] then list[#list + 1] = v; have[v] = true; added[#added + 1] = v end
-    end
-    added_values[name] = values
-    if #added == 0 then return true end
+local function relist(mode, list)
     local current = tostring(mode.current)
     if not pcall(mode.options, mode, (table.unpack or unpack)(list)) then return false end
-    pcall(mode.set, mode, current)
+    for _, v in ipairs(list) do
+        if v == current then pcall(mode.set, mode, current) break end
+    end
     return true
 end
 
---- Lay one scope's values; the names refused are added to `bad`. A '+Mode' entry adds its values to the mode
---- (an Atelier weapon added to MainWeapon: notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md).
-local function lay(st, values, silent_missing, bad, adding)
+--- Add values at the end of a list mode, keeping its current value. A value the mode holds already is left where it is.
+--- @return boolean true when laid
+local function add_values(mode, name, values)
+    if rawget(mode, '_track')._type ~= 'list' then return false end
+    local list, have, added = {}, {}, 0
+    for _, v in ipairs(mode) do list[#list + 1] = v; have[v] = true end
+    for _, v in ipairs(values) do
+        if type(v) == 'string' and not have[v] then list[#list + 1] = v; have[v] = true; added = added + 1 end
+    end
+    added_values[name] = values
+    return added == 0 or relist(mode, list)
+end
+
+--- Take values out of a list mode (a weapon the player took out of a cycle in the Atelier). The current value goes
+--- to the first left when it is taken out; the last value is never taken out (a mode holds one at least).
+--- @return boolean true when laid
+local function remove_values(mode, name, values)
+    if rawget(mode, '_track')._type ~= 'list' then return false end
+    local out, list = {}, {}
+    for _, v in ipairs(values) do if type(v) == 'string' then out[v] = true end end
+    for _, v in ipairs(mode) do if not out[v] then list[#list + 1] = v end end
+    if #list == 0 then return false end
+    removed_values[name] = values
+    if #list == #mode then return true end
+    return relist(mode, list)
+end
+
+--- Lay one scope's entries of one kind ('remove': '-Mode', 'add': '+Mode', 'start': a start value); the names
+--- refused are added to `bad`. A weapon added to or taken out of a cycle in the Atelier:
+--- notes/docs-perso/ajouter-arme-2026-11-01/SPEC.md.
+local function lay(st, values, silent_missing, bad, kind)
     for name, value in pairs(type(values) == 'table' and values or {}) do
-        local plus = type(name) == 'string' and name:match('^%+(.+)$')
-        local mode = type(name) == 'string' and mode_of(st, plus or name)
-        if (plus ~= nil) ~= adding then
-            -- the other pass's entry
-        elseif plus then
-            if not (mode and type(value) == 'table' and add_values(mode, plus, value)) and not (silent_missing and not mode) then
-                bad[#bad + 1] = name
-            end
+        local sign, base = nil, name
+        if type(name) == 'string' then sign, base = name:match('^([%+%-])(.+)$') end
+        base = base or name
+        local entry = sign == '+' and 'add' or sign == '-' and 'remove' or 'start'
+        local mode = type(base) == 'string' and mode_of(st, base)
+        if entry ~= kind then
+            -- another pass's entry
+        elseif sign then
+            local laid = mode and type(value) == 'table' and (sign == '+' and add_values or remove_values)(mode, base, value)
+            if not laid and not (silent_missing and not mode) then bad[#bad + 1] = name end
         elseif mode and type(value) == 'string' then
             local before = tostring(mode.current)
             if pcall(mode.set, mode, value) then
@@ -113,11 +136,11 @@ function ModeOverrides.apply(job)
     local data = ModeOverrides.read()
     if not data then return end
     local bad = {}
-    -- the values added first ('+Mode'): a start value may name one of them
-    lay(st, data.common, true, bad, true)
-    lay(st, data[job], false, bad, true)
-    lay(st, data.common, true, bad, false)
-    lay(st, data[job], false, bad, false)
+    -- the values taken out, then the ones added, then the start values (a start value may name a value added)
+    for _, kind in ipairs({'remove', 'add', 'start'}) do
+        lay(st, data.common, true, bad, kind)
+        lay(st, data[job], false, bad, kind)
+    end
     if #bad > 0 then
         local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if ok and MessageFormatter and MessageFormatter.show_error then
@@ -130,6 +153,12 @@ end
 --- @return table
 function ModeOverrides.added_values()
     return added_values
+end
+
+--- The values the Atelier took out of each mode: {Mode = {value, ...}}
+--- @return table
+function ModeOverrides.removed_values()
+    return removed_values
 end
 
 --- The value each overridden mode had from its states file before the override (for the Atelier export).

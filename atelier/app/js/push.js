@@ -233,7 +233,9 @@ async function delGo(){
   deletedKeep([D.s.path].concat(r.entry.deleted || []));
   if (S.setOv[S.char]) S.setOv[S.char].at = stamp();
   S.selPath[S.job] = null; S._found = null;
-  S.toast = doneText('delDone', r.entry.file); S._toastSet = null;
+  // a weapon set: its weapon leaves its cycle too (add_wizard.js awCycleDropSet), before the reload below
+  const cycle = await awCycleDropSet(D.s.path);
+  S.toast = doneText('delDone', r.entry.file) + cycle; S._toastSet = null;
   S._del = null; closeOverlay(); save();
   await reloadIfLoaded();
   render();
