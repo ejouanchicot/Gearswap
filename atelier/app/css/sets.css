@@ -2206,3 +2206,4 @@
 /* My character and Bags start at the left column's top and side, as Sets and Buffs & target do */
 .ui2tab.persotab{padding:0 0 24px;max-width:none}
 .persotab .phead{margin-bottom:0}
+.tabsec .tabsecm{margin-left:10px;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--faint)}

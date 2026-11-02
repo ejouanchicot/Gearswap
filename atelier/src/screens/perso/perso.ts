@@ -30,7 +30,9 @@ export interface PersoView {
   side: SetListView | null;
   head: {char: string; why: string; facts: Array<[string, string]>};
   bags: BagsView | null;
-  stats: null | {cards: GlobalsView | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView};
+  stats: null | {cards: GlobalsView | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView;
+    /** the job points spent, beside the merits' title (the page's top bar has the job, its level, the master level) */
+    jp: string};
 }
 
 function porterOf(d: LegacyExport): PorterView | null {
@@ -102,5 +104,5 @@ export function persoView(): PersoView | null {
       [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>};
   if (bags) return {side, head, bags: bagsView(), stats: null};
   return {side, head, bags: null, stats: {cards: s && charStats(s) ? globalsView(s, 'cards') : null, noCharHtml: t('noChar'),
-    porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf()}};
+    porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf(), jp: c && c.jp_spent ? `${c.jp_spent} Job Points` : ''}};
 }

@@ -21,9 +21,8 @@
 </script>
 
 {#if view}
-  {@const h = view.head}
   <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.bags !== null && view.bags.none === null}<BagSide view={view.bags} />{:else if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
-    <header class="kcard phead"><div class="kband"><b>{h.char}</b><small>{h.why}</small></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl></header>
+    
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}
       <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps porterbox" title={p.title} meta={p.meta}>
@@ -34,7 +33,7 @@
         {#if p.add}<details class="porterlist add" open={p.add.names.length <= 12}><summary>+ {@html p.add.labelHtml} <em>{p.add.names.length}</em></summary><div class="pchips">{#each p.add.names as n (n)}<span>{n}</span>{/each}</div></details>{/if}
         {#if p.remove}<details class="porterlist rm" open={p.remove.names.length <= 12}><summary>− {@html p.remove.labelHtml} <em>{p.remove.names.length}</em></summary><div class="pchips">{#each p.remove.names as n (n)}<span>{n}</span>{/each}</div></details>{/if}
         {#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}</Box>{/if}</div>
-      <h3 class="tabsec">{st.meritsTitle}</h3>
+      <h3 class="tabsec">{st.meritsTitle}{#if st.jp}<small class="tabsecm">{st.jp}</small>{/if}</h3>
       {@const m = st.merits}
       {#if m.noneHtml}<div class="placeholder"><p>{@html m.noneHtml}</p></div>{:else}
         <div class="meritbar"><p class="muted">{@html m.bar.noteHtml}</p>{#if m.bar.reset}<button class="btn ghost" data-action="meritreset">{@html m.bar.reset.textHtml}</button>{/if}</div>
