@@ -34,8 +34,7 @@ export interface CombatView {
   sits: {label: string; list: Situation[]};
   party: {title: string; count: string; hint: string; rows: PartyRow[]; add: null | {title: string; label: string; left: string};
     removeTitle: string; nothing: string; moreTitle: string};
-  fight: {title: string; hint: string; ready: string};
-  foeTitle: string; foeHint: string;
+  fight: {title: string; hint: string; profile: string; group: string; vs: string; foeMore: string; foeLess: string};
   result: {title: string; tiles: Tile[]};
   target: {title: string; meta: string; card: TargetCardView};
   impact: {title: string; note: string; set: string; what: string; ws: boolean; rows: ImpactRow[]};
@@ -165,8 +164,7 @@ export function combatView(): CombatView | null {
       reset: {title: t('ttBuffReset'), textHtml: t('buffReset'), disabled: !n}},
     profBar: {label: t('prMine'), picker: picker(false)}, sits: {label: t('prSit'), list: situations(true)},
     party: partyOf(d, b, B, shown),
-    fight: {title: t('pbFight'), hint: t('pbFightHint'), ready: t('pbReady')},
-    foeTitle: t('pbFoeTitle'), foeHint: t('pbFoeHint'),
+    fight: {title: t('pbFight'), hint: t('pbFightHint'), profile: t('pbProfile'), group: t('pbGroup'), vs: t('pbVs'), foeMore: t('pbFoeMore'), foeLess: t('pbFoeLess')},
     result: {title: t('pbResultTitle'), tiles: tilesOf(B, P.tgt)},
     target: {title: t('pbTarget'), meta: enemyKey(b.enemy), card: P.tgt},
     impact: impactOf(), total: totalOf(B),

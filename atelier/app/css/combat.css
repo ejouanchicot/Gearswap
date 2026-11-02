@@ -220,12 +220,8 @@
 .kband small{margin-left:auto;font-size:11.5px;color:var(--faint);text-align:right}
 .kn{width:20px;height:20px;flex:none;border-radius:50%;background:var(--accent);color:var(--accent-ink,#14161c);display:grid;place-items:center;font-size:11px;font-weight:800}
 /* the fight: the profile, the ready parties, the buttons */
-.kfrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px}
-.kfrow .ksp{flex:1}
-.kready{font-size:12px;color:var(--faint)}
-.kfrow .prsits{margin:0}
 /* the monster: its card as it is, given the room of the middle */
-.kfoe{padding:12px 16px}
+.kfoe{padding:10px 14px}
 .kfoe .tgcard{border:0;padding:0;background:none}
 .kother{margin:0 16px 14px}
 /* the party: a line a member, its main settings on it */
@@ -242,12 +238,6 @@
 .kwho small{font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kwho i{margin-left:auto;font-style:normal;color:var(--muted);font-size:13px}
 .kmem.open .kwho b{color:var(--accent-2)}
-.kquick{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
-.kq{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:9px;background:var(--panel-2);padding:3px 8px 3px 4px;max-width:100%}
-.kql{font-size:10.5px;color:var(--faint);letter-spacing:.04em;padding-left:4px;white-space:nowrap}
-.kq .pbpick,.kq select.buffsel{min-width:0;height:26px;font-size:12.5px}
-.kq .pbpick{max-width:170px}
-.kqe{display:inline-flex;gap:5px;font-size:11.5px;white-space:nowrap}
 .kqe span,.kgives span{color:#7fd39a}
 .kqe .pneg,.kgives .pneg{color:#ef8f7f}
 .kqe .muted{color:var(--faint)}
@@ -273,13 +263,87 @@
 .kblock .pbsum{margin:0}
 @media (max-width:1400px){.kcols{grid-template-columns:minmax(0,1fr) 290px}.kmemrow{grid-template-columns:120px minmax(0,1fr) 24px}}
 /* narrower screens: the results under the party; a member's settings wrap, never past its line */
-.kq{min-width:0}
-.kq .pbpick,.kq select.buffsel{width:auto;flex:none}
-.kq .pbpick{max-width:170px;min-width:0;overflow:hidden}
-.kq .pbpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kband{flex-wrap:wrap;row-gap:2px}
 @media (max-width:1200px){.kcols{grid-template-columns:minmax(0,1fr)}.kresult{position:static}.ktiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media (max-width:900px){.kq{flex-wrap:wrap}.kq .pbpick{max-width:100%}.kqe{flex-wrap:wrap;white-space:normal}.kmemrow{grid-template-columns:minmax(0,1fr) 24px}.kmemrow .kquick{grid-column:1 / -1;grid-row:2}.kwho{grid-column:1}
-  .kfrow .ksp{display:none}.ktiles{grid-template-columns:1fr 1fr}}
-@media (max-width:600px){.kband small{margin-left:0;text-align:left;flex-basis:100%}.kfrow{padding:10px}.kfoe{padding:10px}.kparty{padding:4px 6px 8px}}
+@media (max-width:900px){.kmemrow{grid-template-columns:minmax(0,1fr) 24px}.kmemrow .kquick{grid-column:1 / -1;grid-row:2}.kwho{grid-column:1}
+  .kset .ksp,.kfoeline .ksp{display:none}.ktiles{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.kband small{margin-left:0;text-align:left;flex-basis:100%}.kset{padding:10px}.kfoe{padding:10px}.kparty{padding:4px 6px 8px}}
 @media (max-width:600px){.kother summary{display:flex;flex-wrap:wrap;gap:6px}.kother .pbot{min-width:0;flex:1 1 100%}.kother .pbot small{white-space:normal}}
+/* the fight's settings: the profile and the group of buffs on one row, the monster on one line under them (the party is
+   the screen's main part, the monster a setting: the player, 2026-11-02) */
+.kset{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:12px 16px 8px}
+.kfield{display:inline-flex;align-items:center;gap:8px}
+.klbl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.kset .ksp,.kfoeline .ksp{flex:1}
+.kset .prsits{margin:0}
+.kfoeline{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;margin:0 16px 10px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:11px;background:var(--well)}
+.kfoename{display:inline-flex;align-items:baseline;gap:8px;min-width:0}
+.kfoename b{font-size:14.5px;color:var(--ink)}
+.kfoename small{font-size:11.5px;color:var(--faint)}
+.kfoeg{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.kfoeg b{color:var(--ink);font-family:var(--mono);font-weight:600}
+.kfoeg em{font-style:normal;color:#ef8f7f;font-family:var(--mono)}
+.kfoehit{font-size:12.5px;color:var(--muted);white-space:nowrap;border:1px solid var(--line-strong);border-radius:99px;padding:2px 10px}
+.kfoehit b{color:var(--ink)}
+.kfoeline .btn{padding:4px 12px}
+.kfightcard .kfoe{margin:0 16px 10px;border:1px solid var(--line);border-radius:11px}
+.kfightcard .kother{margin:0 16px 12px}
+/* the other debuffs on one line in the fight's card: their name and total, what they are in the tooltip */
+.kfightcard .kother .pbot small{display:none}
+.kfightcard .kother summary{padding-top:6px;padding-bottom:6px}
+/* a member's settings on its line, as soft cards in columns that line up from one member to the next: the slot's name
+   small, the buff chosen in plain words (its list or button drawn flat), what it gives under it (the player, 2026-11-02:
+   "something more fluid, pleasant") */
+.kquick{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;min-width:0}
+.kq{display:grid;align-content:start;gap:2px;min-width:0;padding:7px 10px 8px;border:1px solid color-mix(in srgb,var(--line-strong) 70%,transparent);border-radius:12px;
+  background:color-mix(in srgb,var(--panel-2) 75%,transparent);transition:border-color .15s,background .15s}
+.kq:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line-strong));background:var(--panel-2)}
+.kq:has(.set){box-shadow:inset 3px 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}
+.kq.wide{grid-column:span 2}
+.kql{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kqc{display:flex;align-items:center;gap:6px;min-width:0}
+.kq .pbpick,.kq select.buffsel{flex:1 1 auto;min-width:0;width:auto;height:auto;padding:1px 0;border:0;border-radius:0;background:none;box-shadow:none;
+  color:var(--ink);font-size:13.5px;font-weight:700;text-align:left;cursor:pointer}
+.kq .pbpick{display:flex;align-items:center;gap:6px;overflow:hidden}
+.kq .pbpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kq .pbpick i{margin-left:auto;font-style:normal;color:var(--faint);font-size:10px}
+.kq .pbpick:not(.set) span,.kq select.buffsel:not(.set){color:var(--muted);font-weight:600}
+/* a flat list's menu keeps the page's dark ground (the list itself is drawn with no ground of its own) */
+.kq select option,.kq select optgroup{background:var(--panel);color:var(--ink)}
+.kq .pbsw{flex:none}
+.kqe{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11.5px;line-height:1.35}
+.kqe .pbfx{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.kqe .pbfx select.buffsel{font-size:11.5px;font-weight:600;color:var(--muted)}
+.kqe .chip{padding:1px 7px;font-size:10.5px}
+/* the profile: its list, then a little room before "Save" */
+.kprof{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
+.kprof .prnew{margin-left:2px}
+.kprof > .muted{font-size:11.5px;max-width:360px;line-height:1.35}
+@media (max-width:600px){.kfield{flex-wrap:wrap;max-width:100%}.kfield .prsits{max-width:100%;flex-wrap:wrap}.kq.wide{grid-column:auto}}
+/* compact, the whole party on one screen without scrolling (the player, 2026-11-02): the fight's settings on two lines,
+   the buff cards and the members' lines tight */
+.kfight .kband{padding:7px 14px}
+.kfightcard .prnone{display:none}
+.kset{padding:8px 14px 6px;gap:6px 12px}
+.kset .btn{padding:4px 11px;font-size:12.5px}
+.kfoeline{margin:0 14px 6px;padding:5px 10px;gap:4px 12px}
+.kfoeline .btn{padding:3px 10px;font-size:12.5px}
+.kfightcard .kother{margin:0 14px 8px}
+.kfightcard .kother summary{padding-top:3px;padding-bottom:3px}
+.kparty{padding:2px 8px 6px}
+.kmemrow{padding:4px 4px;gap:10px}
+.kwho .em{width:26px;height:26px}
+.kwho b{font-size:14px}
+.kquick{gap:6px}
+.kq{padding:4px 9px 5px;gap:0;border-radius:10px}
+.kql{font-size:9.5px;line-height:1.25}
+.kq .pbpick,.kq select.buffsel{font-size:13px;line-height:1.3;padding:0}
+.kqe{font-size:11px;line-height:1.25;gap:0 7px}
+.kadd{margin-top:4px;padding:6px 12px}
+.ktiles{padding:10px 12px 2px;gap:6px}
+.ktile{padding:6px 6px}
+.ktile b{font-size:18px}
+.kblock{margin:8px 12px 0;padding:7px 10px}
+/* the fight's buttons in its band, right */
+.kbandacts{margin-left:auto;display:inline-flex;gap:6px}
+.kbandacts .btn{padding:2px 10px;font-size:12px;letter-spacing:0;text-transform:none}
