@@ -13,7 +13,7 @@
 // @author  ejouanchicot
 import {foeView, type FoeView} from './foe';
 import {targetCardView, type TargetCardView} from './targetcard';
-import {memberPanel, youPanel, type PanelView} from './panel';
+import {memberPanel, youPanel, type PanelView, type Item} from './panel';
 import {setList, type SetListView} from '../sets/setlist';
 import {situations, picker, type Situation, type Picker} from '../profiles/profiles';
 
@@ -22,14 +22,21 @@ export interface PartyTab { key: string; label: string; sub: string; emblemHtml:
 export interface SumRow { name: string; value: string; low: boolean; foe: boolean; title: string }
 export interface ImpactRow { tier: string; name: string; title: string; pressed: boolean; a: string; aDiff: null | {text: string; up: boolean};
   b: string; bDiff: null | {text: string; up: boolean} }
+/** A member's line of the party: its tab, its main settings on the line (quick), all of them under it when it is opened */
+export interface PartyRow { tab: PartyTab; quick: Item[]; panel: PanelView | null; open: boolean }
+/** A figure of what it all gives you, as a tile (cap: at its most) */
+export interface Tile { label: string; value: string; cap: boolean; title: string }
 export interface CombatView {
   side: SetListView;
   head: {title: string; why: string; undo: null | {title: string; text: string}; endgame: {title: string; textHtml: string};
     reset: {title: string; textHtml: string; disabled: boolean}};
   profBar: {label: string; picker: Picker};
   sits: {label: string; list: Situation[]};
-  party: {title: string; count: string; tabs: PartyTab[]; add: null | {title: string; label: string; left: string}; you: boolean; panel: PanelView;
-    removeTitle: string; nothing: string};
+  party: {title: string; count: string; hint: string; rows: PartyRow[]; add: null | {title: string; label: string; left: string};
+    removeTitle: string; nothing: string; moreTitle: string};
+  fight: {title: string; hint: string; ready: string};
+  foeTitle: string; foeHint: string;
+  result: {title: string; tiles: Tile[]};
   target: {title: string; meta: string; card: TargetCardView};
   impact: {title: string; note: string; set: string; what: string; ws: boolean; rows: ImpactRow[]};
   total: {title: string; onYou: string; onFoe: string; nothing: string; mine: SumRow[]; foes: SumRow[]};
@@ -66,15 +73,44 @@ function tabOf(key: string, label: string, sub: string, cur: string, b: LegacyAn
   return {key, label, sub, emblemHtml: emblem(key === 'you' ? st().job : key), del: key !== 'you', gives: givesOfMember(key, b, B), selected: cur === key};
 }
 
+// a member's main settings, for its line: the rows of its first column but the gear's "+N" (its songs, rolls,
+// bubbles, Protect / Shell / Haste, your food and aftermath); the rest is in its panel, opened under the line
+function quickOf(panel: PanelView): Item[] {
+  const plus = (it: Item) => it.k === 'row' && it.controls.some(c => c.k === 'select' && /\bplus\b/.test(c.cls));
+  return panel.left.flatMap(bl => bl.k === 'section' ? bl.items : []).filter(it => (it.k === 'row' || it.k === 'am') && !plus(it));
+}
+
+// the party as the game's list: you, then each member, its main settings on its line; the member opened shows all of
+// them under it (S.pbTab; none at first, and a click on the opened one closes it)
 function partyOf(d: LegacyExport, b: LegacyAny, B: LegacyAny, shown: string[]): CombatView['party'] {
-  const cur = st().pbTab === 'you' || shown.includes(st().pbTab) ? st().pbTab || 'you' : 'you';
+  const want = st().pbTab, cur = !want ? '' : want === 'you' || shown.includes(want) ? want : '';
   const tabs = [tabOf('you', t('pbYou'), `${st().job}/${d.sub || '—'}`, cur, b, B)].concat(shown.map(j => {
     const trust = buffTier() === 'Trust' && TRUST_NAMES[j];
     return tabOf(j, trust || j, trust ? j : PB_JOBS.find((x: LegacyAny) => x.job === j) ? t('pbJob_' + j) : '', cur, b, B);
   }));
-  return {title: t('pbTitle'), count: `${shown.length + 1} / ${PB_MAX}`, tabs, removeTitle: t('pbRemove'), nothing: t('pbNothing'),
-    add: shown.length + 1 < PB_MAX ? {title: t('ttPbAdd'), label: t('pbAdd'), left: t('pbAddLeft', {n: PB_MAX - shown.length - 1})} : null,
-    you: cur === 'you', panel: cur === 'you' ? youPanel(b) : memberPanel(cur, b, shown)};
+  // (opened, its panel keeps what its line does not show: its main settings are on the line already)
+  // (a first column left empty: the second one takes its place, on one column)
+  const rest = (panel: PanelView, quick: Item[]): PanelView => {
+    const left = panel.left.map(bl => bl.k === 'section' ? {...bl, items: bl.items.filter(it => !quick.includes(it))} : bl)
+      .filter(bl => bl.k !== 'section' || bl.items.length);
+    return left.length ? {...panel, left} : {left: panel.right, right: []};
+  };
+  const rows = tabs.map((tb): PartyRow => { const panel = tb.key === 'you' ? youPanel(b) : memberPanel(tb.key, b, shown), quick = quickOf(panel);
+    return {tab: tb, quick, panel: cur === tb.key ? rest(panel, quick) : null, open: cur === tb.key}; });
+  return {title: t('pbPtTitle'), count: `${shown.length + 1} / ${PB_MAX}`, hint: t('pbPtHint'), rows, removeTitle: t('pbRemove'), nothing: t('pbNothing'),
+    moreTitle: t('pbMoreTip'),
+    add: shown.length + 1 < PB_MAX ? {title: t('ttPbAdd'), label: t('pbAdd'), left: t('pbAddLeft', {n: PB_MAX - shown.length - 1})} : null};
+}
+
+// what it all gives you, as tiles: magic Haste (its 43.75 % cap: 448/1024), Attack, Accuracy, your chance to hit the
+// target (its card's)
+const HASTE_CAP = 43.75;
+function tilesOf(B: LegacyAny, tgt: LegacyAny): Tile[] {
+  const mh = B.mhaste || 0, n = (v: number) => (Math.round(v * 10) / 10).toLocaleString(st().lang === 'fr' ? 'fr-FR' : 'en-US');
+  const out: Tile[] = [{label: t('pbTileHaste'), value: n(Math.min(mh, HASTE_CAP)) + ' %', cap: mh >= HASTE_CAP - 0.05, title: t('pbTileHasteTip', {v: n(mh)})},
+    {label: t('pbTileAtt'), value: '+' + (B.atk || 0), cap: false, title: ''}, {label: t('pbTileAcc'), value: '+' + (B.acc || 0), cap: false, title: ''}];
+  if (tgt.hit && 'p' in tgt.hit) out.push({label: t('pbTileHit'), value: tgt.hit.p + ' %', cap: false, title: tgt.hit.title});
+  return out;
 }
 
 // the figure of a situation against the one in use, as a percentage (lower is better for a time)
@@ -129,6 +165,9 @@ export function combatView(): CombatView | null {
       reset: {title: t('ttBuffReset'), textHtml: t('buffReset'), disabled: !n}},
     profBar: {label: t('prMine'), picker: picker(false)}, sits: {label: t('prSit'), list: situations(true)},
     party: partyOf(d, b, B, shown),
+    fight: {title: t('pbFight'), hint: t('pbFightHint'), ready: t('pbReady')},
+    foeTitle: t('pbFoeTitle'), foeHint: t('pbFoeHint'),
+    result: {title: t('pbResultTitle'), tiles: tilesOf(B, P.tgt)},
     target: {title: t('pbTarget'), meta: enemyKey(b.enemy), card: P.tgt},
     impact: impactOf(), total: totalOf(B),
     other: P.foe ? {open: !!st()._pbOtherOpen, title: t('ttPbOther'), label: t('pbOther'), who: t('pbOtherWho'), total: P.foe.total, down: P.foe.down,
