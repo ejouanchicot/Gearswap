@@ -394,7 +394,8 @@
 .cfgx > .cfg-nav,.cfgx > .cfg-list,.cfgx > .cfg-det,.cfgx > .cfg-foot{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}
 .cfgx > .cfg-list{padding:0 0 20px}
 .cfgx > .cfg-det{padding:0 0 18px;gap:12px}
-.cfgx > .cfg-list > *:not(.cfg-band){margin-left:22px;margin-right:22px}
+.cfgx > .cfg-list > *:not(.cfg-band){margin-left:16px;margin-right:16px}
+@media (max-width:600px){.cfgx > .cfg-list > *:not(.cfg-band){margin-left:6px;margin-right:6px}}
 .cfgx > .cfg-det > *:not(.cfg-band){margin-left:18px;margin-right:18px}
 .cfg-band{position:sticky;top:0;z-index:2;margin:0 0 14px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--panel)),var(--panel))}
 .cfg-det > .cfg-band{margin-bottom:0}
@@ -406,3 +407,13 @@
 .cfgx > .cfg-foot{margin-top:0}
 .jobcfg:has(.cfgx) .jobcfgtabs{margin-bottom:12px}
 .cfg-bic > .em{width:18px;height:18px;display:inline-block;--role:var(--accent)}
+/* the weapons to add, a row a kind (Shields, Grips, Swords...): its title on the left, its weapons aligned beside it */
+.wce-groups{display:grid;gap:6px}
+.wce-g{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:start;padding:6px 0;border-top:1px solid var(--line)}
+.wce-g:first-child{border-top:0}
+.wce-gt{padding-top:6px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.wce-gt small{margin-left:6px;color:var(--faint);font-weight:600;letter-spacing:0}
+.wce-g .wce-picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
+.wce-g .wce-picks button{min-width:0}
+.wce-g .wce-picks button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:700px){.wce-g{grid-template-columns:minmax(0,1fr)}}

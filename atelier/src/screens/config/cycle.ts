@@ -6,12 +6,14 @@
 // @author  ejouanchicot
 
 export interface CycleTile { value: string; item: string; iconHtml: string; tag: string; warn: boolean; start: boolean; first: boolean; last: boolean }
-export interface CyclePick { name: string; iconHtml: string; back: boolean; tip: string }
+export interface CyclePick { name: string; iconHtml: string; back: boolean; tip: string; type: string }
 export interface CycleView {
   mode: string; title: string; count: string; loop: string; note: string;
   /** "File order": only when the Atelier changed the order */
   reset: null | {label: string; tip: string};
   tiles: CycleTile[]; picks: CyclePick[];
+  /** the picks by the kind of weapon (Shields, Grips, Swords...), the ones taken out of the cycle first */
+  groups: Array<{title: string; picks: CyclePick[]}>;
   add: string; addPh: string; none: string; backTag: string;
   tips: {up: string; down: string; out: string};
 }
@@ -28,10 +30,16 @@ export function cycleView(d: LegacyExport, mode: string, key: string): CycleView
     return {value: v, item, iconHtml: itemIco(item), start: on, first: i === 0, last: i === c.values.length - 1,
       tag: on ? t('wcyStart') : !set ? t('wcyNoSet') : empty ? t('wcyEmpty') : '', warn: !on && (!set || empty)};
   });
-  const picks = wcChoices(mode).map((p): CyclePick => ({name: p.name, iconHtml: itemIco(p.name), back: p.back,
+  const rows = ((catalog() || {}) as LegacyAny).row || {};
+  const picks = wcChoices(mode).map((p): CyclePick => ({name: p.name, iconHtml: itemIco(p.name), back: p.back, type: (rows[p.name] || [])[10] || '',
     tip: p.back ? t('wcyBackTip') : wcSetAt(wcPath(p.value)) ? '' : t('wcyNewSet')}));
+  // by kind: what was in the cycle first, then the off hand's own (shields, grips), then each weapon type
+  const ORDER = ['Shield', 'Grip', 'Sword', 'Dagger', 'Club', 'Axe', 'Great Sword', 'Great Axe', 'Scythe', 'Polearm', 'Katana', 'Great Katana', 'Staff', 'Hand-to-Hand', 'Archery', 'Marksmanship', 'Throwing'];
+  const kinds = [...new Set(picks.filter(p => !p.back).map(p => p.type))].sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99));
+  const groups = (picks.some(p => p.back) ? [{title: t('wcyBackGroup'), picks: picks.filter(p => p.back)}] : [])
+    .concat(kinds.map(k => ({title: t('wcyKind_' + (k || 'Other').replace(/[^A-Za-z]/g, '')) || k, picks: picks.filter(p => !p.back && p.type === k)})));
   return {mode, title: t('wcyTitle', {m: c.desc}), count: key ? t('wcyCount', {n: c.values.length, k: key}) : t('wcyCountNoKey', {n: c.values.length}),
     loop: t('wcyLoop'), note: t('wcyNote'), reset: wcOrder(mode).length ? {label: t('wcyReset'), tip: t('wcyResetTip')} : null,
-    tiles, picks, add: t('wcyAdd'), addPh: t('wcyAddPh'), none: t('wcyNone'), backTag: t('wcyBack'),
+    tiles, picks, groups, add: t('wcyAdd'), addPh: t('wcyAddPh'), none: t('wcyNone'), backTag: t('wcyBack'),
     tips: {up: t('wcyUp'), down: t('wcyDown'), out: c.values.length < 2 ? t('wcyLast') : t('wcyOut')}};
 }

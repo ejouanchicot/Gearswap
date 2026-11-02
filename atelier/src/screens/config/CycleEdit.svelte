@@ -13,7 +13,6 @@
   let {c}: {c: CycleView} = $props();
   let q = $state('');
   let from = $state(-1), over = $state(-1);
-  const picks = $derived(q.trim() ? c.picks.filter(p => p.name.toLowerCase().includes(q.trim().toLowerCase())) : c.picks);
   const drop = (to: number) => { const f = from; from = -1; over = -1; if (f >= 0 && f !== to) wcMove(c.mode, f, to); };
 </script>
 
@@ -41,7 +40,7 @@
   <div class="wce-add">
     <label><b>{c.add}</b><input type="search" placeholder={c.addPh} bind:value={q}></label>
     {#if c.picks.length}
-      <div class="wce-picks">{#each picks as p (p.name)}<button type="button" data-wcadd={c.mode + '|' + p.name} title={p.tip}>{@html p.iconHtml}<span>{p.name}</span>{#if p.back}<em>{c.backTag}</em>{/if}</button>{/each}</div>
+      <div class="wce-groups">{#each c.groups as g (g.title)}{@const shown = g.picks.filter(p => !q.trim() || p.name.toLowerCase().includes(q.trim().toLowerCase()))}{#if shown.length}<div class="wce-g"><span class="wce-gt">{g.title}<small>{shown.length}</small></span><div class="wce-picks">{#each shown as p (p.name)}<button type="button" data-wcadd={c.mode + '|' + p.name} title={p.tip}>{@html p.iconHtml}<span>{p.name}</span>{#if p.back}<em>{c.backTag}</em>{/if}</button>{/each}</div></div>{/if}{/each}</div>
     {:else}<p>{c.none}</p>{/if}
   </div>
   <p class="wce-note">{c.note}</p>

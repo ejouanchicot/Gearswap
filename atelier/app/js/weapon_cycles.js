@@ -15,7 +15,9 @@ Object.assign(T.fr, {wcyTitle: 'Cycle {m}', wcyCount: '{n} armes · {k} les fait
   wcyMoved: '{w} mise en {n} dans le cycle {m}.', wcyResetDone: 'Cycle {m} remis dans son ordre d’origine.', wcyOutDone: '{w} retirée du cycle {m}.', wcyBackDone: '{w} remise dans le cycle {m}.',
   wcyAdding: 'Ajout au cycle {m}…', wcyAddedOnly: '{w} ajoutée à ton cycle {m}.', wcyAddFail: 'Le jeu n’a pas pris le changement : rien n’a changé.',
   wcyAddLater: '{w} ajoutée au cycle {m} : elle sera là au prochain chargement du job. Ajoute-la de nouveau le jeu connecté pour qu’elle s’équipe.',
-  wcyNeedGame: 'Connecte le jeu pour ajouter une nouvelle arme.', awCyclesWhere: 'L’ordre de tes armes, en ajouter ou en retirer : Configuration → Modes & touches → Équipement, puis Main / Sub Weapon.', delCycle: ' Et retirée du cycle {m}.'});
+  wcyNeedGame: 'Connecte le jeu pour ajouter une nouvelle arme.', wcyBackGroup: 'Retirées du cycle', wcyKind_Shield: 'Boucliers', wcyKind_Grip: 'Grips', wcyKind_Sword: 'Épées', wcyKind_Dagger: 'Dagues',
+  wcyKind_Club: 'Massues', wcyKind_Axe: 'Haches', wcyKind_GreatSword: 'Grandes épées', wcyKind_GreatAxe: 'Grandes haches', wcyKind_Scythe: 'Faux', wcyKind_Polearm: 'Lances', wcyKind_Katana: 'Katanas',
+  wcyKind_GreatKatana: 'Grands katanas', wcyKind_Staff: 'Bâtons', wcyKind_HandtoHand: 'Mains nues', wcyKind_Archery: 'Arcs', wcyKind_Marksmanship: 'Armes à feu', wcyKind_Throwing: 'Lancer', wcyKind_Other: 'Autres', awCyclesWhere: 'L’ordre de tes armes, en ajouter ou en retirer : Configuration → Modes & touches → Équipement, puis Main / Sub Weapon.', delCycle: ' Et retirée du cycle {m}.'});
 Object.assign(T.en, {wcyTitle: '{m} cycle', wcyCount: '{n} weapons · {k} goes through them in this order', wcyCountNoKey: '{n} weapons, in the order they come',
   wcyLoop: '↺ back to 1', wcyStart: 'on load', wcyEmpty: 'empty: equips nothing', wcyNoSet: 'empty: equips nothing',
   wcyUp: 'Earlier in the cycle', wcyDown: 'Later in the cycle', wcyOut: 'Take out of the cycle', wcyLast: 'The cycle’s only weapon: a cycle keeps one at least.',
@@ -25,7 +27,9 @@ Object.assign(T.en, {wcyTitle: '{m} cycle', wcyCount: '{n} weapons · {k} goes t
   wcyMoved: '{w} put at {n} in the {m} cycle.', wcyResetDone: '{m} cycle back to its original order.', wcyOutDone: '{w} taken out of the {m} cycle.', wcyBackDone: '{w} put back in the {m} cycle.',
   wcyAdding: 'Adding to the {m} cycle…', wcyAddedOnly: '{w} added to your {m} cycle.', wcyAddFail: 'The game did not take the change: nothing changed.',
   wcyAddLater: '{w} added to the {m} cycle: it is there at the job’s next load. Add it again with the game linked for it to be worn.',
-  wcyNeedGame: 'Link the game to add a new weapon.', awCyclesWhere: 'Your weapons’ order, adding or taking one out: Configuration → Modes & keys → Equipment, then Main / Sub Weapon.', delCycle: ' And taken out of the {m} cycle.'});
+  wcyNeedGame: 'Link the game to add a new weapon.', wcyBackGroup: 'Taken out of the cycle', wcyKind_Shield: 'Shields', wcyKind_Grip: 'Grips', wcyKind_Sword: 'Swords', wcyKind_Dagger: 'Daggers',
+  wcyKind_Club: 'Clubs', wcyKind_Axe: 'Axes', wcyKind_GreatSword: 'Great swords', wcyKind_GreatAxe: 'Great axes', wcyKind_Scythe: 'Scythes', wcyKind_Polearm: 'Polearms', wcyKind_Katana: 'Katanas',
+  wcyKind_GreatKatana: 'Great katanas', wcyKind_Staff: 'Staves', wcyKind_HandtoHand: 'Hand-to-hand', wcyKind_Archery: 'Bows', wcyKind_Marksmanship: 'Guns', wcyKind_Throwing: 'Throwing', wcyKind_Other: 'Other', awCyclesWhere: 'Your weapons’ order, adding or taking one out: Configuration → Modes & keys → Equipment, then Main / Sub Weapon.', delCycle: ' And taken out of the {m} cycle.'});
 
 // The weapon states GearSwap lays (shared/utils/core/combat_mode.lua WEAPON_STATES) and their slot
 const WC_STATES = {MainWeapon: 'main', SubWeapon: 'sub', RangeWeapon: 'range', Shield: 'sub', StanceWeapon: 'main'};
