@@ -26,7 +26,14 @@
     <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}
-      <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps" title={p.title} meta={p.meta}><p class="muted small">{@html p.introHtml}</p>{#if p.newHtml}<p class="small">{@html p.newHtml}</p>{/if}{#if p.add}<p class="small"><b>+ {@html p.add.labelHtml}</b></p><ul class="statlist">{#each p.add.names as n (n)}<li class="porteradd">{n}</li>{/each}</ul>{/if}{#if p.remove}<p class="small"><b>− {@html p.remove.labelHtml}</b></p><ul class="statlist">{#each p.remove.names as n (n)}<li class="porterrm">{n}</li>{/each}</ul>{/if}{#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}{#if p.write}<button class="btn" data-porterwrite title={p.write.title}>{@html p.write.textHtml}</button>{/if}{#if p.needHtml}<p class="muted small">{@html p.needHtml}</p>{/if}</Box>{/if}</div>
+      <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps porterbox" title={p.title} meta={p.meta}>
+        <p class="muted small">{@html p.introHtml}</p>{#if p.newHtml}<p class="small">{@html p.newHtml}</p>{/if}
+        <div class="porterfig">{#each p.figures as f (f.label)}<div class="pf {f.tone}"><b>{f.n}</b><small>{f.label}</small></div>{/each}</div>
+        {#if p.plain}<p class="porterwarn">{p.plain}</p>{/if}
+        {#if p.write}<button class="btn porterbtn" data-porterwrite title={p.write.title}>{@html p.write.textHtml}</button>{/if}{#if p.needHtml}<p class="muted small">{@html p.needHtml}</p>{/if}
+        {#if p.add}<details class="porterlist add" open={p.add.names.length <= 12}><summary>+ {@html p.add.labelHtml} <em>{p.add.names.length}</em></summary><div class="pchips">{#each p.add.names as n (n)}<span>{n}</span>{/each}</div></details>{/if}
+        {#if p.remove}<details class="porterlist rm" open={p.remove.names.length <= 12}><summary>− {@html p.remove.labelHtml} <em>{p.remove.names.length}</em></summary><div class="pchips">{#each p.remove.names as n (n)}<span>{n}</span>{/each}</div></details>{/if}
+        {#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}</Box>{/if}</div>
       <h3 class="tabsec">{st.meritsTitle}</h3>
       {@const m = st.merits}
       {#if m.noneHtml}<div class="placeholder"><p>{@html m.noneHtml}</p></div>{:else}

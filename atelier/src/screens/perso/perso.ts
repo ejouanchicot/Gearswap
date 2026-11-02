@@ -13,8 +13,12 @@ import {bagsView, type BagsView} from './bags';
 import {setList, type SetListView} from '../sets/setlist';
 
 import {globalsView, type GlobalsView} from '../sets/globals';
-export interface PorterView { title: string; meta: string; introHtml: string; newHtml: string; add: null | {labelHtml: string; names: string[]};
-  remove: null | {labelHtml: string; names: string[]}; doneHtml: string; write: null | {title: string; textHtml: string}; needHtml: string }
+/** PorterPacker's card: three figures (the pieces your sets need, the ones missing, the ones taken out for nothing),
+ *  a warning when the job's list is a whole storage list, the two lists folded (a few names, then "and N more") */
+export interface PorterView { title: string; meta: string; ok: boolean; introHtml: string; newHtml: string;
+  figures: Array<{n: number; label: string; tone: string}>; plain: string;
+  add: null | {labelHtml: string; names: string[]}; remove: null | {labelHtml: string; names: string[]}; more: string;
+  doneHtml: string; write: null | {title: string; textHtml: string}; needHtml: string }
 export interface MeritRow { key: string; name: string; desc: string; level: number; cap: number; changed: boolean; was: string; total: string; inputTitle: string }
 export interface MeritsView {
   noneHtml: string;
@@ -33,9 +37,15 @@ function porterOf(d: LegacyExport): PorterView | null {
   const p = d.porterpacker;
   if (!p || !p.wanted) return null;
   const todo = p.add.length + p.remove.length;
+  // a whole storage list (one plain list, the old way: what to pack and what to take out alike) far bigger than what
+  // the sets use: every piece of it comes out when this job is played
+  const wanted = p.wanted || [], plain = (p as LegacyAny).form === 'plain' && p.remove.length > Math.max(30, wanted.length * 4);
   return {
-    title: t('porterTitle'), meta: todo ? t('porterToDo', {n: todo}) : t('porterOk'),
-    introHtml: t('porterIntro', {f: esc(p.file)}), newHtml: p.exists ? '' : t('porterNew', {f: esc(p.file)}),
+    title: t('porterTitle'), meta: todo ? t('porterToDo', {n: todo}) : t('porterOk'), ok: !todo,
+    introHtml: t('porterIntro2', {j: esc(S.job)}), newHtml: p.exists ? '' : t('porterNew2'),
+    figures: [{n: wanted.length, label: t('porterFigNeed'), tone: ''}, {n: p.add.length, label: t('porterFigAdd'), tone: p.add.length ? 'bad' : 'good'},
+      {n: p.remove.length, label: t('porterFigRm'), tone: p.remove.length ? 'warn' : 'good'}],
+    plain: plain ? t('porterPlain', {n: p.remove.length + wanted.length, j: S.job, w: wanted.length}) : '', more: t('porterMore'),
     add: p.add.length ? {labelHtml: t('porterAdd'), names: p.add} : null, remove: p.remove.length ? {labelHtml: t('porterRemove'), names: p.remove} : null,
     doneHtml: todo ? '' : p.wanted.length ? t('porterAllOk', {n: p.wanted.length}) : t('porterNone'),
     write: todo && shownJobLoaded() ? {title: t('porterWriteTip', {f: p.file}), textHtml: t('porterWrite')} : null,
