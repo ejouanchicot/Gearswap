@@ -210,73 +210,29 @@
 .tgfoot,.tgnone{margin:0}
 
 /* ============================================================================ Buffs & target, around the fight
-   (notes/docs-perso/buffs-cible-2026-11-02/SPEC.md): the Sets screen's gold-banded cards; the party as the game's list */
+   (notes/docs-perso/buffs-cible-2026-11-02/SPEC.md, v3 "A + B"): the Sets screen's gold-banded cards; the fight's
+   settings compact, the party as the game's list beside the member opened, the results by effect; all of it on one
+   screen without scrolling (the player, 2026-11-02) */
 .kfight{display:block;padding:0}
-.kcols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
-.kmain{display:grid;gap:14px;min-width:0}
+.kcols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
+.kmain{display:grid;gap:12px;min-width:0}
 .kcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);overflow:hidden;min-width:0}
-.kband{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line);border-left:3px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent)}
+.kband{display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px;padding:7px 14px;border-bottom:1px solid var(--line);border-left:3px solid var(--accent);background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent)}
 .kband b{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .kband small{margin-left:auto;font-size:11.5px;color:var(--faint);text-align:right}
-.kn{width:20px;height:20px;flex:none;border-radius:50%;background:var(--accent);color:var(--accent-ink,#14161c);display:grid;place-items:center;font-size:11px;font-weight:800}
-/* the fight: the profile, the ready parties, the buttons */
-/* the monster: its card as it is, given the room of the middle */
-.kfoe{padding:10px 14px}
-.kfoe .tgcard{border:0;padding:0;background:none}
-.kother{margin:0 16px 14px}
-/* the party: a line a member, its main settings on it */
-.kparty{display:grid;padding:6px 10px 10px}
-.kmem{border-bottom:1px solid var(--line)}
-.kmem:last-of-type{border-bottom:0}
-.kmem.open{background:color-mix(in srgb,var(--accent) 5%,transparent);border-radius:10px;border-bottom-color:transparent;margin:2px 0}
-.kmemrow{display:grid;grid-template-columns:150px minmax(0,1fr) 24px;align-items:center;gap:10px;padding:8px 6px}
-.kwho{display:flex;align-items:center;gap:10px;border:0;background:none;padding:2px 4px;border-radius:8px;text-align:left;cursor:pointer;color:var(--ink)}
-.kwho:hover{background:var(--hover)}
-.kwho .em{width:30px;height:30px;display:inline-block;--role:var(--accent-2)}
-.kwho span{display:grid;min-width:0}
-.kwho b{font-size:15px}
-.kwho small{font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kwho i{margin-left:auto;font-style:normal;color:var(--muted);font-size:13px}
-.kmem.open .kwho b{color:var(--accent-2)}
-.kqe span,.kgives span{color:#7fd39a}
-.kqe .pneg,.kgives .pneg{color:#ef8f7f}
-.kqe .muted{color:var(--faint)}
-.kgives{display:flex;flex-wrap:wrap;gap:8px;font-size:12px}
-.kx{border:0;background:none;color:var(--faint);font-size:12px;border-radius:6px;height:24px}
+.kbandacts{margin-left:auto;display:inline-flex;gap:6px}
+.kbandacts .btn{padding:2px 10px;font-size:12px;letter-spacing:0;text-transform:none}
+.kx{border:0;background:none;color:var(--faint);font-size:12px;border-radius:6px;height:22px;padding:0 6px}
 .kx:hover{color:#e06a6a;background:var(--hover)}
-.kmore{padding:4px 10px 12px 12px}
-.kadd{margin-top:8px;display:flex;align-items:baseline;gap:10px;border:1px dashed var(--line-strong);border-radius:10px;background:none;padding:9px 14px;color:var(--muted);cursor:pointer}
-.kadd b{color:var(--ink)} .kadd small{color:var(--faint)}
-.kadd:hover{border-color:var(--accent)}
-/* what it gives you */
-.kresult{position:sticky;top:0}
-.ktiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px 4px}
-.ktile{border:1px solid var(--line-strong);border-radius:11px;background:var(--well);padding:9px 8px;text-align:center}
-.ktile b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
-.ktile small{font-size:11.5px;color:var(--faint)}
-.ktile.cap b{color:var(--accent)}
-.ktile.cap small::after{content:" · max";color:var(--accent)}
-.kblock{margin:10px 14px 0;border:1px solid var(--line-strong);border-radius:11px;background:var(--well);padding:9px 12px}
-.kblock:last-child{margin-bottom:14px}
-.kblock h4{margin:0 0 6px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
-.kblock h4.foe{margin-top:10px;color:#ef8f7f}
-.kblock .pbsum{margin:0}
-@media (max-width:1400px){.kcols{grid-template-columns:minmax(0,1fr) 290px}.kmemrow{grid-template-columns:120px minmax(0,1fr) 24px}}
-/* narrower screens: the results under the party; a member's settings wrap, never past its line */
-.kband{flex-wrap:wrap;row-gap:2px}
-@media (max-width:1200px){.kcols{grid-template-columns:minmax(0,1fr)}.kresult{position:static}.ktiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media (max-width:900px){.kmemrow{grid-template-columns:minmax(0,1fr) 24px}.kmemrow .kquick{grid-column:1 / -1;grid-row:2}.kwho{grid-column:1}
-  .kset .ksp,.kfoeline .ksp{display:none}.ktiles{grid-template-columns:1fr 1fr}}
-@media (max-width:600px){.kband small{margin-left:0;text-align:left;flex-basis:100%}.kset{padding:10px}.kfoe{padding:10px}.kparty{padding:4px 6px 8px}}
-@media (max-width:600px){.kother summary{display:flex;flex-wrap:wrap;gap:6px}.kother .pbot{min-width:0;flex:1 1 100%}.kother .pbot small{white-space:normal}}
-/* the fight's settings: the profile and the group of buffs on one row, the monster on one line under them (the party is
-   the screen's main part, the monster a setting: the player, 2026-11-02) */
-.kset{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:12px 16px 8px}
+/* the fight: the profile and the group of buffs, the monster on one line, its card and the other debuffs folded */
+.kset{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:8px 14px 6px}
 .kfield{display:inline-flex;align-items:center;gap:8px}
 .klbl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
-.kset .ksp,.kfoeline .ksp{flex:1}
 .kset .prsits{margin:0}
-.kfoeline{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;margin:0 16px 10px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:11px;background:var(--well)}
+.kprof{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
+.kfightcard .prnone{display:none}
+.kfoeline{display:flex;align-items:center;gap:4px 12px;flex-wrap:wrap;margin:0 14px 6px;padding:5px 10px;border:1px solid var(--line-strong);border-radius:11px;background:var(--well)}
+.kfoeline .ksp{flex:1}
 .kfoename{display:inline-flex;align-items:baseline;gap:8px;min-width:0}
 .kfoename b{font-size:14.5px;color:var(--ink)}
 .kfoename small{font-size:11.5px;color:var(--faint)}
@@ -285,65 +241,93 @@
 .kfoeg em{font-style:normal;color:#ef8f7f;font-family:var(--mono)}
 .kfoehit{font-size:12.5px;color:var(--muted);white-space:nowrap;border:1px solid var(--line-strong);border-radius:99px;padding:2px 10px}
 .kfoehit b{color:var(--ink)}
-.kfoeline .btn{padding:4px 12px}
-.kfightcard .kfoe{margin:0 16px 10px;border:1px solid var(--line);border-radius:11px}
-.kfightcard .kother{margin:0 16px 12px}
-/* the other debuffs on one line in the fight's card: their name and total, what they are in the tooltip */
-.kfightcard .kother .pbot small{display:none}
-.kfightcard .kother summary{padding-top:6px;padding-bottom:6px}
-/* a member's settings on its line, as soft cards in columns that line up from one member to the next: the slot's name
-   small, the buff chosen in plain words (its list or button drawn flat), what it gives under it (the player, 2026-11-02:
-   "something more fluid, pleasant") */
-.kquick{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;min-width:0}
-.kq{display:grid;align-content:start;gap:2px;min-width:0;padding:7px 10px 8px;border:1px solid color-mix(in srgb,var(--line-strong) 70%,transparent);border-radius:12px;
-  background:color-mix(in srgb,var(--panel-2) 75%,transparent);transition:border-color .15s,background .15s}
-.kq:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line-strong));background:var(--panel-2)}
-.kq:has(.set){box-shadow:inset 3px 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}
-.kq.wide{grid-column:span 2}
-.kql{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kqc{display:flex;align-items:center;gap:6px;min-width:0}
-.kq .pbpick,.kq select.buffsel{flex:1 1 auto;min-width:0;width:auto;height:auto;padding:1px 0;border:0;border-radius:0;background:none;box-shadow:none;
-  color:var(--ink);font-size:13.5px;font-weight:700;text-align:left;cursor:pointer}
-.kq .pbpick{display:flex;align-items:center;gap:6px;overflow:hidden}
-.kq .pbpick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.kq .pbpick i{margin-left:auto;font-style:normal;color:var(--faint);font-size:10px}
-.kq .pbpick:not(.set) span,.kq select.buffsel:not(.set){color:var(--muted);font-weight:600}
-/* a flat list's menu keeps the page's dark ground (the list itself is drawn with no ground of its own) */
-.kq select option,.kq select optgroup{background:var(--panel);color:var(--ink)}
-.kq .pbsw{flex:none}
-.kqe{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:11.5px;line-height:1.35}
-.kqe .pbfx{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
-.kqe .pbfx select.buffsel{font-size:11.5px;font-weight:600;color:var(--muted)}
-.kqe .chip{padding:1px 7px;font-size:10.5px}
-/* the profile: its list, then a little room before "Save" */
-.kprof{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
-.kprof .prnew{margin-left:2px}
-.kprof > .muted{font-size:11.5px;max-width:360px;line-height:1.35}
-@media (max-width:600px){.kfield{flex-wrap:wrap;max-width:100%}.kfield .prsits{max-width:100%;flex-wrap:wrap}.kq.wide{grid-column:auto}}
-/* compact, the whole party on one screen without scrolling (the player, 2026-11-02): the fight's settings on two lines,
-   the buff cards and the members' lines tight */
-.kfight .kband{padding:7px 14px}
-.kfightcard .prnone{display:none}
-.kset{padding:8px 14px 6px;gap:6px 12px}
-.kset .btn{padding:4px 11px;font-size:12.5px}
-.kfoeline{margin:0 14px 6px;padding:5px 10px;gap:4px 12px}
 .kfoeline .btn{padding:3px 10px;font-size:12.5px}
-.kfightcard .kother{margin:0 14px 8px}
+.kfoe{margin:0 14px 8px;padding:10px 14px;border:1px solid var(--line);border-radius:11px}
+.kfoe .tgcard{border:0;padding:0;background:none}
+.kother{margin:0 14px 8px}
+.kfightcard .kother .pbot small{display:none}
 .kfightcard .kother summary{padding-top:3px;padding-bottom:3px}
-.kparty{padding:2px 8px 6px}
-.kmemrow{padding:4px 4px;gap:10px}
-.kwho .em{width:26px;height:26px}
-.kwho b{font-size:14px}
-.kquick{gap:6px}
-.kq{padding:4px 9px 5px;gap:0;border-radius:10px}
-.kql{font-size:9.5px;line-height:1.25}
-.kq .pbpick,.kq select.buffsel{font-size:13px;line-height:1.3;padding:0}
-.kqe{font-size:11px;line-height:1.25;gap:0 7px}
-.kadd{margin-top:4px;padding:6px 12px}
-.ktiles{padding:10px 12px 2px;gap:6px}
-.ktile{padding:6px 6px}
-.ktile b{font-size:18px}
-.kblock{margin:8px 12px 0;padding:7px 10px}
-/* the fight's buttons in its band, right */
-.kbandacts{margin-left:auto;display:inline-flex;gap:6px}
-.kbandacts .btn{padding:2px 10px;font-size:12px;letter-spacing:0;text-transform:none}
+/* the party as the game's list, beside the member opened */
+.kab{display:grid;grid-template-columns:190px minmax(0,1fr);gap:12px;align-items:start;min-width:0}
+.kpt{display:grid;gap:3px;padding:6px}
+.kpm{display:grid;grid-template-columns:28px minmax(0,1fr);gap:1px 8px;align-items:center;padding:6px 8px;border:1px solid transparent;border-radius:10px;background:none;text-align:left;color:var(--ink);cursor:pointer}
+.kpm:hover{background:var(--hover)}
+.kpm.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel-2));box-shadow:inset 3px 0 0 var(--accent)}
+.kpm > .em{grid-row:span 2;width:26px;height:26px;display:inline-block;--role:var(--accent-2)}
+.kpmt{display:flex;align-items:baseline;gap:6px;min-width:0}
+.kpmt b{font-size:14px}
+.kpmt small{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpmi{display:flex;flex-wrap:wrap;gap:3px}
+.kpmi > span{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;background:var(--well);border:1px solid var(--line);opacity:.35}
+.kpmi > span.on{opacity:1;border-color:var(--line-strong)}
+.kpmi .ico{width:12px;height:12px;border:0;background:none;box-shadow:none;display:grid;place-items:center}
+.kpmi svg{width:12px;height:12px;color:var(--accent)}
+.kpadd{margin-top:4px;display:grid;gap:1px;border:1px dashed var(--line-strong);border-radius:10px;background:none;padding:7px 10px;color:var(--ink);font-weight:600;font-size:12.5px;cursor:pointer;text-align:center}
+.kpadd small{color:var(--faint);font-weight:400;font-size:11px}
+.kpadd:hover{border-color:var(--accent)}
+/* the member opened: its slots as large cases, the slot opened's choices as tiles, the rest of its settings */
+.ked{display:grid;gap:10px;padding:10px 12px 12px}
+.kslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.ksl{display:grid;align-content:start;gap:1px;min-width:0;padding:7px 10px 8px;border:1px solid var(--line-strong);border-radius:12px;background:var(--panel-2);text-align:left;color:var(--ink);transition:border-color .15s,background .15s}
+button.ksl{cursor:pointer}
+button.ksl:hover{border-color:color-mix(in srgb,var(--accent) 60%,var(--line-strong))}
+.ksl.set{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}
+.ksl.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel-2));box-shadow:0 0 0 1px var(--accent) inset}
+.ksl small{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ksl > b{display:flex;align-items:center;gap:6px;font-size:14px;min-width:0}
+.ksl > b i{margin-left:auto;font-style:normal;color:var(--faint);font-size:10px}
+button.ksl:not(.set) > b{color:var(--muted);font-weight:600}
+.kqc{display:flex;align-items:center;gap:6px;min-width:0}
+.ksl .kqc select.buffsel,.ksl .kqc .pbpick{flex:1 1 auto;min-width:0;width:auto;height:auto;padding:1px 0;border:0;border-radius:0;background:none;box-shadow:none;color:var(--ink);font-size:13.5px;font-weight:700;text-align:left;cursor:pointer}
+.ksl select option,.ksl select optgroup{background:var(--panel);color:var(--ink)}
+.kqe{display:flex;flex-wrap:wrap;gap:0 7px;font-size:11px;line-height:1.3}
+.kqe span{color:#7fd39a}
+.kqe .pneg{color:#ef8f7f}
+.kqe .muted{color:var(--faint)}
+.kqe .pbfx{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.kqe .pbfx select.buffsel{font-size:11px;font-weight:600;color:var(--muted);background:none;border:0;padding:0;height:auto}
+.kqe .chip{padding:1px 7px;font-size:10.5px}
+.kgrid{border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:12px;background:var(--well);padding:9px 10px 10px}
+.kgh{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.kgh b{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.kgh input{flex:1;min-width:0;padding:5px 10px;border-radius:8px;border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);font-size:12.5px}
+.kgh .btn{padding:3px 10px;font-size:12px}
+.kgrow{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;align-items:start;margin-top:5px}
+.kgf{padding-top:6px;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.ktl{display:flex;flex-wrap:wrap;gap:5px}
+.ktile2{display:inline-flex;align-items:baseline;gap:6px;padding:4px 10px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel-2);text-align:left;color:var(--ink);cursor:pointer}
+.ktile2:hover{border-color:var(--accent)}
+.ktile2 b{font-size:12.5px}
+.ktile2 small{font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ktile2.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel-2))}
+.ktile2.on b::after{content:" ✓";color:var(--accent)}
+.ktile2.used{opacity:.45}
+.krest{padding:2px 2px 0}
+/* what it gives you, an effect a card: its total (its cap), who gives it */
+.kresult{position:sticky;top:0;max-height:calc(100vh - 215px);overflow:auto}
+.kfx{display:grid;gap:6px;padding:8px 10px 0}
+.kfxh{margin:6px 2px 0;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#ef8f7f}
+.kfxc{display:grid;gap:4px;padding:6px 9px 7px;border:1px solid var(--line-strong);border-radius:10px;background:var(--well)}
+.kfxt{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.kfxt span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.kfxt b{font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+.kfxt b small{margin-left:5px;font-size:10.5px;color:var(--accent)}
+.kfxc.foe .kfxt b{color:#ef8f7f}
+.kfxbar{display:block;height:4px;border-radius:9px;background:linear-gradient(90deg,var(--accent) var(--p),var(--line) var(--p))}
+.kfxs{display:flex;flex-wrap:wrap;gap:3px}
+.kfxs > span{display:inline-flex;align-items:center;gap:4px;padding:1px 7px 1px 3px;border-radius:99px;background:var(--panel-2);border:1px solid var(--line);font-size:10.5px;color:var(--ink);white-space:nowrap}
+.kfxs .em{width:12px;height:12px;display:inline-block;--role:var(--accent-2)}
+.kfxs em{font-style:normal;color:var(--faint)}
+.kblock{margin:8px 10px 10px;border:1px solid var(--line-strong);border-radius:11px;background:var(--well);padding:7px 10px}
+.kblock h4{margin:0 0 6px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+/* narrower screens: the results under, then the party's list over the member opened */
+@media (max-width:1400px){.kcols{grid-template-columns:minmax(0,1fr) 290px}}
+@media (max-width:1200px){.kcols{grid-template-columns:minmax(0,1fr)}.kresult{position:static;max-height:none}.kfx{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
+@media (max-width:900px){.kab{grid-template-columns:minmax(0,1fr)}.kpt{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.kfoeline .ksp{display:none}}
+@media (max-width:600px){.kband small{margin-left:0;text-align:left;flex-basis:100%}.kset{padding:8px 10px}.kfield{flex-wrap:wrap;max-width:100%}.kfield .prsits{max-width:100%;flex-wrap:wrap}
+  .kother summary{display:flex;flex-wrap:wrap;gap:6px}.kother .pbot{min-width:0;flex:1 1 100%}}
+/* the member's other settings, under its slots: their sections side by side, their lines tight */
+.krest .pbform.one > div{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 24px;align-items:start}
+.krest .pbfsec{padding:2px 0 6px}
+.krest .pbfsec h4{margin:0 0 4px}
+.krest .pbf{min-height:26px;gap:10px;grid-template-columns:118px max-content minmax(0,1fr)}

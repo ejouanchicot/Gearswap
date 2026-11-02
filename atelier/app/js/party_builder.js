@@ -157,13 +157,13 @@ function pbDlgFocus(){
 // an engaged set: the time to the weaponskill and its DPS. Worked out once for a state (four runs of the engine a
 // redraw would be felt while the game redraws the page every two seconds)
 Object.assign(T.fr, {pbFight: 'Le combat', pbFightHint: 'un profil garde ta PT, ses buffs et le mob', pbProfile: 'Profil', pbGroup: 'Groupe de buffs',
-  pbVs: 'Contre', pbFoeMore: 'Sa fiche ▾', pbFoeLess: 'Replier ▴', pbPtTitle: 'Ta PT', pbPtHint: 'change un buff sur sa ligne · clique un membre pour tout voir',
-  pbMoreTip: 'Tous ses réglages : équipement, capacités, ce qu’il pose sur le mob', pbResultTitle: 'Ce que ça te donne',
-  pbTileHaste: 'Haste magie', pbTileHasteTip: 'Haste magie reçue : {v} % (le jeu s’arrête à 43,75 %)', pbTileAtt: 'Attaque', pbTileAcc: 'Précision', pbTileHit: 'Tu le touches'});
+  pbVs: 'Contre', pbFoeMore: 'Sa fiche ▾', pbFoeLess: 'Replier ▴', pbPtTitle: 'Ta PT',
+  pbSlotHint: 'clique un emplacement pour choisir', pbResultTitle: 'Ce que ça te donne', pbResultHint: 'par effet, et qui le donne',
+  pbTileHaste: 'Haste magie', pbTileHasteTip: 'Haste magie reçue : {v} % (le jeu s’arrête à 43,75 %)', pbTileHit: 'Tu le touches'});
 Object.assign(T.en, {pbFight: 'The fight', pbFightHint: 'a profile keeps your party, its buffs and the monster', pbProfile: 'Profile', pbGroup: 'Group of buffs',
-  pbVs: 'Against', pbFoeMore: 'Its card ▾', pbFoeLess: 'Fold ▴', pbPtTitle: 'Your party', pbPtHint: 'change a buff on its line · click a member to see everything',
-  pbMoreTip: 'All its settings: gear, abilities, what it casts on the monster', pbResultTitle: 'What it gives you',
-  pbTileHaste: 'Magic Haste', pbTileHasteTip: 'Magic Haste received: {v} % (the game stops at 43.75 %)', pbTileAtt: 'Attack', pbTileAcc: 'Accuracy', pbTileHit: 'You hit it'});
+  pbVs: 'Against', pbFoeMore: 'Its card ▾', pbFoeLess: 'Fold ▴', pbPtTitle: 'Your party',
+  pbSlotHint: 'click a slot to choose', pbResultTitle: 'What it gives you', pbResultHint: 'by effect, and who gives it',
+  pbTileHaste: 'Magic Haste', pbTileHasteTip: 'Magic Haste received: {v} % (the game stops at 43.75 %)', pbTileHit: 'You hit it'});
 Object.assign(T.fr, {pbImpact: 'Ce que ça change pour ton set', pbImpWs: 'dégâts moyens à {tp} TP', pbImpEng: 'temps jusqu’à la WS · DPS',
   pbImpNone: 'Ouvre un set Engaged ou de weaponskill dans la liste : je te dirai ce qu’il vaut dans chaque situation.', pbImpNoEng: 'Le moteur n’est pas encore chargé.',
   pbImpItself: 'le set', pbImpTip: 'En {t}, GearSwap porte {s} : son chiffre avec les buffs de cette situation.', pbUndo: '↶ Annuler', pbUndoTip: 'Remet les buffs de cette situation comme ils étaient avant « {w} ».'});
@@ -198,7 +198,9 @@ function pbClick(d){
   const b = buffState();
   // the member's tab shown is kept with the page's state (core.js KEEP): a reload comes back to it
   // (a click on the member opened closes it: Buffs & target's party lines, src/screens/combat/combat.ts)
-  if (d.pbtab) { S.pbTab = S.pbTab === d.pbtab ? '' : d.pbtab; save(); render(); return; }
+  if (d.pbtab) { S.pbTab = d.pbtab; S._pbSlot = ''; save(); render(); return; }
+  // a slot of the member opened: its choices as tiles under the slots (src/screens/combat/member.ts)
+  if (d.pbslot != null) { S._pbSlot = S._pbSlot === d.pbslot ? '' : d.pbslot; render(); return; }
   if (d.pbpick) { pbOpenPick(d.pbpick); return; }
   if (d.pbchoose != null) { pbChoose(d.pbchoose); return; }
   if (d.pbaddopen != null) { pbOpenAdd(); return; }
