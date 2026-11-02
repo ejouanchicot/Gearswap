@@ -12,7 +12,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
   const read = sel => page.evaluate(sel => { const g = document.querySelector(sel); if (!g) return 'none';
-    return [...g.querySelectorAll('section.box')].map(b => b.querySelector('h3').textContent + '[' + ((b.querySelector('.meta') || {}).textContent || '') + ']: ' + [...b.querySelectorAll('li')].map(l => l.textContent + (l.title ? '{' + l.title.slice(0, 15) + '}' : '') + (l.querySelector('u') ? '~' + l.querySelector('u').getAttribute('style').replace(/\s/g, '') : '')).join(' | ')).join(' // ') + ' NOTE ' + ((g.querySelector('.note-m') || {}).textContent || ''); }, sel);
+    return [...g.querySelectorAll('section.box')].map(b => b.querySelector('h3').textContent + '[' + ((b.querySelector('.meta') || {}).textContent || '') + ']: ' + [...b.querySelectorAll('li, .pchips span')].map(l => l.textContent + (l.title ? '{' + l.title.slice(0, 15) + '}' : '') + (l.querySelector('u') ? '~' + l.querySelector('u').getAttribute('style').replace(/\s/g, '') : '')).join(' | ')).join(' // ') + ' NOTE ' + ((g.querySelector('.note-m') || {}).textContent || ''); }, sel);
   await page.evaluate(() => { S.motion = false; S._ui2AllOpen = true; S.boxOpen = Object.assign({}, S.boxOpen, {you: true, attr: true, caps: true}); }); 
   for (const [c, j] of [['Tetsouo', 'WAR'], ['Tetsouo', 'PLD'], ['Kaories', 'COR'], ['Tetsouo', 'BLM'], ['Hysoka', 'RUN']]) {
     await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render(); }, c, j); await wait(400);
