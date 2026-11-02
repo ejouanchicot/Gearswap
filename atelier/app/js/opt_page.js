@@ -55,7 +55,14 @@ Object.assign(T.en, {nukeObj: 'Nuke damage', nukeObjMb: 'Magic Burst damage', ob
 /* ---- nuke sets: elemental magic and elemental ninjutsu ---- */
 // The sets a nuke is cast in (the job's MIDCAST: BLM / SCH / NIN .MagicBurst, RDM .FreeNuke / ["Magic Burst"], GEO / WHM /
 // SMN the one set); BLM's ElementalMatch is an overlay on top of the nuke set, not a set of its own
-const isNukeSet = path => /^sets\.midcast(\["Elemental Magic"\]|\.Helix|\.Ninjutsu\.Elemental|\.Comet|\.Impact)/.test(path || '');
+// A set named for one damaging spell, any tier (sets.midcast.Aero: MidcastManager P1, Aero to Aero V): that spell's
+// name, when our engine computes it (atelier/calc/calc_magic_spells.js), or null
+function nukeOwnSpell(path){
+  const k = segs(path || 'x'), spells = (globalThis.CALC && CALC.SPELLS) || {};
+  if (k.length !== 2 || k[0] !== 'midcast') return null;
+  return Object.keys(spells).some(n => n === k[1] || (n.startsWith(k[1] + ' ') && /^(II|III|IV|V|VI)$/.test(n.slice(k[1].length + 1)))) ? k[1] : null;
+}
+const isNukeSet = path => /^sets\.midcast(\["Elemental Magic"\]|\.Helix|\.Ninjutsu\.Elemental|\.Comet|\.Impact)/.test(path || '') || !!nukeOwnSpell(path);
 const isBurstSet = path => /MagicBurst|\["Magic Burst"\]/.test(path || '');
 // The spells a nuke set can be judged on: those of our engine (atelier/calc/calc_magic_spells.js) of the set's magic (a
 // ninjutsu set: ninjutsu; the others: elemental magic) that the main job has, or the subjob at its level (job_access.js
@@ -64,17 +71,19 @@ function nukeSpellList(s){
   const all = Object.keys((globalThis.CALC && CALC.SPELLS) || {}), skill = /Ninjutsu/.test(s.path) ? 'Ninjutsu' : 'Elemental Magic';
   if (typeof SPELL_ACCESS === 'undefined') return all.sort();
   const sub = (data() || {}).sub || '', lv = jaLevels();
-  return all.filter(n => SPELL_SKILL[n] === skill && SPELL_ACCESS[n] && accessSpell(SPELL_ACCESS[n], S.job, sub, lv)).sort();
+  // a set named for one spell: its tiers only (sets.midcast.Aero is worn for Aero to Aero V, nothing else)
+  const own = nukeOwnSpell(s.path), mine = n => !own || n === own || (n.startsWith(own + ' ') && /^(II|III|IV|V|VI)$/.test(n.slice(own.length + 1)));
+  return all.filter(n => mine(n) && (own || SPELL_SKILL[n] === skill) && SPELL_ACCESS[n] && accessSpell(SPELL_ACCESS[n], S.job, sub, lv)).sort();
 }
 // the job's usual nuke when it can cast it, else the castable spell of the set's kind with the most base damage at dINT 100
 const NUKE_DEFAULT = {BLM: ['Thunder VI'], SCH: ['Thunder V'], RDM: ['Thunder V'], GEO: ['Thunder V'], NIN: ['Raiton: San']};
-function nukeKey(s){ return S.job + '|' + ((data() || {}).sub || '') + '|' + (/Helix/.test(s.path) ? 'helix' : /Ninjutsu/.test(s.path) ? 'nin' : /Comet/.test(s.path) ? 'comet' : /Impact/.test(s.path) ? 'impact' : 'ele'); }
+function nukeKey(s){ return S.job + '|' + ((data() || {}).sub || '') + '|' + (nukeOwnSpell(s.path) ? 'spell:' + nukeOwnSpell(s.path) : /Helix/.test(s.path) ? 'helix' : /Ninjutsu/.test(s.path) ? 'nin' : /Comet/.test(s.path) ? 'comet' : /Impact/.test(s.path) ? 'impact' : 'ele'); }
 function nukeSpells(s){
   const can = new Set(nukeSpellList(s)), ok = list => (list || []).filter(n => can.has(n));
   const chosen = ok(((S.optOpts || {}).nukeSpells || {})[nukeKey(s)]);
   if (chosen.length) return chosen;
   const named = /Helix/.test(s.path) ? [/Light/.test(s.path) ? 'Luminohelix II' : /Dark/.test(s.path) ? 'Noctohelix II' : 'Pyrohelix II', 'Luminohelix', 'Noctohelix', 'Pyrohelix']
-    : /Comet/.test(s.path) ? ['Comet'] : /Impact/.test(s.path) ? ['Impact'] : NUKE_DEFAULT[S.job] || [];
+    : /Comet/.test(s.path) ? ['Comet'] : /Impact/.test(s.path) ? ['Impact'] : nukeOwnSpell(s.path) ? [] : NUKE_DEFAULT[S.job] || [];
   const first = ok(named)[0];
   if (first) return [first];
   const base = n => { try { return CALC.spellBase(CALC.SPELLS[n], 100); } catch (e) { return 0; } };

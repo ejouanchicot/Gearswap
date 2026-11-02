@@ -32,9 +32,10 @@ const ENH_SPELLS = [
   // Gain-STAT (RDM) and Boost-STAT (WHM): one formula (BG Wiki Category:Gain_Spell, Category:Boost_Spell)
   [/gain|boost/i, 'gain', [[/^(Gain|Boost)-/, 0, 300]]],
   [/temper/i, 'temper', [['Temper', 0, 180], ['Temper II', 0, 180]]],
-  [/enspell/i, 'enspell', [[/^En(fire|blizzard|aero|stone|thunder|water)$/, 0, 180]]],
-  [/barelement/i, 'barele', [[/^Bar(fire|blizzard|aero|stone|thunder|water)a?$/, 0, 480]]],
-  [/barailment|barstatus/i, 'barail', [[/^Bar(sleep|poison|paralyze|blind|silence|petrify|virus|amnesia)a?$/, 0, 480]]],
+  // a family's name, or one of its spells' (sets.midcast.Enfire, sets.midcast.Barfira, sets.midcast.Barsleepra)
+  [/enspell|\ben(fire|blizzard|aero|stone|thunder|water)\b/i, 'enspell', [[/^En(fire|blizzard|aero|stone|thunder|water)$/, 0, 180]]],
+  [/barelement|\bbar(fir|blizz|aer|ston|thund|wat)\w*/i, 'barele', [[/^Bar(fire|blizzard|aero|stone|thunder|water)a?$/, 0, 480]]],
+  [/barailment|barstatus|\bbar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*/i, 'barail', [[/^Bar(sleep|poison|paralyze|blind|silence|petrify|virus|amnesia)a?$/, 0, 480]]],
   [/spikes/i, 'spikes', [[/^(Blaze|Ice|Shock) Spikes$/, 0, 180]]],
   [/blink/i, 'blink', [['Blink', 0, 300]]],
   [/haste|flurry/i, 'haste', [[/^(Haste|Flurry)( II)?$/, 0, 180]]],
