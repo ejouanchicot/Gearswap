@@ -117,7 +117,7 @@ function ownerOf(src: string): string {
 
 /** What it all gives you, a card an effect (its total, its cap, who gives it), then what the target loses */
 export function effectsOf(B: LegacyAny, hit: LegacyAny): {mine: FxCard[]; foes: FxCard[]} {
-  const keys = Object.keys(B).filter(k => !k.startsWith('_') && typeof B[k] === 'number' && B[k]);
+  const keys = Object.keys(B).filter(k => !k.startsWith('_') && typeof B[k] === 'number' && B[k]), food = buffState().food;
   const rank = (k: string) => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i; };
   const split = (k: string, v: number): [string, string] => { const txt = fxShort(k, v), m = txt.match(/^(.*?)\s+([+−-].*)$/); return m ? [m[1]!, m[2]!] : [txt, '']; };
   const card = (k: string, foe: boolean): Omit<FxCard, 'tip'> => {
@@ -125,7 +125,9 @@ export function effectsOf(B: LegacyAny, hit: LegacyAny): {mine: FxCard[]; foes: 
     const sources = (B._by || []).filter((e: LegacyAny) => e.k === k && typeof e.v === 'number').map((e: LegacyAny) => {
       const job = ownerOf(e.src);
       const name = e.src.replace(/ \+ Saboteur.*$/, '');
-      return {name, value: split(k, e.v)[1], emblemHtml: sourceIcon(name) || emblem(job)}; });
+      // (your food: its icon, not your job's; the rest by its name, else the job that gives it)
+      const icon = name === food ? buffIcon('food', name) : sourceIcon(name);
+      return {name, value: split(k, e.v)[1], emblemHtml: icon || emblem(job)}; });
     if (k === 'mhaste') {
       const cap = B[k] >= HASTE_CAP - 0.05;
       return {label: t('pbTileHaste'), value: num(Math.min(B[k], HASTE_CAP)) + ' %', cap, p: Math.min(100, B[k] / HASTE_CAP * 100), foe, sources, title: t('pbTileHasteTip', {v: num(B[k])})};
