@@ -403,3 +403,5 @@ img.bi{display:block;image-rendering:auto}
 .ppt{font-size:11.5px;color:var(--faint);text-align:right;white-space:nowrap}
 .ppr.on .ppt{color:var(--accent);font-weight:700}
 @media (max-width:640px){.ppr{grid-template-columns:24px minmax(0,1fr) auto}.ppe{grid-column:2 / -1}}
+/* (a line or a family the search hides: their display would show them all the same) */
+.ppr[hidden],.pbpg[hidden]{display:none}
