@@ -14,7 +14,9 @@ export interface Editor { tab: PartyTab; removeTitle: string; slots: Slot[]; res
 /** A member's buffs as mini icons in the party's list (gi: game-icons), lit when set */
 export interface MiniIcon { html: string; on: boolean }
 export interface FxSource { name: string; value: string; emblemHtml: string }
-export interface FxCard { label: string; value: string; cap: boolean; p: number | null; foe: boolean; sources: FxSource[]; title: string }
+export interface FxCard { label: string; value: string; cap: boolean; p: number | null; foe: boolean; sources: FxSource[]; title: string;
+  /** its tooltip: who gives it, a line each with its figure */
+  tip: string }
 
 const st = (): LegacyAny => S;
 
@@ -118,7 +120,7 @@ export function effectsOf(B: LegacyAny, hit: LegacyAny): {mine: FxCard[]; foes: 
   const keys = Object.keys(B).filter(k => !k.startsWith('_') && typeof B[k] === 'number' && B[k]);
   const rank = (k: string) => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i; };
   const split = (k: string, v: number): [string, string] => { const txt = fxShort(k, v), m = txt.match(/^(.*?)\s+([+−-].*)$/); return m ? [m[1]!, m[2]!] : [txt, '']; };
-  const card = (k: string, foe: boolean): FxCard => {
+  const card = (k: string, foe: boolean): Omit<FxCard, 'tip'> => {
     const [label, value] = split(k, B[k]);
     const sources = (B._by || []).filter((e: LegacyAny) => e.k === k && typeof e.v === 'number').map((e: LegacyAny) => {
       const job = ownerOf(e.src);
@@ -129,8 +131,10 @@ export function effectsOf(B: LegacyAny, hit: LegacyAny): {mine: FxCard[]; foes: 
       return {label: t('pbTileHaste'), value: num(Math.min(B[k], HASTE_CAP)) + ' %', cap, p: Math.min(100, B[k] / HASTE_CAP * 100), foe, sources, title: t('pbTileHasteTip', {v: num(B[k])})};
     }
     const hitTxt = k === 'eeva' && hit && 'p' in hit ? ` · ${t('pbTileHit').toLowerCase()} ${hit.p} %` : '';
-    return {label, value: value + hitTxt, cap: false, p: null, foe, sources, title: k === 'eeva' && hit ? hit.title || '' : ''};
+    // (Attack as points and as a %: two lines that read the same without their unit)
+    return {label: k === 'atkp' || k === 'defp' ? label + ' %' : label, value: value + hitTxt, cap: false, p: null, foe, sources, title: k === 'eeva' && hit ? hit.title || '' : ''};
   };
-  return {mine: keys.filter(k => !PB_FOE.includes(k)).sort((a, b) => rank(a) - rank(b)).map(k => card(k, false)),
-    foes: keys.filter(k => PB_FOE.includes(k)).map(k => card(k, true))};
+  const tipped = (c: Omit<FxCard, 'tip'>): FxCard => ({...c, tip: [c.title, ...c.sources.map(x => x.name + ' ' + x.value)].filter(Boolean).join(String.fromCharCode(10))});
+  return {mine: keys.filter(k => !PB_FOE.includes(k)).sort((a, b) => rank(a) - rank(b)).map(k => tipped(card(k, false))),
+    foes: keys.filter(k => PB_FOE.includes(k)).map(k => tipped(card(k, true)))};
 }

@@ -29,7 +29,7 @@
   let foeOpen = $state(false);
 </script>
 
-{#snippet fxcard(c: FxCard)}<div class="kfxc" class:foe={c.foe} title={c.title || undefined}><div class="kfxt"><span>{c.label}</span><b>{c.value}{#if c.cap}<small>max</small>{/if}</b></div>{#if c.p != null}<i class="kfxbar" style="--p:{c.p}%"></i>{/if}{#if c.sources.length}<div class="kfxs">{#each c.sources as x, k (k)}<span>{@html x.emblemHtml}{x.name}<em>{x.value}</em></span>{/each}</div>{/if}</div>{/snippet}
+{#snippet fxcard(c: FxCard)}<div class="kfr" class:foe={c.foe} class:cap={c.cap} title={c.tip}><span class="kfrl">{c.label}</span><span class="kfri">{#each c.sources as x, k (k)}<span>{@html x.emblemHtml}</span>{/each}</span><b>{c.value}{#if c.cap}<small>max</small>{/if}</b>{#if c.p != null}<i class="kfxbar" style="--p:{c.p}%"></i>{/if}</div>{/snippet}
 {#snippet opt(it: Item)}{#if it.k === 'row' || it.k === 'am'}<div class="kop"><span class="kopl">{@html itemIcon(it)}{it.label}</span><span class="kopc">{#each it.controls as c, j (j)}<Ctl {c} />{/each}</span>{#if it.k === 'row' && it.effects.length}<span class="kqe">{#each it.effects as e, j (j)}<Eff {e} />{/each}</span>{:else if it.k === 'am' && it.said}<span class="kqe"><span class="muted amwho">{it.said}</span></span>{/if}</div>{/if}{/snippet}
 {#snippet band(n: string, title: string, hint: string)}<div class="kband">{#if n}<span class="kn">{n}</span>{/if}<b>{title}</b>{#if hint}<small>{hint}</small>{/if}</div>{/snippet}
 

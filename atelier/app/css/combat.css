@@ -407,3 +407,18 @@ img.bi{display:block;image-rendering:auto}
 .ppr[hidden],.pbpg[hidden]{display:none}
 /* the whole width of the page, as Sets (its old cap of 1500 px left a band empty on a wide screen) */
 .ui2tab.combattab{max-width:none;margin:0}
+/* what it gives you, one line an effect: its name, the icons of who gives it (names and figures in the tooltip), its
+   value; the Haste's bar under its line (the player, 2026-11-02: the cards made an endless column) */
+.kfx{gap:0;padding:4px 10px 0}
+.kfr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:2px 8px;padding:5px 2px;border-bottom:1px solid var(--line)}
+.kfr:last-child{border-bottom:0}
+.kfrl{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kfri{display:flex;gap:2px}
+.kfri > span{display:grid;place-items:center;width:18px;height:18px}
+.kfri img.bi{width:18px;height:18px;border-radius:4px}
+.kfri .em{width:15px;height:15px;display:inline-block;--role:var(--accent-2)}
+.kfr > b{min-width:70px;text-align:right;font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kfr > b small{margin-left:4px;font-size:10px;color:var(--accent)}
+.kfr.foe > b{color:#ef8f7f}
+.kfr .kfxbar{grid-column:1 / -1;height:3px}
+.kfxh{margin:8px 2px 0;padding-bottom:2px}
