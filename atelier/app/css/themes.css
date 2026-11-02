@@ -216,3 +216,62 @@
   .cfgcols{grid-template-columns:1fr 1fr}
   .cfg{flex:1;min-height:0;overflow:auto;width:100%;align-self:center;align-content:start;grid-auto-rows:max-content;padding:0 6px 8px 0;scrollbar-gutter:stable}
 }
+
+/* the page's top bar on one line (the player, 2026-11-02): no group titles (their buttons say it in their tooltip),
+   the commands as icons, the macro book / lockstyle / export as small labelled chips */
+.app .topbar{flex-wrap:nowrap;gap:10px 12px;padding-top:6px;padding-bottom:6px}
+.topbar .tgrp > small{display:none}
+.topbar .tgrp.tfact > small{display:inline;font-size:9.5px;letter-spacing:.1em}
+.topbar .tgrp.tfact{flex-direction:row;align-items:center;gap:6px;padding:3px 9px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.topbar .tgrp.tfact .readout{font-size:13px;white-space:nowrap}
+.topbar .tgrp.tfact .oldexport{display:none}
+.topbar .tgrp .live.act .lbl{display:none}
+.topbar .live.act{padding:5px 9px;gap:0;font-size:14px;letter-spacing:0;min-width:32px;justify-content:center}
+.topbar .tgrp > span{gap:4px}
+.topbar .tsep{margin:6px 0}
+.topbar .hero .who > b{font-size:18px}
+.topbar .tgrp .seg button{padding:4px 9px;font-size:12.5px}
+/* the character and its job / subjob on one line, never stacked */
+.app .topbar .hero{flex:none;gap:10px}
+.app .topbar .hero .crest{width:36px;height:36px}
+.app .topbar .hero .who{flex-wrap:nowrap;gap:10px}
+.app .topbar .hero .who > b{font-size:18px;white-space:nowrap;overflow:visible}
+.app .topbar .hero .plates{flex-wrap:nowrap;align-items:center;gap:6px}
+.app .topbar .hero .topsel{font-size:13.5px;padding:3px 6px}
+.app .topbar .hero .pick > small{display:none}
+/* the chips' value plain inside them */
+.topbar .tgrp.tfact .readout{padding:0;min-width:0;border:0;background:none;box-shadow:none;font-size:13.5px}
+/* narrower screens: the chips without their label (in their tooltip), the characters' buttons smaller */
+@media (max-width:1700px){.topbar .tgrp.tfact > small{display:none}.topbar .tgrp.tfact{padding:3px 8px}}
+@media (max-width:1450px){.app .topbar{gap:8px}}
+.app .topbar .hero .jobsel{max-width:190px}
+@media (max-width:1450px){.app .topbar .tsep{display:none}.app .topbar{gap:6px}.app .topbar .hero .jobsel{max-width:160px}.topbar .tgrp.tfact{padding:3px 6px}}
+@media (max-width:1100px){.app .topbar{flex-wrap:wrap}}
+/* the commands in three menus (Files, GearSwap, Page: the player, 2026-11-02, rather than rows of like icons) */
+.tmenu{position:relative;flex:none}
+.tmbtn{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1px solid var(--line-strong);border-radius:8px;background:color-mix(in srgb,var(--panel) 70%,transparent);
+  color:var(--ink);font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.tmbtn i{font-style:normal;font-size:10px;color:var(--faint)}
+.tmbtn:hover,.tmenu.open .tmbtn{border-color:var(--accent);color:var(--accent-2)}
+.tmbtn.alert{border-color:color-mix(in srgb,var(--accent) 60%,var(--line-strong))}
+.tmled{width:8px;height:8px;border-radius:50%;background:var(--faint);box-shadow:0 0 0 2px color-mix(in srgb,var(--faint) 25%,transparent)}
+.tmled.on{background:#5fbf7f;box-shadow:0 0 6px #5fbf7f}
+.tmpanel{position:absolute;right:0;top:calc(100% + 6px);z-index:50;min-width:220px;display:grid;gap:2px;padding:6px;border:1px solid var(--accent);border-radius:10px;
+  background:var(--panel);box-shadow:0 12px 30px rgba(0,0,0,.55)}
+.tmi{display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--ink);font-size:13px;text-align:left;cursor:pointer;white-space:nowrap}
+.tmi:hover:not([disabled]){background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-2)}
+.tmi[disabled]{opacity:.45;cursor:default}
+.tmic{width:18px;text-align:center;color:var(--accent)}
+.app .topbar{z-index:40}
+.tmnote{padding:6px 10px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:2px}
+@media (max-width:1450px){.tmbtn{padding:0 8px;letter-spacing:0;gap:5px}}
+/* the character's name is its menu: the characters to switch to (the player, 2026-11-02) */
+.tcharbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:8px;background:none;padding:2px 8px;cursor:pointer;
+  font:600 19px var(--display);letter-spacing:.04em;color:var(--ink)}
+.tcharbtn i{font-style:normal;font-size:10px;color:var(--faint)}
+.tcharbtn:hover,.tchar.open .tcharbtn{border-color:var(--accent);color:var(--accent-2)}
+.tmpanel.left{left:0;right:auto}
+.tmi.cur{color:var(--accent-2);font-weight:700}
+/* a phone: the bar on several lines, the character's job and subjob under its name */
+@media (max-width:700px){.app .topbar{flex-wrap:wrap}.app .topbar .hero,.app .topbar .hero .who{flex-wrap:wrap;min-width:0;max-width:100%}.app .topbar .hero .plates{flex-wrap:wrap;min-width:0;max-width:100%}
+  .app .topbar .hero .topsel{max-width:150px}}

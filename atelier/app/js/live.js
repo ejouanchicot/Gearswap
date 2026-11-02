@@ -267,6 +267,8 @@ document.addEventListener('pointerdown', () => { PRESSED_AT = Date.now(); }, tru
 // game is seen to have done it. Without it nothing moved for up to 2 s (the next tick), then the buttons were gone
 // for the seconds GearSwap takes to come back: a press read as lost, and pressed again (2026-10-10).
 // S._liveBusy = {what, until, down: the game was seen away since}
+Object.assign(T.fr, {exportLive: 'en direct'});
+Object.assign(T.en, {exportLive: 'live'});
 Object.assign(T.fr, {cmdReload: 'Recharger', cmdRestart: 'Redémarrer', cmdFiles: 'Relire',
   cmdReloadTip: 'Recharger (//gs reload) : relit tes sets, tes réglages et le code. Rapide : à faire après avoir changé une pièce, une touche ou un réglage.',
   cmdRestartTip: 'Redémarrer (//lua r gearswap) : décharge puis recharge tout GearSwap, rien n’est gardé en mémoire. À faire quand quelque chose se comporte bizarrement, ou après une mise à jour du code.'});

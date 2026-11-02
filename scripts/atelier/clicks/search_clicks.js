@@ -11,13 +11,13 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = {push: x => console.log(x), join: () => ''}, wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.evaluate(() => { S.motion = false; S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); }); await page.evaluate(() => new Promise(r => loadRanked(r))); await wait(400);
+  await page.evaluate(() => { S.motion = false; S.char = 'Tetsouo'; S.job = 'PLD'; S.section = 'sets'; render(); }); await page.evaluate(() => new Promise(r => loadRanked(r))); await wait(400);
   const read = () => page.evaluate(() => { const q = document.querySelector(':is(.oppage, .optcolumn) .optabs'); if (!q) return 'none'; const box = q.parentElement;
     return [...box.querySelectorAll('[data-optab]')].map(b => b.textContent + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')).join(',') + ' | menu ' + ((box.querySelector('.opsels select') || {}).value) +
       ' | sw ' + [...box.querySelectorAll('.opsw')].map(l => l.textContent + (l.querySelector('input').checked ? '+' : '') + (l.querySelector('input').disabled ? '-' : '') + '{' + (l.title || '').slice(0, 15) + '}').join(',') +
       ' | locks ' + [...box.querySelectorAll('.oplocks')].map(p => p.textContent).join(' / ') + ' | opts ' + JSON.stringify(S.optOpts); });
   const open = (j, fam) => page.evaluate((j, fam) => { S.job = j; S.section = 'sets'; render(); const s = (data().sets || []).find(x => family(x.path, x.pieces) === fam && (fam === 'ws' ? !!wsOfSet(x) : statSet(x))); S.selPath = Object.assign({}, S.selPath, {[S.job]: s.path}); S.optView = optViewKey(s); render(); return s.path; }, j, fam);
-  for (const [j, fam] of [['WAR', 'ws'], ['PLD', 'idle']]) {
+  for (const [j, fam] of [['PLD', 'ws'], ['PLD', 'idle']]) {
     out.push(j + ' ' + await open(j, fam)); await wait(400); out.push('  page: ' + await page.evaluate(() => !!document.querySelector(':is(.oppage, .optcolumn)') + ' tabs ' + document.querySelectorAll('[data-optab]').length + ' view ' + S.optView));
     await page.evaluate(() => { const s = ui2CurrentSet(data()); toggleLock(s, 'head'); toggleLock(s, 'neck'); S.excluded = {}; render(); }); await wait(300);
     out.push('  start: ' + await read());

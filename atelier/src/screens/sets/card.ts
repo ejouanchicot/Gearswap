@@ -266,11 +266,10 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const wsName = ws && (wsOfSet(s) || genericWsOf(s));
   // a base set (sets.Cure) is optimized as any set; only never deleted, the sets built on it would lose their base
   const locked = baseOnly(s), optable = wsName || isNukeSet(s.path) || roundSet(s) || statSet(s);
-  // a set judged by its stats: its optimizer opens beside the card, which stays in sight (SPEC page-sets-2026-11-01);
-  // the damage optimizers (weaponskill, nuke, engaged) keep their page
   const statOnly = !!optable && !wsName && !isNukeSet(s.path) && !roundSet(s) && statSet(s);
-  if (optable && optPageOpen(s) && !statOnly) return {k: 'page', view: optPageView(s, wsName)};
-  const opt = statOnly && optPageOpen(s) ? optPageView(s, null) : null;
+  // every optimizer opens beside the card, the damage ones too (the player, 2026-11-02: the card stays, the right
+  // column switches)
+  const opt = optable && optPageOpen(s) ? optPageView(s, statOnly ? null : wsName) : null;
   // its actions on the title line: the optimizer, then deleting it
   const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s), prev: prevOf(s)};
   // a job ability's set on sets.precast.JA that no piece of the game can boost: nothing to optimize here, the gear it

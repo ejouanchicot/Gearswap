@@ -63,7 +63,10 @@ function heroOf(d: LegacyExport | null | undefined): TopBarModel['hero'] {
 function factsOf(d: LegacyExport | null | undefined): Readout[] {
   if (!d) return [];
   const out: Readout[] = [{label: t('macro'), text: bookOf(d)}, {label: t('lockstyle'), text: styleOf(d), html: true}];
-  if (!d.live) out.push({label: t('colExport'), text: d.at || '—', offline: d.offline ? t('offline') : undefined,
+  // (the export's day and time, its year left out: the bar keeps to one line)
+  // (linked to the game, its figures are the game's own: "live" in the same place, so the bar never moves)
+  if (d.live) out.push({label: t('colExport'), text: t('exportLive')});
+  else out.push({label: t('colExport'), text: (d.at || '—').replace(/^\d{4}-/, ''), offline: d.offline ? t('offline') : undefined,
     old: (d.export_version || 1) < EXPORT_VERSION ? {title: t('oldExportHow'), text: t('oldExport')} : undefined});
   return out;
 }
