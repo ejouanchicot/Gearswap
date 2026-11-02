@@ -34,8 +34,8 @@ const ENH_SPELLS = [
   [/temper/i, 'temper', [['Temper', 0, 180], ['Temper II', 0, 180]]],
   // a family's name, or one of its spells' (sets.midcast.Enfire, sets.midcast.Barfira, sets.midcast.Barsleepra)
   [/enspell|\ben(fire|blizzard|aero|stone|thunder|water)\b/i, 'enspell', [[/^En(fire|blizzard|aero|stone|thunder|water)$/, 0, 180]]],
-  [/barelement|\bbar(fir|blizz|aer|ston|thund|wat)\w*/i, 'barele', [[/^Bar(fire|blizzard|aero|stone|thunder|water)a?$/, 0, 480]]],
-  [/barailment|barstatus|\bbar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*/i, 'barail', [[/^Bar(sleep|poison|paralyze|blind|silence|petrify|virus|amnesia)a?$/, 0, 480]]],
+  [/barelement|\bbar(fir|blizz|aer|ston|thund|wat)\w*/i, 'barele', [[/^Bar(fir|blizz|aer|ston|thund|wat)\w*$/, 0, 480]]],
+  [/barailment|barstatus|\bbar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*/i, 'barail', [[/^Bar(sleep|poison|paralyz|blind|silenc|petr|vir|amnes)\w*$/, 0, 480]]],
   [/spikes/i, 'spikes', [[/^(Blaze|Ice|Shock) Spikes$/, 0, 180]]],
   [/blink/i, 'blink', [['Blink', 0, 300]]],
   [/haste|flurry/i, 'haste', [[/^(Haste|Flurry)( II)?$/, 0, 180]]],
@@ -62,10 +62,13 @@ function enhCastable(name, job, sub, lv, jp){
 // several spells, the one the set is named for first (sets.midcast.Haste: Haste, not Flurry)
 function enhTier(tiers, job, sub, lv, jp, setName){
   const want = (setName || '').toLowerCase();
+  // the spell the set is named for: its whole name first (Barsleepra, not Barsleep it also holds), then a part of it
+  const words = want.split(/[^a-z0-9' -]+/).map(w => w.trim());
+  const named = n => { const l = n.toLowerCase(); return words.includes(l) ? 2 : want.includes(l) ? 1 : 0; };
   let best = null;
   tiers.forEach(([name, pot, base], i) => {
     const names = typeof name === 'string' ? [name] : Object.keys(SPELL_ACCESS || {}).filter(n => name.test(n))
-      .sort((a, b) => want.includes(b.toLowerCase()) - want.includes(a.toLowerCase()));
+      .sort((a, b) => named(b) - named(a));
     const ok = names.find(n => enhCastable(n, job, sub, lv, jp));
     if (ok) best = [ok, pot, base, i];
   });
