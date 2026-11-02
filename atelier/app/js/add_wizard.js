@@ -185,7 +185,10 @@ function awPreferred(list){
 function awClick(d){
   const A = S._aw;
   if (!A) return false;
-  if (d.awfam) { Object.assign(A, {fam: d.awfam, step: 1, subj: null, ans: {}, expert: false, q: '', tab: null, sub: null}); awRender(); return true; }
+  if (d.awfam) { Object.assign(A, {fam: d.awfam, step: 1, subj: null, ans: {}, expert: false, q: '', tab: null, sub: null});
+    // the weapons to add need the game's item list (which job wears what): loaded first when the page has not yet
+    if (d.awfam === 'weapons' && !window.ATELIER_CATALOG && !S._catMissing) { loadCatalog(awRender); return true; }
+    awRender(); return true; }
   if (d.awtab != null) { Object.assign(A, {tab: d.awtab, sub: null}); awRender(); return true; }
   if (d.awsub != null) { A.sub = d.awsub; awRender(); return true; }
   if (d.awsubj && d.awsubj.startsWith('addw:')) { const [, mode, ...n] = d.awsubj.split(':'), name = n.join(':');
