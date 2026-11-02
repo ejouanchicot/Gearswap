@@ -18,7 +18,7 @@
 {#each view.groups as g, i (i)}{@const shown = g.items.filter(x => !w || x.q.includes(w))}
   <section class="pbpg" hidden={!shown.length}><h4>{g.title}<small>{shown.length}</small></h4>
     <div class="ppl">{#each g.items as x (x.value)}<button class="ppr" class:on={x.on} class:held={!!x.tag} {...{[x.attr]: x.value}} data-q={x.q} hidden={!!w && !x.q.includes(w)}>
-      <span class="ppi">{#if x.icon}{@html x.icon}{/if}</span><b>{x.label}</b>
+      <span class="ppi">{#if x.icon}{@html x.icon}{/if}</span><span class="ppn"><b>{x.label}</b>{#if x.desc}<small>{x.desc}</small>{/if}</span>
       <span class="ppe">{#if x.effects && x.effects.length}{#each x.effects as e, j (j)}<span class:neg={e.neg}>{e.text}</span>{/each}{:else if x.hint}<small>{x.hint}</small>{/if}</span>
       <span class="ppt">{#if x.on}✓ {view.cur}{:else if x.tag}{x.tag}{/if}</span></button>{/each}</div>
   </section>

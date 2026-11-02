@@ -78,15 +78,21 @@ const pbStat = k => ((FX_SHORT[k] || FX_LABEL[k] || [k.toUpperCase(), k.toUpperC
 const PB_ATTRS = ['str', 'dex', 'vit', 'agi', 'int', 'mnd', 'chr'];
 const pbHint = def => [...new Set(Object.keys(def || {}).filter(k => FX_SHORT[k] || FX_LABEL[k] || PB_ATTRS.includes(k)).map(pbStat))].join(' · ');
 // the families the windows list their choices by
-const SONG_GROUPS = [['March', /March/], ['Minuet', /Minuet/], ['Madrigal', /Madrigal/], ['Aria', /Aria/], ['Etude', /Etude/]];
-const BUBBLE_GROUPS = [[() => t('pbOffense'), ['Fury', 'Haste', 'Precision', 'Acumen', 'Focus']], [() => t('pbAttrs'), ['STR', 'DEX', 'VIT', 'AGI', 'INT', 'MND', 'CHR']],
-  [() => t('pbOnTarget'), ['Frailty', 'Torpor', 'Malaise', 'Languor']]];
+const SONG_GROUPS = [['March', /March/], ['Minuet', /Minuet/], ['Madrigal', /Madrigal/], ['Aria', /Aria/], ['Etude', /Etude/], ['Ballad', /Ballad/],
+  ['Paeon', /Paeon/], ['Minne', /Minne/], ['Mambo', /Mambo/], ['Prelude', /Prelude/], ['Carol', /Carol/], ['Scherzo', /Scherzo/], ['Mazurka', /Mazurka/], ['Dirge', /Dirge/]];
+// the rolls by what they are for (a roll the tables lack is left out)
+const ROLL_GROUPS = [['pbOffense', ['Chaos', 'Samurai', "Fighter's", "Rogue's", "Hunter's", "Tactician's", "Allies'", "Blitzer's", "Monk's", "Miser's", "Avenger's"]],
+  ['pbMagicRolls', ["Wizard's", "Warlock's", "Caster's", "Evoker's", "Scholar's", "Healer's", "Naturalist's"]],
+  ['pbDefense', ["Gallant's", "Magus's", 'Ninja', "Runeist's", "Dancer's", 'Choral', "Bolter's"]],
+  ['pbPetRolls', ['Beast', 'Drachen', 'Puppet', "Companion's"]], ['pbOther2', ["Corsair's", "Courser's"]]];
+const BUBBLE_GROUPS = [[() => t('pbOffense'), ['Fury', 'Haste', 'Precision', 'Acumen', 'Focus']], [() => t('pbDefense'), ['Barrier', 'Fend', 'Voidance', 'Attunement', 'Regen', 'Refresh']],
+  [() => t('pbAttrs'), ['STR', 'DEX', 'VIT', 'AGI', 'INT', 'MND', 'CHR']], [() => t('pbOnTarget'), ['Frailty', 'Torpor', 'Malaise', 'Languor', 'Wilt', 'Slow', 'Poison']]];
 
 // The long lists (songs, rolls, bubbles, storms, food) open in a window: a slot is a button with its choice, the
 // window lists every choice by family with what it gives, a search on top; a click picks and closes
 const PB_PICK = {
   song: {title: i => `${t('bSong')} ${+i + 1}`, groups: () => SONG_GROUPS.map(([g, re]) => [g, Object.keys(SONGS).filter(v => re.test(v))]), hint: v => pbHint(SONGS[v])},
-  roll: {title: i => `Roll ${+i + 1}`, groups: () => [['Rolls', Object.keys(ROLLS)]], hint: v => pbHint(ROLLS[v])},
+  roll: {title: i => `Roll ${+i + 1}`, groups: () => ROLL_GROUPS.map(([g, l]) => [t(g), l.filter(r => ROLLS[r])]), hint: v => pbHint(ROLLS[v])},
   indi: {title: () => 'Indi', groups: () => BUBBLE_GROUPS.map(([g, l]) => [g(), l]), hint: v => pbHint(BUBBLES[v] || GEO_DEBUFFS[v])},
   geo: {title: () => 'Geo', groups: () => BUBBLE_GROUPS.map(([g, l]) => [g(), l]), hint: v => pbHint(BUBBLES[v] || GEO_DEBUFFS[v])},
   entrust: {title: () => 'Entrust', groups: () => BUBBLE_GROUPS.map(([g, l]) => [g(), l]), hint: v => pbHint(BUBBLES[v] || GEO_DEBUFFS[v])},
@@ -158,11 +164,11 @@ function pbDlgFocus(){
 // redraw would be felt while the game redraws the page every two seconds)
 Object.assign(T.fr, {pbFight: 'Le combat', pbFightHint: 'un profil garde ta PT, ses buffs et le mob', pbProfile: 'Profil', pbGroup: 'Groupe de buffs',
   pbVs: 'Contre', pbFoeMore: 'Sa fiche ▾', pbFoeLess: 'Replier ▴', pbPtTitle: 'Ta PT',
-  pbSlotHint: 'clique un emplacement pour choisir', pbHeldIn: 'déjà en {s}', pbCurrent: 'actuel', pbResultTitle: 'Ce que ça te donne', pbResultHint: 'par effet, et qui le donne',
+  pbSlotHint: 'clique un emplacement pour choisir', pbHeldIn: 'déjà en {s}', pbCurrent: 'actuel', pbDefense: 'Défense et soins', pbMagicRolls: 'Magie', pbPetRolls: 'Familier', pbLuck: 'chance {l} · malchance {u}', pbAtXI: 'au XI', pbResultTitle: 'Ce que ça te donne', pbResultHint: 'par effet, et qui le donne',
   pbTileHaste: 'Haste magie', pbTileHasteTip: 'Haste magie reçue : {v} % (le jeu s’arrête à 43,75 %)', pbTileHit: 'Tu le touches'});
 Object.assign(T.en, {pbFight: 'The fight', pbFightHint: 'a profile keeps your party, its buffs and the monster', pbProfile: 'Profile', pbGroup: 'Group of buffs',
   pbVs: 'Against', pbFoeMore: 'Its card ▾', pbFoeLess: 'Fold ▴', pbPtTitle: 'Your party',
-  pbSlotHint: 'click a slot to choose', pbHeldIn: 'in {s} already', pbCurrent: 'current', pbResultTitle: 'What it gives you', pbResultHint: 'by effect, and who gives it',
+  pbSlotHint: 'click a slot to choose', pbHeldIn: 'in {s} already', pbCurrent: 'current', pbDefense: 'Defense and healing', pbMagicRolls: 'Magic', pbPetRolls: 'Pet', pbLuck: 'lucky {l} · unlucky {u}', pbAtXI: 'at XI', pbResultTitle: 'What it gives you', pbResultHint: 'by effect, and who gives it',
   pbTileHaste: 'Magic Haste', pbTileHasteTip: 'Magic Haste received: {v} % (the game stops at 43.75 %)', pbTileHit: 'You hit it'});
 Object.assign(T.fr, {pbImpact: 'Ce que ça change pour ton set', pbImpWs: 'dégâts moyens à {tp} TP', pbImpEng: 'temps jusqu’à la WS · DPS',
   pbImpNone: 'Ouvre un set Engaged ou de weaponskill dans la liste : je te dirai ce qu’il vaut dans chaque situation.', pbImpNoEng: 'Le moteur n’est pas encore chargé.',

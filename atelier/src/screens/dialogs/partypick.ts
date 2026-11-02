@@ -9,9 +9,13 @@
 // @author  ejouanchicot
 import {buffIcon} from '../combat/member';
 
+const st = (): LegacyAny => S;
+
 export interface PickItem { attr: 'data-pbchoose' | 'data-pbadd'; value: string; q: string; on: boolean; label: string; hint: string;
   /** a slot's choice: the game's icon, what it gives with the gear set (Songs +9...), the other slot that holds it */
-  icon?: string; effects?: Array<{text: string; neg: boolean}>; tag?: string }
+  icon?: string; effects?: Array<{text: string; neg: boolean}>; tag?: string;
+  /** a few words under its name (a roll: what it gives, its lucky and unlucky numbers) */
+  desc?: string }
 export interface PartyPickView { qPh: string; groups: Array<{title: string; items: PickItem[]}>; cur?: string }
 
 
@@ -36,6 +40,13 @@ function effectsOf(kind: string, key: string, v: string, b: LegacyAny): Array<{t
   return [];
 }
 
+// a roll's few words: what it gives, its lucky and unlucky numbers (buffs.js ROLL_WHAT, ROLL_LUCK)
+function descOf(kind: string, v: string): string {
+  if (kind !== 'roll') return '';
+  const what = (ROLL_WHAT[st().lang === 'en' ? 'en' : 'fr'] || {})[v] || '', luck = ROLL_LUCK[v];
+  return [what, luck ? t('pbLuck', {l: luck[0], u: luck[1]}) : ''].filter(Boolean).join(' · ');
+}
+
 /** A slot's picker (pbOpenPick): its title, its choices (icon, figures, the slot already holding it), None when it holds one */
 export function pickView(key: string): null | {title: string; view: PartyPickView; none: null | {value: string; label: string}} {
   const kind = key.replace(/\d+$/, ''), P = PB_PICK[kind], b = buffState(), cur = b[key];
@@ -45,7 +56,7 @@ export function pickView(key: string): null | {title: string; view: PartyPickVie
   for (const k of Object.keys(b)) if (k !== key && /\d$/.test(k) && k.replace(/\d+$/, '') === kind && b[k]) held[b[k]] = P.title(k.match(/\d+$/)![0]);
   const item = (v: string): PickItem => { const h = P.hint(v);
     return {attr: 'data-pbchoose', value: `${key}|${v}`, q: v.toLowerCase(), on: v === cur, label: v, hint: h && h.toLowerCase() !== v.toLowerCase() ? h : '',
-      icon: buffIcon(kind, v), effects: effectsOf(kind, key, v, b), tag: v !== cur && held[v] ? t('pbHeldIn', {s: held[v]}) : ''}; };
+      icon: buffIcon(kind, v), effects: effectsOf(kind, key, v, b), tag: v !== cur && held[v] ? t('pbHeldIn', {s: held[v]}) : '', desc: descOf(kind, v)}; };
   const groups = P.groups().filter(([, list]: [string, string[]]) => list.length).map(([g, list]: [string, string[]]) => ({title: g, items: list.map(item)}));
   return {title: P.title(key.match(/\d+$/) ? key.match(/\d+$/)![0] : ''), view: {qPh: t('pbSearch'), groups, cur: t('pbCurrent')}, none: cur ? {value: `${key}|`, label: t('pbNone')} : null};
 }

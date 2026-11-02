@@ -18,6 +18,25 @@ const SONGS = {
   'Advancing March': {lim: 8, mhaste: [10.547, 1.05]}, 'Minuet V': {lim: 8, atk: [149, 12.375]}, 'Minuet IV': {lim: 8, atk: [137, 11.2]},
   'Minuet III': {lim: 8, atk: [121, 9.5]}, 'Blade Madrigal': {lim: 9, acc: [60, 6]}, 'Sword Madrigal': {lim: 9, acc: [45, 4.5]},
   'Aria of Passion': {lim: 7, pdl: [13, 1.3]},
+  // (added 2026-11-02 from BG Wiki's family pages: their table at each Song+, base and step; Minuet I-II +25 as
+  // III-V here, the job points' and merits'; Carol II also nullifies 15 % to 27 %, not counted)
+  'Minuet II': {lim: 8, atk: [89, 6.375]}, 'Minuet': {lim: 8, atk: [57, 3.125]},
+  "Mage's Ballad III": {lim: 8, refresh: [3, 1]}, "Mage's Ballad II": {lim: 8, refresh: [2, 1]}, "Mage's Ballad": {lim: 8, refresh: [1, 1]},
+  "Army's Paeon VI": {lim: 9, regen: [8, 1]}, "Army's Paeon V": {lim: 9, regen: [7, 1]}, "Army's Paeon IV": {lim: 9, regen: [5, 1]},
+  "Army's Paeon III": {lim: 9, regen: [4, 1]}, "Army's Paeon II": {lim: 9, regen: [3, 1]}, "Army's Paeon": {lim: 9, regen: [2, 1]},
+  "Knight's Minne V": {lim: 9, def: [204, 20.333]}, "Knight's Minne IV": {lim: 9, def: [164, 16.333]}, "Knight's Minne III": {lim: 9, def: [108, 10.778]},
+  "Knight's Minne II": {lim: 9, def: [69, 6.889]}, "Knight's Minne": {lim: 9, def: [30, 3]},
+  'Dragonfoe Mambo': {lim: 9, eva: [72, 7.111]}, 'Sheepfoe Mambo': {lim: 9, eva: [48, 4.778]},
+  "Archer's Prelude": {lim: 8, racc: [60, 6]}, "Hunter's Prelude": {lim: 8, racc: [45, 4.5]},
+  'Fire Carol II': {lim: 9, res_fire: [100, 0]}, 'Ice Carol II': {lim: 9, res_ice: [100, 0]}, 'Wind Carol II': {lim: 9, res_wind: [100, 0]},
+  'Earth Carol II': {lim: 9, res_earth: [100, 0]}, 'Lightning Carol II': {lim: 9, res_lightning: [100, 0]}, 'Water Carol II': {lim: 9, res_water: [100, 0]},
+  'Light Carol II': {lim: 9, res_light: [100, 0]}, 'Dark Carol II': {lim: 9, res_dark: [100, 0]},
+  'Fire Carol': {lim: 9, res_fire: [80, 8]}, 'Ice Carol': {lim: 9, res_ice: [80, 8]}, 'Wind Carol': {lim: 9, res_wind: [80, 8]}, 'Earth Carol': {lim: 9, res_earth: [80, 8]},
+  'Lightning Carol': {lim: 9, res_lightning: [80, 8]}, 'Water Carol': {lim: 9, res_water: [80, 8]}, 'Light Carol': {lim: 9, res_light: [80, 8]}, 'Dark Carol': {lim: 9, res_dark: [80, 8]},
+  "Sentinel's Scherzo": {lim: 8, scherzo: [45, 1]}, 'Chocobo Mazurka': {lim: 0, move: [20, 0]}, 'Raptor Mazurka': {lim: 0, move: [10, 0]},
+  "Adventurer's Dirge": {lim: 0, enmity: [-32, 0]},
+  'Sinewy Etude': {lim: 9, str: [9, 1]}, 'Dextrous Etude': {lim: 9, dex: [9, 1]}, 'Vivacious Etude': {lim: 9, vit: [9, 1]}, 'Quick Etude': {lim: 9, agi: [9, 1]},
+  'Learned Etude': {lim: 9, int: [9, 1]}, 'Spirited Etude': {lim: 9, mnd: [9, 1]}, 'Enchanting Etude': {lim: 9, chr: [9, 1]},
   'Herculean Etude': {lim: 9, str: [15, 1]}, 'Uncanny Etude': {lim: 9, dex: [15, 1]}, 'Vital Etude': {lim: 9, vit: [15, 1]},
   'Swift Etude': {lim: 9, agi: [15, 1]}, 'Sage Etude': {lim: 9, int: [15, 1]}, 'Logical Etude': {lim: 9, mnd: [15, 1]}, 'Bewitching Etude': {lim: 9, chr: [15, 1]},
 };
@@ -28,18 +47,52 @@ const ROLLS = {
   "Rogue's": {crit: [[1, 2, 3, 4, 10, 5, 6, 7, 1, 8, 14], 1]}, "Hunter's": {acc: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
   "Wizard's": {mab: [[4, 6, 8, 10, 25, 12, 14, 17, 2, 20, 30], 2]}, "Warlock's": {macc: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
   "Monk's": {sb: [[8, 10, 32, 12, 14, 16, 4, 20, 22, 24, 40], 4]}, "Tactician's": {regain: [[10, 10, 10, 10, 30, 10, 10, 0, 20, 20, 40], 2]},
+  // (added 2026-11-02 from BG Wiki's roll pages; Scholar's Rolls+ step not on its page: none counted)
+  "Healer's": {curerecv: [[3, 4, 12, 5, 6, 7, 1, 8, 9, 10, 16], 1]}, "Gallant's": {defp: [[.0469, .0586, .1953, .0703, .0859, .1016, .0313, .1172, .1367, .1563, .2344], .0234]},
+  'Beast': {petatkp: [[.0625, .0781, .0937, .25, .1093, .125, .1562, .0312, .1718, .1875, .3125], 32 / 1024]}, 'Choral': {sird: [[8, 42, 11, 15, 19, 4, 23, 27, 31, 35, 50], 4]},
+  'Ninja': {eva: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]}, 'Drachen': {petacc: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
+  "Evoker's": {refresh: [[1, 1, 1, 1, 3, 2, 2, 2, 1, 3, 4], 1]}, "Magus's": {mdb: [[5, 20, 6, 8, 9, 3, 10, 13, 14, 15, 25], 2]},
+  "Corsair's": {xp: [[10, 11, 11, 12, 20, 13, 15, 16, 8, 17, 24], 2]}, 'Puppet': {petmab: [[5, 8, 35, 11, 14, 18, 2, 22, 26, 30, 40], 3]},
+  "Dancer's": {regen: [[3, 4, 12, 5, 6, 7, 1, 8, 9, 10, 16], 2]}, "Scholar's": {cmp: [[2, 10, 3, 4, 4, 1, 5, 6, 7, 7, 12], 0]},
+  "Bolter's": {move: [[6, 6, 16, 8, 8, 10, 10, 12, 4, 14, 20], 4]}, "Caster's": {fc: [[6, 15, 7, 8, 9, 10, 5, 11, 12, 13, 20], 3]},
+  "Courser's": {snapshot: [[2, 3, 11, 4, 5, 6, 7, 8, 1, 10, 12], 1]}, "Blitzer's": {delay: [[2, 3, 4, 11, 5, 6, 7, 8, 1, 10, 12], 1]},
+  "Allies'": {scdmg: [[2, 3, 20, 5, 7, 9, 11, 13, 15, 1, 25], 1]}, "Miser's": {savetp: [[30, 50, 70, 90, 200, 110, 20, 130, 150, 170, 250], 15]},
+  "Companion's": {petregain: [[20, 50, 20, 20, 30, 30, 30, 40, 40, 10, 60], 5]}, "Avenger's": {counter: [[3, 4, 5, 14, 6, 7, 8, 1, 9, 10, 16], 1]},
+  "Naturalist's": {enhdurp: [[6, 7, 15, 8, 9, 10, 5, 11, 12, 13, 20], 1]}, "Runeist's": {meva: [[10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50], 5]},
 };
+// Each roll's lucky and unlucky numbers (BG Wiki), and what it gives in a few words (a slot's window: dialogs/partypick.ts)
+const ROLL_LUCK = {'Chaos': [4, 8], 'Samurai': [2, 6], "Fighter's": [5, 9], "Rogue's": [5, 9], "Hunter's": [4, 8], "Wizard's": [5, 9], "Warlock's": [4, 8],
+  "Monk's": [3, 7], "Tactician's": [5, 8], "Healer's": [3, 7], "Gallant's": [3, 7], 'Beast': [4, 8], 'Choral': [2, 6], 'Ninja': [4, 8], 'Drachen': [4, 8],
+  "Evoker's": [5, 9], "Magus's": [2, 6], "Corsair's": [5, 9], 'Puppet': [3, 7], "Dancer's": [3, 7], "Scholar's": [2, 6], "Bolter's": [3, 9], "Caster's": [2, 7],
+  "Courser's": [3, 9], "Blitzer's": [4, 9], "Allies'": [3, 10], "Miser's": [5, 7], "Companion's": [2, 10], "Avenger's": [4, 8], "Naturalist's": [3, 7], "Runeist's": [4, 8]};
+const ROLL_WHAT = {fr: {'Chaos': 'Attaque %', 'Samurai': 'Store TP', "Fighter's": 'Double Attack', "Rogue's": 'Coups critiques', "Hunter's": 'Précision', "Wizard's": 'Att. magique',
+  "Warlock's": 'Précision magique', "Monk's": 'Subtle Blow', "Tactician's": 'Regain', "Healer's": 'Soins reçus', "Gallant's": 'Défense %', 'Beast': 'Attaque du familier',
+  'Choral': 'Interruption des sorts', 'Ninja': 'Évasion', 'Drachen': 'Précision du wyvern', "Evoker's": 'Refresh', "Magus's": 'Déf. magique', "Corsair's": 'Points d’expérience',
+  'Puppet': 'Magie de l’automate', "Dancer's": 'Regen', "Scholar's": 'Conserve MP', "Bolter's": 'Vitesse de déplacement', "Caster's": 'Fast Cast', "Courser's": 'Snapshot',
+  "Blitzer's": 'Délai d’attaque', "Allies'": 'Dégâts de skillchain', "Miser's": 'Save TP', "Companion's": 'Regain du familier', "Avenger's": 'Contre-attaque',
+  "Naturalist's": 'Durée du renfort', "Runeist's": 'Évasion magique'},
+  en: {'Chaos': 'Attack %', 'Samurai': 'Store TP', "Fighter's": 'Double Attack', "Rogue's": 'Critical hits', "Hunter's": 'Accuracy', "Wizard's": 'Magic attack',
+  "Warlock's": 'Magic accuracy', "Monk's": 'Subtle Blow', "Tactician's": 'Regain', "Healer's": 'Cures received', "Gallant's": 'Defense %', 'Beast': 'Pet attack',
+  'Choral': 'Spell interruption', 'Ninja': 'Evasion', 'Drachen': 'Wyvern accuracy', "Evoker's": 'Refresh', "Magus's": 'Magic defense', "Corsair's": 'Experience points',
+  'Puppet': 'Automaton magic', "Dancer's": 'Regen', "Scholar's": 'Conserve MP', "Bolter's": 'Movement speed', "Caster's": 'Fast Cast', "Courser's": 'Snapshot',
+  "Blitzer's": 'Attack delay', "Allies'": 'Skillchain damage', "Miser's": 'Save TP', "Companion's": 'Pet regain', "Avenger's": 'Counter',
+  "Naturalist's": 'Enhancing duration', "Runeist's": 'Magic evasion'}};
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
 // A roll's bonus when its job is in the party (you count), as the engine has it (atelier/engine/buffs.js, BG Wiki for
 // Chaos, Samurai, Fighter's, Rogue's, Hunter's); Crooked Cards: the roll x1.2, after Rolls+ and the job bonus (BG Wiki)
 const ROLL_JOB = {'Chaos': ['DRK', 100 / 1024], 'Samurai': ['SAM', 10], "Fighter's": ['WAR', 5], "Rogue's": ['THF', 5], "Hunter's": ['RNG', 15],
-  "Wizard's": ['BLM', 10], "Warlock's": ['RDM', 15], "Monk's": ['MNK', 10], "Tactician's": ['SCH', 10]};
+  "Wizard's": ['BLM', 10], "Warlock's": ['RDM', 15], "Monk's": ['MNK', 10], "Tactician's": ['SCH', 10],
+  "Healer's": ['WHM', 4], "Gallant's": ['PLD', .1172], 'Beast': ['BST', 100 / 1024], 'Choral': ['BRD', 25], 'Ninja': ['NIN', 15], 'Drachen': ['DRG', 15],
+  "Evoker's": ['SMN', 1], "Magus's": ['BLU', 8], "Corsair's": ['COR', 5], 'Puppet': ['PUP', 12], "Dancer's": ['DNC', 4], "Scholar's": ['SCH', 3],
+  "Naturalist's": ['GEO', 5], "Runeist's": ['RUN', 15]};
 // whether roll i gets its job bonus: ticked, or the roll's job is yours
 const rollJobOn = (b, i) => { const rj = ROLL_JOB[b['roll' + i]]; return !!rj && (!!b['roll' + i + 'job'] || rj[0] === S.job); };
 // Geomancy bubbles: [base, per Geomancy+]; the same bubble twice (Indi and Geo) counts once
 const BUBBLES = {
   'Fury': {atkp: [.347, .027]}, 'Haste': {mhaste: [29.9, 1.1]}, 'Precision': {acc: [50, 5]}, 'Focus': {macc: [50, 5]}, 'Acumen': {mab: [15, 3]},
   'STR': {str: [25, 2]}, 'DEX': {dex: [25, 2]}, 'VIT': {vit: [25, 2]}, 'AGI': {agi: [25, 2]}, 'INT': {int: [25, 2]}, 'MND': {mnd: [25, 2]}, 'CHR': {chr: [25, 2]},
+  // (added 2026-11-02 from BG Wiki's Indi- pages)
+  'Regen': {regen: [30, 2]}, 'Refresh': {refresh: [6, 1]}, 'Barrier': {defp: [.398, .046]}, 'Fend': {mdb: [20, 4]}, 'Voidance': {eva: [65, 6]}, 'Attunement': {meva: [65, 6]},
 };
 // Geomancy on the enemy (atelier/engine/buffs.js geo_debuffs: [base, + per Geomancy+]): e* = the enemy's stat
 // (edefp a fraction of its Defense, eeva its Evasion, emdb its Magic Defense Bonus, emeva its Magic Evasion)
@@ -56,7 +109,9 @@ function geoMul(b){
 // Sortie NMs -50 %, Odyssey Sheol Gaol bosses -85 % (BG Wiki Category:Sortie and Category:Odyssey; a test at
 // V15 found -75 %); a monster takes it whole
 const geoKeep = key => { const z = (TARGETS[key] || {}).zone || ''; return /^Sortie/.test(z) ? .5 : /Odyssey/.test(z) ? .15 : 1; };
-const GEO_DEBUFFS = {'Frailty': {edefp: [.148, .027]}, 'Torpor': {eeva: [50, 5]}, 'Malaise': {emdb: [15, 3]}, 'Languor': {emeva: [50, 5]}};
+const GEO_DEBUFFS = {'Frailty': {edefp: [.148, .027]}, 'Torpor': {eeva: [50, 5]}, 'Malaise': {emdb: [15, 3]}, 'Languor': {emeva: [50, 5]},
+  // (added 2026-11-02 from BG Wiki's Indi- pages)
+  'Wilt': {eatkp: [.25, .046]}, 'Slow': {eslow: [.149, .005]}, 'Poison': {edot: [30, 3]}};
 // The other jobs' Defense down on the enemy (atelier/engine/buffs.js whm_debuffs, cor_debuffs)
 const DIA = {'Dia': 104 / 1024, 'Dia II': 156 / 1024, 'Dia III': 208 / 1024};
 // Distract's Evasion down at its cap (BG Wiki: a RDM at full enfeebling skill and +50 MND over the target),

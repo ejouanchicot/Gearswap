@@ -650,3 +650,5 @@ declare const BUBBLES: Record<string, LegacyAny>;
 declare const FOODS: Record<string, LegacyAny>;
 declare const STORMS: Record<string, LegacyAny>;
 declare function ariaPlus(b: LegacyAny): number;
+declare const ROLL_LUCK: Record<string, [number, number]>;
+declare const ROLL_WHAT: Record<string, Record<string, string>>;

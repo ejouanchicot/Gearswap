@@ -92,7 +92,16 @@ const FX_LABEL = {atkp: ['Attaque', 'Attack', '%f'], defp: ['Défense', 'Defense
   stp: ['Store TP', 'Store TP', ''], da: ['Double Attack', 'Double Attack', '%'], ta: ['Triple Attack', 'Triple Attack', '%'],crit: ['Critiques', 'Critical hit rate', '%'], enmity: ['Enmity', 'Enmity', ''], enmityJa: ['Enmity (hors plafond)', 'Enmity (past the cap)', ''],
   hp: ['HP', 'HP', ''], mp: ['MP', 'MP', ''], regen: ['Regen', 'Regen', ''], refresh: ['Refresh', 'Refresh', ''],
   block: ['Chance de blocage', 'Block rate', '%'], cure2: ['Cure potency II', 'Cure potency II', '%'], blockmul: ['Chance de blocage', 'Block rate', 'mul'],
-  pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], critdmg: ['Dégâts critiques', 'Critical damage', '%'], dt: ['Dégâts reçus (DT)', 'Damage taken (DT)', '%'], enspell: ['Enspell (dégâts par coup)', 'Enspell (damage a hit)', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
+  pdl: ['Limite dégâts physiques', 'Physical damage limit', '%'],
+  // (the party's buffs added 2026-11-02: shown, most of them not in the figures)
+  curerecv: ['Soins reçus', 'Cures received', '%'], sird: ['Interruption des sorts', 'Spell interruption', '-%'], petatkp: ['Attaque du familier', 'Pet attack', '%f'],
+  petacc: ['Précision du familier', 'Pet accuracy', ''], petmab: ['Magie de l’automate', 'Automaton magic', ''], petregain: ['Regain du familier', 'Pet regain', ''],
+  xp: ['Points d’expérience', 'Experience points', '%'], cmp: ['Conserve MP', 'Conserve MP', '%'], move: ['Vitesse de déplacement', 'Movement speed', '%'],
+  fc: ['Fast Cast', 'Fast Cast', '%'], snapshot: ['Snapshot', 'Snapshot', '%'], delay: ['Délai d’attaque', 'Attack delay', '-%'], scdmg: ['Dégâts de skillchain', 'Skillchain damage', '%'],
+  savetp: ['Save TP', 'Save TP', ''], counter: ['Contre-attaque', 'Counter', '%'], enhdurp: ['Durée du renfort', 'Enhancing duration', '%'], scherzo: ['Scherzo (gros coups)', 'Scherzo (big hits)', '-%'],
+  regain: ['Regain', 'Regain', ''], res_fire: ['Résist. feu', 'Fire resist.', ''], res_ice: ['Résist. glace', 'Ice resist.', ''], res_wind: ['Résist. vent', 'Wind resist.', ''],
+  res_earth: ['Résist. terre', 'Earth resist.', ''], res_lightning: ['Résist. foudre', 'Lightning resist.', ''], res_water: ['Résist. eau', 'Water resist.', ''],
+  res_light: ['Résist. lumière', 'Light resist.', ''], res_dark: ['Résist. ténèbres', 'Dark resist.', ''], tpb: ['TP Bonus', 'TP Bonus', ''], sb: ['Subtle Blow', 'Subtle Blow', ''], critdmg: ['Dégâts critiques', 'Critical damage', '%'], dt: ['Dégâts reçus (DT)', 'Damage taken (DT)', '%'], enspell: ['Enspell (dégâts par coup)', 'Enspell (damage a hit)', ''], mdmg: ['Dégâts magiques', 'Magic damage', '']};
 // Short labels, for a one-line summary (the party support cards)
 const FX_SHORT = {edefp: ['Déf cible', 'Tgt Def'], eeva: ['Éva cible', 'Tgt Eva'], emdb: ['Déf. mag. cible', 'Tgt MDB'], emeva: ['Éva. mag. cible (info)', 'Tgt M.Eva (info)'], atkp: ['Att', 'Atk'], atk: ['Att', 'Atk'], atkf: ['Att', 'Atk'], acc: ['Préc', 'Acc'], racc: ['Préc. dist.', 'R.Acc'], ratk: ['Att. dist.', 'R.Atk'],
   def: ['Déf', 'Def'], defp: ['Déf', 'Def'], eva: ['Éva', 'Eva'], meva: ['Éva. mag.', 'M.Eva'], mdb: ['Déf. mag.', 'MDB'], macc: ['Préc. mag.', 'M.Acc'],
@@ -121,6 +130,7 @@ function fxText(k, v){
   if (how === '%f') return `${label} ${v < 0 ? '−' : '+'}${r(Math.abs(v) * 100)} %`;
   if (how === '-%f') return `${label} −${r(v * 100)} %`;
   if (how === '-') return `${label} −${r(v)}`;
+  if (how === '-%') return `${label} −${r(Math.abs(v))} %`;
   return `${label} ${v < 0 ? '−' : '+'}${r(Math.abs(v))}${how === '%' ? ' %' : ''}`;
 }
 function buffCount(){
