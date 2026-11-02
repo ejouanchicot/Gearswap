@@ -405,3 +405,5 @@ img.bi{display:block;image-rendering:auto}
 @media (max-width:640px){.ppr{grid-template-columns:24px minmax(0,1fr) auto}.ppe{grid-column:2 / -1}}
 /* (a line or a family the search hides: their display would show them all the same) */
 .ppr[hidden],.pbpg[hidden]{display:none}
+/* the whole width of the page, as Sets (its old cap of 1500 px left a band empty on a wide screen) */
+.ui2tab.combattab{max-width:none;margin:0}
