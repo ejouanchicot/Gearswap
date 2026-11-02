@@ -388,3 +388,21 @@
 .cfg-r:not(.tall) .cfg-c .modseg{flex-wrap:wrap;justify-content:flex-end;max-width:100%;white-space:normal}
 /* a narrow screen (1280 px): the name wraps sooner, the values and their key keep their line */
 @media (max-width:1400px){.cfg-r:not(.tall){grid-template-columns:36px minmax(110px,1fr) auto}.cfg-rt{min-width:110px}}
+/* Configuration as the other tabs (the player, 2026-11-02): the categories, the options and the detail each a card,
+   the options' and the detail's title in the gold band; the bar of the changes a card too */
+.tabmain:has(.cfgx) > .jobcfg .cfgx{gap:12px;background:none;border:0;box-shadow:none}
+.cfgx > .cfg-nav,.cfgx > .cfg-list,.cfgx > .cfg-det,.cfgx > .cfg-foot{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}
+.cfgx > .cfg-list{padding:0 0 20px}
+.cfgx > .cfg-det{padding:0 0 18px;gap:12px}
+.cfgx > .cfg-list > *:not(.cfg-band){margin-left:22px;margin-right:22px}
+.cfgx > .cfg-det > *:not(.cfg-band){margin-left:18px;margin-right:18px}
+.cfg-band{position:sticky;top:0;z-index:2;margin:0 0 14px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--panel)),var(--panel))}
+.cfg-det > .cfg-band{margin-bottom:0}
+.cfg-bic{display:grid;place-items:center;width:20px;height:20px}
+.cfg-bic > .ico{width:18px;height:18px;border:0;background:none;box-shadow:none}
+.cfg-bic svg.gi{color:var(--accent)}
+.cfg-band small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+.cfg-det .cfg-hero{margin-top:2px}
+.cfgx > .cfg-foot{margin-top:0}
+.jobcfg:has(.cfgx) .jobcfgtabs{margin-bottom:12px}
+.cfg-bic > .em{width:18px;height:18px;display:inline-block;--role:var(--accent)}

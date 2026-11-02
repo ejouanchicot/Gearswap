@@ -13,13 +13,13 @@ const MACRO_JOBS = ['WAR', 'MNK', 'WHM', 'BLM', 'RDM', 'THF', 'PLD', 'DRK', 'BST
 
 Object.assign(T.fr, {meNow: 'en cours', meDefault: 'Par défaut', meDefaultTip: 'Pour un sub qui n’a pas sa ligne.', meBook: 'Livre', mePage: 'Page', meStyle: 'Set',
   meAdd: '+ Ajouter un sub…', meDel: 'Retirer cette ligne : ce sub prendra la valeur par défaut.', meSave: 'Enregistrer', meUndo: 'Annuler',
-  meDirty: 'Changé, pas encore enregistré. En jeu : au prochain changement de job ou de sub, ou après //gs reload.',
+  meDirty: 'Changé, pas encore enregistré. En jeu : au prochain changement de job ou de sub.',
   meBad: '{v} : hors des bornes du jeu ({a} à {b}).', meNoFile: 'Pas de fichier pour ce job : la valeur vient de GearSwap lui-même.',
   meNoText: 'Relis les fichiers (bouton Relire) ou connecte le jeu pour pouvoir changer ces numéros.', meNoTable: 'Ce fichier n’a pas de liste par sub : seule la valeur par défaut se change ici.',
   meBroken: 'Ce fichier a un caractère illisible : la page ne l’écrit pas.'});
 Object.assign(T.en, {meNow: 'in force', meDefault: 'Default', meDefaultTip: 'For a subjob without its own line.', meBook: 'Book', mePage: 'Page', meStyle: 'Set',
   meAdd: '+ Add a subjob…', meDel: 'Remove this line: this subjob takes the default.', meSave: 'Save', meUndo: 'Undo',
-  meDirty: 'Changed, not saved yet. In game: at the next job or subjob change, or after //gs reload.',
+  meDirty: 'Changed, not saved yet. In game: at the next job or subjob change.',
   meBad: '{v}: out of the game’s bounds ({a} to {b}).', meNoFile: 'No file for this job: the value comes from GearSwap itself.',
   meNoText: 'Read the files again (Reload button) or connect the game to change these numbers.', meNoTable: 'This file has no list by subjob: only the default changes here.',
   meBroken: 'This file has an unreadable character: the page does not write it.'});

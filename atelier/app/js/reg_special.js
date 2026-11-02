@@ -27,7 +27,7 @@ Object.assign(T.fr, {regOwn: '{j} seulement',
   cfgNoKey: 'aucune', cfgWhenMode: 'au prochain chargement du job ; la touche le change en jeu', cfgResetFile: 'Revenir à l’origine ({v})', cfgBook: 'Macrobook', cfgStyle: 'Lockstyle',
   cfgLines: '{n} ligne(s)', cfgGeneral: 'Général', cfgSearch: 'Rechercher…', cfgCat_auto: 'Automatismes', cfgCat_gear: 'Équipement auto', cfgCat_cmd: 'Commandes', cfgCat_bags: 'Inventaire',
   cfgCat_display: 'Affichage', cfgCat_multi: 'Plusieurs persos', cfgCat_tools: 'Addons et outils', cfgThisJob: 'Ce job', cfgAllJobs: 'Tous les jobs', cfgEveryJob: 'Tous les jobs', cfgNone: 'aucun', cfgValue: 'Valeur', cfgDefault: 'Par défaut', cfgExample: 'Exemple',
-  cfgWhen: 'Pris en jeu', cfgWhenReload: 'après Enregistrer (//gs reload si le jeu est fermé)', cfgReset: 'Rétablir {v}', cfgWaiting: '{n} changement(s) non enregistré(s)', cfgSaved: 'Tout est enregistré',
+  cfgWhen: 'Pris en jeu', cfgWhenReload: 'après Enregistrer (au prochain chargement si le jeu est fermé)', cfgReset: 'Rétablir {v}', cfgWaiting: '{n} changement(s) non enregistré(s)', cfgSaved: 'Tout est enregistré',
   rfEx: 'Liste commune + Sublime Sushi ×10 : sur {j}, //gs c rf garde la liste de tous les jobs et 10 Sublime Sushi en plus.'});
 Object.assign(T.en, {regOwn: '{j} only',
   rfTitle: '{j} refill', rfNow: 'On {j}, //gs c rf keeps in your inventory:', rfEmpty: 'nothing', rfModeCommon: 'Common list + my items', rfModeOwn: 'My own list',
@@ -48,7 +48,7 @@ Object.assign(T.en, {regOwn: '{j} only',
   cfgNoKey: 'none', cfgWhenMode: 'at the next load of the job; the key changes it in game', cfgResetFile: 'Back to the original ({v})', cfgBook: 'Macro book', cfgStyle: 'Lockstyle',
   cfgLines: '{n} line(s)', cfgGeneral: 'General', cfgSearch: 'Search…', cfgCat_auto: 'Automation', cfgCat_gear: 'Automatic gear', cfgCat_cmd: 'Commands', cfgCat_bags: 'Inventory',
   cfgCat_display: 'Display', cfgCat_multi: 'Several characters', cfgCat_tools: 'Addons and tools', cfgThisJob: 'This job', cfgAllJobs: 'Every job', cfgEveryJob: 'Every job', cfgNone: 'none', cfgValue: 'Value', cfgDefault: 'Default', cfgExample: 'Example',
-  cfgWhen: 'Taken in game', cfgWhenReload: 'after Save (//gs reload if the game is closed)', cfgReset: 'Set back {v}', cfgWaiting: '{n} unsaved change(s)', cfgSaved: 'Everything is saved',
+  cfgWhen: 'Taken in game', cfgWhenReload: 'after Save (at the next load if the game is closed)', cfgReset: 'Set back {v}', cfgWaiting: '{n} unsaved change(s)', cfgSaved: 'Everything is saved',
   rfEx: 'Common list + Sublime Sushi ×10: on {j}, //gs c rf keeps every job’s list and 10 Sublime Sushi on top.'});
 
 const HUD_SECTIONS = ['spells', 'enhancing', 'abilities', 'weapons', 'modes'];

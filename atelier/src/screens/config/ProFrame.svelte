@@ -1,7 +1,8 @@
 <!--
   GearSwap Atelier · the frame of the job's settings (SPEC notes/docs-perso/config-pro-2026-10-30): the categories on
   the left (a search, then the categories under small headings), the options in one column in the middle, the detail
-  of the option chosen on the right, the bar of the changes at the bottom. The three parts (Modes & keys, Settings,
+  of the option chosen on the right, the bar of the changes at the bottom; each a card with the other tabs' gold band
+  (the file an option lives in is not shown: the player's rule, 2026-11-02). The three parts (Modes & keys, Settings,
   Macro book & lockstyle) give their own content; the look is atelier/app/css/config.css.
 
   @file    atelier/src/screens/config/ProFrame.svelte
@@ -24,17 +25,17 @@
     {#if credit}<small class="cfg-credit">{credit}</small>{/if}
   </nav>
   <section class="cfg-list">
-    <header class="cfg-head"><span class="cfg-hic">{@html head.iconHtml}</span><div><h1>{head.title}</h1>{#if head.sub}<p>{head.sub}</p>{/if}</div></header>
+    <header class="kband cfg-band"><span class="cfg-bic">{@html head.iconHtml}</span><b>{head.title}</b>{#if head.sub}<small>{head.sub}</small>{/if}</header>
     {@render children()}
   </section>
   <aside class="cfg-det">
     {#if detail}
-      <div class="cfg-hero"><span class="cfg-hic big">{@html detail.iconHtml}</span><div><h2>{detail.title}</h2>{#if detail.tag}<span class="cfg-tag">{detail.tag}</span>{/if}</div></div>
+      <header class="kband cfg-band"><b>{detail.title}</b>{#if detail.tag}<small>{detail.tag}</small>{/if}</header>
+      <div class="cfg-hero"><span class="cfg-hic big">{@html detail.iconHtml}</span></div>
       {#if detail.what}<p class="cfg-what">{detail.what}</p>{/if}
       {#if detail.example}<div class="cfg-box"><h4>{detail.exampleTitle}</h4><p>{detail.example}</p></div>{/if}
       {#if detail.kv.length}<dl class="cfg-kv">{#each detail.kv as [k, v], i (i)}<dt>{k}</dt><dd>{v}</dd>{/each}</dl>{/if}
       {#if detail.reset}<button type="button" class="cfg-reset" {...detail.reset.attrs}>↺ {detail.reset.label}</button>{/if}
-      {#if detail.foot}<small class="cfg-dfoot">{detail.foot}</small>{/if}
     {/if}
   </aside>
   <footer class="cfg-foot">
