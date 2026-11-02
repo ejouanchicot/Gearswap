@@ -94,7 +94,7 @@ document.addEventListener('click', e => {
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
   if (d.merittab) { S.meritTab = d.merittab; save(); render(); return; }
-  if (d.pbadd || d.pbdel || d.pbtab || d.pbpick || d.pbslot != null || d.pbchoose != null || d.pbaddopen != null) { pbClick(d); return; }
+  if (d.pbadd || d.pbdel || d.pbtab || d.pbpick || d.pbchoose != null || d.pbaddopen != null) { pbClick(d); return; }
   if ('porterwrite' in d) { porterWrite(); return; }
   if ('statreset' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]), by = Object.assign({}, (S.optOpts || {}).statBy);
     delete by[s.path]; S.optOpts = Object.assign({}, S.optOpts, {statBy: by}); save(); render(); return; }

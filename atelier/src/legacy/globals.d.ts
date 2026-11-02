@@ -643,3 +643,10 @@ declare function wcMove(mode: string, from: number, to: number): Promise<void>;
 declare function modeIconGuess(name: string, job: string | null): string;
 // buff_icons.js: the game's status icons by buff name (scripts/atelier/gen_buff_icons.py)
 declare const BUFF_ICONS: Record<string, string>;
+// buffs.js: the tables of the party's buffs (a slot's window shows what each choice gives: dialogs/partypick.ts)
+declare const SONGS: Record<string, LegacyAny>;
+declare const ROLLS: Record<string, LegacyAny>;
+declare const BUBBLES: Record<string, LegacyAny>;
+declare const FOODS: Record<string, LegacyAny>;
+declare const STORMS: Record<string, LegacyAny>;
+declare function ariaPlus(b: LegacyAny): number;

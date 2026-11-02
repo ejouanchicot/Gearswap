@@ -1,20 +1,16 @@
 // GearSwap Atelier · Buffs & target, the member opened and the results by effect
-// (notes/docs-perso/buffs-cible-2026-11-02/SPEC.md, v3 "A + B"): the member's slots as large cases, the slot opened
-// showing the slot window's choices as tiles under them (dialogs/partypick.ts pickView: the same families, hints and
-// None), the rest of its panel; the party's mini icons; what it all gives you, a card an effect with who gives it.
-// The tiles keep the attribute pbChoose reads (data-pbchoose); a slot opens with data-pbslot (party_builder.js pbClick).
+// (notes/docs-perso/buffs-cible-2026-11-02/SPEC.md, v3 "A + B"): the member's slots as large cases (a click opens the
+// slot's window, dialogs/partypick.ts), the rest of its panel; the party's mini icons; what it all gives you, a card an effect with who gives it.
+// A slot opens its window with data-pbpick (party_builder.js pbOpenPick).
 //
 // @file    atelier/src/screens/combat/member.ts
 // @author  ejouanchicot
 import type {PanelView, Item, Effect} from './panel';
 import type {PartyTab} from './combat';
-import {pickView} from '../dialogs/partypick';
 
 /** A slot of the member opened: one whose choice opens the tiles (pick), or a setting drawn as it is (a list, a switch) */
-export type Slot = ({k: 'pick'; key: string; label: string; value: string; set: boolean; gives: Effect[]; open: boolean} | {k: 'item'; item: Item}) & {icon: MiniIcon};
-export interface Tile { value: string; label: string; hint: string; on: boolean; used: boolean; icon: string }
-export interface Grid { title: string; qPh: string; none: null | {value: string; label: string}; groups: Array<{title: string; tiles: Tile[]}> }
-export interface Editor { tab: PartyTab; removeTitle: string; slots: Slot[]; grid: Grid | null; rest: PanelView | null; hint: string }
+export type Slot = ({k: 'pick'; key: string; label: string; value: string; set: boolean; gives: Effect[]} | {k: 'item'; item: Item}) & {icon: MiniIcon};
+export interface Editor { tab: PartyTab; removeTitle: string; slots: Slot[]; rest: PanelView | null; hint: string }
 /** A member's buffs as mini icons in the party's list (gi: game-icons), lit when set */
 export interface MiniIcon { html: string; on: boolean }
 export interface FxSource { name: string; value: string; emblemHtml: string }
@@ -94,26 +90,13 @@ export function iconsOf(quick: Item[]): MiniIcon[] {
     return {html: itemIcon(it) || playerIcon('gi:' + (hit ? hit[1] : 'upgrade')), on: setOf(it)}; });
 }
 
-// the tiles of a slot: the window's choices (pickView), the one held ticked, the ones another slot of the same kind
-// holds greyed (a song already sung in slot 2)
-function gridOf(key: string): Grid | null {
-  const v = pickView(key);
-  if (!v) return null;
-  const kind = key.replace(/\d+$/, ''), b = buffState();
-  const others = new Set(Object.keys(b).filter(k => k !== key && k.replace(/\d+$/, '') === kind && /\d$/.test(k)).map(k => b[k]));
-  return {title: v.title, qPh: v.view.qPh, none: v.none, groups: v.view.groups.map(g => ({title: g.title,
-    tiles: g.items.map(i => ({value: i.value, label: i.label, hint: i.hint, on: i.on, used: !i.on && others.has(i.label), icon: buffIcon(kind, i.label)}))}))};
-}
-
-/** The member opened: its slots (S._pbSlot the one whose tiles show), its tiles, the rest of its panel */
+/** The member opened: its slots (a click opens the slot's window: dialogs/partypick.ts), the rest of its panel */
 export function editorOf(tab: PartyTab, quick: Item[], rest: PanelView | null): Editor {
-  const open = st()._pbSlot || '';
   const icons = iconsOf(quick);
   const slots = quick.map((it, i): Slot => { const p = pickOf(it), icon = icons[i]!;
-    return p && it.k === 'row' ? {k: 'pick', key: p.key, label: it.label, value: p.set ? p.label : t('pbChoose'), set: p.set, gives: it.effects, open: open === p.key, icon}
+    return p && it.k === 'row' ? {k: 'pick', key: p.key, label: it.label, value: p.set ? p.label : t('pbChoose'), set: p.set, gives: it.effects, icon}
       : {k: 'item', item: it, icon}; });
-  const shown = slots.find(s => s.k === 'pick' && s.open);
-  return {tab, removeTitle: t('pbRemove'), slots, grid: shown && shown.k === 'pick' ? gridOf(shown.key) : null, rest, hint: t('pbSlotHint')};
+  return {tab, removeTitle: t('pbRemove'), slots, rest, hint: t('pbSlotHint')};
 }
 
 // the effects in the order a player reads them (the others after them)

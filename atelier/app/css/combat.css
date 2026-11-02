@@ -288,21 +288,6 @@ button.ksl:not(.set) > b{color:var(--muted);font-weight:600}
 .kqe .pbfx{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .kqe .pbfx select.buffsel{font-size:11px;font-weight:600;color:var(--muted);background:none;border:0;padding:0;height:auto}
 .kqe .chip{padding:1px 7px;font-size:10.5px}
-.kgrid{border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:12px;background:var(--well);padding:9px 10px 10px}
-.kgh{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.kgh b{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
-.kgh input{flex:1;min-width:0;padding:5px 10px;border-radius:8px;border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);font-size:12.5px}
-.kgh .btn{padding:3px 10px;font-size:12px}
-.kgrow{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;align-items:start;margin-top:5px}
-.kgf{padding-top:6px;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
-.ktl{display:flex;flex-wrap:wrap;gap:5px}
-.ktile2{display:inline-flex;align-items:baseline;gap:6px;padding:4px 10px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel-2);text-align:left;color:var(--ink);cursor:pointer}
-.ktile2:hover{border-color:var(--accent)}
-.ktile2 b{font-size:12.5px}
-.ktile2 small{font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ktile2.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel-2))}
-.ktile2.on b::after{content:" ✓";color:var(--accent)}
-.ktile2.used{opacity:.45}
 .krest{padding:2px 2px 0}
 /* what it gives you, an effect a card: its total (its cap), who gives it */
 .kresult{position:sticky;top:0;max-height:calc(100vh - 215px);overflow:auto}
@@ -387,8 +372,6 @@ img.bi{display:block;image-rendering:auto}
 .kslic:has(img.bi){background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--accent) 16%,var(--well)),var(--well))}
 .kpmi > span:has(img.bi){width:20px;height:20px;padding:0;background:none;border:0}
 .kpmi img.bi{width:20px;height:20px;border-radius:4px}
-.ktile2 img.bi{width:18px;height:18px;border-radius:4px;align-self:center}
-.ktile2{align-items:center}
 .kopl{display:inline-flex;align-items:center;gap:7px}
 .kopl img.bi{width:20px;height:20px;border-radius:4px;flex:none}
 .kfxs img.bi{width:14px;height:14px;border-radius:3px}
@@ -397,3 +380,24 @@ img.bi{display:block;image-rendering:auto}
 .ksl .kslb > b{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:14px;position:relative}
 .ksl .kslb > b i{position:absolute;right:0;top:50%;transform:translateY(-50%)}
 @media (max-width:1700px){.ksl{grid-template-columns:30px minmax(0,1fr);gap:8px;padding:8px 10px}.kslic{width:30px;height:30px}.kslic img.bi{width:24px;height:24px}.ksl .kslb > b{font-size:14.5px}}
+/* a slot's window (dialogs/PartyPick.svelte): its choices by family, a line each in aligned columns: the game's icon,
+   its name, what it gives with the member's gear, its state (current, or the slot already holding it) */
+.dialog.pbdlg{width:min(760px,calc(100% - 32px))}
+.pbpg h4{display:flex;align-items:baseline;gap:8px;margin:0 0 4px;padding:0 4px 4px;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--accent)}
+.pbpg h4 small{color:var(--faint);font-weight:600;letter-spacing:0}
+.ppl{display:grid;gap:2px}
+.ppr{display:grid;grid-template-columns:28px minmax(150px,200px) minmax(0,1fr) 120px;align-items:center;gap:10px;padding:5px 8px;border:1px solid transparent;border-radius:9px;background:none;text-align:left;color:var(--ink);cursor:pointer}
+.ppr:hover{background:var(--hover);border-color:var(--line-strong)}
+.ppr.on{background:color-mix(in srgb,var(--accent) 12%,transparent);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.ppr.held{opacity:.55}
+.ppi{width:24px;height:24px;display:grid;place-items:center}
+.ppi img.bi{width:24px;height:24px;border-radius:5px}
+.ppr b{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppr.on b{color:var(--accent-2)}
+.ppe{display:flex;flex-wrap:wrap;gap:3px 6px;font-size:12px;font-variant-numeric:tabular-nums}
+.ppe span{padding:1px 8px;border-radius:99px;background:color-mix(in srgb,#5fbf7f 13%,transparent);color:#7fd39a;white-space:nowrap}
+.ppe span.neg{background:color-mix(in srgb,#e07a6a 13%,transparent);color:#ef8f7f}
+.ppe small{color:var(--muted);font-size:11.5px}
+.ppt{font-size:11.5px;color:var(--faint);text-align:right;white-space:nowrap}
+.ppr.on .ppt{color:var(--accent);font-weight:700}
+@media (max-width:640px){.ppr{grid-template-columns:24px minmax(0,1fr) auto}.ppe{grid-column:2 / -1}}
