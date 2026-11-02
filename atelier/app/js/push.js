@@ -196,9 +196,11 @@ function patchSet(s, plan){
 /* ---- delete: a set and its versions taken out of the set file (set_push.lua, /delete) ---- */
 // The sets a job cannot do without, never deleted (as shared/utils/atelier/set_push.lua PROTECTED)
 const PROTECTED_SETS = new Set(['precast.WS', 'precast.FC', 'precast.JA', 'precast.RA', 'midcast.RA']);
+// The tables every set hangs from (as set_push.lua PROTECTED_ROOTS): any other set of one key is deletable (a weapon set)
+const PROTECTED_ROOTS = new Set(['idle', 'engaged', 'precast', 'midcast', 'resting', 'defense', 'buff', 'pet', 'me', 'luopan']);
 function deletable(path){
   const keys = segs(path);
-  return keys.length > 1 && !PROTECTED_SETS.has(keys.join('.'));
+  return !(keys.length === 1 && PROTECTED_ROOTS.has(keys[0])) && !PROTECTED_SETS.has(keys.join('.'));
 }
 async function openDelete(s){
   S._del = {s};

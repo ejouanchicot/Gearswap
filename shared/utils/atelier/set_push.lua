@@ -654,6 +654,10 @@ end
 
 -- Sets a job cannot do without: Mote builds idle, engaged, precast and the
 -- weaponskills on them, so the page never deletes them
+-- The tables Mote and the jobs' code hang every set from (sets.idle, sets.precast...): never deleted. Any other set of
+-- one key is (a weapon set, sets.Bolelabunga; a set a job reads by name is still guarded by `readers` below)
+local PROTECTED_ROOTS = {idle = true, engaged = true, precast = true, midcast = true, resting = true, defense = true,
+    buff = true, pet = true, me = true, luopan = true}
 local PROTECTED = {['precast.WS'] = true, ['precast.FC'] = true, ['precast.JA'] = true,
     ['precast.RA'] = true, ['midcast.RA'] = true}
 
@@ -680,7 +684,7 @@ end
 local function prepare_delete(job, path)
     local keys = SetWriter.path_keys(path or '')
     if not keys then return nil, 'path' end
-    if #keys == 1 or PROTECTED[table.concat(keys, '.')] then return nil, 'protected' end
+    if (#keys == 1 and PROTECTED_ROOTS[keys[1]]) or PROTECTED[table.concat(keys, '.')] then return nil, 'protected' end
     local abs, text = locate(job, path)
     if not abs then return nil, text end
     local family = SetWriter.family(text, keys)
