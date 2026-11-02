@@ -226,7 +226,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-bpop
 // gave to an item, by item id. Written a moment after each change, through the game or to the folder the page was
 // given; read at start, where it replaces the browser's when it is newer. Without either, they stay in the browser.
 const BP_FILE = 'bag_plan.js';
-const bpFileText = c => `// GearSwap Atelier: ${c}'s bags plan, as chosen in the page (My character > Bags): what each bag is for, and the\n` +
+const bpFileText = c => `// GearSwap Atelier: ${c}'s bags plan, as chosen in the page (the Bags tab): what each bag is for, and the\n` +
   `// category given by hand to an item (by item id). Written by the page; deleting this file puts the page's own guesses back.\n` +
   `(window.ATELIER_BAGS = window.ATELIER_BAGS || {})[${JSON.stringify(c)}] = ${JSON.stringify({at: (S.bagAt || {})[c] || '', roles: (S.bagRoles || {})[c] || {}, tags: (S.bagTags || {})[c] || {}})};\n`;
 function bpRead(){

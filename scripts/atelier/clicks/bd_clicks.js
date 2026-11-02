@@ -13,7 +13,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
   const info = () => page.evaluate(() => { const ov = document.querySelector('#overlay'); const d = ov.querySelector('.dialog'); if (!d || ov.hidden) return 'closed';
     return `cls ${d.className} rows ${d.querySelectorAll('tr').length} details ${d.querySelectorAll('details').length} btns ${[...d.querySelectorAll('footer button')].map(b => b.textContent + (b.disabled ? '(off)' : '')).join('|')} text ${d.textContent.replace(/\s+/g, ' ').length}`; });
-  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'perso'; S.persoView = 'bags'; S.bagSel = 'plan'; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }); await wait(400);
+  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'bags'; S.bagSel = 'plan'; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }); await wait(400);
   for (const sel of ['[data-plwhere]', '[data-plrun]', '[data-bpopen]', '[data-bpmule]']) {
     const there = await page.evaluate(s => { const b = document.querySelector(s); if (b) b.click(); return !!b; }, sel); await wait(300);
     out.push(`${sel} ${there}: ` + await info());

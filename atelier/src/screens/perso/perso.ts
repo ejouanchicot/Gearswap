@@ -1,5 +1,5 @@
-// GearSwap Atelier · My character: who (the job, the master level, the job points, when the game measured the
-// character), the two views (its stats, its bags), the stats measured in game as cards, PorterPacker's list, the
+// GearSwap Atelier · My character, and Bags (a tab of its own since 2026-11-02): who (the job, the master level, the
+// job points, when the game measured the character), then its stats or its bags, the stats measured in game as cards, PorterPacker's list, the
 // merits as tabs. The sets stay on the left of the stats (the set picked there is the one the figures are for), the
 // played jobs on the left of the bags.
 // The rules are the old page's renderJob / renderPerso (sets_view.js, layout2.js), porterHTML (porter.js),
@@ -24,7 +24,7 @@ export interface MeritsView {
 }
 export interface PersoView {
   side: SetListView | null;
-  head: {char: string; why: string; facts: Array<[string, string]>; views: Array<{value: string; label: string; title: string; pressed: boolean}>};
+  head: {char: string; why: string; facts: Array<[string, string]>};
   bags: BagsView | null;
   stats: null | {cards: GlobalsView | null; noCharHtml: string; porter: PorterView | null; meritsTitle: string; merits: MeritsView};
 }
@@ -75,10 +75,10 @@ function meritsOf(): MeritsView {
 
 /** My character for the old page's state now, or null when it is not shown */
 export function persoView(): PersoView | null {
-  if (S.section !== 'perso' || S._cfg || (S._pkg && typeof renderPackages === 'function') || !S.job) return null;
+  if ((S.section !== 'perso' && S.section !== 'bags') || S._cfg || (S._pkg && typeof renderPackages === 'function') || !S.job) return null;
   const d = data();
   if (!d) return null;
-  const bags = S.persoView === 'bags';
+  const bags = S.section === 'bags';
   // the sets on the left of the stats: the set picked there is the one the figures are for (the bags are no set's)
   let side: SetListView | null = null;
   if (!bags) {
@@ -87,10 +87,9 @@ export function persoView(): PersoView | null {
     side = L.view;
   }
   const s = ui2CurrentSet(d), c = measuredChar(), lv = jaLevels();
-  const head = {char: S.char, why: t('ui2PersoWhy'),
+  const head = {char: S.char, why: t(bags ? 'bvBagsTip' : 'ui2PersoWhy'),
     facts: [[t('ui2Job'), `${S.job}/${d.sub || '—'}`], ['Master Level', String(lv.ml || '—')], ['Job Points', String((c && c.jp_spent) || '—')],
-      [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>,
-    views: [['stats', 'bvStats'], ['bags', 'bvBags']].map(([value, k]) => ({value: value!, label: t(k!), title: t(k + 'Tip'), pressed: (S.persoView || 'stats') === value}))};
+      [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>};
   if (bags) return {side, head, bags: bagsView(), stats: null};
   return {side, head, bags: null, stats: {cards: s && charStats(s) ? globalsView(s, 'cards') : null, noCharHtml: t('noChar'),
     porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf()}};

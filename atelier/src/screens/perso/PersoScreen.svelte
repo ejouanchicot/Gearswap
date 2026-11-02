@@ -1,7 +1,7 @@
 <!--
-  GearSwap Atelier · My character (perso.ts): the sets, the bags (Bags view) or the played jobs on the left, who the character is, the two
-  views, the stats cards, PorterPacker, the merits. The buttons and inputs keep the attributes the old page's
-  handlers read (bags_view.js data-persoview, porter.js data-porterwrite, engine.js data-merittab / data-merit,
+  GearSwap Atelier · My character and Bags (perso.ts): the sets, the bags or the played jobs on the left, who the character is,
+  the stats cards, PorterPacker, the merits. The buttons and inputs keep the attributes the old page's
+  handlers read (porter.js data-porterwrite, engine.js data-merittab / data-merit,
   data-action="meritreset").
 
   @file    atelier/src/screens/perso/PersoScreen.svelte
@@ -23,7 +23,7 @@
 {#if view}
   {@const h = view.head}
   <div class="pane split"><div class="tabx" class:setside={view.side !== null}>{#if view.bags !== null && view.bags.none === null}<BagSide view={view.bags} />{:else if view.side !== null}<SetList view={view.side} />{:else}<JobList />{/if}<div class="tabmain"><div class="ui2tab persotab">
-    <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl><span class="seg persoviews" role="group">{#each h.views as b (b.value)}<button data-persoview={b.value} aria-pressed={b.pressed} title={b.title}>{b.label}</button>{/each}</span></header>
+    <header class="tabhead"><div><h2>{h.char}</h2><p class="muted small">{h.why}</p></div><dl class="herofacts">{#each h.facts as [k, v] (k)}<div><dt>{k}</dt><dd>{v}</dd></div>{/each}</dl></header>
     {#if view.bags !== null}<Bags view={view.bags} />{:else if view.stats}
       {@const st = view.stats}
       <div class="persogrid">{#if st.cards}<Globals view={st.cards} fold={false} />{:else}<p class="muted">{@html st.noCharHtml}</p>{/if}{#if st.porter}{@const p = st.porter}<Box cls="g-caps" title={p.title} meta={p.meta}><p class="muted small">{@html p.introHtml}</p>{#if p.newHtml}<p class="small">{@html p.newHtml}</p>{/if}{#if p.add}<p class="small"><b>+ {@html p.add.labelHtml}</b></p><ul class="statlist">{#each p.add.names as n (n)}<li class="porteradd">{n}</li>{/each}</ul>{/if}{#if p.remove}<p class="small"><b>− {@html p.remove.labelHtml}</b></p><ul class="statlist">{#each p.remove.names as n (n)}<li class="porterrm">{n}</li>{/each}</ul>{/if}{#if p.doneHtml}<p class="small">{@html p.doneHtml}</p>{/if}{#if p.write}<button class="btn" data-porterwrite title={p.write.title}>{@html p.write.textHtml}</button>{/if}{#if p.needHtml}<p class="muted small">{@html p.needHtml}</p>{/if}</Box>{/if}</div>

@@ -17,7 +17,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
   for (const [c, j] of [['Tetsouo', 'WAR'], ['Tetsouo', 'PLD'], ['Kaories', 'COR'], ['Tetsouo', 'BLM'], ['Hysoka', 'RUN']]) {
     await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render(); }, c, j); await wait(400);
     out.push(`${c} ${j} sets: ` + await read('.globalcol .figpage .figall'));
-    await page.evaluate(() => { S.section = 'perso'; S.persoView = 'stats'; render(); }); await wait(400);
+    await page.evaluate(() => { S.section = 'perso'; render(); }); await wait(400);
     out.push(`${c} ${j} perso: ` + await read('.persogrid'));
   }
   await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); const f = document.querySelector('.globalcol .figpage [data-fold="attr"]'); if (f) f.click(); }); await wait(300);

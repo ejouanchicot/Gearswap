@@ -1,4 +1,4 @@
-// GearSwap Atelier · the job's sections (Sets, Buffs & target, My character, the job's settings, Simulate), as the
+// GearSwap Atelier · the job's sections (Sets, Buffs & target, My character, Bags, the job's settings, Simulate), as the
 // row of tabs over the page. Shown on a job with an export, never on the settings, the packages or the overview.
 // The tabs keep the attribute the old page's click handler reads (events.js data-section) until its screens move.
 //
@@ -7,9 +7,9 @@
 
 export interface SectionTab { key: string; label: string; count: number | ''; title: string; selected: boolean }
 
-/** The five sections and the text key of their names; Sets counts the job's sets */
+/** The six sections and the text key of their names; Sets counts the job's sets */
 const SECTIONS: Array<[string, string]> = [['sets', 'sectionsSets'], ['combat', 'ui2Combat'], ['perso', 'ui2Perso'],
-  ['jobcfg', 'ui2JobCfg'], ['sim', 'sectionsSim']];
+  ['bags', 'sectionsBags'], ['jobcfg', 'ui2JobCfg'], ['sim', 'sectionsSim']];
 
 /** The tabs for the old page's state now, or null when the page shows no job */
 export function sectionTabs(): SectionTab[] | null {

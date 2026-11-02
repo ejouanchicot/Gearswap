@@ -1834,10 +1834,10 @@
 /* on the Sets screen, the sections and the line "Calculé avec" share one row */
 @media (min-width:1100px){
   .inner:has(.pane.split .setsx.ui2){display:grid;grid-template-columns:max-content minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:12px;padding-bottom:12px}
-  .inner:has(.pane.split .setsx.ui2) > .sections{grid-row:1;grid-column:1;margin:0}
+  .inner:has(.pane.split .setsx.ui2) > .sections{grid-row:1;grid-column:1;margin:2px 0 0;align-self:start}
   .inner:has(.pane.split .setsx.ui2) .pane.split{display:contents}
   .inner:has(.pane.split .setsx.ui2) .pane.split > .ctxbar{grid-row:1;grid-column:2;align-self:stretch;height:auto;border:1px solid var(--line);border-radius:var(--radius)}
-  .inner:has(.pane.split .setsx.ui2) .pane.split > .setsx.ui2{grid-row:2;grid-column:1 / -1;margin-top:10px;min-height:0;height:100%}
+  .inner:has(.pane.split .setsx.ui2) .pane.split > .setsx.ui2{grid-row:2;grid-column:1 / -1;margin-top:12px;min-height:0;height:100%}
 }
 /* the set's count and the legend under the equipment, in its column: no empty band under the grid */
 .setsx.ui2 .slotcol{width:calc(4 * var(--cell) + 6px)}

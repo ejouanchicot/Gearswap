@@ -1,4 +1,4 @@
-// GearSwap Atelier · bags_view.js: the "Bags" view of the My character tab: every bag of the character as the game
+// GearSwap Atelier · bags_view.js: the "Bags" tab: every bag of the character as the game
 // holds it (export `bags`: shared/utils/atelier/atelier_export_bags.lua), to see where everything is before tidying.
 // On top, each bag as a tile with how full it is, what is on the character apart from the Mog House; a click shows
 // that bag, "All the bags" shows each item once with the bags it is in. A search, the kinds of items as filters, and
@@ -186,8 +186,8 @@ document.addEventListener('change', e => { const pc = e.target.closest && e.targ
   const role = next[0] === 'free' ? 'free' : next.filter((r, i) => r && r !== 'free' && next.indexOf(r) === i).slice(0, BV_MAX_ROLES).join('+');
   S.bagRoles = Object.assign({}, S.bagRoles); S.bagRoles[S.char] = Object.assign({}, S.bagRoles[S.char], {[el.dataset.bagrole]: role}); bpTouch(); render(); });
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-persoview],[data-bagsel],[data-bagcat],[data-bagdup],[data-baguse]'); if (!b) return; const d = b.dataset;
-  if (d.persoview) S.persoView = d.persoview; else if (d.baguse) S.bagUse = d.baguse; else if (d.bagsel) S.bagSel = d.bagsel; else if (d.bagcat) S.bagCat = d.bagcat; else S.bagDup = !S.bagDup;
+  const b = e.target.closest('[data-bagsel],[data-bagcat],[data-bagdup],[data-baguse]'); if (!b) return; const d = b.dataset;
+  if (d.baguse) S.bagUse = d.baguse; else if (d.bagsel) S.bagSel = d.bagsel; else if (d.bagcat) S.bagCat = d.bagcat; else S.bagDup = !S.bagDup;
   save(); render();
 });
 let BV_TIMER = 0;

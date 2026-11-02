@@ -92,7 +92,11 @@
 :root[data-theme="vanadiel"] .topbar{border-bottom:1px solid var(--line-strong)}
 /* the game's hand: the row chosen in a list, the tab shown */
 :root[data-theme="vanadiel"] .setrow[aria-current="true"] b::before,
-:root[data-theme="vanadiel"] .sections button[aria-selected="true"]::before{content:"";display:inline-block;width:24px;height:17px;margin-right:6px;vertical-align:-3px;background:url(../img/cursor/point.webp) 0 0/100% 100% no-repeat}
+/* the game's pointing hand on the tab chosen, on its left edge as in the game's menus: laid over, never in the text, so no tab
+   changes width when another is chosen; the row keeps room for it before the first tab */
+:root[data-theme="vanadiel"] .sections{padding-left:18px;gap:10px}
+:root[data-theme="vanadiel"] .sections button{position:relative}
+:root[data-theme="vanadiel"] .sections button[aria-selected="true"]::before{content:"";position:absolute;left:-17px;top:calc(50% - 8px);width:21px;height:15px;pointer-events:none;background:url(../img/cursor/point.webp) 0 0/100% 100% no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 :root[data-theme="vanadiel"] .sections button[aria-selected="true"]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05));box-shadow:inset 0 0 0 1px var(--line-strong)}
 
 /* ============================================================================ Grimoire: dark parchment and gilt */

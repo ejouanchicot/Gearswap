@@ -1,4 +1,4 @@
-// GearSwap Atelier · guide_bags.js: the moogle's tutorial of the Bags view (My character > Bags), and that view's
+// GearSwap Atelier · guide_bags.js: the moogle's tutorial of the Bags tab, and that tab's
 // help. A tutorial is a visit of one page: steps like the welcome visit's ([what it points at, the text]) with a
 // third part, the state the view must be in for that step (GUIDE_PREP in guide.js plays it before the step is drawn).
 // Short, in the player's words: no file name but the journal's, no code but the commands typed in game.
