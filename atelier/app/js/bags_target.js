@@ -5,9 +5,9 @@
    Loaded after bags_view.js and bags_plan.js, whose helpers it uses (atelier/src/legacy/files.ts). */
 
 // From the inventory everything that has bags of its own leaves, but what is carried there to be used: gear a set
-// wears, pieces to activate, consumables. (What waits for an NPC or a mule, and what the player filed as kept on the
-// character, have no bags: they stay too.)
-const BT_INV_STAY = ['gear', 'tools', 'usable'];
+// wears, pieces to activate, consumables, and what was brought there to be sent to a mule. (What waits for an NPC, and
+// what the player filed as kept on the character, have no bags: they stay too.)
+const BT_INV_STAY = ['gear', 'tools', 'usable', 'mule'];
 let BT_CACHE = null;
 // The Storage Slips (01 to 33) live in the bag that has the slips role: it keeps a slot for each one that is not
 // in it yet, and a margin, whatever else it holds
@@ -49,7 +49,8 @@ function bpTarget(B){
   const free = {}, slipRoom = {}, moves = [], noRoom = [], bad = {};
   for (const b of B.bags) if (b.max) { free[b.name] = b.max - (b.count != null ? b.count : b.items.length) - btReserve(B, b); slipRoom[b.name] = btSlipsLeft(B, b); }
   let left = [];
-  for (const u of btUnits(B, bvRowsRaw(B, 'all', bvWhere(B)))) { const why = btWhy(B, u); if (why) for (let i = 0; i < u.n; i++) left.push({u, why}); }
+  const rows = bvRowsRaw(B, 'all', bvWhere(B));
+  for (const u of btUnits(B, rows)) { const why = btWhy(B, u); if (why) for (let i = 0; i < u.n; i++) left.push({u, why}); }
   const rank = x => x.why === 'bvW_spare' ? 2 : x.u.cat === 'gear' ? 1 : 0;
   left.sort((a, b) => rank(a) - rank(b));
   const mark = (x, to) => { const list = bad[x.u.r.key] = bad[x.u.r.key] || [], at = list.find(e => e.bag === x.u.from.name);
@@ -64,8 +65,26 @@ function bpTarget(B){
     if (next.length === left.length) { left = next; break; } left = next; }
   // what found no room: a surplus stays where it is and is in place there, the rest is said
   for (const x of left) if (x.why !== 'bvW_spare') { mark(x, ''); noRoom.push({name: x.u.r.info.name, cat: x.u.cat, bag: x.u.from.name}); }
+  btMerge(B, rows, free, moves, bad);
   BT_CACHE = {key, val: {moves, noRoom, bad}};
   return BT_CACHE.val;
+}
+// A thing that stacks and lies in place in two bags or more of its role (Alexandrite in Mog Safe and Mog Safe 2) all
+// goes to the bag that holds the most of it, else to the next one with the room: one place to find it. The room is
+// counted a slot a slot moved, though the game may stack it on what is there. What the sum above moves is left to it.
+function btMerge(B, rows, free, moves, bad){
+  const moved = new Set(Object.keys(bad));
+  for (const r of rows) { const cat = bpCat(B, r), roles = BP_ROLES[cat];
+    if (!roles || !r.info.stack || bvIsGear(r) || btSlip(r.info.name) || moved.has(r.key)) continue;
+    const at = r.where.map(w => ({w, bag: B.bags.find(b => b.name === w.bag)}))
+      .filter(x => x.bag && x.bag.id > 0 && x.bag.max && bvRoles(B, x.bag).some(role => roles.includes(role))).sort((a, b) => b.w.n - a.w.n);
+    if (at.length < 2) continue;
+    const to = at.find(x => free[x.bag.name] >= at.reduce((n, y) => n + (y === x ? 0 : y.w.slots), 0));
+    if (!to) continue;
+    for (const x of at) if (x !== to) {
+      free[to.bag.name] -= x.w.slots; free[x.bag.name] += x.w.slots;
+      (bad[r.key] = bad[r.key] || []).push({bag: x.bag.name, why: 'bvW_split', to: to.bag.name});
+      for (let i = 0; i < x.w.slots; i++) moves.push({id: r.id, name: r.info.name, from: x.bag.id, to: to.bag.id, fromName: x.bag.name, toName: to.bag.name, cat}); } }
 }
 // What the plan does to a group of bags: {now, out, in, after} in slots
 function btFlow(B, names){

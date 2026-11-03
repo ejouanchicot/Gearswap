@@ -89,7 +89,7 @@ function statusOf(B: LegacyAny): BagsView['status'] {
   const chips = [
     {key: 'unk', n: p.unknown, label: t('bpChUnk'), attr: 'data-bpunk', value: '', warn: true},
     {key: 'wrong', n: wrong, label: t('bpChWrong'), attr: 'data-bpwrong', value: '', warn: true},
-    {key: 'mule', n: need('mule'), label: t('bpChMule'), attr: 'data-bpsee', value: 'mule', warn: false},
+    {key: 'mule', n: p.lines.reduce((n, l) => n + (l.mule || 0), 0) as number, label: t('bpChMule'), attr: 'data-bpsee', value: 'mule', warn: false},
     {key: 'npc', n: need('npc'), label: t('bpChNpc'), attr: 'data-bpsee', value: 'npc', warn: false}].filter(c => c.n);
   return {state, icon: {bad: '✖', todo: '➜', ok: '✔'}[state]!, chips, planText: t('bpChPlan'),
     title: state === 'bad' ? t('bpStBad', {n: bad.length}) : state === 'todo' ? t('bpStTodo', {n: todo}) : t('bpStOk'),
@@ -107,7 +107,7 @@ function cardOf(l: LegacyAny): PlanCard {
   return {key: ids.join('+'), cls: bad ? 'bad' : l.free ? 'free' : pct >= 90 ? 'tight' : 'ok', tip: [name, l.reserve ? t('bpReserve', {n: l.reserve}) : '', l.note || ''].filter(Boolean).join('\n'),
     title: ids.map(c => bpCatName(c).split(' (')[0]).join(' + '), free: !!l.free, need: l.need, now: l.now, room: String(l.room || '—'), nowTip: t('bpNowTip'), pct, verdict,
     flow: l.free || !(l.out || l.in) ? '' : [l.out ? t('bpOutN', {n: l.out}) : '', l.in ? t('bpInN', {n: l.in}) : ''].filter(Boolean).join(' · ') + ' → ' + t('bpAfterN', {n: l.after}),
-    bags: l.bags, mule: l.id === 'mule' && l.need ? {title: t('bpMuleTip'), text: t('bpMuleGo')} : null,
+    bags: l.bags, mule: ids.includes('mule') && l.mule ? {title: t('bpMuleTip'), text: t('bpMuleGo')} : null,
     see: cats.map(c => ({cat: c, title: t('bpSeeCat', {c: bpCatName(c)}), label: cats.length > 1 ? bpCatName(c).split(' (')[0]! : t('bpSee')}))};
 }
 
