@@ -375,7 +375,14 @@ local function route(req, live)
         local job = asked_job(query_table(req.query))
         if not (player and job == player.main_job) then return '409 Conflict', '{"error":"job not loaded"}' end
         local result = require('shared/utils/atelier/porter_lists').write(job)
-        if result.ok then result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job) end
+        if result.ok then
+            result.porterpacker = require('shared/utils/atelier/porter_lists').compare(job)
+            -- the export file too, a little a frame: a page opened later reads the list as written, not as the
+            -- last load saw it (it said "taken out for nothing" until the next load)
+            require('shared/utils/core/load_gate').defer(1, function()
+                pcall(function() if Export.enabled() then Export.export_spread() end end)
+            end, 'porter export')
+        end
         return '200 OK', Export.json(result)
     end
     if req.path == '/addjob' and req.method == 'POST' then

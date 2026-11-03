@@ -497,8 +497,10 @@ local function build_state_and_dispatch()
         string.format('inv=%d  evict=%d  promote=%d  pack=%d  cleanup=%d',
             state.inv_free, #state.w1w2_unused, #state.w3w6_used, unpacked, inv_unused))
 
+    -- a piece of the job's sets left in the inventory is work too: Phase 4 puts it in a used bag (it was
+    -- answered "already optimized" with Jumalik Mail in the inventory and room in W2, 2026-11-03)
     if #state.w1w2_unused == 0 and #state.w3w6_used == 0 and inv_unused == 0
-       and unpacked == 0 then
+       and inv_used == 0 and unpacked == 0 then
         if outer_iteration == 1 then
             Chat.success('Wardrobes already optimized for this job.')
         else
