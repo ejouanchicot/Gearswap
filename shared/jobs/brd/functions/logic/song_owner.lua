@@ -31,6 +31,10 @@
 local SongOwner = {}
 
 local PAIR_WINDOW = 3
+-- Longest a song taken for a shifted one waits for its action (resettle): just over the 1.2 s seen between the two
+-- packets of a song, and no buff packet since. A song sung right after a zone (its action first, then its buff)
+-- must not be taken for that shift
+local SHIFT_WINDOW = 1.5
 local SAVE_FILE = 'brd_own_songs.lua'
 --- "<target> gains the effect of <status>" (res/action_messages.lua)
 local GAIN_MESSAGES = {[230] = true, [266] = true}
@@ -64,8 +68,9 @@ end
 ---============================================================================
 
 --- landed: songs seen in 0x028 not paired yet {id, ours, at};
---- appeared: instances seen in 0x063 not paired yet {key, id, at}
-local live = {snapshot = nil, landed = {}, appeared = {}}
+--- appeared: instances seen in 0x063 not paired yet {key, id, at};
+--- shifted: instances taken for one of the last packet moved in time, no song having landed {key, id, at}
+local live = {snapshot = nil, landed = {}, appeared = {}, shifted = {}}
 
 local function save_path()
     local ok, path = pcall(function()
@@ -115,6 +120,15 @@ local function settle(key, ours)
     save_owned()
 end
 
+--- A song lands after its instance was taken for an older one moved in time (the buff packet came first): the
+--- instance is that song's, ours or not as its singer says.
+local function resettle(key, ours)
+    trace('%s: %s (a song landed: no shift, sung again)', key, ours and 'ours' or 'not ours')
+    local owned = load_owned()
+    if ours then owned[key] = true else owned[key] = nil end
+    save_owned()
+end
+
 --- What waited longer than PAIR_WINDOW is dropped.
 local function fresh(list, now)
     local kept = {}
@@ -144,6 +158,7 @@ local function on_action(act)
     local by_id, now = families_by_id(), os.clock()
     live.landed = fresh(live.landed, now)
     live.appeared = fresh(live.appeared, now)
+    live.shifted = fresh(live.shifted, now)
     for _, target in ipairs(act.targets or {}) do
         if target.id == me.id then
             for _, action in ipairs(target.actions or {}) do
@@ -155,8 +170,13 @@ local function on_action(act)
                 end
                 if GAIN_MESSAGES[action.message] and by_id[id] then
                     local ours = act.actor_id == me.id
-                    local seen = take(live.appeared, id)
+                    local seen, moved = take(live.appeared, id), nil
+                    if not seen then
+                        moved = take(live.shifted, id)
+                        if moved and (now - moved.at > SHIFT_WINDOW or moved.n ~= live.packets) then moved = nil end
+                    end
                     if seen then settle(seen.key, ours)
+                    elseif moved then resettle(moved.key, ours)
                     else live.landed[#live.landed + 1] = {id = id, ours = ours, at = now} end
                 end
             end
@@ -221,6 +241,40 @@ local function held_timers(gone, new, stayed)
     return moved, shift
 end
 
+--- The songs whose end time moved while no song of their kind landed: the same songs, whatever the shift. A song
+--- only changes when someone sings it, and every song sung on us comes with its action packet (0x028). A zone with
+--- no loading screen or a cutscene skipped (Limbus, FastCS) moves the songs by amounts held_timers does not take
+--- (not the same for all, one within JITTER of its old time): the songs were taken for another bard's and
+--- //gs c songs sang the dummies again over the player's songs (seen in Limbus, 2026-11). Paired per buff id in
+--- the order of their end times; a song landing just after (the buff packet came first) corrects it (resettle).
+--- @param gone table Keys of the last packet not found in this one
+--- @param new table Keys of this packet not found in the last one
+--- @return table {old key = new key} (empty when none)
+local function unsung_shifts(gone, new)
+    local function by_id(keys)
+        local out = {}
+        for _, key in ipairs(keys) do
+            local id, finish = key:match('^(%d+):(%d+)$')
+            out[id] = out[id] or {}
+            table.insert(out[id], {key = key, finish = tonumber(finish)})
+        end
+        for _, list in pairs(out) do table.sort(list, function(a, b) return a.finish < b.finish end) end
+        return out
+    end
+    local landed = {}
+    for _, e in ipairs(live.landed) do landed[tostring(e.id)] = true end
+    local before, after, moved = by_id(gone), by_id(new), {}
+    for id, list in pairs(before) do
+        local other = after[id]
+        if other and not landed[id] then
+            -- from the end: when one also wore off in that packet, the oldest is the one gone
+            local n = math.min(#list, #other)
+            for i = 1, n do moved[list[#list - n + i].key] = other[#other - n + i].key end
+        end
+    end
+    return moved
+end
+
 --- The instances of ours follow their own end time when it shifts by the
 --- rounding or by held timers (and after a reload, from the saved file); gone otherwise.
 --- @param moved table|nil {old key = new key} of held_timers
@@ -247,8 +301,10 @@ local function on_buffs(data)
         if by_id[buff.id] then current[buff.id .. ':' .. buff.finish] = buff.id end
     end
     local now = os.clock()
+    live.packets = (live.packets or 0) + 1
     live.landed = fresh(live.landed, now)
     live.appeared = fresh(live.appeared, now)
+    live.shifted = fresh(live.shifted, now)
     -- first packet of this load: what is up was there before, nothing new
     local previous = live.snapshot or current
     local kept = {}
@@ -272,7 +328,15 @@ local function on_buffs(data)
         trace('0x063 %d song(s) %+d s later, timers held (an event): the same songs', #gone, shift)
         for _, key in pairs(moved) do kept[key] = true end
     else
-        for _, key in ipairs(gone) do trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+        moved = unsung_shifts(gone, new)
+        for old, key in pairs(moved) do
+            kept[key] = true
+            live.shifted[#live.shifted + 1] = {key = key, id = previous[old], at = now, n = live.packets}
+            trace('0x063 %s -> %s (%s): moved in time, no song landed: the same song', old, key, by_id[previous[old]])
+        end
+        for _, key in ipairs(gone) do
+            if not moved[key] then trace('0x063 gone %s (%s)', key, by_id[previous[key]]) end
+        end
     end
     for key, id in pairs(current) do
         if not kept[key] then

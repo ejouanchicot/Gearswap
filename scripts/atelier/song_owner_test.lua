@@ -104,11 +104,44 @@ own, all = SongOwner.counts()
 check("another bard's Madrigal is not ours", own, 3)
 check('four songs up', all, 4)
 
--- the songs moved by different times (not one held timer): not the same songs
+-- a song moved alone by 14 s with no song landed: the same song (a song only changes when someone sings it, and
+-- each song sung on us comes with its action packet). Before 2026-11-05 it was taken for another's
 clock = clock + 20
 buffs({{214, 1792237260}, {198, 1792237207}, {198, 1792237220}, {199, 1792237600}})
 own = SongOwner.counts()
-check('one song moved alone by 14 s is not taken for ours', own, 2)
+check('one song moved alone by 14 s, no song landed: still ours', own, 3)
+
+-- a zone with no loading screen or a cutscene skipped (Limbus, FastCS): every song moved, by different times,
+-- one of them by 1 s only (within the rounding): still the same songs
+clock = clock + 20
+buffs({{214, 1792237268}, {198, 1792237208}, {198, 1792237231}, {199, 1792237606}})
+own, all = SongOwner.counts()
+check('songs moved by different times, no song landed: still ours', own, 3)
+check('and four up', all, 4)
+
+-- another bard sings Minuet over ours, its buff packet first, then its action packet: not ours
+clock = clock + 20
+buffs({{214, 1792237268}, {198, 1792237500}, {198, 1792237231}, {199, 1792237606}})
+sung(OTHER, 198)
+own = SongOwner.counts()
+check("another bard's Minuet, buff packet first: not ours", own, 2)
+
+-- our own March sung again, its buff packet first, then its action packet: ours
+clock = clock + 20
+buffs({{214, 1792237700}, {198, 1792237500}, {198, 1792237231}, {199, 1792237606}})
+sung(ME, 214)
+own = SongOwner.counts()
+check('our March sung again, buff packet first: ours', own, 2)
+
+-- a zone shifts the songs, then our Minuet sung again 2 s later over our own, its action packet first: the action
+-- is not taken for that shift (past SHIFT_WINDOW), the new buff pairs with it: ours (still March + Minuet of ours)
+clock = clock + 20
+buffs({{214, 1792237706}, {198, 1792237509}, {198, 1792237233}, {199, 1792237611}})
+clock = clock + 2
+sung(ME, 198)
+buffs({{214, 1792237706}, {198, 1792237509}, {198, 1792237900}, {199, 1792237611}})
+own = SongOwner.counts()
+check('shifted by a zone, then our Minuet sung again (action first): ours', own, 2)
 
 print(('%d checks, %d failed'):format(done, failed))
 if failed > 0 then os.exit(1) end
