@@ -9,8 +9,8 @@
 // @file    scripts/atelier/atelier_layout_check.js
 // @author  ejouanchicot
 const path = require('path'), fs = require('fs');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 // PAGE_URL: another page to check (page_parity.js --serve old: the page of the last commit)
 const PAGE = process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };

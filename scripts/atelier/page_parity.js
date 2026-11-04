@@ -18,8 +18,8 @@
 // @author  ejouanchicot
 const path = require('path'), fs = require('fs'), http = require('http'), os = require('os');
 const {execFileSync} = require('child_process');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const DATA = path.resolve(__dirname, '../..');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const VIEWS_FILE = process.argv[2], REF = arg('--ref', 'HEAD'), ONLY = arg('--only', null), DOM = process.argv.includes('--dom');

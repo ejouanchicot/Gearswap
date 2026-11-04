@@ -20,8 +20,8 @@
 // @file    scripts/atelier/engine_free_check.js
 // @author  ejouanchicot
 const path = require('path'), fs = require('fs'), os = require('os'), crypto = require('crypto');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const ATELIER = path.resolve(__dirname, '../../atelier');
 const ENGINE = path.join(ATELIER, 'engine'), ENGINE_OFF = path.join(ATELIER, 'engine.__off');
 

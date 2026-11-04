@@ -4,9 +4,9 @@
 // A piece found by its long name when the game cuts the short one: "cleric" finds Kaories' Clr. Torque +2 in the
 // piece window, "pantaloons" finds the sets that hold Ebers Pant. (core.js nameHas, long_names_data.js).
 const path = require('path');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
+const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
 (async () => {
-  const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
+  const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, '../lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 1000});
   page.on('pageerror', e => errs.push(e.message)); page.on('dialog', d => d.accept());
   await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}})); } catch (e) {} });

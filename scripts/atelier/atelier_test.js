@@ -7,8 +7,8 @@
 // (CHROME = chrome.exe, else the usual Windows path). The game is never asked: the page's fetch is stubbed.
 // It first runs atelier_names_check.js (a name declared in two of the page's files).
 const path = require('path');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
 (async () => {
   // a name declared in two of the page's files breaks it or replaces a function without a word: checked first

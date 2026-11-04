@@ -12,12 +12,12 @@
 // @file    scripts/atelier/enh_figures_test.js
 // @author  ejouanchicot
 const path = require('path'), fs = require('fs');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
 const args = process.argv.slice(2), mode = args[0], file = args[1], only = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
 if (!['--save', '--compare'].includes(mode) || !file) { console.log('usage: --save <file> | --compare <file> [--only JOB]'); process.exit(2); }
 
 async function snapshot(){
-  const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
+  const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, 'lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(), errs = [];
   page.on('pageerror', e => errs.push(e.message));
   await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}})); } catch (e) {} });
@@ -67,7 +67,7 @@ const TIER_CASES = [
   ['RDM', 'WHM', 99, 49, 1200, 'temper', 'Temper II'], ['WHM', 'SCH', 99, 49, 0, 'gain', /^Boost-/], ['PLD', 'WAR', 99, 49, 0, 'phalanx', 'Phalanx']];
 
 async function tierCases(){
-  const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
+  const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, 'lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage();
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof enhTier === 'function' && typeof SPELL_ACCESS === 'object', {timeout: 60000});

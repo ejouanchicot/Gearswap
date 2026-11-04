@@ -11,8 +11,8 @@
 // @date   Created: 2026-10-08
 const fs = require('fs'), path = require('path');
 const DATA_ABS = path.resolve(__dirname, '../..'), ROOT = path.resolve(DATA_ABS, '../../..');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const OX = require(path.join(DATA_ABS, 'atelier/app/js/offline_export.js'));
 const CHAR = process.argv[2] || 'Kaories';
 const abs = rel => path.join(ROOT, rel), dir = path.join(DATA_ABS, CHAR, 'atelier/exports'), index = path.join(DATA_ABS, 'atelier/index.js');

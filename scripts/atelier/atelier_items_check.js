@@ -5,8 +5,8 @@
 //   node scripts/atelier/atelier_items_check.js
 // Needs Node, Puppeteer (PUPPETEER = its folder, else the global npm one) and Chrome (CHROME = chrome.exe).
 const path = require('path');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
+const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier.html').split(path.sep).join('/');
 (async () => {
   const b = await puppeteer.launch({executablePath: CHROME, headless: 'new', args: ['--allow-file-access-from-files']});

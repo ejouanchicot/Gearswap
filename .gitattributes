@@ -1,2 +1,10 @@
-# Shell scripts keep LF: bash cannot run a script with CR at the end of its lines (core.autocrlf is true here)
-*.sh text eol=lf
+# Line endings. The repository stores LF, and every text file is checked out in LF whatever core.autocrlf says: Git
+# for Windows sets it to true for the whole machine, which put a "LF will be replaced by CRLF" warning on every add
+# and left the working tree half LF, half CRLF. Lua (Windower), JavaScript, Python and the docs all read LF.
+# Shell scripts above all: bash cannot run a script with CR at the end of its lines.
+* text=auto eol=lf
+
+# The Windows scripts: stored in LF like the rest, checked out in CRLF (cmd.exe needs it for its labels)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

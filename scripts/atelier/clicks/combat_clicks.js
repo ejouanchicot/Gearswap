@@ -2,9 +2,9 @@
 // what a player would read there, then "errors [...]", the page's errors. PAGE_URL: the page to open (a
 // page_parity.js --serve address, to compare two versions); else data/atelier/index.html.
 const path = require('path');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
+const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
 (async () => {
-  const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
+  const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, '../lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 1000});
   page.on('pageerror', e => errs.push(e.message));
   page.on('dialog', d => d.accept());

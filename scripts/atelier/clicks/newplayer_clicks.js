@@ -5,7 +5,7 @@
 // /ping says nofile). The page lists Newbie (events.js readExports), reaches the game, says what to do first
 // (home.ts first) and sends "+ Add a job" (add_job.js). The game is a small local server answering /ping and /addjob.
 const path = require('path'), http = require('http');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
+const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
 (async () => {
   const hits = [];
   const srv = http.createServer((q, r) => { hits.push(q.method + ' ' + q.url.replace(/\?.*$/, ''));
@@ -14,7 +14,7 @@ const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA
       : JSON.stringify({player: 'Newbie', job: 'WAR', sub: 'SAM', nofile: true, version: 1, boot: 1})); });
   await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
   const port = srv.address().port;
-  const browser = await puppeteer.launch({executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--allow-file-access-from-files']});
+  const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, '../lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 1000});
   page.on('pageerror', e => errs.push(e.message)); page.on('dialog', d => d.accept());
   // the files the game writes: an index with no export and Newbie's door only

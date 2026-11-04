@@ -9,7 +9,7 @@
 // @author ejouanchicot
 // @date   Created: 2026-10-16
 const fs = require('fs'), path = require('path'), http = require('http'), os = require('os'), {execFileSync} = require('child_process');
-const puppeteer = require(process.env.PUPPETEER || path.join(process.env.APPDATA || '', 'npm/node_modules/@modelcontextprotocol/server-puppeteer/node_modules/puppeteer'));
+const puppeteer = require(path.join(__dirname, 'lib/browser.js')).puppeteer;
 
 const DATA = path.resolve(__dirname, '..', '..'), GS = path.dirname(DATA), ROOT = path.resolve(GS, '..', '..');
 const NAME = process.argv[2] || 'Morphetrix';
