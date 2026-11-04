@@ -41,7 +41,7 @@ function effectsOf(kind: string, key: string, v: string, b: LegacyAny): Array<{t
 }
 
 // a roll's few words: what it gives, its lucky and unlucky numbers (buffs.js ROLL_WHAT, ROLL_LUCK)
-function descOf(kind: string, v: string): string {
+function ppDescOf(kind: string, v: string): string {
   if (kind !== 'roll') return '';
   const what = (ROLL_WHAT[st().lang === 'en' ? 'en' : 'fr'] || {})[v] || '', luck = ROLL_LUCK[v];
   return [what, luck ? t('pbLuck', {l: luck[0], u: luck[1]}) : ''].filter(Boolean).join(' · ');
@@ -56,7 +56,7 @@ export function pickView(key: string): null | {title: string; view: PartyPickVie
   for (const k of Object.keys(b)) if (k !== key && /\d$/.test(k) && k.replace(/\d+$/, '') === kind && b[k]) held[b[k]] = P.title(k.match(/\d+$/)![0]);
   const item = (v: string): PickItem => { const h = P.hint(v);
     // (searched by its name, what it gives and its few words: "double" finds Fighter's, "haste" the Marches)
-    const fx = effectsOf(kind, key, v, b), desc = descOf(kind, v);
+    const fx = effectsOf(kind, key, v, b), desc = ppDescOf(kind, v);
     return {attr: 'data-pbchoose', value: `${key}|${v}`, q: [v, h, desc, ...fx.map(e => e.text)].join(' ').toLowerCase(), on: v === cur, label: v, hint: h && h.toLowerCase() !== v.toLowerCase() ? h : '',
       icon: buffIcon(kind, v), effects: fx, tag: v !== cur && held[v] ? t('pbHeldIn', {s: held[v]}) : '', desc}; };
   const groups = P.groups().filter(([, list]: [string, string[]]) => list.length).map(([g, list]: [string, string[]]) => ({title: g, items: list.map(item)}));

@@ -28,8 +28,17 @@ Usage
     python scripts/check_overlay.py            # Tetsouo and Kaories
     python scripts/check_overlay.py Kaories    # one of them
     python scripts/check_overlay.py -d Kaories # with the differing lines
+    python scripts/check_overlay.py --sync     # copy each live file newer than its template into the overlay
 
-Exits 1 when a live file would be lost or reverted by a re-clone.
+A differing file goes one of two ways, and only one is a fault of the templates:
+
+  * the live file is newer (the Atelier pushed a set, the player edited it): a re-clone would revert it until the
+    overlay holds it. A warning, since every push makes one: --sync copies it into `_master/<Char>/` (the
+    character's overlay, gitignored), the overlay's older copy kept in `_backups/overlay_sync/<date>/`;
+  * the template is newer (a change made in `_master/` that never went down to the live folder): the player plays
+    without it. Bringing it down writes in the live folder, the player's call: never done here.
+
+Exits 1 when a live file would be lost, or when a template is newer than the live file.
 
 Left out of the comparison: what the game writes (`saved/`, `atelier/`,
 `logs/`, the per-job HUD files a re-clone copies back), the two configs the
@@ -115,7 +124,28 @@ def reclone(char):
     return tmp, os.path.join(tmp, char)
 
 
-def check(char, show_diff):
+def overlay_path(char, src):
+    """Where the character's own copy of a template goes: the template itself when it is the overlay's, else the same
+    path under `_master/<char>/` (a generic `_master/sets/brd_sets.lua` -> `_master/Kaories/sets/brd_sets.lua`)."""
+    rel = os.path.relpath(src, os.path.join(REPO, '_master')).replace('\\', '/')
+    if rel.startswith(char + '/'):
+        return src
+    return os.path.join(REPO, '_master', char, *rel.split('/'))
+
+
+def sync(char, live_file, src, stamp):
+    """Copy a live file into the character's overlay, the overlay's former copy kept aside; returns the target."""
+    target = overlay_path(char, src)
+    if os.path.exists(target):
+        keep = os.path.join(REPO, '_backups', 'overlay_sync', stamp, os.path.relpath(target, REPO))
+        os.makedirs(os.path.dirname(keep), exist_ok=True)
+        shutil.copy2(target, keep)
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    shutil.copy2(live_file, target)
+    return target
+
+
+def check(char, show_diff, do_sync=False, stamp=''):
     live_root = os.path.join(REPO, char)
     if not os.path.isdir(live_root):
         print('%s: dossier absent\n' % char)
@@ -133,6 +163,7 @@ def check(char, show_diff):
             print('  PERDUS (%d) - aucun modele ne les rend :' % len(lost))
             for r in lost:
                 print('      %s' % r)
+        behind = []
         if reverted:
             sources = template_sources(char)
             print('  REMIS A L ANCIENNE VERSION (%d) - le modele differe du live :' % len(reverted))
@@ -144,25 +175,35 @@ def check(char, show_diff):
                 src = sources.get(r)
                 newer = '?' if not src else ('live' if os.path.getmtime(live[r]) > os.path.getmtime(src) else 'modele')
                 where = os.path.relpath(src, REPO).replace('\\', '/') if src else '?'
-                print('      %s  (%d lignes, plus recent : %s, modele : %s)' % (r, len(diff), newer, where))
+                what = 'live plus recent : --sync le met dans l overlay' if newer == 'live' else 'modele plus recent : le live est en retard'
+                if do_sync and newer == 'live' and src:
+                    what = 'recopie dans ' + os.path.relpath(sync(char, live[r], src, stamp), REPO).replace('\\', '/')
+                elif newer != 'live':
+                    behind.append(r)
+                print('      %s  (%d lignes, %s, modele : %s)' % (r, len(diff), what, where))
                 if show_diff:
                     for l in diff[:40]:
                         print('          ' + l[:150])
         if not lost and not reverted:
             print('  tout est couvert et a jour')
         print()
-        return bool(lost or reverted)
+        return bool(lost or behind)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
 def main():
     args = sys.argv[1:]
-    show_diff = '-d' in args
-    wanted = [a for a in args if a != '-d'] or CHARACTERS
+    show_diff, do_sync = '-d' in args, '--sync' in args
+    if '-h' in args or '--help' in args:
+        print(__doc__)
+        return 0
+    wanted = [a for a in args if a not in ('-d', '--sync')] or CHARACTERS
+    import time
+    stamp = time.strftime('%Y-%m-%d_%H%M%S')
     failed = False
     for char in wanted:
-        failed = check(char, show_diff) or failed
+        failed = check(char, show_diff, do_sync, stamp) or failed
     return 1 if failed else 0
 
 

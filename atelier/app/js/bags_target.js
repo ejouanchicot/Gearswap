@@ -1,8 +1,7 @@
-'use strict';
-/* GearSwap Atelier - where every thing of the bags should be: the one sum the Bags view reads.
-   The cards of the plan, the "misplaced" marks of the list and the moves sent to the game all come from bpTarget:
-   what the cards say will move is what //gs c bags go moves, counted against the room there really is.
-   Loaded after bags_view.js and bags_plan.js, whose helpers it uses (atelier/src/legacy/files.ts). */
+// GearSwap Atelier · bags_target.js: where every thing of the bags should be: the one sum the Bags view reads.
+// The cards of the plan, the "misplaced" marks of the list and the moves sent to the game all come from bpTarget:
+// what the cards say will move is what //gs c bags go moves, counted against the room there really is.
+// Loaded after bags_view.js and bags_plan.js, whose helpers it uses (atelier/src/legacy/files.ts).
 
 // From the inventory everything that has bags of its own leaves, but what is carried there to be used: gear a set
 // wears, pieces to activate, consumables, and what was brought there to be sent to a mule. (What waits for an NPC, and

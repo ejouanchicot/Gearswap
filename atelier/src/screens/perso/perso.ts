@@ -35,7 +35,7 @@ export interface PersoView {
     jp: string};
 }
 
-function porterOf(d: LegacyExport): PorterView | null {
+function porterView(d: LegacyExport): PorterView | null {
   const p = d.porterpacker;
   if (!p || !p.wanted) return null;
   const todo = p.add.length + p.remove.length;
@@ -104,5 +104,5 @@ export function persoView(): PersoView | null {
       [t('ui2Measured'), c && c.at ? `${c.at} · /${c.sub || '—'}` : t('ui2NotMeasured')]] as Array<[string, string]>};
   if (bags) return {side, head, bags: bagsView(), stats: null};
   return {side, head, bags: null, stats: {cards: s && charStats(s) ? globalsView(s, 'cards') : null, noCharHtml: t('noChar'),
-    porter: porterOf(d), meritsTitle: t('sectionsMerits'), merits: meritsOf(), jp: c && c.jp_spent ? `${c.jp_spent} Job Points` : ''}};
+    porter: porterView(d), meritsTitle: t('sectionsMerits'), merits: meritsOf(), jp: c && c.jp_spent ? `${c.jp_spent} Job Points` : ''}};
 }

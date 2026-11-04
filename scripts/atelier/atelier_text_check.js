@@ -23,7 +23,7 @@ const read = f => fs.readFileSync(path.join(JS, f), 'utf8');
 // the page's own code, outside the page: the catalog, the texts and the reader of settings files
 const T = {fr: {}, en: {}}, S = {char: '', lang: 'fr', job: ''};
 const api = new Function('T', 'S', 'document', 't', 'esc', ['usables_data.js', 'job_guide_data.js', 'job_guide_fr.js', 'state_help_data.js', 'state_help_fr.js', 'module_catalog.js', 'module_rows.js', 'module_rest_fr.js', 'module_ux.js', 'modules.js'].map(read).join('\n') +
-  ';return {MOD_CATALOG, MOD_GROUPS, MOD_FILE_FR, MOD_FILE_GROUP, JOB_GUIDE_EN, JOB_GUIDE_FR, STATE_HELP_EN, STATE_HELP_FR, STATE_HELP_COMMON_EN, STATE_HELP_MORE_EN, mcRows, modParsed, modKnown, modRestFr};')(T, S, {addEventListener() {}}, k => k, s => s);
+  ';return {MOD_CATALOG, MOD_GROUPS, MOD_FILE_FR, MOD_FILE_GROUP, JOB_GUIDE_EN, JOB_GUIDE_FR, STATE_HELP_EN, STATE_HELP_FR, STATE_HELP_COMMON_EN, STATE_HELP_MORE_EN, mcRows, modParsed, modKnown, modRestFr, MOD_TOOL_FILE};')(T, S, {addEventListener() {}}, k => k, s => s);
 
 const isChar = n => fs.existsSync(path.join(DATA, n, 'atelier/exports'));
 const chars = process.argv.slice(2).length ? process.argv.slice(2) : fs.readdirSync(DATA).filter(isChar);
@@ -47,7 +47,8 @@ for (const c of chars) {
       if (!fr || !en) { const k = m.name + ' (' + (m.desc || '') + ')' + (fr ? ' no English' : en ? ' no French' : ''); noHelp.set(k, (noHelp.get(k) || new Set()).add(d.job)); }
     }
     // the macro book and lockstyle files are the Macro book part's (part = 'macro'), not settings
-    const cfgs = (d.configs || []).filter(cf => cf.part !== 'macro');
+    // the files the page shows (modules.js modFiles): no macro book, no tool file (ENHTEST_SETS.lua holds sets, no setting)
+    const cfgs = (d.configs || []).filter(cf => cf.part !== 'macro' && !api.MOD_TOOL_FILE.test(cf.file));
     for (const cf of cfgs) {
       files++;
       const base = cf.file.split('/').pop(), pat = base.replace(/^[A-Z]{3}_/, '{JOB}_');
@@ -63,7 +64,8 @@ console.log(chars.join(', ') + ': ' + jobs.size + ' jobs, ' + modes + ' modes, '
 say('every mode shown is explained in French and English', [...noHelp].map(([k, s]) => k + '  [' + [...s].join(' ') + ']'));
 say('every settings file has a French name and purpose', [...noFile]);
 say('every character settings file has a group', [...noGroup]);
-const orphans = []; api.MOD_CATALOG.forEach(fam => fam.items.forEach((it, i) => { if (!shown.has(fam.id + '.' + i)) orphans.push(fam.id + ': ' + it.file + ' ' + it.key); }));
+// (an entry marked optional is a setting the templates leave as a comment: no job need hold it)
+const orphans = []; api.MOD_CATALOG.forEach(fam => fam.items.forEach((it, i) => { if (!it.optional && !shown.has(fam.id + '.' + i)) orphans.push(fam.id + ': ' + it.file + ' ' + it.key); }));
 say('every catalog entry is a setting some job holds', files ? orphans : ['no export holds settings files yet (reload the job in game, or //gs c atelier all)']);
 say('every other setting of the Advanced view has its French name (' + rest + ' read)', [...noRest]);
 say('every job has its presentation in French and English', [...jobs].filter(j => !api.JOB_GUIDE_FR[j] || !api.JOB_GUIDE_EN[j]));

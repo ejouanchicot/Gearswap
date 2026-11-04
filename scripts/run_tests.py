@@ -45,8 +45,6 @@ DATA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KNOWN = {
     'scripts/audit/calc_dnc_ingame_check.js':
         ('Ruthless Stroke measured off the engine (documented gap, atelier/calc/DIFFERENCES.md)', 'FAILED'),
-    'scripts/atelier/atelier_text_check.js':
-        ('4 checks of French names failing since before 2026-10-14 (mode and settings texts)', '4 check(s) failed'),
 }
 REPORTS = {'scripts/audit/calc_check.js', 'scripts/audit/calc_round_check.js', 'scripts/audit/calc_ws_check.js'}
 SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test.js', 'scripts/atelier/atelier_clicks_test.js',

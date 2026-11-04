@@ -23,7 +23,7 @@ import {addStepView} from './screens/dialogs/addset';
 import {placesView, porterView, bagSendView} from './screens/dialogs/bagdlg';
 import {modPickView} from './screens/dialogs/modpick';
 import {slotMenuView, slotMenuShow} from './screens/dialogs/slotmenus.svelte';
-import {tipShow} from './screens/sets/tips.svelte';
+import {pieceTipShow} from './screens/sets/tips.svelte';
 
 openBridge();
 // the search window, one component in a box of its own: the old page moves that box between #overlay and the box of
@@ -42,6 +42,6 @@ window.ATELIER_DIALOG = {show: (d: DialogSpec) => dialogShow(d, dialogBox), upda
 // the menu of a slot of the sets' grid (trial.js openSlotMenu places it)
 window.ATELIER_SLOTMENU = {view: slotMenuView, show: slotMenuShow};
 // the hover card's content (events.js showTip places it)
-window.ATELIER_TIP = {show: tipShow};
+window.ATELIER_TIP = {show: pieceTipShow};
 // on the body itself: the old page's frame (.app, #overlay, #tip) stays a child of <body>, as its styles expect
 mount(App, {target: document.body});

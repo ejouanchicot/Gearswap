@@ -94,7 +94,6 @@ document.addEventListener('click', e => {
 });
 
 /* ---- the refill of the job ---- */
-const rfName = e => Array.isArray(e.name) ? e.name[0] : e.name;
 const rfPlain = list => (Array.isArray(list) ? list : []).map(e => ({name: e.name, target: e.target}));
 // The common list (REFILL_CONFIG.lua default_list) with the job's extras (config_resolver.lua with_extra)
 function refillCommon(d){

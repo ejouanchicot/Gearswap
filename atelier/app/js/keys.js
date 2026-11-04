@@ -112,7 +112,6 @@ function setModeStart(d, name, value){
   if (!Object.keys(map[scope]).length) delete map[scope];
   S.modeDirty[S.char] = true;
 }
-const modeChanges = () => Object.values(modeOverrides()).reduce((n, m) => n + Object.keys(m).length, 0);
 Object.assign(T.fr, {gModes: 'Mes modes', gModesSmall: 'ce que je change en jeu', gKeys: 'Autres touches', gKeysSmall: 'commandes en un appui',
   gAway: 'Modes d’un autre sub', gAwaySmall: 'quand tu n’es pas /{s}', gModesHead: 'La valeur choisie ici est celle de départ ; en jeu, la touche la change.',
   gKeysHead: 'Toutes tes touches, et si deux se marchent dessus. Clique une touche pour la changer.', gKeysDesc: 'Clique une touche (« Changer »), puis appuie simplement sur la nouvelle.',
@@ -181,14 +180,6 @@ function keyClash(d, row, key){
   if (!key || !keyActive(row, d.sub)) return [];
   const want = key.toLowerCase();
   return d.keys.filter(k => k !== row && keyActive(k, d.sub) && (keyOf(k) || '').toLowerCase() === want && !keyYields(row, k) && !keyYields(k, row));
-}
-// What a bind waits for besides the subjob: an alt (dual box), a weapon in hand (keybind_manager.lua)
-function keyCondition(k){
-  const parts = [];
-  if (k.alt) { const a = k.alt, what = [a.name, a.job, a.subjob && '/' + a.subjob, a.weapon].filter(Boolean).map(x => [].concat(x).join('|')).join(' ');
-    parts.push(what ? t('keyIfAltIs', {a: what}) : t('keyIfAlt')); }
-  if (k.weapon) parts.push(t('keyIfWeapon', {w: [].concat(k.weapon).join(', ')}));
-  return parts.join(' · ');
 }
 // Mote's global keys (libs/Mote-Globals.lua global_on_load), bound on every job before the job's own
 const MOTE_BINDS = [['f9', 'OffenseMode', 'cycle OffenseMode'], ['^f9', 'HybridMode', 'cycle HybridMode'], ['!f9', 'RangedMode', 'cycle RangedMode'],

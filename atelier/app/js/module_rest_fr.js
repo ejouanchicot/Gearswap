@@ -34,7 +34,14 @@ const MOD_REST_FR = {
     ['craft_file', 'Fichier de sets du craft', 'Le fichier lu par //gs c craft, dans _common/sets/ : son nom sans « _sets.lua ».'],
     ['fish_file', 'Fichier de sets de la pêche', 'Le fichier lu par //gs c fish, dans _common/sets/ : son nom sans « _sets.lua ».'],
   ],
+  'LOCKSTYLE_CONFIG.lua': [
+    ['job_change_delay', 'Pause après un changement de job', 'Aucun module ne le lit aujourd’hui : un changement de sub recharge GearSwap, le lockstyle repasse par le délai du chargement.'],
+    ['cooldown', 'Temps minimum entre deux lockstyles', 'Aucun module ne le lit aujourd’hui.'],
+  ],
   'DUALBOX_CONFIG.lua': [
+    ['main_character', 'Perso principal', 'Le perso qui pilote : sur l’alt, le nom du principal.'],
+    ['main_name', 'Ancien nom : ce perso', 'Gardé pour les anciens fichiers : la même chose que character_name.'],
+    ['alt_name', 'Ancien nom : l’autre perso', 'Gardé pour les anciens fichiers : la même chose que main_character.'],
     ['report_on_load', 'Demander l’état de l’automatisation à chaque chargement', 'À chaque chargement, chaque perso est prié de dire si son automatisation tourne. Demande l’ajout local StateReport de l’addon d’automatisation ; éteint : jamais envoyé.'],
   ],
   'DW_CONFIG.lua': [
@@ -65,7 +72,9 @@ const MOD_REST_FR = {
     ['region_info.*', 'Région {1}', ''], ['region_info.*.pol_type', 'Type de PlayOnline', ''], ['region_info.*.code_057', 'Couleur du code 057', ''],
     ['region_info.*.warning_color', 'Couleur des avertissements', 'Le numéro de couleur du chat.'], ['region_info.*.example_chars', 'Persos de cette région', ''],
   ],
-  'SUBJOB_CONFIG.lua': [['waltz_from', 'Paliers de Curing Waltz', 'Le tier choisi d’après les HP qui manquent à la cible (DNC ou /DNC) : chaque tier commence à ce nombre de HP manquants.']],
+  'SUBJOB_CONFIG.lua': [['waltz_from', 'Paliers de Curing Waltz', 'Le tier choisi d’après les HP qui manquent à la cible (DNC ou /DNC) : chaque tier commence à ce nombre de HP manquants.'],
+    ['abilities', 'Abilities de //gs c ja1, ja2…', 'Une macro par place, l’ability du sub que tu as : par job principal (ou all), puis par sub.'],
+    ['abilities.*', 'Quand tu es {1}', 'Les abilities par sub.'], ['abilities.*.*', 'Avec le sub /{2}', 'Dans l’ordre des places : ja1, ja2…']],
   'UI_COLOR_CONFIG.lua': [
     ['elements', 'Couleurs des éléments', 'Rouge, vert, bleu (0 à 255) pour chaque élément.'], ['elements.*', '{1}', 'Rouge, vert, bleu.'],
     ['stats', 'Couleurs des attributs', 'STR, DEX, VIT… : rouge, vert, bleu.'], ['stats.*', '{1}', 'Rouge, vert, bleu.'],
@@ -110,6 +119,7 @@ const MOD_REST_FR = {
   ],
   'WARDROBE_CONFIG.lua': [
     ['SCOPE', 'Jobs rangés', 'Plus de jobs que de wardrobes : le rangement travaille sur le job chargé. Relance //gs c wo après un changement de job.'],
+    ['ALL_WARDROBES', 'Wardrobes parcourus', 'Tous les sacs que le rangement (//gs c wo) regarde.'],
     ['KEEP', 'Pièces gardées dans les premiers wardrobes', 'En plus de ce que tes sets nomment. Les anneaux de warp n’en ont pas besoin : ils marchent depuis n’importe quel wardrobe.'],
   ],
   'HP_PRIORITY_CONFIG.lua': [],
@@ -118,6 +128,7 @@ const MOD_REST_FR = {
     ['hits_on', 'Commandes envoyées à l’alt au démarrage', 'Dans l’ordre.'], ['hits_off', 'Commandes envoyées à l’alt à l’arrêt', 'Arrêté en plein combat, l’alt continue jusqu’à la mort du monstre.'],
     ['sequence', 'Suite d’étapes de « run »', '//gs c fights hits run joue ces étapes l’une après l’autre, chacune lancée quand la précédente a atteint son objectif, puis arrête le journal.'],
     ['sheet', 'Ce que « sheet » mesure', '//gs c fights hits sheet : ce que chacune de ces abilities ajoute à la fiche du perso, lu au repos. Seules celles que le job et le sub ont sont utilisées.'],
+    ['run_end', 'Commandes à la fin d’une suite', 'Lancées sur ce perso quand une suite se termine (une danse qui interdit les waltz retirée, tes modes remis).'],
     ['sequences', 'Autres suites d’étapes', '//gs c fights hits run <nom> joue la suite de ce nom.'], ['sequences.*', 'Suite « {1} »', 'Ses étapes, dans l’ordre.'],
     ['steps', 'Étapes de mesure', '//gs c fights hits <étape> lance les commandes de l’étape et écrit une ligne STEP dans le journal. Les coups et les weaponskills sont comptés à partir de cette ligne.'],
     ['steps.*', 'Étape « {1} »', 'Ses commandes, puis ses réglages.'],
@@ -136,6 +147,7 @@ const MOD_REST_FR = {
     ['by_job.*.profile_root', 'Dossier des profils de l’alt', ''], ['by_job.*.stances', 'Tes postures', ''], ['by_job.*.stances.*', 'Posture « {2} »', 'Les modes posés, sous la forme « mode valeur ».'],
     ['by_job.*.targets', 'Cibles', ''], ['by_job.*.targets.*', 'Cible « {2} »', ''], ['by_job.*.targets.*.*', '{3}', ''],
     ['target_states', 'Modes posés pour chaque cible', 'Seulement sur un job qui les a. Les modes propres à une cible passent avant.'],
+    ['alt_target_states', 'Modes de l’alt pour chaque cible', 'Envoyés à l’alt (gs c set <mode> <valeur>). Les modes de l’alt propres à une cible passent avant.'],
     ['targets', 'Cibles', '//gs c sortie <cible> : pour chaque cible, le profil de l’alt, son Indi-, ta posture et le résumé affiché.'], ['targets.*', 'Cible « {1} »', ''],
     ['targets.*.profile', 'Profil de l’alt', 'Le nom du profil chargé.'], ['targets.*.indi', 'Indi- de l’alt', 'Lancé au chargement du profil.'],
     ['targets.*.stance', 'Ta posture', 'Une des postures définies plus haut.'], ['targets.*.summary', 'Résumé affiché', 'Le texte montré en jeu quand la cible est choisie.'],
@@ -165,6 +177,10 @@ const MOD_REST_FR = {
     ['*', '{1}', ''], ['*.*', '{2}', ''],
   ],
   '{JOB}_CURE_CONFIG.lua': [
+    ['cure_tiers', 'Paliers de Cure', 'HP manquants à la cible (plus la marge) : le Cure lancé. Baisse les maximums si ton set de Cure soigne moins.'],
+    ['curaga_tiers', 'Paliers de Curaga', 'Avec /WHM. Sans cette table, le Curaga lancé est gardé.'],
+    ['auto_tier_enabled', 'Cure Auto-Tier au chargement', 'Allumé ou éteint quand le job se charge ; sa touche le change ensuite.'],
+    ['safety_margin', 'Marge de sécurité', 'HP ajoutés aux HP manquants avant de choisir, pour ne pas soigner trop court.'],
     ['debug_messages', 'Messages de debug', 'Écrit « il manque X HP à la cible : Cure Y choisie ». Les messages habituels du WHM s’affichent de toute façon.'],
     ['message_color', 'Couleur de ces messages', 'Un numéro de couleur du chat.'],
   ],
@@ -187,6 +203,10 @@ const MOD_REST_FR = {
     ['*', 'Catégorie {1}', 'Les sorts de Blue Magic qui portent le set de midcast de cette catégorie.'],
   ],
   '{JOB}_TIMING_CONFIG.lua': [
+    ['SONG_DELAYS', 'Pauses entre deux chants', 'En secondes, selon les buffs actifs.'], ['SONG_DELAYS.normal', 'Sans buff', 'En secondes.'],
+    ['SONG_DELAYS.nitro', 'Sous Nightingale + Troubadour', 'En secondes.'], ['SONG_DELAYS.nitro_marcato', 'Sous Nightingale + Troubadour + Marcato', 'En secondes.'],
+    ['ADJUSTMENTS', 'Ajustements des pauses', 'En secondes.'], ['ADJUSTMENTS.latency_offset', 'Latence', 'Ajouté aux pauses si ta connexion est lente (0,1 à 0,3).'],
+    ['ADJUSTMENTS.animation_buffer', 'Marge d’animation', 'Pour que l’animation soit finie.'], ['ADJUSTMENTS.fast_cast_reduction', 'Réduction Fast Cast', 'Retiré des pauses si tu portes du Fast Cast.'],
     ['ROTATION_DELAYS', 'Pauses d’une rotation de chants', 'En secondes.'], ['ROTATION_DELAYS.after_song', 'Après un chant', 'En secondes, avant le suivant. Monte-la si des chants sont refusés parce qu’ils partent trop tôt.'],
     ['ROTATION_DELAYS.after_locked_song', 'En plus après Honor March / Aria of Passion', 'En secondes, ajoutées à la pause précédente.'], ['ROTATION_DELAYS.*', '{1}', 'En secondes.'],
     ['ABILITY_DELAYS', 'Pauses des abilities', 'En secondes.'], ['ABILITY_DELAYS.nt_combo_delay', 'Entre Nightingale et Troubadour', 'En secondes, pour //gs c nt.'], ['ABILITY_DELAYS.*', '{1}', 'En secondes.'],

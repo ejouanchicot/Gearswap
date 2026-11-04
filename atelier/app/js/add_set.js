@@ -83,8 +83,6 @@ const setThere = path => !!(S._bypath && S._bypath[path]);
 const isThere = e => S._bypath ? setThere(e.path) : !!e.exists;
 const parentOf = path => { const sg = segs(path); sg.pop(); return sg.length ? 'sets' + sg.map(k => /^[A-Za-z_]\w*$/.test(k) ? '.' + k : '["' + k + '"]').join('') : null; };
 const parentThere = e => e.parent || !parentOf(e.path) || setThere(parentOf(e.path));
-// A catalog line as the page writes it: sets.precast.JA.{ja} -> precast.JA.‹ja›
-const lineLabel = g => g.replace(/\{([^}]+)\}/g, (m, n) => /^[^:~]*\|/.test(n) ? '‹' + n.split('|').join(' | ') + '›' : '‹' + n.split(/[:~]/)[0] + '›');
 
 // The window at its step: drawn by the Svelte application (atelier/src/screens/dialogs/addset.ts)
 function renderAdd(){

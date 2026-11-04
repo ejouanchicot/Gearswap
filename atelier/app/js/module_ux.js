@@ -68,7 +68,6 @@ const mxNorm = s => String(s == null ? '' : s).toLowerCase().normalize('NFD').re
 const mxValText = v => Array.isArray(v) ? v.map(mxValText).join(' ') : v && typeof v === 'object' ? Object.values(v).map(mxValText).join(' ') : String(v == null ? '' : v);
 // Every word typed must be found in the option: its name, what it does, its module, what it holds
 const mxHit = (words, ...texts) => { const hay = mxNorm(texts.join(' ')); return words.every(w => hay.includes(w)); };
-const MX_MAX = 60;
 let MX_Q_TIMER = 0;
 document.addEventListener('input', e => {
   if (e.target.id === 'modq') { const v = e.target.value; clearTimeout(MX_Q_TIMER);

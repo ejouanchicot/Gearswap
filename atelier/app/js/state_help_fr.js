@@ -39,6 +39,7 @@ const STATE_HELP_FR = {
     SneakInviAOE: 'Pour //gs c aoe sneak / aoe invi. Allumé : Accession, puis le sort sur toi (tout le groupe). Éteint : une seule cible.',
   },
   BLM: {
+    BodyLock: 'Allumé : Spaekona’s Coat +4 sur chaque nuke, quels que soient tes MP (un réglage de joueur : BLM_CUSTOM.lua).',
     MainLightSpell: 'L’élément lancé par //gs c light.', SubLightSpell: 'L’élément lancé par //gs c sublight.',
     MainDarkSpell: 'L’élément lancé par //gs c dark.', SubDarkSpell: 'L’élément lancé par //gs c subdark.',
     MainLightAOE: 'Le sort de zone lancé par //gs c aoelight.', SubLightAOE: 'Le sort de zone lancé par //gs c subaoelight.',
@@ -59,6 +60,7 @@ const STATE_HELP_FR = {
     CastingMode: 'Resistant : la version .Resistant du set d’un sort de Blue Magic quand elle existe.',
   },
   BRD: {
+    DummySong: 'Allumé : la prochaine chanson part en chanson factice (sets.midcast.DummySong), puis le mode s’éteint tout seul.',
     IdleMode: 'Ton set idle hors ville : sets.idle.Refresh, .DT ou .Regen.',
     EngagedMode: 'Ton set engaged : STP (Store TP), Acc (précision), DT (dégâts subis) ou SB (Subtle Blow).',
     SongMode: 'Le pack de chants chanté par //gs c songs.',
@@ -149,6 +151,7 @@ const STATE_HELP_FR = {
     PetWS: 'Allumé : le set de weaponskill de l’automate est porté quand il se bat avec assez de TP.',
   },
   RDM: {
+    CureAutoTier: 'Seulement avec rdm/combat/RDM_CURE_CONFIG.lua. Allumé : le Cure part au plus petit tier qui couvre les HP manquants de la cible (Cure IV sur 150 HP : Cure II). Éteint : le tier lancé est gardé.',
     MainWeapon: 'L’arme de main droite.',
     SubWeapon: 'La main gauche. Avec une deuxième arme en /NIN ou /DNC, ton engaged prend sa version .DW si tu l’as définie.',
     EngagedMode: 'Ton set engaged : sets.engaged.DT, .Acc, .TP ou .Enspell.', IdleMode: 'Ton set idle : sets.idle.Refresh ou sets.idle.DT.',
@@ -184,6 +187,9 @@ const STATE_HELP_FR = {
     Stance: 'La stance que l’automatisme garde (Hasso ou Seigan). En Seigan, Seigan part avant Third Eye ; en Hasso, Hasso n’est jamais remplacé.',
   },
   SCH: {
+    HelixMode: 'Potency : ton set d’hélix habituel. Duration : sets.Bookworm sur chaque hélix, pour qu’elle dure plus longtemps.',
+    RegenMode: 'Potency : ton set de Regen habituel. Duration : sets.midcast.RegenDuration sur chaque Regen.',
+    StormSurge: 'Allumé : sets.midcast.Stormsurge sur chaque tempête (Firestorm, Hailstorm…).',
     SubWeapon: 'La main gauche (grip ou bouclier).',
     Element: 'L’élément de //gs c nuke, helix et storm.',
     NukeTier: 'Le tier demandé par //gs c nuke (I = le sort sans chiffre). Un tier qui ne peut pas partir descend tout seul.',
@@ -232,6 +238,12 @@ const STATE_HELP_MORE_EN = {
   DNC: {CurrentStep: 'Followed by itself: the step //gs c step will use at the next press (the main one or the second).',
     CombatWeaponMode: 'No code reads this mode today: changing it does nothing.'},
   PLD: {Regen: 'On /SCH and /RUN. On: sets.idleRegen is laid over your idle set.'},
+  // the modes a converted GearSwap keeps (Morphetrix, scripts/convert: his <JOB>_CUSTOM.lua)
+  BLM: {BodyLock: 'On: Spaekona’s Coat +4 on every nuke, whatever your MP (a player’s own setting: BLM_CUSTOM.lua).'},
+  BRD: {DummySong: 'On: the next song goes out as a dummy song (sets.midcast.DummySong), then the mode turns itself off.'},
+  SCH: {HelixMode: 'Potency: your usual helix set. Duration: sets.Bookworm over every helix, for it to last longer.',
+    RegenMode: 'Potency: your usual Regen set. Duration: sets.midcast.RegenDuration over every Regen.',
+    StormSurge: 'On: sets.midcast.Stormsurge over every storm (Firestorm, Hailstorm...).'},
   RDM: {MainLightSpell: 'The element of the nuke cast by //gs c castlight.', SubLightSpell: 'The element of the nuke cast by //gs c castsublight.',
     MainDarkSpell: 'The element of the nuke cast by //gs c castdark.', SubDarkSpell: 'The element of the nuke cast by //gs c castsubdark.'},
 };

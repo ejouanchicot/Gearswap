@@ -388,6 +388,7 @@
 .optoplbl{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .optopline .opobjsel{width:auto;flex:0 1 auto;max-width:100%;font-weight:700}
 .opobjone{font-size:13px}
+.opobjdesc{margin:-4px 0 0}
 .optopline .opf{margin:0}
 .optoplim .ophd{display:none}
 /* the limits on one line: each its name, its sign and its field side by side */
@@ -405,10 +406,10 @@
   background:var(--panel-2);color:var(--ink);font:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 .opviews button b{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .opviews button > span{max-width:100%;font-size:10.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.opviews button[aria-pressed="true"] > span{color:color-mix(in srgb,var(--accent-ink) 75%,transparent)}
+.opviews button[aria-selected="true"] > span{color:color-mix(in srgb,var(--accent-ink) 75%,transparent)}
 .opviews button:hover{border-color:var(--accent);color:var(--accent)}
-.opviews button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
-.opviews button[aria-pressed="true"] .opon{background:var(--accent-ink);color:var(--accent)}
+.opviews button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.opviews button[aria-selected="true"] .opon{background:var(--accent-ink);color:var(--accent)}
 .opview{padding-top:14px}
 .opview .optabs,.opview > .ophd2:first-child{display:none}
 .opsw{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 8px;border:1px solid var(--line);border-radius:var(--radius-s);font-size:13px;cursor:pointer}

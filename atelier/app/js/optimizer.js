@@ -217,7 +217,7 @@ function startOf(base, locked = []){
 // search no weapon
 function gripPairs(s, base, ws){
   const it = itemOf(base.main && base.main.name);
-  if (!it || it.Type !== 'Weapon' || (it.slots || []).includes('sub') || lockedSlots(s).includes('sub')) return null;
+  if (!isTwoHanded(it) || lockedSlots(s).includes('sub')) return null;
   return weaponPairs(base, ws, base.main.name);
 }
 // Free weapons: every main hand you hold with every off hand it can take ({main, sub}, the engine's "weapons"

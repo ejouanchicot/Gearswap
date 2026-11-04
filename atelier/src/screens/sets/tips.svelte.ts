@@ -76,7 +76,7 @@ export function tipView(el: HTMLElement): TipView | null {
 }
 
 /** The card shown with this view, drawn now (its size places it); returns whether there was one */
-export function tipShow(el: HTMLElement): boolean {
+export function pieceTipShow(el: HTMLElement): boolean {
   const v = tipView(el);
   if (!v) return false;
   tipState.view = v;

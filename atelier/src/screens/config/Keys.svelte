@@ -22,7 +22,7 @@
 
 {#snippet keybtn(html: string, edit: number | null)}{#if edit !== null}<button type="button" class="kbtn" data-keyedit={edit} title={view.change.tip}><span class="kcaps">{#if html}{@html html}{:else}<i>{view.change.none}</i>{/if}</span><span class="kgo">{view.change.text}</span></button>{:else}<span class="kcaps">{@html html}</span>{/if}{/snippet}
 {#snippet option(m: ModeRow)}
-  <div class="cfg-r" class:sel={m.sel} class:chg={m.changed} data-modesel={m.name}>
+  <div class="cfg-r" class:sel={m.sel} class:chg={m.changed} data-modesel={m.name} role="button" tabindex="0" aria-pressed={m.sel}>
     <span class="cfg-ri">{@html m.iconHtml}</span>
     <div class="cfg-rt"><b title={m.title}>{m.label}</b>{#if m.hint}<span>{m.hint}</span>{/if}</div>
     <div class="cfg-c">

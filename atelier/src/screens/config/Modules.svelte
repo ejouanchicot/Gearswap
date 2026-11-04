@@ -18,7 +18,7 @@
 </script>
 
 {#snippet gauge(r: RegRow)}{@const gg = r.gauge!}<div class="rgauge" data-gauge={gg.attr} class:off={gg.off}><div class="rgbar">{#each gg.parts as p, i (i)}<span class="rgpart" style="flex:{p.flex}" title={p.tip}><b>{p.label}</b>{#if i < gg.parts.length - 1 && !gg.off}<i class="rghandle" data-gaugeat={i} title={p.tip}></i>{/if}</span>{/each}</div><div class="rgticks">{#each gg.parts as p, i (i)}<span style="flex:{p.flex}">{p.from}</span>{/each}<span class="rgend">{gg.end}</span></div></div><details class="rgfix"><summary>{gg.fix}</summary><ModCtl c={r.ctl} /></details>{/snippet}
-{#snippet opt(r: RegRow)}<div class="cfg-r" class:sel={r.sel} class:chg={r.changed} class:tall={r.tall || !!r.gauge} data-regsel={r.key}>
+{#snippet opt(r: RegRow)}<div class="cfg-r" class:sel={r.sel} class:chg={r.changed} class:tall={r.tall || !!r.gauge} data-regsel={r.key} role="button" tabindex="0" aria-pressed={r.sel}>
   <span class="cfg-ri">{@html r.iconHtml}</span>
   <div class="cfg-rt"><b>{r.label}</b>{#if r.sub}<span>{r.sub}</span>{/if}</div>
   <div class="cfg-c">{#if r.gauge}{@render gauge(r)}{:else}<ModCtl c={r.ctl} />{/if}</div>
@@ -32,7 +32,7 @@
 {#snippet colors(s: HudColors)}<div class="hcol">{#each s.parts as p (p.attr)}<label class="hcsw" title={p.label}><input type="color" value={p.hex} data-hudcolor={p.attr}><span>{p.label}</span>{#if p.auto}<em>{p.auto}</em>{/if}{#if p.reset}<button type="button" data-hudcolorreset={p.reset} title={p.resetTip} aria-label={p.resetTip}>↺</button>{/if}</label>{/each}</div>
   {#if s.values.length}<div class="hcolt">{s.valuesTitle}</div><div class="hcol">{#each s.values as v (v.attr)}<label class="hcsw"><input type="color" value={v.hex} data-hudcolor={v.attr}><span>{v.label}</span></label>{/each}</div>{/if}{/snippet}
 {#snippet section(c: RegCard)}<div class="cfg-sec"><span>{c.title}</span>{#if c.small}<small>{c.small}</small>{/if}{#if c.own}<em>{c.own}</em>{/if}</div>
-  <div class="cfg-grp">{#if c.special}<div class="cfg-r tall special" class:sel={view.detail && view.detail.title === c.title} data-regsel={c.id}><div class="cfg-c">{#if c.special.k === 'colors'}{@render colors(c.special)}{:else}{@render refill(c.special)}{/if}</div></div>{:else}{#each c.rows as r (r.key)}{@render opt(r)}{/each}{/if}</div>{/snippet}
+  <div class="cfg-grp">{#if c.special}<div class="cfg-r tall special" class:sel={view.detail && view.detail.title === c.title} data-regsel={c.id} role="button" tabindex="0"><div class="cfg-c">{#if c.special.k === 'colors'}{@render colors(c.special)}{:else}{@render refill(c.special)}{/if}</div></div>{:else}{#each c.rows as r (r.key)}{@render opt(r)}{/each}{/if}</div>{/snippet}
 
 <ProFrame nav={view.nav} head={view.head} detail={view.detail} foot={view.foot} credit={view.credit}>
   {#if view.none}<p class="cfg-empty">{view.none}</p>{/if}

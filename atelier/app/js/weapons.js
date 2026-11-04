@@ -130,6 +130,9 @@ function setForce(slot, piece){
 const canDualWield = () => ['NIN', 'DNC', 'THF', 'BLU'].includes(S.job) || ['NIN', 'DNC'].includes((data() || {}).sub);
 // An off hand the main hand can take: nothing with Hand-to-Hand, a grip with a two-handed weapon, a shield or
 // (dual wield) a weapon with a one-handed one; unknown pieces (no engine loaded) are allowed
+// A two-handed weapon: one that takes a grip and no other off hand (a hand-to-hand weapon takes neither, and Hasso or
+// Last Resort's two-handed bonus is not for it: BG Wiki Hasso "Hasso works only with two-handed weapons")
+const isTwoHanded = it => !!it && it.Type === 'Weapon' && it['Skill Type'] !== 'Hand-to-Hand' && !(it.slots || []).includes('sub');
 function subFits(main, sub){
   return !subWhy(main, sub);
 }
@@ -138,8 +141,7 @@ function subWhy(main, sub){
   const it = itemOf(main && main.name), su = itemOf(sub && sub.name);
   if (!sub || !it || !su) return '';
   if (it['Skill Type'] === 'Hand-to-Hand') return t('subNoH2h');
-  const twoHanded = it.Type === 'Weapon' && !(it.slots || []).includes('sub');
-  if (twoHanded) return su.Type === 'Grip' ? '' : t('subNeedGrip');
+  if (isTwoHanded(it)) return su.Type === 'Grip' ? '' : t('subNeedGrip');
   if (su.Type === 'Grip') return t('subGrip2h');
   return su.Type === 'Shield' || (su.Type === 'Weapon' && canDualWield()) ? '' : t('subNeedDw');
 }

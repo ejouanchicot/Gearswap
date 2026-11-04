@@ -252,12 +252,12 @@ export function keysView(d: LegacyExport): KeysView {
     pro: proOf(game, modes, dirty, keysShown(d).length, list.conflicts ? list.conflicts.items.length : 0),
     list,
     change: {text: t('kChange'), tip: t('kChangeTip'), none: t('kNoKey')},
-    cycle: game.part === 'keys' ? null : cycleOf(d, game.rows.find(r => r.sel)),
+    cycle: game.part === 'keys' ? null : modeCycleOf(d, game.rows.find(r => r.sel)),
     credit: iconCredit()
   };
 }
 
 // The cycle of the weapon mode chosen, its key as text (the row's caps)
-function cycleOf(d: LegacyExport, sel: ModeRow | undefined): CycleView | null {
+function modeCycleOf(d: LegacyExport, sel: ModeRow | undefined): CycleView | null {
   return sel ? cycleView(d, sel.name, sel.keyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()) : null;
 }

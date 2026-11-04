@@ -35,7 +35,7 @@ export function row(label: string, value: unknown, extra = '', cls = '', tip = '
   return {k: 'row', cls, title: statHelp(label, tip) || undefined, labelHtml: label, valueHtml: String(value), extraHtml: extra};
 }
 // a box that folds, closed until opened (S.boxOpen); closed, its band says how many lines it holds (fbox)
-function box(key: string, cls: string, title: string, items: BoxItem[], summary = '', noteHtml = ''): StatBox {
+function statBox(key: string, cls: string, title: string, items: BoxItem[], summary = '', noteHtml = ''): StatBox {
   const count = items.reduce((n, x) => n + (x.k === 'row' ? 1 : (x.html.match(/<li[ >]/g) || []).length), 0);
   return {key, cls, titleHtml: title, open: !!st().boxOpen[key], summary, count, noteHtml, items, foldTitle: t('ttFold')};
 }
@@ -102,7 +102,7 @@ function tankBox(r: LegacyAny): StatBox {
     const pot = phalanxPotency(skill);
     items.push(row('Phalanx', `−${pot + v('phalanx')}`, '', '', t('phalanxTip', {p: pot, s: skill, g: v('phalanx')})));
   }
-  return box('tank', 'g-tank', t('tankTitle'), items, '', `<p class="note-m">${t('tankNote')}</p>`);
+  return statBox('tank', 'g-tank', t('tankTitle'), items, '', `<p class="note-m">${t('tankNote')}</p>`);
 }
 
 /** The attack of the set: accuracy, haste, TP a hit, a round, the hit rate, the target's defense, multi-attacks,
@@ -136,7 +136,7 @@ function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
   if (da || ta || v('qa')) items.push(row(t('multiLbl'), `${r1(da)} · ${ta} · ${v('qa')} %`, ''));
   const crit = v('crit') + (B.crit || 0);
   if (crit) items.push(row(t('critLbl'), `${r1(crit)} %`, ''));
-  return box('off', 'g-off', t('offTitle'), items, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
+  return statBox('off', 'g-off', t('offTitle'), items, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
 }
 
 /** The "In combat" box of a nuke set (fight_stats.js fightFigures): the spell's damage in its band, the totals it is
@@ -148,7 +148,7 @@ function fightBox(s: LegacyAny): StatBox | null {
   const S0 = st();
   if (!('fight' in S0.boxOpen)) S0.boxOpen.fight = true;
   // a case our engine does not compute says why (fight_stats.js notComputedText)
-  if (f && f.why) return {...box('fight', 'g-mag', esc(t('fightTab')), [], '', `<p class="note-m">${esc(notComputedText(f.why))}</p>`), bare: true};
+  if (f && f.why) return {...statBox('fight', 'g-mag', esc(t('fightTab')), [], '', `<p class="note-m">${esc(notComputedText(f.why))}</p>`), bare: true};
   if (!r || !r.sheet) return null;
   const sheet = r.sheet, enemy = (ctx.enemy && ctx.enemy.stats) || {}, spells = ctx.spells && ctx.spells.length ? ctx.spells : ['Thunder'], gear = setStats(s).total;
   const sit = nukeSituation(s), layers = sit.layers.some((L: LegacyAny) => !L.spells) || !!sit.belt ? t('fightLayers') : '';
@@ -163,7 +163,7 @@ function fightBox(s: LegacyAny): StatBox | null {
   if (mb.a || mb.b || mb.t) rows.splice(4, 0, row(esc(t('fightMbdAll')), '+' + fmt(Math.min(mb.a, mb.c) + mb.b + mb.t, true), '', '', t('fightMbdAllFrom', mb)));
   rows.unshift(row(esc(t('fightMacc')), fmt(r.macc), '', '', fightMaccTip(sheet, enemy, spells[0], isBurstSet(s.path), r.macc)),
     row(esc(t('fightHit')), fmt(100 * r.hitRate, true), '', '', t('fightHitCap', {e: enemy['Magic Evasion'] || 0})));
-  return box('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`);
+  return statBox('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`);
 }
 
 export interface HpCycleView { open: boolean; title: string; foldTitle: string; note: string; ref: string; heads: string[];
@@ -211,7 +211,7 @@ export interface LuopanView { title: string; rows: StatRow[]; cast: string;
 /** A GEO's Luopan (luopan.js): on the cast set what the cast takes (Geomancy, the luopan's HP, Concentric Pulse's
  * charm); on a set worn with the luopan out (one that holds damage taken or Regen for it, or is named for it), its
  * damage taken, Regen and HP, how long it lives in each case, where its HP come from. Null on any other set */
-function luopanOf(s: LegacyAny): LuopanView | null {
+function luopanView(s: LegacyAny): LuopanView | null {
   if (S.job !== 'GEO' || !s) return null;
   if (isLuopanCast(s)) {
     const g = luopanGear(withWeapons(s).pieces), n = luopanCharm(g.duration);
@@ -250,7 +250,7 @@ function cureBox(s: LegacyAny): StatBox | null {
     row(t('cbEnm'), String(f.enmity)),
     row(t('cbCmp'), `+${f.cmp || 0} %`, t('cbCmpX', {g: f.cmpGear || 0, t: (f.cmp || 0) - (f.cmpGear || 0)}) + (f.cmp >= 100 ? ' · ' + t('cbCmpCap') : ''))];
   // open until closed: its fold key notes the closing (events.js flips S.boxOpen[key], unset at first)
-  const b = box('cureShut', 'g-skill', t('cbTitle'), items, String(f.cureOther), `<p class="note-m">${esc(t('cbNote'))}</p>`);
+  const b = statBox('cureShut', 'g-skill', t('cbTitle'), items, String(f.cureOther), `<p class="note-m">${esc(t('cbNote'))}</p>`);
   b.open = !st().boxOpen.cureShut;
   return b;
 }
@@ -266,6 +266,6 @@ export function figuresView(s: LegacyAny): FiguresView {
   const cure = cureBox(s), boxes = [...(cure ? [cure] : []), ...(fight ? [fight] : off ? [off] : r ? [tankBox(r)] : [])];
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
-  const hp = hpCycle(s), luopan = luopanOf(s), sheet = sheetView(s);
+  const hp = hpCycle(s), luopan = luopanView(s), sheet = sheetView(s);
   return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), allTab: t('figAllTab'), summaryTitle: t('figSumTitle'), summaryBack: t('figSumBack'), emptyNote: t('figSumEmpty'), all};
 }

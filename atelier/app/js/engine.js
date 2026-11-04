@@ -9,7 +9,7 @@ const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'enemy', 'gea
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'ws_magic', 'ws_ranged', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['items', 'augments_ranked', 'capes', 'augments_parse'].map(f => `atelier/gear/${f}.js`)
-  .concat(['atelier/opt.js', 'atelier/opt_enf.js'])
+  .concat(['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/opt_ambu.js'])
   // our engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the functions the page calls
   // (calc_bridge.js)
   .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))
@@ -51,27 +51,35 @@ const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.ave
 const noEngineText = () => S._engPartErr ? t('optEngineBroke', {e: S._engPartErr}) : t('optNoEngine');
 const rankedEntry = name => window.FFXI && FFXI.ranked_entry ? FFXI.ranked_entry(name) : null;
 /* ---- the engine on the page's sets: a weaponskill's average damage, and the optimizer ---- */
+// A prime weapon's items, its stages II to V in id order; null for another weapon (one list per name, the catalogue
+// read once)
+const PRIME_STAGES = ['V', 'IV', 'III', 'II'];
+let PRIME_IDS = {items: null, by: {}};
+function primeIds(name){
+  const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
+  if (!name || !primes.includes(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
+  if (PRIME_IDS.items !== FFXI.CATALOG.items) PRIME_IDS = {items: FFXI.CATALOG.items, by: {}};
+  return PRIME_IDS.by[name] || (PRIME_IDS.by[name] = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b));
+}
 // A prime weapon's stage from your own copy: the catalogue's items of that name are its stages II to V in id order
 // (Laphria IV holds STR +30, V +35), and the export gives each copy its item id; null when not a prime weapon or
 // no copy with an id (an export written before ids)
 function ownedPrimeStage(name){
-  const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
-  if (!name || !primes.includes(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
+  const ids = primeIds(name);
+  if (!ids) return null;
   const copy = ((ownedOf() || {}).main || []).filter(x => x.name === name && x.id).sort((a, b) => b.id - a.id)[0];
-  if (!copy) return null;
-  const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b), i = ids.indexOf(copy.id);
-  return i < 0 ? null : ['V', 'IV', 'III', 'II'][ids.length - 1 - i] || null;
+  const i = copy ? ids.indexOf(copy.id) : -1;
+  return i < 0 ? null : PRIME_STAGES[ids.length - 1 - i] || null;
 }
 // The item of a prime weapon you hold no copy of, at the stage chosen in the Buffs panel (Aftermath: Prime stage):
 // the catalogue's items of that name are its stages II to V in id order; null otherwise (the name's highest)
 function primeStageId(name){
-  const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
+  const ids = primeIds(name);
   // read as it is, never made: buffState() builds a profile's buffs from the sets' pieces, whose stats come here
   // (WAR's Helheim looped and the Buffs panel was not drawn)
-  const st = primes.includes(name) ? (S._buffOverride || (S.buffs || {})[buffKey()] || {}).amStage : null;
-  if (!st || ownedPrimeStage(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
-  const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b);
-  return ids[ids.length - 1 - ['V', 'IV', 'III', 'II'].indexOf(st)] || null;
+  const st = ids ? (S._buffOverride || (S.buffs || {})[buffKey()] || {}).amStage : null;
+  if (!st || ownedPrimeStage(name)) return null;
+  return ids[ids.length - 1 - PRIME_STAGES.indexOf(st)] || null;
 }
 // The engine's view of the page: job, subjob, Master Level, the buffs ticked, abilities on, the
 // aftermath, the target, the weaponskill of the set

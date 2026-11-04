@@ -28,7 +28,7 @@ const lineOf = (label: string, tip: string, key: string): WsLine => ({label, tip
 
 // the off hand for a weaponskill: Auto (what the weapon set or the grip rule gives), then yours; the ones the main hand
 // cannot take on one line at the end, how many and why (an option greyed one by one reads as broken)
-function subOf(s: LegacyAny, ws: string): Extract<WsWeapon, {k: 'held'}>['sub'] {
+function wsSubOf(s: LegacyAny, ws: string): Extract<WsWeapon, {k: 'held'}>['sub'] {
   const main = withWeapons(s).pieces.main, auto = withWeapons(s, 'heldsub').pieces.sub, cur = (S0().heldSub || {})[heldKey(ws)];
   const why = (x: LegacyAny) => subWhy(main, x), list = forceList('sub');
   const shown = cur && list.some((x: LegacyAny) => x.name === cur.name && !why(x));
@@ -56,7 +56,7 @@ function weaponOf(s: LegacyAny): WsWeapon | null {
   const options: WsOption[] = [{value: '', label: t('heldMode', {w: auto && !isEmpty(auto) ? auto.name : '—'}), selected: !held}];
   if (held && !sorted.includes(held)) options.push({value: held, label: held + ' · ' + t('heldGone'), selected: true});
   for (const n of sorted) options.push({value: n, label: n + dmg(n) + where(n), selected: n === held});
-  return {k: 'held', line: lineOf(t('weaponLbl'), t('weaponTip'), 'weapon'), ws, held: {set: !!held, title: t('ttHeldWs'), options}, sub: subOf(s, ws)};
+  return {k: 'held', line: lineOf(t('weaponLbl'), t('weaponTip'), 'weapon'), ws, held: {set: !!held, title: t('ttHeldWs'), options}, sub: wsSubOf(s, ws)};
 }
 // the TP steps, then the TP the weaponskill opens with (its make-up in the explanation), the TP Bonus in total
 function tpOf(s: LegacyAny): WsTp {

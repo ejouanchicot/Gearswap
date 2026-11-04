@@ -27,7 +27,7 @@ export interface GearPickView {
 const st = (): LegacyAny => S;
 
 // one piece as a card (gpCard)
-function itemOf(o: LegacyAny, i: number, slot: string, v: LegacyAny, worn: LegacyAny): GpItem {
+function gpItemOf(o: LegacyAny, i: number, slot: string, v: LegacyAny, worn: LegacyAny): GpItem {
   const r = o.cat ? null : pieceStats(o.piece, slot), augs: string[] = o.piece.augs || [], up = o.upgrade;
   const where = o.cat ? [t('notOwned'), o.ilv ? 'iLv ' + o.ilv : t('lvShort', {n: o.lv})].join(' · ')
     : [o.owned ? (o.count > 1 ? '×' + o.count + ' · ' : '') + (o.where && o.where.length ? o.where.map(whereLabel).join(', ') : t('inBag')) : t('notOwned'), o.seen ? t('inSets', {n: o.seen}) : ''].filter(Boolean).join(' · ');
@@ -69,6 +69,6 @@ export function gearPickView(s: LegacyAny, slot: string, p: LegacyAny, opts: Leg
     // "empty" offered on a slot with no piece too (a set "+ Add a job" wrote empty: nothing to empty it from), but in a
     // set laid on top of another, where an `empty` strips the piece under it (push.js overlaySet)
     emptyHtml: (p || !overlaySet(s)) && !(['main', 'sub'].includes(slot) && family(s.path, s.pieces) !== 'weapons') ? t('tryEmpty') : null,
-    count: t('gpCount', {n: rows.length}), wantsHtml: wantsLine(s), items: [...rows.map(([o, i, v]) => itemOf(o, i, slot, v, worn)),
-      ...(fx ? [] : hid.filter(([o]) => kind == null || itemKind(o.piece.name) === kind).map(([o, i]) => Object.assign(itemOf(o, i, slot, null, worn), {hide: true})))], none: t('gpNone')};
+    count: t('gpCount', {n: rows.length}), wantsHtml: wantsLine(s), items: [...rows.map(([o, i, v]) => gpItemOf(o, i, slot, v, worn)),
+      ...(fx ? [] : hid.filter(([o]) => kind == null || itemKind(o.piece.name) === kind).map(([o, i]) => Object.assign(gpItemOf(o, i, slot, null, worn), {hide: true})))], none: t('gpNone')};
 }

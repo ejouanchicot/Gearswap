@@ -130,7 +130,7 @@ function useOf(r: LegacyAny): BagItem['use'] {
   return {lock, jobs: jobs.slice(0, max).map(([j]) => j), more: Math.max(0, jobs.length - max), cfg: u.files.size ? t('bvCfg') : ''};
 }
 
-function itemOf(B: LegacyAny, r: LegacyAny, sel: string): BagItem {
+function bagItemOf(B: LegacyAny, r: LegacyAny, sel: string): BagItem {
   const others = sel === 'all' ? r.where : r.where.filter((w: LegacyAny) => w.bag !== sel);
   const tip = [r.info.name + (r.n > 1 ? ' ×' + r.n : ''), r.augs ? r.augs.join(' · ') : '',
     r.where.map((w: LegacyAny) => w.bag + (w.slip ? ' (' + w.slip + ')' : '') + (w.n > 1 ? ' ×' + w.n : '')).join(', '), bvUseTip(r)].filter(Boolean).join('\n');
@@ -152,7 +152,7 @@ function listOf(B: LegacyAny, sel: string): Extract<BagsView['body'], {kind: 'li
   rows.sort((a, b) => bvRank(a.info.cat) - bvRank(b.info.cat) || a.info.name.localeCompare(b.info.name));
   const cats = [...new Set(rows.map(r => r.info.cat as string))];
   return {none: '', count: t('bvCount', {n: rows.length, s: rows.reduce((n, r) => n + r.slots, 0)}),
-    cats: cats.map(c => { const list = rows.filter(r => r.info.cat === c); return {name: bvCatName(c), count: list.length, items: list.map(r => itemOf(B, r, sel))}; })};
+    cats: cats.map(c => { const list = rows.filter(r => r.info.cat === c); return {name: bvCatName(c), count: list.length, items: list.map(r => bagItemOf(B, r, sel))}; })};
 }
 
 // what the bag shown is for: one menu, two for a bag that is not a wardrobe (bvRolePick)

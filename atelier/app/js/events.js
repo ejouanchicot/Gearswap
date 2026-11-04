@@ -411,3 +411,11 @@ function readExports(first, done){
 // the game's own data of the loaded job replaced the file's: asked again at the next tick (S._live emptied)
 function dataAgain(){ readData(false, () => { S._refresh = null; S._live = {}; }); }
 readData(true);
+// The keyboard on what is clicked but is no button (a set's card, a bag's item, a mode's or a module's line, a job's
+// row: role="button" or a row of the home page's table, tabindex 0): Enter or Space does the click
+document.addEventListener('keydown', e => {
+  if ((e.key !== 'Enter' && e.key !== ' ') || e.altKey || e.ctrlKey || e.metaKey) return;
+  const el = e.target;
+  if (!el || !el.matches || !el.matches('[role="button"]:not(button):not(input), tr[data-job][tabindex]')) return;
+  e.preventDefault(); el.click();
+});
