@@ -52,6 +52,9 @@
     //   "Occasionally Attacks X Times" (`twice`: the chance of a weapon that attacks twice).
     // Returns the chance of [0, 1, 2, 3] extra swings; rates are fractions.
     CALC.multiAttackChances = function (qa, ta, da, twice) {
+        // each a chance, 100 % at most (Hoxne Ampulla's Double Attack +100 % over the gear's: a single swing at -20 %)
+        var cap = function (v) { return Math.max(0, Math.min(1, v || 0)); };
+        qa = cap(qa); ta = cap(ta); da = cap(da);
         var triple = (1 - qa) * ta, double = (1 - qa) * (1 - ta) * da;
         var occasional = (1 - qa) * (1 - ta) * (1 - da) * (twice || 0);
         return [1 - qa - triple - double - occasional, double + occasional, triple, qa];

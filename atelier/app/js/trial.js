@@ -175,7 +175,11 @@ function setExcluded(name, on){
 }
 Object.assign(T.fr, {slotExclude: 'Exclure des recherches', slotExcludeHint: 'l’optimiseur ne la proposera plus (réautorisée d’elle-même si tu l’obtiens)',
   slotInclude: 'Ne plus exclure', slotIncludeHint: 'l’optimiseur peut de nouveau la proposer',
-  exclLine: 'Exclues des recherches :', exclClear: 'Tout réautoriser', exclBack: 'Réautoriser {p}'});
+  exclLine: 'Exclues des recherches :', exclClear: 'Tout réautoriser', exclBack: 'Réautoriser {p}', exclBackS: 'Réautoriser',
+  exclMissing: 'revient quand tu l’as', exclMissingS: 'à avoir', exclEars: 'Oreilles', exclRings: 'Bagues', exclOther: 'Autres',
+  exclHint: 'clique une pièce pour la réautoriser', exclMore: '+{n} autres ▸', exclLess: 'replier ▴'});
 Object.assign(T.en, {slotExclude: 'Exclude from searches', slotExcludeHint: 'the optimizer will not offer it again (allowed again by itself once you get it)',
   slotInclude: 'Stop excluding', slotIncludeHint: 'the optimizer may offer it again',
-  exclLine: 'Excluded from searches:', exclClear: 'Allow all again', exclBack: 'Allow {p} again'});
+  exclLine: 'Excluded from searches:', exclClear: 'Allow all again', exclBack: 'Allow {p} again', exclBackS: 'Allow',
+  exclMissing: 'back once you hold it', exclMissingS: 'to get', exclEars: 'Earrings', exclRings: 'Rings', exclOther: 'Others',
+  exclHint: 'click a piece to allow it again', exclMore: '+{n} more ▸', exclLess: 'fold ▴'});

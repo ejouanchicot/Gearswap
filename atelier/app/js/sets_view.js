@@ -6,8 +6,10 @@
 // The top bar is the Svelte application's (atelier/src/screens/topbar, told at the end of render). Here only what the
 // whole document follows: its language and its theme
 function renderSide(){
-  document.documentElement.lang = S.lang;
-  document.documentElement.setAttribute('data-theme', themeNow());
+  // written only when they change: each write has the browser work out the whole page's style again (~6 ms a redraw)
+  const root = document.documentElement, theme = themeNow();
+  if (root.lang !== S.lang) root.lang = S.lang;
+  if (root.getAttribute('data-theme') !== theme) root.setAttribute('data-theme', theme);
 }
 function counts(c){ const d = recordOf(S.char, c); return d ? {sets:d.sets.length, keys:keysShown(d).length} : null; }
 // Whether you hold a piece the set shows (any bag, slips and the Mog House included): 'missing' when you

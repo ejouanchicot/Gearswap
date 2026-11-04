@@ -66,7 +66,9 @@ function ownedPrimeStage(name){
 // the catalogue's items of that name are its stages II to V in id order; null otherwise (the name's highest)
 function primeStageId(name){
   const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
-  const st = primes.includes(name) ? (buffState() || {}).amStage : null;
+  // read as it is, never made: buffState() builds a profile's buffs from the sets' pieces, whose stats come here
+  // (WAR's Helheim looped and the Buffs panel was not drawn)
+  const st = primes.includes(name) ? (S._buffOverride || (S.buffs || {})[buffKey()] || {}).amStage : null;
   if (!st || ownedPrimeStage(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
   const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b);
   return ids[ids.length - 1 - ['V', 'IV', 'III', 'II'].indexOf(st)] || null;

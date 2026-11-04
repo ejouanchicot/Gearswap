@@ -111,7 +111,8 @@ function motionApply(rows, slots){
 }
 function motionAfter(){
   const on = motionOn(), key = motionKey(), was0 = MOTION.key || {}, same = key.tab === was0.tab, rows = motionRows(), slots = new Map();
-  document.documentElement.dataset.motion = on ? 'on' : 'off';
+  // (written only when it changes, as the language and the theme: sets_view.js renderSide)
+  if (document.documentElement.dataset.motion !== (on ? 'on' : 'off')) document.documentElement.dataset.motion = on ? 'on' : 'off';
   for (const el of document.querySelectorAll('#view .slot[data-card][data-slot]')) slots.set(el.dataset.card + '|' + el.dataset.slot, {el, what: el.getAttribute('aria-label')});
   if (on) {
     for (const [k, r] of rows) {

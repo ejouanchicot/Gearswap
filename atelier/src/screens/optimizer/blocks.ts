@@ -36,20 +36,55 @@ export interface SearchView {
   title: string; tabs: Array<{id: string; pressed: boolean; tip: string; label: string; on: number}>;
   menu: null | {key: string; label: string; tip: string; options: Array<{value: string; label: string; selected: boolean}>};
   switches: Array<{k: string; off: boolean; tip: string; label: string; checked: boolean}>; special: string;
-  locks: null | {text: string; clear: string}; excl: null | {label: string; items: Array<{n: string; tip: string}>; clear: string};
-  ranks: null | {title: string; tip: string; rows: Array<{fam: string; label: string; tip: string; options: Array<{value: string; label: string; selected: boolean}>}>};
+  locks: null | {text: string; clear: string}; excl: null | {label: string; count: number; clear: string; back: string;
+    groups: Array<{slot: string; label: string; count: number; items: Array<{n: string; tip: string; iconHtml: string; why: string}>; more: null | {label: string}}>};
+  ranks: null | {title: string; tip: string; allMax: string; allOff: string;
+    kinds: Array<{label: string; rows: Array<{fam: string; label: string; count: string; iconHtml: string; mine: string; mineTip: string;
+      chips: Array<{value: string; label: string; on: boolean; title: string}>}>}>};
 }
 
-// Searching every item of the game: the rank a family of rank pieces is searched at (opt_page.js rankFamilies)
+// Searching every item of the game: the rank a family of rank pieces is searched at (opt_page.js rankFamilies), by
+// kind; each family its icon, how many pieces the job wears, yours with their rank, the ranks as chips (not unlocked,
+// then the four top ranks: R15 to R30, a Nolan's R0 to R15)
 function ranksView(o: LegacyAny): SearchView['ranks'] {
   if (o.where !== 'all') return null;
-  const fams: Array<{fam: string; max: number; n: number}> = rankFamilies(), mine = o.rankFam || {};
+  const fams: Array<LegacyAny> = rankFamilies(), set = rankFamSet();
   if (!fams.length) return null;
-  return {title: t('opRanks'), tip: t('opRanksTip'), rows: fams.map(f => {
-    const cur = mine[f.fam] == null || mine[f.fam] === '' ? String(f.max) : String(mine[f.fam]), steps: string[] = [];
-    for (let r = f.max; r >= 0; r -= 5) steps.push(String(r));
-    return {fam: f.fam, label: f.fam.replace(/'s$/, ''), tip: t('opRankN', {n: f.n}),
-      options: [{value: 'off', label: t('opRankOff'), selected: cur === 'off'}].concat(steps.map(r => ({value: r, label: +r === f.max ? t('opRankMax', {n: r}) : 'R' + r, selected: cur === r})))}; })};
+  const row = (f: LegacyAny) => {
+    const steps: string[] = [];
+    for (let r = f.max; r >= 0 && steps.length < 4; r -= 5) steps.unshift(String(r));
+    const raw = set[f.fam] == null || set[f.fam] === '' ? String(f.max) : String(set[f.fam]);
+    const cur = raw === 'off' || steps.includes(raw) ? raw : steps.filter(r => +r <= +raw).pop() || steps[0];
+    const short = (n: string) => n.split(' ').slice(1).join(' ') || n, mine = f.mine as Array<{name: string; rank?: number}>;
+    const said = mine.map(x => short(x.name) + (x.rank != null ? ' R' + x.rank : ''));
+    return {fam: f.fam, label: f.fam.replace(/'s$/, ''), count: t('opRankN', {n: f.n}), iconHtml: icon(f.first),
+      mine: said.length ? t('opRankMine', {l: said.slice(0, 3).join(', ') + (said.length > 3 ? ' +' + (said.length - 3) : '')}) : t('opRankNone'),
+      mineTip: mine.map(x => x.name + (x.rank != null ? ' R' + x.rank : '')).join('\n'),
+      chips: [{value: 'off', label: t('opRankOffS'), on: cur === 'off', title: t('opRankOff')}]
+        .concat(steps.map(r => ({value: r, label: 'R' + r, on: cur === r, title: +r === f.max ? t('opRankMax', {n: r}) : 'R' + r})))};
+  };
+  const kinds = [...new Set(fams.map(f => f.kind as string))];
+  return {title: t('opRanks'), tip: t('opRanksTip'), allMax: t('opRankAllMax'), allOff: t('opRankAllOff'),
+    kinds: kinds.map(k => ({label: t('opRankK_' + k), rows: fams.filter(f => f.kind === k).map(row)}))};
+}
+
+// The pieces left out of the searches (trial.js excludedOf), by slot in the game's order (both ears, both rings
+// together), each a chip (its icon, its name; a piece to get says it comes back once held) that allows it again when
+// clicked; a slot with many shows its first EXCL_SHOWN, the others behind one line (S._exclOpen, by slot)
+const EXCL_SHOWN = 8;
+function excludedView(out: Record<string, LegacyAny>): SearchView['excl'] {
+  const S0 = S as LegacyAny, names = (SLOT_NAMES[S0.lang] || {}) as Record<string, string>, by: Record<string, string[]> = {};
+  const slotOf = (n: string) => { const sl = ((itemOf(n) || {}).slots || [])[0] || 'other'; return sl === 'ear2' ? 'ear1' : sl === 'ring2' ? 'ring1' : sl === 'range' || sl === 'ranged' ? 'ammo' : sl; };
+  for (const n of Object.keys(out).sort()) (by[slotOf(n)] = by[slotOf(n)] || []).push(n);
+  const order = [...SLOTS, 'other'] as string[], label = (sl: string) => sl === 'ear1' ? t('exclEars') : sl === 'ring1' ? t('exclRings') : sl === 'other' ? t('exclOther') : names[sl] || sl;
+  const open = (S0._exclOpen || {}) as Record<string, boolean>;
+  return {label: t('exclLine').replace(/\s*:\s*$/, ''), count: Object.keys(out).length, clear: Object.keys(out).length > 1 ? t('exclClear') : '', back: t('exclHint'),
+    groups: order.filter(sl => by[sl]).map(sl => {
+      const all = by[sl] || [], shown = open[sl] || all.length <= EXCL_SHOWN + 1 ? all : all.slice(0, EXCL_SHOWN);
+      return {slot: sl, label: label(sl), count: all.length, items: shown.map(n => ({n, tip: t('exclBack', {p: n}) + (out[n] === 'missing' ? ' · ' + t('exclMissing') : ''), iconHtml: icon(n),
+        why: out[n] === 'missing' ? t('exclMissingS') : ''})),
+        more: all.length > EXCL_SHOWN + 1 ? {label: open[sl] ? t('exclLess') : t('exclMore', {n: all.length - EXCL_SHOWN})} : null};
+    })};
 }
 
 /** The search block: its tabs (opt_page.js OP_TABS, a count on a tab whose switches are on), then the open tab's menu
@@ -63,8 +98,8 @@ export function searchView(o: LegacyAny, ws: boolean, noWeapons?: string): Searc
   if (cur.id === 'pieces') {
     const s = ui2CurrentSet(data() as LegacyAny), list: string[] = s ? lockedSlots(s) : [];
     if (list.length) locks = {text: t('locksLine', {n: list.length, l: list.map(x => (SLOT_NAMES[S0.lang] || {})[x] || x).join(', ')}), clear: t('locksClear')};
-    const out = Object.keys(excludedOf()).sort();
-    if (out.length) excl = {label: t('exclLine'), items: out.map(n => ({n, tip: t('exclBack', {p: n})})), clear: out.length > 1 ? t('exclClear') : ''};
+    const out = excludedOf();
+    if (Object.keys(out).length) excl = excludedView(out);
   }
   return {title: t('opSearch'), special: cur.id === 'special' ? t('opSpecialWhy') : '', locks, excl, switches: cur.keys.map(sw), ranks: cur.id === 'pieces' ? ranksView(o) : null,
     tabs: OP_TABS.map((x: LegacyAny) => ({id: x.id, pressed: x === cur, tip: t('ttOpTab_' + x.id), label: t(x.title), on: x.count ? x.keys.filter((k: string) => o[k]).length : 0})),

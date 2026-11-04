@@ -150,6 +150,13 @@ document.addEventListener('click', e => {
   if ('gsload' in d) { linkGearSwap('load'); return; }
   if ('refreshfiles' in d) { refreshFromFiles(e.shiftKey); return; }
   if (d.optab) { S._opTab = d.optab; render(); return; }
+  // the optimizer's tab (OptPage.svelte): its result, what is looked for, the search's settings
+  if (d.opview) { S._opView = d.opview; render(); return; }
+  // a slot's pieces left out of the searches, all shown or folded again (blocks.ts excludedView)
+  if (d.exclmore) { S._exclOpen = Object.assign({}, S._exclOpen, {[d.exclmore]: !(S._exclOpen || {})[d.exclmore]}); render(); return; }
+  // the rank a family of rank pieces of the game is searched at (opt_page.js rankWanted), or every family's
+  if (d.optrank) { setRankFam({[d.optrank]: d.v}); return; }
+  if (d.optrankall) { setRankFam(Object.fromEntries(rankFamilies().map(f => [f.fam, d.optrankall === 'off' ? 'off' : '']))); return; }
   if ('livereload' in d) { liveReload(false); return; }
   if ('liverestart' in d) { liveReload(true); return; }
   if ('livejump' in d) { const L = S._live[S.char]; S.job = L.job; S.subs[S.char + '|' + L.job] = L.sub; render(); return; }
@@ -269,9 +276,6 @@ document.addEventListener('change', e => {
     const picked = [...e.target.selectedOptions].map(x => x.value), all = Object.assign({}, (S.optOpts || {}).nukeSpells);
     all[e.target.dataset.nukespells] = picked;
     S.optOpts = Object.assign({}, S.optOpts, {nukeSpells: all}); save(); render(); return; }
-  // the rank a family of rank pieces of the game is searched at (opt_page.js rankWanted)
-  if (e.target.dataset && e.target.dataset.optrank) {
-    S.optOpts = Object.assign({}, S.optOpts, {rankFam: Object.assign({}, (S.optOpts || {}).rankFam, {[e.target.dataset.optrank]: e.target.value})}); save(); render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();

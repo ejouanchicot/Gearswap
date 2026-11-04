@@ -131,26 +131,50 @@ const OP_TABS = [
 // Kaykaus...) at the rank you would have them, a family at a time (S.optOpts.rankFam: {Nyame: 25}; 'off' = not
 // unlocked, left out); the highest rank when not said. Yours keep their own rank
 const RANK_KINDS = ['odyssey', 'limbus', 'nolan'];
-const rankFamOf = name => String(name).split(' ')[0];
+// A piece's family: the first word of its long name, as the game cuts the short one ("Clem. Haidate", "Clemency Kote":
+// Clemency; "Indom. Gloves", "Indomitable Coat": Indomitable)
+let RANK_LONG = null;
+const rankFamOf = name => {
+  if (!RANK_LONG && window.FFXI && FFXI.CATALOG) RANK_LONG = Object.fromEntries(FFXI.CATALOG.items.map(it => [it.name, it.enl || it.name]));
+  const w = String((RANK_LONG || {})[name] || name).split(' ')[0];
+  return w.charAt(0).toUpperCase() + w.slice(1);
+};
 let RANK_FAMS = {key: null, list: []};
-// The families of rank pieces the job wears: [{fam, max, n}], by name
+// The families of rank pieces the job wears: [{fam, kind, max, n, first (a piece's name, for its icon), mine:
+// [{name, rank}] (your copies)}], by kind then name
 function rankFamilies(){
-  const job = (S.job || '').toLowerCase(), key = job + '|' + !!(window.FFXI && FFXI.CATALOG);
+  const job = (S.job || '').toLowerCase(), key = [DATA_GEN, S.char, job, !!(window.FFXI && FFXI.CATALOG)].join('|');
   if (RANK_FAMS.key === key) return RANK_FAMS.list;
   const by = {};
   for (const it of (window.FFXI && FFXI.CATALOG ? FFXI.CATALOG.items : [])) {
     const e = it.jobs.includes(job) ? rankedEntry(it.name) : null;
     if (!e || !RANK_KINDS.includes(e.kind)) continue;
-    const f = by[rankFamOf(it.name)] = by[rankFamOf(it.name)] || {fam: rankFamOf(it.name), max: e.max_rank, n: new Set()};
+    const f = by[rankFamOf(it.name)] = by[rankFamOf(it.name)] || {fam: rankFamOf(it.name), kind: e.kind, max: e.max_rank, n: new Set(), first: it.name};
     f.n.add(it.name);
   }
-  const list = Object.values(by).map(f => ({fam: f.fam, max: f.max, n: f.n.size})).sort((a, b) => a.fam.localeCompare(b.fam));
+  const mine = {};
+  for (const x of Object.values(ownedOf() || {}).flat()) if (by[rankFamOf(x.name)] && rankedEntry(x.name)) mine[x.name + '|' + (x.augs || []).join('|')] = x;
+  const own = fam => Object.values(mine).filter(x => rankFamOf(x.name) === fam).map(x => ({name: x.name, rank: ownRank({name: x.name, augs: x.augs}).rank}))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  // (a piece and its +1, Kaykaus Mitra and Kaykaus Mitra +1, count once)
+  const list = Object.values(by).map(f => ({fam: f.fam, kind: f.kind, max: f.max, n: new Set([...f.n].map(n => n.replace(/ \+1$/, ''))).size, first: f.first, mine: own(f.fam)}))
+    .sort((a, b) => RANK_KINDS.indexOf(a.kind) - RANK_KINDS.indexOf(b.kind) || a.fam.localeCompare(b.fam));
   RANK_FAMS = {key, list};
   return list;
 }
+// The ranks chosen, by character (each its own unlocks): {family: rank or 'off'}
+const rankFamSet = () => (((S.optOpts || {}).rankFam || {})[S.char]) || {};
+// A few families changed, the others kept (events.js: a chip, or every family of the job at once)
+function setRankFam(changes){
+  const all = Object.assign({}, (S.optOpts || {}).rankFam);
+  // (a setting kept from before it was by character: {Nyame: 25} at the top, dropped)
+  for (const k of Object.keys(all)) if (typeof all[k] !== 'object') delete all[k];
+  all[S.char] = Object.assign({}, all[S.char], changes);
+  S.optOpts = Object.assign({}, S.optOpts, {rankFam: all}); save(); render();
+}
 // The rank a piece of the game you do not hold is searched at; null: left out (not unlocked)
 function rankWanted(name, e){
-  const v = ((S.optOpts || {}).rankFam || {})[rankFamOf(name)];
+  const v = rankFamSet()[rankFamOf(name)];
   if (v === 'off') return null;
   return v == null || v === '' ? e.max_rank : Math.min(e.max_rank, +v);
 }
@@ -284,9 +308,17 @@ function cycleOf(s, plain){
   return S._cyc[key];
 }
 Object.assign(T.fr, {opRanks: 'Rang des pièces à avoir', opRanksTip: 'Les pièces à rang que tu n’as pas (Odyssey, Limbus, Nolan), au rang où tu les aurais, famille par famille. « Pas débloqué » : la recherche ne les propose pas. Celles que tu as gardent leur vrai rang.',
-  opRankOff: 'Pas débloqué', opRankMax: 'R{n} (max)', opRankN: '{n} pièce(s)'});
+  opRankOff: 'Pas débloqué', opRankMax: 'R{n} (max)', opRankN: '{n} pièce(s)', opRankOffS: 'Non', opRankMine: 'tu as : {l}', opRankNone: 'aucune à toi',
+  opToastFold: 'Le détail de la recherche', opV_detail: 'Détail', opV_detailTip: 'Les rounds jusqu’à la WS, les pièces changées, tous les chiffres et le calcul pas à pas.',
+  opV_noRun: 'pas encore lancé', opV_none: 'aucun', opV_hoxne: 'Hoxne', opV_vim: 'Vim Torque',
+  opV_where_mine: 'Mes pièces', opV_where_mine_max: 'Mes pièces au max', opV_where_all: 'Tous les objets', opV_search_fast: 'Rapide', opV_search_classic: 'Classique',
+  opRankAllMax: 'Tout au max', opRankAllOff: 'Rien de débloqué', opRankK_odyssey: 'Odyssey', opRankK_limbus: 'Limbus', opRankK_nolan: 'Nolan'});
 Object.assign(T.en, {opRanks: 'Rank of the pieces to get', opRanksTip: 'The rank pieces you do not hold (Odyssey, Limbus, Nolan), at the rank you would have them, family by family. “Not unlocked”: the search does not offer them. Yours keep their own rank.',
-  opRankOff: 'Not unlocked', opRankMax: 'R{n} (max)', opRankN: '{n} piece(s)'});
+  opRankOff: 'Not unlocked', opRankMax: 'R{n} (max)', opRankN: '{n} piece(s)', opRankOffS: 'No', opRankMine: 'you have: {l}', opRankNone: 'none of yours',
+  opToastFold: 'The search in detail', opV_detail: 'Detail', opV_detailTip: 'The rounds to the weaponskill, the pieces changed, every figure and the sum step by step.',
+  opV_noRun: 'not run yet', opV_none: 'none', opV_hoxne: 'Hoxne', opV_vim: 'Vim Torque',
+  opV_where_mine: 'My pieces', opV_where_mine_max: 'Mine at best', opV_where_all: 'Every item', opV_search_fast: 'Fast', opV_search_classic: 'Classic',
+  opRankAllMax: 'All at max', opRankAllOff: 'None unlocked', opRankK_odyssey: 'Odyssey', opRankK_limbus: 'Limbus', opRankK_nolan: 'Nolan'});
 // the option that counts Hoxne Ampulla's enchantment (stats.js ENCHANT_KEPT)
 Object.assign(T.fr, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Compte son enchantement (Double Attack +100 %, 30 minutes, 1000 gils l’utilisation) comme actif tant qu’elle est portée : l’optimiseur peut alors la choisir. Décoché, elle ne compte pour rien et n’est jamais proposée'});
 Object.assign(T.en, {optHoxne: 'Hoxne Ampulla active', optHoxneTip: 'Counts its enchantment (Double Attack +100%, 30 minutes, 1000 gil per use) as active while it is worn: the optimizer may then pick it. Unchecked, it counts for nothing and is never suggested'});

@@ -90,6 +90,21 @@
 .oplocks{margin:0;font-size:12.5px;color:var(--muted);line-height:1.9}
 .opexcl{padding:1px 7px;border:1px solid var(--line-strong);border-radius:999px;background:var(--panel-2);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .opexcl:hover{border-color:var(--accent);color:var(--accent)}
+/* the pieces left out of the searches: by slot, one card each (its icon, its name, why), two columns */
+.opexclbox{display:grid;gap:5px;margin-top:12px}
+.opexclg{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;align-items:start;padding:4px 0;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.opexclg > .oprankk{margin:5px 0 0;display:flex;gap:6px;align-items:baseline}
+.opexclg > .oprankk small{font-family:var(--mono);color:var(--faint);font-weight:400}
+.opexclchips{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.opexclchip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 7px 2px 3px;border:1px solid var(--line-strong);border-radius:999px;background:var(--panel-2);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.opexclchip .ico{width:20px;height:20px;flex:none}
+.opexclchip .ico img{width:100%;height:100%;image-rendering:pixelated}
+.opexclchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opexclchip em{font-style:normal;font-size:10.5px;color:var(--faint)}
+.opexclchip i{font-style:normal;font-size:10px;color:var(--faint)}
+.opexclchip:hover{border-color:var(--accent);color:var(--accent)}
+.opexclchip:hover i{color:var(--accent)}
+.opexclmore{align-self:center;font-size:12px}
 /* the set's body: the equipment on the left, its stats beside it */
 .dbody{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start}
 .eqcol{padding:16px;display:grid;gap:12px;border-right:1px solid var(--line);align-content:start}
@@ -350,11 +365,52 @@
 .opsels > span{color:var(--muted);white-space:nowrap}
 /* the switches: one a line in a narrow column, side by side when there is room; lit when on */
 .opsws{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 8px}
-.opranks{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:4px 8px;margin-top:8px}
-.opranksh{grid-column:1 / -1;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);cursor:help}
-.oprank{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;padding:3px 4px 3px 8px;border:1px solid var(--line);border-radius:var(--radius-s);font-size:12.5px}
-.oprank span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.oprank select{font-size:12px;padding:2px 4px}
+.opranks{display:grid;gap:5px;margin-top:10px}
+.opranksbar{display:flex;align-items:center;gap:12px}
+.opranksbar .sp{flex:1}
+.opranksh{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);cursor:help}
+.oprankk{margin:6px 0 0;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.oprank{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2)}
+.oprank .ico{width:30px;height:30px}
+.oprank .ico img{width:100%;height:100%;image-rendering:pixelated}
+.opranki{display:grid;gap:1px;min-width:0}
+.opranki b{font-size:13px;font-weight:600}
+.opranki small{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oprankc{display:inline-flex;padding:2px;gap:2px;border-radius:8px;background:var(--well);border:1px solid var(--line-strong)}
+.rkchip{padding:3px 9px;border:0;border-radius:6px;background:none;color:var(--muted);font:inherit;font-size:12px;font-weight:600;font-family:var(--mono);cursor:pointer}
+.rkchip:hover{color:var(--ink)}
+.rkchip.on{background:var(--accent);color:var(--accent-ink)}
+.rkchip.off.on{background:var(--bad,#ff7b72);color:#fff}
+/* the optimizer in one view: the main figure always seen, then its tabs (the result, what is looked for, the search's
+   settings) and the tab open; the settings block's own tabs and title are these tabs */
+.opsum{display:grid;gap:8px;padding:10px 16px 12px}
+.optopline{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.optoplbl{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.optopline .opobjsel{width:auto;flex:0 1 auto;max-width:100%;font-weight:700}
+.opobjone{font-size:13px}
+.optopline .opf{margin:0}
+.optoplim .ophd{display:none}
+/* the limits on one line: each its name, its sign and its field side by side */
+.opsum .optoplim .oplimits{display:flex;flex-wrap:wrap;gap:6px}
+.opsum .optoplim .oplim{flex-direction:row;align-items:center;gap:6px;padding:3px 8px}
+.opsum .optoplim .oplimv input{width:42px;flex:none;font-size:13.5px}
+.optoptry .tryrow{margin:0;padding:8px 0 0;border-top:1px dashed var(--line)}
+.optoptry .tryhead{display:none}
+.opnuketop{display:grid;gap:4px}
+.dtoastd summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.dtoastd p{margin:6px 0 0}
+/* the tabs: buttons of their own on a darker band, the tab open filled like the search's buttons */
+.opviews{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line-strong);background:var(--well)}
+.opviews button{flex:1 1 0;display:grid;gap:2px;justify-items:start;text-align:left;min-width:0;padding:6px 9px;border:1px solid var(--line-strong);border-radius:8px;
+  background:var(--panel-2);color:var(--ink);font:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.opviews button b{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.opviews button > span{max-width:100%;font-size:10.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opviews button[aria-pressed="true"] > span{color:color-mix(in srgb,var(--accent-ink) 75%,transparent)}
+.opviews button:hover{border-color:var(--accent);color:var(--accent)}
+.opviews button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.opviews button[aria-pressed="true"] .opon{background:var(--accent-ink);color:var(--accent)}
+.opview{padding-top:14px}
+.opview .optabs,.opview > .ophd2:first-child{display:none}
 .opsw{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 8px;border:1px solid var(--line);border-radius:var(--radius-s);font-size:13px;cursor:pointer}
 .opsw span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .opsw:hover{background:var(--hover)}
@@ -384,10 +440,12 @@
 .optable th{font-weight:500}
 .optable td{font-family:var(--mono);text-align:right}
 .optable tr.obj th{font-weight:700}
-.opchg{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px}
-.opchg li{display:grid;grid-template-columns:70px minmax(0,1fr);column-gap:8px}
-.opchg .sl{color:var(--muted);grid-row:span 2}
-.opchg .to{color:var(--accent)}
+/* the pieces changed: one line each (the slot, the new piece, the one it replaces struck through), in columns */
+.opchg{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:3px 16px;font-size:12.5px}
+.opchg li{display:grid;grid-template-columns:62px auto minmax(0,1fr);column-gap:8px;align-items:baseline;min-width:0;padding:2px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.opchg .sl{color:var(--muted)}
+.opchg .to{color:var(--accent);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.opchg .fr{color:var(--faint);font-size:11px;text-decoration:line-through;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cycparts{display:flex;flex-direction:column;gap:6px}
 .cycrow{display:grid;grid-template-columns:minmax(0,80px) minmax(40px,1fr) minmax(0,130px);gap:10px;align-items:center;font-size:12.5px}
 .cycrow .num{font-family:var(--mono);text-align:right;white-space:normal;min-width:0}

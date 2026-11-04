@@ -35,13 +35,22 @@ Object.assign(T.en, {
 let addStep = 0, addFam = null, addPath = null;
 // The export's catalog (an older export has none)
 const catalogEntries = () => { const d = data(); return d && Array.isArray(d.catalog) ? d.catalog : null; };
+// A set's catalogue line by its path (the list asks it for each of its rows at each redraw), made again when the
+// catalogue changes
+let CAT_BY_PATH = {list: null, map: null};
+function catalogEntryOf(path){
+  const list = catalogEntries();
+  if (!list) return null;
+  if (CAT_BY_PATH.list !== list) CAT_BY_PATH = {list, map: new Map(list.map(x => [x.path, x]))};
+  return CAT_BY_PATH.map.get(String(path).replace(/'/g, '"')) || null;
+}
 // When the job's code wears a set, in the page's language, from its catalog line (shared/jobs/<job>/set_catalog.lua
 // `fr` / `when`); null when the catalog has no line for it, or none in French (the card keeps its family's line)
 // A line written for any spell, weaponskill or ability (its catalog line ends in one: midcast.{spell}) names it: "That
 // spell" read on the Burn set said nothing (2026-10-22); the set's last key is that name
 const CATALOG_THAT = {fr: /\b(ce sort|cette weaponskill|cette job ability|cette ability|ce nuke)\b/i, en: /\b(that spell|that weaponskill|that job ability|that ability|that nuke)\b/i};
 function catalogWhen(path){
-  const e = (catalogEntries() || []).find(x => x.path === path.replace(/'/g, '"'));
+  const e = catalogEntryOf(path);
   const line = e ? (S.lang === 'en' ? e.when : e.fr) || null : null;
   if (!line || !/\{[^}]*\}$/.test(e.group || '')) return line;
   return line.replace(CATALOG_THAT[S.lang === 'en' ? 'en' : 'fr'], segs(path).pop());
@@ -51,7 +60,7 @@ function catalogWhen(path){
 // names}]. Nothing for a piece the character does not own: the page does not push to buy (SPEC pieces-cles-2026-10-29)
 const isVersionOf = (name, base) => name === base || name.startsWith(base + ' +');
 function keyMissing(path, pieces){
-  const e = (catalogEntries() || []).find(x => x.path === path.replace(/'/g, '"'));
+  const e = catalogEntryOf(path);
   if (!e || !Array.isArray(e.key)) return [];
   const owned = ownedOf() || {}, out = [];
   for (const k of e.key) {
@@ -85,7 +94,7 @@ function renderAdd(){
 // The body sent to the game: the path, #create, the base for a copy, the pieces for what you wear
 // (baseOver: the set the assistant found worn there today, add_wizard.js: the skill's Composure set on an ally)
 async function addFrom(kind, baseOver){
-  const e = (catalogEntries() || []).find(x => x.path === addPath);
+  const e = catalogEntryOf(addPath);
   if (!e) return;
   let lines = [];
   if (kind === 'worn') {

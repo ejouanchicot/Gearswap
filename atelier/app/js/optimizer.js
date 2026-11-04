@@ -112,6 +112,17 @@ function heldPaths(name, e, have){
   }
   return out;
 }
+// The game's items of a slot a job wears that a search may offer (level 99, an item level, or a piece read by name),
+// by job and slot, once per catalogue: what changes from a search to the next (what you hold, the TP pieces, the
+// one-choice rewards) is filtered in gameChoices
+let GAME_IDX = {items: null, by: {}};
+function gameItemsOf(job, slot){
+  const items = FFXI.CATALOG.items;
+  if (GAME_IDX.items !== items) GAME_IDX = {items, by: {}};
+  const k = job + '|' + slot;
+  if (!GAME_IDX.by[k]) GAME_IDX.by[k] = items.filter(it => it.slots.includes(FFXI.opt.SLOT[slot]) && it.jobs.includes(job) && (it.level >= 99 || it.ilvl > 0 || specialPiece(it.name)));
+  return GAME_IDX.by[k];
+}
 // The game's items for a slot your job wears and you do not hold (level 99, an item level, or a piece whose effect the
 // search reads by name: stat_opt.js specialPiece), a rank
 // item on each of its paths at its top rank
@@ -120,15 +131,16 @@ function gameChoices(slot, have, tpNames){
   // a one-choice mission reward you chose already rules out the group's others (FFXI.opt.EXCLUSIVE)
   const mine = new Set(Object.values(ownedOf() || {}).flat().map(x => x.name));
   const ruledOut = name => { const g = FFXI.opt.groupOf(name); return !!g && g.items.some(n => n !== name && mine.has(n)); };
-  for (const it of FFXI.CATALOG.items) {
+  for (const it of gameItemsOf(job, slot)) {
     const e = rankedEntry(it.name);
     // a path piece you hold: its other paths stay in the search, as a copy to get
     const held = names.has(it.name) && e && e.paths ? heldPaths(it.name, e, have) : null;
-    if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || (names.has(it.name) && !held) || tpNames.has(it.name) || seen.has(it.name)) continue;
-    if (!(it.level >= 99 || it.ilvl > 0 || specialPiece(it.name)) || ruledOut(it.name)) continue;
+    const ambu = slot === 'back' && FFXI.AMBU_CAPE_BY_NAME && FFXI.AMBU_CAPE_BY_NAME[it.name];
+    if ((names.has(it.name) && !held && !ambu) || tpNames.has(it.name) || seen.has(it.name) || ruledOut(it.name)) continue;
     seen.add(it.name);
     // an Ambuscade cape bare is worth nothing: the search builds it at each material's maximum (opt.js ambuGen)
-    if (slot === 'back' && FFXI.AMBU_CAPE_BY_NAME && FFXI.AMBU_CAPE_BY_NAME[it.name]) { out.push({name: it.name, ambu: true, missing: true}); continue; }
+    // (one you hold too: the builds are other copies to make, yours stay as they are)
+    if (ambu) { out.push({name: it.name, ambu: true, missing: true}); continue; }
     // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it
     // a piece the catalogue reads nothing of counted for nothing: Hoxne Ampulla's Double Attack)
     // a rank piece at the rank asked for its family (opt_page.js rankWanted), none when not unlocked
@@ -455,6 +467,7 @@ function optRunDone(){
 }
 // The result into draft B (the pieces that differ from the set itself), the message, then Compare
 function optResult(s, k, res, gains, o){
+  S._opView = 'detail';
   const tr = {}, plain = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
   // a slot another piece blocks (Onca Suit: no leggear) is emptied in the draft
   const blocked = FFXI.opt.blocked(res.pieces);
