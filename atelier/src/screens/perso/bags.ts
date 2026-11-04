@@ -34,7 +34,8 @@ export interface BagsView {
     | {kind: 'list'; title: string; roles: Array<{label: string; title: string; bag: string; part: string; options: Array<{value: string; label: string; selected: boolean}>}>;
       filters: {q: string; placeholder: string; cats: Array<{value: string; label: string; pressed: boolean}>; use: {title: string; options: Array<{value: string; label: string; pressed: boolean}>};
         pc: {title: string; label: string; options: Array<{value: string; label: string; selected: boolean}>}; dup: {on: boolean; title: string; label: string}};
-      sel: {n: number; pickTip: string; title: string; all: string; cats: Array<{value: string; label: string}>; auto: {title: string; text: string}; none: string};
+      labels: {q: string; cat: string; use: string};
+      sel: {n: number; pickTip: string; title: string; all: string; groups: Array<{label: string; cats: Array<{value: string; label: string; title: string; on: boolean}>}>; auto: {title: string; text: string}; none: string};
       list: {none: string; count: string; cats: Array<{name: string; count: number; items: BagItem[]}>}};
 }
 
@@ -109,6 +110,15 @@ function cardOf(l: LegacyAny): PlanCard {
     flow: l.free || !(l.out || l.in) ? '' : [l.out ? t('bpOutN', {n: l.out}) : '', l.in ? t('bpInN', {n: l.in}) : ''].filter(Boolean).join(' · ') + ' → ' + t('bpAfterN', {n: l.after}),
     bags: l.bags, mule: ids.includes('mule') && l.mule ? {title: t('bpMuleTip'), text: t('bpMuleGo')} : null,
     see: cats.map(c => ({cat: c, title: t('bpSeeCat', {c: bpCatName(c)}), label: cats.length > 1 ? bpCatName(c).split(' (')[0]! : t('bpSee')}))};
+}
+
+// The categories the selection can be filed in, in three columns; the one every picked thing has now is lit
+const SEL_GROUPS: Array<[string, string[]]> = [['gear', ['gear', 'lock', 'tools', 'craft', 'unused']], ['items', ['usable', 'mats', 'currency', 'keys', 'furnish']], ['away', ['mule', 'npc', 'carry']]];
+function selGroups(B: LegacyAny) {
+  const pick = (S._bagPick || new Set()) as Set<string>;
+  const now = new Set(bvRows(B, 'all', bvWhere(B)).filter((r: LegacyAny) => pick.has(String(r.id))).map((r: LegacyAny) => bpCat(B, r)));
+  const lit = (c: string) => now.size === 1 && now.has(c);
+  return SEL_GROUPS.map(([g, cats]) => ({label: t('bpG_' + g), cats: cats.map(c => ({value: c, label: t('bpCs_' + c), title: bpCatName(c) + (lit(c) ? ' · ' + t('bpNowOn') : ''), on: lit(c)}))}));
 }
 
 // ---- an item of the list (bvItemHTML, bvUseHTML) ----
@@ -190,7 +200,8 @@ export function bagsView(): BagsView {
         ['none', 'bvUseNone'], ['one', 'bvUseOne'], ['many', 'bvUseMany']].map(([value, k]) => ({value: value!, label: t(k!), pressed: (S.bagUse || 'all') === value}))},
       pc: {title: t('bpPcTip'), label: t('bpPc'), options: [{value: '', label: t('bvCatAll'), selected: !S.bagPc}].concat([...BP_CATS, 'unknown'].map(c => ({value: c, label: bpCatName(c), selected: S.bagPc === c})))},
       dup: {on: !!S.bagDup, title: t('bvDupTip'), label: t('bvDup')}},
-    sel: {n, pickTip: t('bpPickTip'), title: t('bpSel', {n}), all: t('bpSelAll', {n: shown}), cats: BP_CATS.map(c => ({value: c, label: bpCatName(c)})),
+    labels: {q: t('bvL_q'), cat: t('bvL_cat'), use: t('bvL_use')},
+    sel: {n, pickTip: t('bpPickTip'), title: t('bpSel', {n}), all: t('bpSelAll', {n: shown}), groups: selGroups(B),
       auto: {title: t('bpAutoTip'), text: t('bpAuto')}, none: t('bpSelNone')},
     list: listOf(B, sel)}};
 }
