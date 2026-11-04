@@ -213,7 +213,8 @@ local function midcast_enhancing(spell, debug_enabled)
     -- for a single-target cast.
     if buffactive and buffactive['Accession'] and spell.english
        and spell.english:match("^Phalanx") then
-        equip(sets.midcast['Enhancing Magic'])
+        -- (a set defined: a new player's file may not have it, and the midcast Mote laid stays then)
+        if sets.midcast and sets.midcast['Enhancing Magic'] then equip(sets.midcast['Enhancing Magic']) end
         require('shared/utils/midcast/midcast_fallback').skip(spell)
         if debug_enabled then
             MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set')

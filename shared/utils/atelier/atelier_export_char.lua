@@ -293,6 +293,20 @@ local function collect_char()
     return char
 end
 
+--- The character's measure as the export writes it: collect_char's, and when it was taken under Abyssea's boosts the
+--- stats of the last measure without them (clean_measure.lua). Nil before the game has sent the stats.
+--- @return table|nil
+local function measured_char()
+    local char = collect_char()
+    if not char then return nil end
+    local ok_c, CleanMeasure = pcall(require, 'shared/utils/atelier/clean_measure')
+    if ok_c and CleanMeasure then
+        local ok_a, kept = pcall(CleanMeasure.apply, char, player.main_job)
+        if ok_a and kept then char = kept end
+    end
+    return char
+end
+
 --- The combat skill of each weapon ({name = "Sword"}, res.items skill -> res.skills):
 --- the page takes the main hand's for Accuracy.
 --- Each weapon's weaponskills in the job's order, the first its main one: {main hand name: {ws...}}, from the job's
@@ -409,7 +423,7 @@ ExportChar.descs = collect_descs
 --- Listen to the status packet, once per load.
 ExportChar.listen_stats = listen_stats
 --- @return table|nil the character's stats and the gear worn when they were read
-ExportChar.char = collect_char
+ExportChar.char = measured_char
 --- @param job string
 --- @return table|nil {main hand name = {weaponskill, ...}}
 ExportChar.ws_by_weapon = collect_ws_by_weapon

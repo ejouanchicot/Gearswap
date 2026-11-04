@@ -80,6 +80,42 @@ local function still_equipped()
     return left
 end
 
+-- The load a run belongs to (LoadGate's number, kept on windower: shared/utils/core/load_gate.lua). GearSwap never
+-- cancels a scheduled coroutine, so a job change in the middle of a run left its bursts going on in the old sandbox
+-- until their end, while the new load could start a second run (audit 2026-11-04). Each step of a run is scheduled
+-- through Phases.schedule, which drops it once a newer load has begun. Nothing else unlocks the slots Phase 0 locked
+-- (gs disable all lives in GearSwap, it outlives the load): the first step dropped sends gs enable all, once, as the
+-- run would have at its end.
+local RUN_GEN, UNLOCKED = nil, false
+
+--- A run starts: the load it belongs to.
+function Phases.begin_run()
+    RUN_GEN, UNLOCKED = windower._load_gen, false
+end
+
+--- True once a newer load than the run's has begun.
+--- @return boolean
+function Phases.stale()
+    return RUN_GEN ~= nil and RUN_GEN ~= windower._load_gen
+end
+
+--- coroutine.schedule for a step of a run: dropped (and said in the log) when the run's load is no longer the live one.
+--- @param fn function
+--- @param delay number seconds
+function Phases.schedule(fn, delay)
+    coroutine.schedule(function()
+        if Phases.stale() then
+            if not UNLOCKED then
+                UNLOCKED = true
+                dlog('STOPPED: a newer load began (job change or reload), this run ends here: slots unlocked')
+                windower.send_command('gs enable all')
+            end
+            return
+        end
+        fn()
+    end, delay)
+end
+
 --- Unequip everything, verify, THEN lock all slots.
 --- ORDER MATTERS: //gs c naked calls equip(sets.naked) internally, which
 --- respects gs disable. If we lock first, naked can't change anything!
@@ -121,7 +157,7 @@ function Phases.unequip(on_done)
         -- re-equip during phases 2-4.
         dlog('PHASE 0: locking slots after successful naked (gs disable all)')
         windower.send_command('gs disable all')
-        coroutine.schedule(on_done, 0.3)  -- tiny settle for the disable to register
+        Phases.schedule(on_done, 0.3)  -- tiny settle for the disable to register
     end
 
     local function try_next()
@@ -137,7 +173,7 @@ function Phases.unequip(on_done)
         end
         dlog(('PHASE 0 attempt %d/%d'):format(attempt, #strategies))
         strategies[attempt]()
-        coroutine.schedule(function()
+        Phases.schedule(function()
             local left = still_equipped()
             if #left == 0 then
                 dlog(('PHASE 0 OK after attempt %d (fully naked)'):format(attempt))
@@ -152,7 +188,7 @@ function Phases.unequip(on_done)
 
     -- Small gap so the unlock above is in effect before the first equip():
     -- sending both in the same tick would race the very thing it fixes.
-    coroutine.schedule(try_next, 0.3)
+    Phases.schedule(try_next, 0.3)
 end
 
 --- Re-enable all slots so normal idle/engaged swaps resume.
@@ -317,10 +353,10 @@ local function run_burst_loop(opts)
             ADAPTIVE_DELAY_FLOOR,
             math.min(POST_BURST_DELAY, burst_total * ADAPTIVE_DELAY_PER_PACKET)
         )
-        coroutine.schedule(step, adaptive_delay)
+        Phases.schedule(step, adaptive_delay)
     end
 
-    coroutine.schedule(step, 0)
+    Phases.schedule(step, 0)
 end
 
 -- What this run pushed to the overflow bags, [item id] = copies. Phase 2 runs
@@ -566,7 +602,7 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
                 total_pushed = total_pushed + pushed_this_pass
                 dlog(('  [PHASE 4] pass %d done: pushed %d, retry in %.1fs'):format(
                     pass_num, pushed_this_pass, MOVE_DELAY * 2))
-                coroutine.schedule(run_pass, MOVE_DELAY * 2)
+                Phases.schedule(run_pass, MOVE_DELAY * 2)
                 return
             end
             local p = plan[idx]
@@ -587,9 +623,9 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
                     end
                 end
             end
-            coroutine.schedule(step, MOVE_DELAY)
+            Phases.schedule(step, MOVE_DELAY)
         end
-        coroutine.schedule(step, 0)
+        Phases.schedule(step, 0)
     end
 
     run_pass()

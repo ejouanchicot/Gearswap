@@ -66,7 +66,7 @@ local EXPECTED = {
     UPDATE_DEBUG = true, WARP_DEBUG = true, WARP_IPC_BROADCASTING = true,
     WARTPConfig = true, WARWSConfig = true, WHMTPConfig = true,
     WS_DATABASE = true, WardConfig = true, WeaponSkillManager = true,
-    __CraftManagerState = true, __global_baseline = true,
+    __global_baseline = true,
     __require_cache = true, __require_cache_installed = true,
     __require_cache_stats = true, _automove_sequence = true,
     _macrobook_schedule_id = true, _update_sent_time = true,

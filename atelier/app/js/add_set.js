@@ -99,7 +99,8 @@ async function addFrom(kind, baseOver){
     showDialog('pushdlg', t('addTitle'), `<p class="muted">${t('addWornReading')}</p>`, '');
     let ch = null;
     try { ch = await liveFetch(S.char, '/measure', {timeout: 4000}); } catch (err) {}
-    const worn = (ch && ch.worn) || (measuredChar() || {}).worn;
+    // worn_now: the gear worn now when the measure is an older one (in Abyssea: shared/utils/atelier/clean_measure.lua)
+    const worn = (ch && (ch.worn_now || ch.worn)) || (measuredChar() || {}).worn;
     if (!worn) return showDialog('pushdlg', t('addTitle'), `<p class="kwarn">${esc(t('fromWornNone'))}</p>`, '');
     const owned = ownedOf() || {};
     lines = SLOTS.filter(slot => worn[slot] && worn[slot].name).map(slot => pushLine(pushEntry(slot, worn[slot], owned)));

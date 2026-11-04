@@ -68,6 +68,7 @@ local AtelierLive = {}
 local FIRST_PORT, PORT_TRIES = 52740, 8
 local SAVED_FILES = {['keybind_overrides.lua'] = true, ['mode_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
 local MAX_BODY = 2 * 1024 * 1024
+local MAX_HEADERS, MAX_HEADER_TIME = 64, 2   -- header lines of one request, and seconds to read them (read_request)
 local POLL_EVERY = 6   -- frames between two looks at the door
 local BAD_TOKENS, BAD_WINDOW = 30, 60   -- refused tokens that close the door, within that many seconds
 local BAGS_CALM = 4     -- seconds the bags hold still before /export builds again for them (the page waits as long)
@@ -135,10 +136,18 @@ local function read_request(client)
     if not line then return nil end
     local method, target = line:match('^(%u+)%s+(%S+)')
     if not method then return nil end
-    local headers = {}
+    -- Bounded: read in the game's frame (prerender), a client sending header lines without end, each within the
+    -- 0.3 s above, held the game image after image (audit 2026-11-04). A browser sends some 15; past
+    -- MAX_HEADERS or MAX_HEADER_TIME, the request is refused
+    -- (the wall clock of LuaSocket: os.clock counts the processor's time, still while the socket waits)
+    local sock = socket_lib()
+    local now = function() return sock and sock.gettime and sock.gettime() or os.time() end
+    local headers, count, started = {}, 0, now()
     while true do
         local h = client:receive('*l')
         if not h or h == '' then break end
+        count = count + 1
+        if count > MAX_HEADERS or now() - started > MAX_HEADER_TIME then return nil end
         local k, v = h:match('^([^:]+):%s*(.-)%s*$')
         if k then headers[k:lower()] = v end
     end

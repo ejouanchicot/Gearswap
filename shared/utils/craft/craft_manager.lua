@@ -48,18 +48,12 @@ local function formatter()
     return _MessageFormatter
 end
 
--- State stored on _G so it survives a re-require of this file (GearSwap's own
--- require re-executes the file unless INIT_SYSTEMS' ModuleCache is in place,
--- which would reset a module-local table).
---
--- It does NOT survive a job or subjob change: the sandbox rebuilds _G on every
--- load (refresh.lua:83,114,149), while the slot lock this state describes lives
--- in disable_table, which is addon-scoped and survives. Changing subjob mid
--- session therefore leaves the 16 slots locked with no session to close them -
--- `//gs enable all` is the only way out. Read through is_active() so that
--- moving this onto windower.*, which does persist, stays a change to one file.
-_G.__CraftManagerState = _G.__CraftManagerState or { active = false, active_name = nil, gear = nil }
-local _state = _G.__CraftManagerState
+-- State stored on windower.*, as the slot lock it describes: the sandbox rebuilds _G on every load (refresh.lua:83,
+-- 114,149) while the lock lives in disable_table, addon-scoped, and survives. On _G a subjob change mid session left
+-- the 16 slots locked and //gs c uncraft answering "No craft set is currently active" (audit 2026-11-04 P1); kept
+-- here, the session goes on in the new load and uncraft frees the slots. A //lua reload gearswap clears both.
+windower._craft_state = windower._craft_state or { active = false, active_name = nil, gear = nil }
+local _state = windower._craft_state
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   FILE LOADING

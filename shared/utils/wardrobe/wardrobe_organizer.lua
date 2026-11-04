@@ -240,6 +240,16 @@ local function count_inv_gear(used_names)
     return unused, used, inv_items
 end
 
+--- Say the job's pieces still in the inventory at the end of a run: not misplaced (GearSwap wears them from there,
+--- no retry for them), but a used bag had no room for them, which "Layout OK" alone hid (audit 2026-11-04).
+--- @param inv_used number
+local function warn_inv_used(inv_used)
+    if (inv_used or 0) > 0 then
+        Chat.warn(string.format('%d piece(s) of the job stay in the inventory: no room left in the used bags.', inv_used))
+        dlog(('INV USED LEFT: %d'):format(inv_used))
+    end
+end
+
 --- Decide if we should auto-retry.
 --- Side effect: updates same_misplaced_count (last_misplaced is set by the caller).
 --- @param misplaced number Items still misplaced
@@ -310,7 +320,7 @@ local function finish_run()
     local ok_d, DuplicateGear = pcall(require, 'shared/utils/equipment/duplicate_gear')
     if ok_d and DuplicateGear then DuplicateGear.invalidate() end
     -- Settle delay: give FFXI time to confirm the last burst before snapshot.
-    coroutine.schedule(with_panic_unlock(function()
+    Phases.schedule(with_panic_unlock(function()
         local final = State.build_state()
         if not final then
             Chat.success('Done.')
@@ -340,7 +350,7 @@ local function finish_run()
                 outer_iteration, misplaced, tostring(last_misplaced)))
             last_misplaced = misplaced
             -- No enable here: the retry's Phase 0 unlocks, undresses and relocks
-            coroutine.schedule(start_organize, Config.RETRY_DELAY)
+            Phases.schedule(start_organize, Config.RETRY_DELAY)
             return
         end
 
@@ -350,7 +360,7 @@ local function finish_run()
         -- layout might already be correct.
         if misplaced > 0 then
             dlog('LAST-CHANCE VERIFY: re-snapshotting after extra settle')
-            coroutine.schedule(with_panic_unlock(function()
+            Phases.schedule(with_panic_unlock(function()
                 local verify = State.build_state()
                 if verify then
                     local inv_unused2, _, inv_items2 = count_inv_gear(verify.used_names)
@@ -361,6 +371,7 @@ local function finish_run()
                     if misplaced2 == 0 then
                         Chat.success(string.format(
                             'Layout converged after %d iteration(s).', outer_iteration))
+                        warn_inv_used(select(2, count_inv_gear(verify.used_names)))
                         Chat.success('DONE - safe to move, zone, change job.')
                         dlog('========== WARDROBE ORGANIZE END (verify clean) ==========')
                         clean_exit()
@@ -374,7 +385,7 @@ local function finish_run()
                             'Verify shows %d -> %d, one more pass...', misplaced, misplaced2))
                         last_misplaced = misplaced2
                         same_misplaced_count = 0  -- reset stuck counter on progress
-                        coroutine.schedule(start_organize, Config.RETRY_DELAY)
+                        Phases.schedule(start_organize, Config.RETRY_DELAY)
                         return
                     end
                     -- Still misplaced: fall through to give-up summary using verify state
@@ -401,6 +412,7 @@ local function finish_run()
 
         -- Clean exit (misplaced == 0)
         print_summary(final, misplaced, inv_unused, truly_stuck)
+        warn_inv_used(inv_used)
         dlog('========== WARDROBE ORGANIZE END ==========')
         clean_exit()
         schedule_lockstyle()
@@ -437,7 +449,7 @@ end
 local function start_phase3(state)
     Chat.phase(3, 'Fill ' .. primary_label(), string.format('%d items', #state.w3w6_used))
     Phases.fill_w1w2(state, function()
-        coroutine.schedule(function()
+        Phases.schedule(function()
             start_phase_pack(state, function()
                 Phases.compact_overflow(state, function() start_phase4(state) end)
             end)
@@ -467,7 +479,7 @@ end
 local function start_phase2(state)
     Chat.phase(2, 'Empty ' .. primary_label(), string.format('%d items', #state.w1w2_unused))
     Phases.empty_w1w2(state, function()
-        coroutine.schedule(function() rebuild_then_phase3(state) end, Config.PHASE_DELAY)
+        Phases.schedule(function() rebuild_then_phase3(state) end, Config.PHASE_DELAY)
     end)
 end
 
@@ -586,6 +598,7 @@ function WardrobeOrganizer.organize(all_jobs)
     if all_jobs then Config.use_all_jobs_layout() end
 
     reset_module_state()
+    Phases.begin_run()
     local ok, err = pcall(start_organize)
     if not ok then
         IS_RUNNING = false
