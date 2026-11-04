@@ -127,10 +127,15 @@ function gameChoices(slot, have, tpNames){
     if (!it.slots.includes(FFXI.opt.SLOT[slot]) || !it.jobs.includes(job) || (names.has(it.name) && !held) || tpNames.has(it.name) || seen.has(it.name)) continue;
     if (!(it.level >= 99 || it.ilvl > 0 || specialPiece(it.name)) || ruledOut(it.name)) continue;
     seen.add(it.name);
+    // an Ambuscade cape bare is worth nothing: the search builds it at each material's maximum (opt.js ambuGen)
+    if (slot === 'back' && FFXI.AMBU_CAPE_BY_NAME && FFXI.AMBU_CAPE_BY_NAME[it.name]) { out.push({name: it.name, ambu: true, missing: true}); continue; }
     // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it
     // a piece the catalogue reads nothing of counted for nothing: Hoxne Ampulla's Double Attack)
+    // a rank piece at the rank asked for its family (opt_page.js rankWanted), none when not unlocked
+    const rank = e && e.paths ? rankWanted(it.name, e) : null;
+    if (e && e.paths && rank == null) continue;
     if (e && e.paths) for (const path of Object.keys(e.paths)) {
-      if (!(held && held.has(path))) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank: e.max_rank, missing: true}));
+      if (!(held && held.has(path))) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank, missing: true}));
     }
     else out.push(engineFill({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1, rare: isRare(it.name)}));
   }
@@ -165,7 +170,8 @@ async function optimizeWs(s){
   // the TP config's pieces (Moonshade...) are not searched: the job's TP rule lays them at the weaponskill when
   // they help (opts.tpRule), never the set
   const start = startOf(base, lockedSlots(s)), choices = lockChoices(s, optChoices(tpNames));
-  if (o.freeWeapons) choices.weapons = weaponPairs(base, ws);
+  const weapons = o.freeWeapons ? weaponPairs(base, ws) : gripPairs(s, base, ws);
+  if (weapons) choices.weapons = weapons;
   const input = {ctx: optContextInput(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}}};
   optLaunch(s, k, input, o);
@@ -194,10 +200,18 @@ function startOf(base, locked = []){
   for (const slot of Object.keys(start)) if (!['main', 'sub', 'range'].includes(slot) && !locked.includes(slot) && !(owned[slot] || []).some(x => x.name === start[slot].name)) delete start[slot];
   return start;
 }
+// Weapons not free: under a two-handed weapon (a grip's), the main hand stays and its grip is searched (Utu Grip or
+// Telopanos Grip under Foenaria); a one-handed weapon's off hand is a weapon of the player's choice, kept. Null to
+// search no weapon
+function gripPairs(s, base, ws){
+  const it = itemOf(base.main && base.main.name);
+  if (!it || it.Type !== 'Weapon' || (it.slots || []).includes('sub') || lockedSlots(s).includes('sub')) return null;
+  return weaponPairs(base, ws, base.main.name);
+}
 // Free weapons: every main hand you hold with every off hand it can take ({main, sub}, the engine's "weapons"
 // choice), the pair worn now first; a copy in both hands only when you have two. Searching every item of the game
 // (S.optOpts.where 'all'), the game's weapons your job wears join yours (gameChoices: a mythic or prime too)
-function weaponPairs(base, ws){
+function weaponPairs(base, ws, keepMain){
   const owned = ownedOf() || {}, piece = x => ownRank({name: x.name, augs: x.augs, copies: x.count || (x.where || []).length, keep: true});
   const all = (S.optOpts || {}).where === 'all', none = new Set();
   const hand = slot => { const mine = (owned[slot] || []).map(piece); return all ? mine.concat(gameChoices(slot, mine, none)) : mine; };
@@ -207,10 +221,12 @@ function weaponPairs(base, ws){
   // searched. A forced hand the set does not wear is no choice of its (a midcast set's own weapons go over the page's
   // forced ones, weapons.js withWeapons: a BLM's nuke set kept Daybreak, forced by an older engaged search, unseen)
   const forced = slot => { const f = slotForce()[slot]; return f && base[slot] && base[slot].name === f.name ? f.name : undefined; };
-  const fixMain = ws ? heldWeapon(ws) : forced('main'), fixSub = ws ? ((S.heldSub || {})[heldKey(ws)] || {}).name : forced('sub');
+  const fixMain = keepMain || (ws ? heldWeapon(ws) : forced('main')), fixSub = ws ? ((S.heldSub || {})[heldKey(ws)] || {}).name : forced('sub');
   const mains = hand('main').filter(x => (!opens || opens(x.name)) && (!fixMain || x.name === fixMain));
   const subs = hand('sub').filter(x => !fixSub || x.name === fixSub), out = [];
   const now = optPieces({main: base.main, sub: base.sub});
+  // the main hand kept and not among yours (a weapon of the game, or a set's you do not hold): it stays the set's
+  if (keepMain && !mains.length && now.main) mains.push(now.main);
   if (now.main) out.push({main: now.main, sub: now.sub || null});
   for (const m of mains) {
     const fits = subs.filter(x => subFits(m, x) && !(x.name === m.name && !(m.copies > 1)));
@@ -224,7 +240,8 @@ async function optimizeEngaged(s){
   const k = trialKey(s), o = engOpts(s), base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
   // pieces worn for their TP Bonus only (ONLY_AUGS: Moonshade) do nothing for an engaged set
   const choices = lockChoices(s, optChoices(new Set(Object.keys(ONLY_AUGS))));
-  if (o.freeWeapons) choices.weapons = weaponPairs(base);
+  const weapons = o.freeWeapons ? weaponPairs(base) : gripPairs(s, base);
+  if (weapons) choices.weapons = weapons;
   const input = {ctx: engContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
   // a BST's set worn while both fight: the pieces carry their Pet damage taken and the levels they give the pet, which

@@ -62,6 +62,15 @@ function ownedPrimeStage(name){
   const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b), i = ids.indexOf(copy.id);
   return i < 0 ? null : ['V', 'IV', 'III', 'II'][ids.length - 1 - i] || null;
 }
+// The item of a prime weapon you hold no copy of, at the stage chosen in the Buffs panel (Aftermath: Prime stage):
+// the catalogue's items of that name are its stages II to V in id order; null otherwise (the name's highest)
+function primeStageId(name){
+  const primes = window.FFXI && FFXI.opt ? FFXI.opt.primeWeapons() : [];
+  const st = primes.includes(name) ? (buffState() || {}).amStage : null;
+  if (!st || ownedPrimeStage(name) || !(FFXI.CATALOG && FFXI.CATALOG.items)) return null;
+  const ids = FFXI.CATALOG.items.filter(it => it.name === name).map(it => it.id).sort((a, b) => a - b);
+  return ids[ids.length - 1 - ['V', 'IV', 'III', 'II'].indexOf(st)] || null;
+}
 // The engine's view of the page: job, subjob, Master Level, the buffs ticked, abilities on, the
 // aftermath, the target, the weaponskill of the set
 function optContext(s, engaged){ return FFXI.opt.context(engaged ? engContextInput(s) : optContextInput(s)); }

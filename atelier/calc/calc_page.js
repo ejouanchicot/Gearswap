@@ -80,6 +80,9 @@
         return got.unsupported ? got : [[got.damage, got.tpReturn][WS_VALUE[metric]], [got.damage, got.tpReturn, 1]];
     }
 
+    // A multi-attack stat in percent as a chance (0 to 1)
+    function rate(v) { return Math.max(0, Math.min(1, (v || 0) / 100)); }
+
     // `weaponLevel`: the item level of the weapon that uses it (the ranged one for a ranged weapon skill), for a magical
     // weapon skill (calc_ws_magic.js); a ranged physical one: calc_ws_ranged.js
     function weaponskill(stats, enemy, name, tp, type, metric, gearset, abilities, weaponLevel) {
@@ -113,7 +116,9 @@
             hits: {main: got.landed.main || 0, sub: got.landed.sub || 0, kick: got.landed.kick || 0,
                 zanshin: got.landed.zanshin || 0, daken: got.swings.daken || 0},
             hitRate: {main: got.hitRate.main, sub: got.hitRate.sub},
-            multi: {qa: (stats["QA"] || 0) / 100, ta: (stats["TA"] || 0) / 100, da: (stats["DA"] || 0) / 100, oa: oa},
+            // capped at 100 % as the swings are (CALC.roundProcOutcomes): Hoxne Ampulla's Double Attack +100 % over 100 %
+            // gave the rounds to the weaponskill a negative chance and a Double Attack cape a gain it has not (2026-11-03)
+            multi: {qa: rate(stats["QA"]), ta: rate(stats["TA"]), da: rate(stats["DA"]), oa: oa},
             haste: {gear: stats["Gear Haste"] || 0, magic: stats["Magic Haste"] || 0, ja: stats["JA Haste"] || 0},
             h2h: !!wield.handToHand, regain: got.regain, timeRound: got.time, tpRound: got.tp + got.tpFromRegain,
             timeWs: timeToWs, start: start, at: at, crit: got.critRate, damage: got.damage

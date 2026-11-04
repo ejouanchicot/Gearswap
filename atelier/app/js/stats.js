@@ -165,7 +165,7 @@ function pieceStats(p, slot){
   // a piece worn for one augment only (Moonshade Earring: its TP Bonus +250, its Accuracy+4 or Attack+4 never)
   if (ONLY_AUGS[p.name]) p = Object.assign({}, p, {augs: ONLY_AUGS[p.name]});
   // the piece's own item id first, else your copy's (a set names a piece only: Laphria, your Laphria IV), else the name's
-  const cat = catalog(), id = p.id || ownId(p.name, slot) || iconIds()[p.name] || (cat && cat.id[p.name]);
+  const cat = catalog(), id = p.id || ownId(p.name, slot) || primeStageId(p.name) || iconIds()[p.name] || (cat && cat.id[p.name]);
   const text = descOf(id, cat);
   const side = EAR_SIDE[slot] || '';
   if (PIECE_GEN !== DATA_GEN) { PIECE_CACHE = {}; PIECE_GEN = DATA_GEN; }

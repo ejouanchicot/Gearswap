@@ -603,6 +603,7 @@ declare const OP_TABS: LegacyAny[];
 declare const OP_SWITCH: Record<string, LegacyAny>;
 declare function lockedSlots(s: LegacyAny): string[];
 declare function excludedOf(): Record<string, LegacyAny>;
+declare function rankFamilies(): Array<{fam: string; max: number; n: number}>;
 declare function trialSaved(s: LegacyAny): boolean;
 declare function enfContext(s: LegacyAny): LegacyAny;
 declare function edNote(s: LegacyAny): string;

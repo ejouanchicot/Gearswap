@@ -89,7 +89,7 @@
     };
     function gearOf(piece, slot, ctx) {
         if (!piece || !piece.name || piece.name === "empty") return O.empty();
-        var item = O.item(piece.name, piece.id);
+        var item = O.item(piece.name, piece.id || primeId(piece.name, ctx));
         if (!item) return null;
         var g = {"Name": item.name, "Name2": name2(item, ctx || {}), "Type": item.Type, "Jobs": item.jobs.slice()};
         if (item["Skill Type"]) g["Skill Type"] = item["Skill Type"];
@@ -122,6 +122,14 @@
         return g;
     }
     var ONLY_STATS = {"Moonshade Earring": {"TP Bonus": 250}};
+    // A prime weapon a set names only ("Foenaria"): the stage the page chose (ctx.primeStage: the Buffs panel's, else
+    // your copy's), the catalogue's items of that name being its stages II to V in id order; null for another piece
+    function primeId(name, ctx) {
+        if (!ctx || !ctx.primeStage || primeWeapons().indexOf(name) === -1) return null;
+        index();
+        var ids = (byName[String(name).toLowerCase()] || []).map(function (it) { return it.id; }).sort(function (a, b) { return a - b; });
+        return ids[ids.length - 1 - ["V", "IV", "III", "II"].indexOf(ctx.primeStage)] || null;
+    }
 
     // ------------------------------------------------------------ buffs
     // The page's buff state (atelier.html buffState) as the buff total takes it (aggregate)
@@ -1362,7 +1370,8 @@
         yield opts.prog;
         var seed = input.seed || input.start;
         var from0 = input.opts.scratch ? bare(seed, input.choices) : seed;
-        var choices = input.prefilter ? yield* prefilterGen(ctx, from0, input.choices, opts, input.prefilter) : input.choices;
+        var all = yield* ambuGen(ctx, from0, input.choices, opts);
+        var choices = input.prefilter ? yield* prefilterGen(ctx, from0, all, opts, input.prefilter) : all;
         // the fast search: only the pieces that can be the best of their slot
         if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, seed, choices, opts).choices;
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
@@ -1437,6 +1446,59 @@
         return {pieces: st.best, score: st.score, best: O.value(ctx, st.best, opts), start: O.value(ctx, start, opts), evals: st.evals};
     }
     O.optimize = function (ctx, start, choices, opts) { return drain(optimizeGen(ctx, start, choices, opts)); };
+    // An Ambuscade cape of the game you do not hold, as the page offers it ({name, ambu: true}, app/js/optimizer.js
+    // gameChoices): built at each material's maximum (thread, dust, dye, sap, resin: BG Wiki, atelier/gear/capes.js),
+    // its augments written as the game shows them. Tens of thousands of builds, so a material at a time: each option
+    // tried with the others at their best so far (two rounds), then the two best threads and resins crossed with every
+    // sap, the damage taken resins kept for the defense floors. Every sap stays to the end of the search (keep): the
+    // materials are rated on the set the search starts from, where Double Attack is worth most, and the set it ends
+    // on can cap it (Hoxne Ampulla: Double Attack +100 %, then Store TP is the cape's: DRK engaged PDT, 2026-11-03).
+    // Options in their order of preference when they tie (any thread for the time to a weaponskill)
+    var AMBU_AUGS = {
+        thread: ["STR+20", "DEX+20", "VIT+20", "AGI+20", "INT+20", "MND+20", "CHR+20", "HP+60", "MP+60"],
+        dust: ["Accuracy+20 Attack+20", "Rng.Acc.+20 Rng.Atk.+20", "Mag. Acc+20 /Mag. Dmg.+20", "Eva.+20 /Mag. Eva.+20"],
+        dye: ["Accuracy+10", "Attack+10", "STR+10", "DEX+10", "VIT+10", "AGI+10", "INT+10", "MND+10", "CHR+10", "HP+20", "MP+20",
+            "Rng.Acc.+10", "Rng.Atk.+10", "Mag. Acc.+10", "Mag. Dmg.+10", "Evasion+10", "Mag. Evasion+10"],
+        sap: ["Weapon skill damage +10%", "Crit.hit rate+10", "\"Store TP\"+10", "\"Dbl.Atk.\"+10", "Haste+10", "\"Dual Wield\"+10",
+            "Enmity+10", "Enmity-10", "\"Snapshot\"+10", "\"Mag.Atk.Bns.\"+10", "\"Fast Cast\"+10", "\"Cure\" potency +10%", "\"Waltz\" potency +10%"],
+        resin: ["DEF+50", "Evasion+15", "Mag. Evasion+15", "Phys. dmg. taken-10%", "Magic dmg. taken-10%", "Damage taken-5%", "\"Regen\"+5",
+            "\"Counter\"+10", "Chance of successful block +5", "Parrying rate+5%", "Spell interruption rate down-10%"]
+    };
+    var AMBU_ORDER = ["thread", "dust", "dye", "sap", "resin"], AMBU_DT = ["Phys. dmg. taken-10%", "Damage taken-5%"];
+    function* ambuGen(ctx, start, choices, opts) {
+        var list = choices.back || [];
+        if (!list.some(function (p) { return p.ambu; })) return choices;
+        var loose = Object.assign({}, opts, {floor: null}), out = [];
+        for (var i = 0; i < list.length; i++) out = out.concat(list[i].ambu ? yield* ambuBuilds(ctx, start, list[i], loose, opts) : [list[i]]);
+        return Object.assign({}, choices, {back: out});
+    }
+    function* ambuBuilds(ctx, start, tpl, loose, opts) {
+        // the cape of the set itself (searched from scratch, the walks start bare)
+        var own = (opts.base || start).back, pick = {}, best = {}, mine = own && own.name === tpl.name ? own.augs || [] : [];
+        // a material that changes nothing for the objective (DEX, STR or HP alike on an engaged set) takes the
+        // augment of the cape the set wears, not the list's first
+        var order = function (x, y) { var d = y.v - x.v; return Math.abs(d) > Math.abs(x.v) * 1e-9 + 1e-12 ? d : (mine.indexOf(y.a) !== -1) - (mine.indexOf(x.a) !== -1); };
+        var capeOf = function (sel) { return {name: tpl.name, augs: AMBU_ORDER.map(function (m) { return sel[m]; }).filter(Boolean), missing: true}; };
+        for (var round = 0; round < 2; round++) for (var m = 0; m < AMBU_ORDER.length; m++) {
+            var mat = AMBU_ORDER[m], rated = [];
+            for (var j = 0; j < AMBU_AUGS[mat].length; j++) {
+                var sel = Object.assign({}, pick); sel[mat] = AMBU_AUGS[mat][j];
+                rated.push({a: sel[mat], v: O.value(ctx, put(Object.assign({}, start), "back", capeOf(sel)), loose).v});
+                if (opts.prog) opts.prog.evals++;
+                yield;
+            }
+            rated.sort(order);
+            pick[mat] = rated[0].a; best[mat] = rated.slice(0, mat === "sap" ? rated.length : mat === "thread" || mat === "resin" ? 2 : 1).map(function (x) { return x.a; });
+        }
+        best.resin = best.resin.concat(AMBU_DT.filter(function (a) { return best.resin.indexOf(a) === -1; }));
+        var builds = [{}];
+        AMBU_ORDER.forEach(function (mat) {
+            var next = [];
+            builds.forEach(function (b) { best[mat].forEach(function (a) { var c = Object.assign({}, b); c[mat] = a; next.push(c); }); });
+            builds = next;
+        });
+        return builds.map(function (b) { return Object.assign(capeOf(b), {keep: true}); });
+    }
     // Each slot's `keep` best pieces as single swaps from `start` (pieces flagged keep always stay):
     // a first sort before searching hundreds of pieces a slot (every item of the game)
     function* prefilterGen(ctx, start, choices, opts, keep) {

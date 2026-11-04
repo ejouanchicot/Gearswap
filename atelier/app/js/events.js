@@ -269,6 +269,9 @@ document.addEventListener('change', e => {
     const picked = [...e.target.selectedOptions].map(x => x.value), all = Object.assign({}, (S.optOpts || {}).nukeSpells);
     all[e.target.dataset.nukespells] = picked;
     S.optOpts = Object.assign({}, S.optOpts, {nukeSpells: all}); save(); render(); return; }
+  // the rank a family of rank pieces of the game is searched at (opt_page.js rankWanted)
+  if (e.target.dataset && e.target.dataset.optrank) {
+    S.optOpts = Object.assign({}, S.optOpts, {rankFam: Object.assign({}, (S.optOpts || {}).rankFam, {[e.target.dataset.optrank]: e.target.value})}); save(); render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
@@ -276,7 +279,8 @@ document.addEventListener('change', e => {
     if (ENCHANT_OPTS.includes(e.target.dataset.optopt)) { DATA_GEN++; render(); }
     // the objective shows or hides the TP range; the range reads back rounded to 250; a limit is written in the
     // result's table (DT+PDT ≤ -40) and marks the figures under it
-    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed', 'nukeSit', 'nukeMpLow', 'pdt', 'mdt', 'sb', 'hit'].includes(e.target.dataset.optopt)) render();
+    // (the pieces searched: every item of the game shows the ranks of the pieces to get)
+    if (['obj', 'tpFrom', 'tpTo', 'engObj', 'engAt', 'cycWs', 'cycAm', 'cycHits', 'cycTimed', 'nukeSit', 'nukeMpLow', 'pdt', 'mdt', 'sb', 'hit', 'where'].includes(e.target.dataset.optopt)) render();
     return; }
   if (e.target.id === 'statonly') { S.statOnlyWant = e.target.checked; S.statPreset = ''; save(); openStatPick(); render(); return; }
   if (e.target.classList.contains('statpick')) { S.statPreset = ''; const k = e.target.dataset.stat; if (e.target.checked) delete S.statHide[k]; else S.statHide[k] = 1;
