@@ -11,7 +11,7 @@ The diagnostic handlers live in `DEBUG_COMMANDS.lua`, and the tools themselves u
 | Path | Role |
 |---|---|
 | `shared/utils/core/COMMON_COMMANDS.lua` | `CommonCommands`: router (`handle_command`), membership tests (`is_common_command`, `runs_locally`), gameplay and utility handlers, installs the alt-command fallback at module load |
-| `shared/utils/core/DEBUG_COMMANDS.lua` | `DebugCommands`: perf, fulltest, syscheck, lagdebug, debugsubjob, jamsg / spellmsg / wsmsg, info, debugstate, memcheck, debugmsg and the five persistent debug toggles; re-exposed on `CommonCommands` |
+| `shared/utils/core/DEBUG_COMMANDS.lua` | `DebugCommands`: perf, fulltest, syscheck, lagdebug, debugsubjob, jamsg / spellmsg / wsmsg, info, debugstate, memcheck, debugmsg, the five persistent debug toggles, `testmsg`, `msgtests`, `enhtest` and `jobtest`; every word in `DebugCommands.WORDS`, which the router asks through `DebugCommands.run` and `is_common_command` counts as common |
 | `shared/utils/core/WATCHDOG_COMMANDS.lua` | `WatchdogCommands`: `//gs c watchdog ...` (called by the job files, not by `CommonCommands`) |
 | `shared/utils/core/CYCLE_HANDLER.lua` | `CycleHandler.handle_cyclestate`: `//gs c cyclestate <State> [reverse]` (called by the job files) |
 | `shared/utils/core/combat_mode_commands.lua` | `//gs c combatmode`, built on `optional_state_commands.lua`, see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) |
@@ -111,15 +111,17 @@ In all 22 files, `altjobupdate` passes the sender's name (its 5th word, `cmdPara
    | `fights` | `FightTracker.command(args)` |
    | `dealwatch` | `RandomDealWatch.command(args)` |
    | `belt` | `ElementalBelt.show_status()` |
+   | any word of `DebugCommands.WORDS` | `DebugCommands.run(cmd, args)` (`DEBUG_COMMANDS.lua`); a nil return goes on down the router |
    | `tb` | `TempBinds.handle(args)` |
    | `trace` | `TraceLog.handle(args)` |
    | `atelier` | `atelier/atelier_export.lua` `handle(args)` |
+   | `version`, `upgrade` | `core/release_info.lua` `handle(cmd)` |
 
 3. **Warp.** First an exact match against `warp_command_registry.COMMANDS` (105 aliases). Then any word ending in `all` whose base is an alias (`warpall`, `sdall`, and also `wall` = `w` + `all`). Both go to `handle_warp_commands(cmdParams)`, which requires `shared/utils/warp/warp_commands` and returns `WarpCommands.handle_command(cmdParams)`. If that module fails to load, it prints a module-by-module diagnostic instead.
-4. **Named commands.** One `if/elseif` chain for the named commands (table below).
+4. **Named commands.** First `^ja%d*$` (`ja1`, `ja2`..., or `ja N`) -> `commands/sub_abilities.lua` (`index_of`, then `use(index)`, else `usage()`); then one `if/elseif` chain for the named commands (table below).
 5. **Anything else** returns false. `handle_command` never sends anything to the alt.
 
-`is_common_command(command)` repeats the same names as a hand-written `or` chain, plus the warp exact and `<alias>all` tests. It does not look at the alt's config. The two lists must be kept in sync by hand: a name added to `handle_command` only is unreachable from every job file.
+`is_common_command(command)` looks the word up in the local table `COMMON_WORDS` (built at module load from one space-separated string of the router's words, then every key of `DebugCommands.WORDS` added to it), then tests `^ja%d*$`, the warp exact and `<alias>all` forms. It does not look at the alt's config. The string must be kept in step with the router by hand (its comment says so); a word of `DebugCommands.WORDS` is counted on its own. A name added to `handle_command` only is unreachable from every job file.
 
 ```mermaid
 sequenceDiagram
@@ -195,6 +197,9 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `hporder` | - | Toggles `windower._hp_order_debug` (`HPPriority.toggle_order_display`): the `hp_priority` equip hook (`equip_hooks.lua`) then notes each set's changing pieces (`show_order`), and one InfoBlock per frame lists them by priority (`flush_order`: the several `equip()` calls Mote makes for one change give one block) |
 | `wardrobeaudit` (`wa`) | - | `WardrobeAuditor.audit()` | `handle_wardrobeaudit` -> `equipment/wardrobe_auditor.lua` |
 | `worganize` (`wo`) | `scan`/`scanwarp`, `keep`/`kept`/`items`, `verify`/`check`, `reset`, `recover`/`unlock`, `alt` (plus a legacy alias named after a character), `global [preview\|dry]`, `preview`/`dry`, none | Wardrobe organizer entry points. Arguments are compared case-sensitively; anything unrecognised (including `Preview`) runs the full `organize()` | `handle_wardrobeorganize`, see [wardrobe-organizer.md](wardrobe-organizer.md) |
+| `lockscan` | `[stop]` | Applies in turn every lockstyle set the character uses and writes each set's pieces (from the game's outgoing 0x053) to `<Character>/saved/lockstyle_pieces.lua`, for the Atelier's bags plan; then puts the job's lockstyle back. Stops on a job change | `lockstyle/lockstyle_pieces.lua` `scan(args)` |
+| `bags` | none = preview, `go`/`start`, `stop` | Plays the tidy-up plan the Atelier page sent (`atelier_live.lua`, `/bag_plan`): preview moves nothing; `go` plays it by rounds of `get_item` / `put_item` only; `stop` leaves an item in hand in the inventory | `wardrobe/bag_mover.lua` `handle(args)` |
+| `po` (`porter`) | - | Only when idle. With PorterPacker installed and a Porter Moogle within reach: adds the job's missing pieces to PorterPacker's list (`porter_lists.sync`), then `lua load PorterPacker; wait 1; po then gs c wo`. Otherwise `gs c wo` alone. Also sent by the Atelier page (`POST /porter_run`) | `wardrobe/porter_run.lua` `start()` |
 | `refill` (`rf`) | - | `RefillManager.refill()`, then `DualBoxSyncIPC.broadcast('rf')` so the other characters of the box group refill too | `handle_refill`, see [equipment-and-inventory.md](equipment-and-inventory.md) |
 | `automedicine` (`am`) | `on`/`off` (lower-cased), none or anything else = toggle | Automatic Echo Drops / Remedy | `handle_automedicine` -> `debuff/auto_medicine.lua` `AutoMedicine.handle_command` |
 | `craft` | `[variant\|off\|stop\|uncraft]` | Equip or switch a crafting set, or leave it | `CraftCommands.handle_craft`, see [factories-and-helpers.md](factories-and-helpers.md#craft-and-fishing-mode) |
@@ -212,6 +217,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | Command (aliases) | Args | Effect | Route |
 |---|---|---|---|
 | `reload` | - | `JobChangeManager.force_reload(player.main_job, player.sub_job or 'SAM')`: bumps the debounce counter, then `gs reload` | `handle_reload` -> `core/job_change_manager.lua` |
+| `ja1`, `ja2`... (`ja N`) | `[N]` | The subjob's ability at that place of the character's `_common/combat/SUBJOB_CONFIG.lua` `abilities` list (by main job or `all`, then subjob); target `<me>` for a self-only ability, else `<t>`, or the entry's own `target`. No list or no such place: usage | `commands/sub_abilities.lua` (`index_of`, `use`, `usage`) |
 | `jump` | - | `DRGJumpManager.execute_jump()` | `handle_jump`, see [factories-and-helpers.md](factories-and-helpers.md#drg-jumps) |
 | `waltz` | - | DNC main or sub only. Cancels Saber Dance, then `WaltzManager.cast_curing_waltz('<stpc>')` | `handle_waltz` -> local `handle_waltz_generic` |
 | `aoewaltz` | - | Same guard, then `cast_divine_waltz()` | `handle_aoewaltz` |
@@ -270,8 +276,9 @@ All the data of `//gs c sortie` is the character's `_common/tools/SORTIE_CONFIG.
 | `spellmsg` | same | Spell message mode (`spell_mode`, read by every spell family including Enfeebling) | `Debug.handle_spellmsg` |
 | `wsmsg` | same plus `tp\|tponly\|tp_only\|t` (= `on`) | WS message mode | `Debug.handle_wsmsg` |
 | `info` | `<name words...>` | JA / spell / WS details | `Debug.handle_info` -> `InfoCommand.handle` |
-| `testmsg` (`msgtest`) | `[job\|system]` | `messages.test(filter)`: preview messages | router branch -> `messages/api/messages.lua` |
-| `msgtests` | - | `MessageValidator.run_all_tests()` | router branch |
+| `testmsg` (`msgtest`) | `[job\|system]` | `messages.test(filter)`: preview messages | `DebugCommands.WORDS` entry -> `messages/api/messages.lua` |
+| `msgtests` | - | `MessageValidator.run_all_tests()` | `DebugCommands.WORDS` entry -> `messages/message_validator.lua` |
+| `version`, `upgrade` | - | `version`: the installed version (`data/VERSION`, written by a release). `upgrade`: opens the Atelier page on its update screen (the page reads the latest GitHub release, AtelierLink writes the changed files and restarts GearSwap); also writes `data/atelier/update_ask.js` | `core/release_info.lua` `handle(cmd)` |
 | `testcolors` (`colors`) | - | Prints chat colour codes 1-509 minus 10, 13, 30, 31, 253-279, 507-508, 14 per row | `handle_testcolors` |
 | `commands` (`cmds`) | - | `MessageCommands.show_commands_list()`: every universal command, grouped | router branch |
 | `help` (`?`) | - | `MessageCommands.show_help()`: where each system's help is. Shadows Mote's `help` | router branch |
@@ -294,6 +301,8 @@ All the data of `//gs c sortie` is the character's `_common/tools/SORTIE_CONFIG.
 | `automovedebug` (`amd`) | - | Toggles `windower._gs_debug.AUTOMOVE`, mirrored to `_G.AUTOMOVE_DEBUG` | `Debug.handle_automovedebug` |
 | `debugjobchange` (`djc`) | - | Toggles `windower._gs_debug.JOBCHANGE`, mirrored to `_G.JOBCHANGE_DEBUG`. When turning on, prints `_G.JobChangeManagerSTATE` counter / current / target | `Debug.handle_debugjobchange` |
 | `debugupdate` | - | Toggles `windower._gs_debug.UPDATE`, copies it to `windower._gs_debug.AUTOMOVE`, mirrors both to `_G.UPDATE_DEBUG` / `_G.AUTOMOVE_DEBUG` | `Debug.handle_debugupdate` |
+| `enhtest` | `run <plan> [n]`, `stop`, `plans`; internal `expect <buff id> <caster>`, `got <buff id> <seconds>` (sent between the boxes) | Plays the cases of a plan of `<Char>/_common/tools/ENHTEST_CONFIG.lua` (pieces worn, every slot then held with `gs disable all`, a spell cast) and writes the buff length the game reports to `<Char>/logs/enhtest/<date>.log` | `DebugCommands.WORDS` entry -> `debug/enh_test.lua` `command(args)` |
+| `jobtest` | `[JOB ...] [nosim] [bare] [ghosts] [short] [skip=a,b] [gaps=...]`, `stored`, `stop`, none while running = progress | In the Mog House: plays job and subjob changes and measures each load (time, keys, fulltest, lockstyle, memory, older loads still in memory) | `DebugCommands.WORDS` entry -> `debug/job_test.lua` `handle(args)` |
 
 ### Shared commands handled in the job files
 
@@ -592,7 +601,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 ### Adding a common command
 
 1. **Write the handler.** Put it in `COMMON_COMMANDS.lua`, or in `DEBUG_COMMANDS.lua` for a diagnostic (then give it an entry in `DebugCommands.WORDS`: the router and `is_common_command` both read that table, nothing else to register). A self-contained feature is better as its own module with a `handle(args)` returning `true`, routed in the "module commands" block the way `sortie`, `stealth`, `th`, `dw`, `tb` and `trace` are. `COMMON_COMMANDS.lua` is 778 lines (2026-10-28), close to the 800-line hard limit.
-2. **Register the name twice.** Add the branch in `handle_command` **and** the same name(s) in the `or` chain of `is_common_command`. Missing the second step makes the command unreachable from every job file. The two lists are not generated from one table.
+2. **Register the name twice.** Add the branch in `handle_command` **and** the same name(s) in the word string of `COMMON_WORDS` (just above `is_common_command`). Missing the second step makes the command unreachable from every job file. A diagnostic added to `DebugCommands.WORDS` needs neither: both read that table.
 3. **Return a boolean.** Return `true` when handled; `nil` counts as false, which leaves `eventArgs.handled` false (harmless for a common name, since `runs_locally` stops the alt fallback, but misleading).
 4. **Lower-case what you compare.** Lower-case every argument you compare. On a word you do not recognise, print usage instead of running a mutating default.
 5. **Check the name for collisions** before choosing it:

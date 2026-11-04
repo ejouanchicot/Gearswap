@@ -40,10 +40,10 @@ the sets file (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/whm.lua` | 248 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record, then `EntryKit.unload`); shared hooks from `shared/utils/core/entry_kit.lua` |
+| `shared/entry/whm.lua` | 247 | Entry (the same for every character; `<Char>_WHM.lua` and its template `_master/entry/Tetsouo_WHM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record, then `EntryKit.unload`); shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager`, debug line |
-| `shared/jobs/whm/functions/WHM_PRECAST.lua` | 174 | `job_precast`: guard, `retier_cure`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
-| `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 261 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
+| `shared/jobs/whm/functions/WHM_PRECAST.lua` | 150 | `job_precast`: guard, `CureManager.retier`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
+| `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 299 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
 | `shared/jobs/whm/functions/WHM_AFTERCAST.lua` | 27 | `job_aftercast = LifecycleManager.aftercast()` |
 | `shared/jobs/whm/functions/WHM_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/whm/functions/WHM_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -53,22 +53,22 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'config/whm/WHM_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'config/whm/WHM_MACROBOOK', 'SAM', 1, 1)` |
-| `shared/jobs/whm/functions/logic/set_builder.lua` | 90 | Idle: town, latent refresh, weapons, movement; engaged: `SupportTier.engaged` (the set's `.Solo` / `.Group` version when it has one), weapons |
-| `shared/utils/whm/cure_manager.lua` | 410 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
+| `shared/jobs/whm/functions/logic/set_builder.lua` | 97 | Idle: town, latent refresh, weapons, movement; engaged: `SupportTier.engaged` (the set's `.Solo` / `.Group` version when it has one), weapons |
+| `shared/utils/whm/cure_manager.lua` | 497 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 262 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception: it is a formatter stored outside `utils/messages/`) |
 | `shared/utils/messages/data/jobs/whm_messages.lua` | 22 | One template (`curemanager_not_loaded`), no sender since its formatter `message_whm.lua` was removed (2026-10-01) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | `MidcastDeps.load()`: MidcastManager + enhancing database, lazy |
-| `_master/config/whm/WHM_STATES.lua` | 139 | `WHMStates.configure` |
-| `_master/config/whm/WHM_KEYBINDS.lua` | 78 | Data only: 6 entries handed to `KeybindManager.create('WHM', ...)` |
+| `_master/config/whm/WHM_STATES.lua` | 154 | `WHMStates.configure` |
+| `_master/config/whm/WHM_KEYBINDS.lua` | 83 | Data only: 8 entries handed to `KeybindManager.create('WHM', ...)` |
 | `_master/config/whm/WHM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/whm/WHM_CONFIG.lua` | 16 | `refresh_mp_below = 51` (read through `JobConfig`) |
-| `_master/config/whm/WHM_CURE_CONFIG.lua` | 104 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`), `mp_conservation_below` (40, `CureManager.lay_mp_conservation`) (+ unread `message_color`) |
+| `_master/config/whm/WHM_CURE_CONFIG.lua` | 118 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages`, `auto_tier_enabled` (what `CureAutoTier` starts on, read by the entry's `user_setup`), `mp_conservation_below` (40, `CureManager.lay_mp_conservation`) (+ unread `message_color`) |
 | `_master/config/whm/WHM_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/whm/WHM_LOCKSTYLE.lua` | 52 | `default = 3`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; `//gs c lockscan` and `//gs c jobtest` read it too) |
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
 | `_master/config/whm/WHM_TP_CONFIG.lua` | 73 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.WHMTPConfig` |
 | `_master/config/whm/WHM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/whm_sets.lua` | 820 | Template sets (flat) |
+| `_master/sets/whm_sets.lua` | 861 | Template sets (flat) |
 
 `WHM_REFILL.lua` is the commented template (the common list of `REFILL_CONFIG.lua` applies); no live copy is maintained.
 
@@ -110,7 +110,7 @@ after the entry set it.
 flowchart TD
     A[job_precast] --> G{PrecastGuard.guard_precast}
     G -- blocked --> Z[return]
-    G -- ok --> R{retier_cure}
+    G -- ok --> R{CureManager.retier}
     R -- replaced --> Z2[cancel, input /ma new tier target.raw]
     R -- no --> C{action_type}
     C -- Ability --> CA[CooldownChecker.check_ability_cooldown]
@@ -123,7 +123,7 @@ flowchart TD
     P -- no --> W[WSPrecastHandler.handle with WHMTPConfig]
 ```
 
-- `retier_cure` runs **before** the recast check, the way RDM, BLM and GEO send
+- `CureManager.retier(spell, eventArgs)` (`shared/utils/whm/cure_manager.lua`) runs **before** the recast check, the way RDM, BLM and GEO send
   tiered spells to their refiners (the project's "tiers before cooldown" exception): otherwise
   `CooldownChecker` would cancel a requested tier on recast before CureManager
   could swap it. It takes Magic whose name starts with `Cure` or `Curaga`
@@ -358,7 +358,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
 | `<char>/whm/keys/WHM_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/whm/keys/WHM_KEYBINDS.lua` | 6 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
+| `<char>/whm/keys/WHM_KEYBINDS.lua` | 8 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
 | `<char>/whm/keys/WHM_CUSTOM.lua` | examples only | file | custom states |
 | `<char>/whm/display/WHM_HUD.lua` | empty | file | HUD layout |
 | `<char>/whm/combat/WHM_CURE_CONFIG.lua` `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` | Cure 0-200 .. VI 1600+; Curaga 0-300 .. V 1400+; 50; false | file; the failure fallback in `cure_manager.lua` holds the same tiers and margin | `CureManager` |
@@ -426,13 +426,13 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   unchanged still gets the recast check.
 - `CastingMode` reaches the Enfeebling and Divine routes through `mode_state`;
   a name set (Repose, Holy, Holy II) wins over `.Resistant`. Cures ignore it.
-- `retier_cure` and `select_cure_tier` match "Cure" anywhere in the name.
+- `CureManager.retier` and `select_cure_tier` take only names that start with `Cure` or `Curaga` (`CureManager.is_tiered_cure`).
 
 ## For maintainers / AI
 
 **Invariants to keep**
 
-- Precast order: guard, `retier_cure`, cooldown, Paralyna, WS. CureManager must
+- Precast order: guard, `CureManager.retier`, cooldown, Paralyna, WS. CureManager must
   stay before `CooldownChecker` (the project's "tiers before cooldown" exception,
   CureManager case).
 - A branch of `job_post_midcast` that equips without calling

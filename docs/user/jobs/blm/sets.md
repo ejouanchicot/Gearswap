@@ -111,11 +111,18 @@ An enfeeble wears, in this order:
 
 1. A set with its exact name (the provided file: `sets.midcast.Sleep`,
    `['Sleep II']`, `.Sleepga`, `['Sleepga II']`, `.Break`, `.Breakga`, `.Blind`,
-   copies of `IntEnfeebles`).
-2. Its type in the enfeebling database under the stat set, when you add one:
+   copies of `IntEnfeebles`), or with its name without the tier
+   (`sets.midcast.Sleep` is also worn for Sleep II when `['Sleep II']` is missing).
+2. Its name, with or without the tier, under the stat set, when you add one:
+   `sets.midcast.IntEnfeebles.Blind`, `sets.midcast.MndEnfeebles.Paralyze`.
+3. Its type in the enfeebling database at the root, when you add one:
+   `sets.midcast.duration`, `sets.midcast.macc`, `sets.midcast.mnd_potency`...
+   Careful: a set with that name sits at the root of `sets.midcast`, so other
+   spells whose type has the same name can wear it too.
+4. Its type under the stat set, when you add one:
    `sets.midcast.IntEnfeebles.duration` (Bind, Break, Sleep...),
    `.MndEnfeebles.macc`, `.MndEnfeebles.mnd_potency`...
-3. `sets.midcast.MndEnfeebles` for White Magic (Slow, Paralyze, Silence, Dia...
+5. `sets.midcast.MndEnfeebles` for White Magic (Slow, Paralyze, Silence, Dia...
    from the subjob), `sets.midcast.IntEnfeebles` for Black Magic (Bind, Poison,
    Blindga, Dispelga, Virus...).
 

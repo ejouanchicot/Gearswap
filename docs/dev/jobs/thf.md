@@ -62,7 +62,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 169 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`, plus Combat Mode's lock registry (`'thf_range'`); `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
 | `shared/utils/equipment/treasure_hunter.lua` | 291 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 3 raw events and an `ActionListener` subscription, `//gs c th` fields |
-| `shared/utils/equipment/weapon_resolver.lua` | 126 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
+| `shared/utils/equipment/weapon_resolver.lua` | 131 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
 | `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job (common command): the `job` list of the main job, then the `subjob` list, from `_common/combat/BUFF_CONFIG.lua` (defaults: no THF list; /WAR, /SAM, /NIN, /DNC, /WHM), through `self_buff_manager.lua` |
 | `_master/config/thf/THF_STATES.lua` | 146 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 binds (2 only on /WAR) handed to `KeybindManager.create('THF', ...)` |
@@ -72,7 +72,7 @@ function; line numbers are deliberately not used.
 | `_master/config/thf/THF_MACROBOOK.lua` | 72 | Book/page per subjob and per dual-box partner job |
 | `_master/config/thf/THF_TP_CONFIG.lua` | 70 | Moonshade piece, weapon TP bonus table, `_G.THFTPConfig` |
 | `_master/config/thf/THF_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/thf_sets.lua` | 917 | Template sets (flat) |
+| `_master/sets/thf_sets.lua` | 918 | Template sets (flat) |
 | `shared/data/job_abilities/THF_JA_DATABASE.lua` + `thf/*.lua` | | `JA_DATABASE_FACTORY.create('THF')`, read by the ability message handler (messages only) |
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that

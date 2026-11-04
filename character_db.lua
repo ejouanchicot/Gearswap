@@ -6,8 +6,8 @@
 ---
 --- Usage (Lua):
 ---   local CharDB = require('character_db')
----   local jobs = CharDB.get_jobs('Kaories')      -- {'RDM','COR','GEO'}
----   local owner = CharDB.get_owner('BLM')         -- 'Tetsouo'
+---   local jobs = CharDB.get_jobs('Kaories')      -- {'RDM','COR','GEO','PLD','WHM','BRD'}
+---   local owner = CharDB.get_owner('BLM')         -- one of its owners (pairs() order)
 ---   local is_rdm = CharDB.has_job('Kaories','RDM') -- true
 ---
 --- Usage (Python - clone_character.py):

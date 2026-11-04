@@ -42,6 +42,7 @@ New here? Read, in this order: [installation](user/getting-started/installation.
 
 | Page | What it covers |
 |---|---|
+| [Atelier page](user/features/atelier.md) | The web page `data/atelier.html`: opening it (in game or from your files), the top bar, the Sets tab and the optimizer, Buffs & target, My character, Bags and the tidy-up plan, Configuration, Simulate, Update |
 | [Keybind HUD](user/features/ui.md) | `//gs c ui`, section and row order, look, settings files |
 | [Equipment validation](user/features/equipment-validation.md) | `//gs c checksets`, the wardrobe audit and organizer, refill |
 | [Auto-tier](user/features/auto-tier-system.md) | WHM Cure and DNC Waltz tier from missing HP; BLM, RDM and GEO spells stepping down a tier |

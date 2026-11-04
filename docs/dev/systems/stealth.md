@@ -13,7 +13,7 @@ Verified against the code on 2026-09-28 (system added 2026-09-26, trace module a
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `trace_distances`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 167 | Packet 0x063 order 9 listener (decoding by `BuffTimers.read`), end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
 | `shared/utils/stealth/stealth_trace.lua` | 102 | Trace only: own Sneak / Invisible gained / refreshed / lost, and who each Sneak / Invisible cast reached |
-| `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/_common/travel/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
+| `shared/utils/stealth/stealth_config.lua` | 82 | Reads `<Character>/_common/travel/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
 | `shared/utils/messages/formatters/system/message_stealth.lua` | 98 | `show_skipped`, `show_covered`, `show_no_way`, `show_jig_recast`, `show_asked`, `show_wearing_off`, `show_setting`, `show_usage` |
 | `shared/utils/messages/data/systems/stealth_messages.lua` | 23 | `STEALTH` namespace, 10 templates |
 | `_master/config_global/STEALTH_CONFIG.lua` | 37 | Settings template, copied to `<Character>/_common/travel/` by the clone |
@@ -260,7 +260,7 @@ Everything else in the file (`push`, `wait_after`, `needs`, `handle_self`, `requ
 | `alerts` | true | Wear-off warnings in chat |
 | `delay` | 3.0 | Seconds after an action ends before the next one (2.5 until 2026-09-27: a RDM/WHM Invisible right after Sneak was refused) |
 
-`get()` reads the file once per load with `pcall(dofile, path)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (_common/travel/STEALTH_CONFIG.lua missing)", template in `stealth_messages.lua`). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
+`get()` reads the file once per load with `ModuleCache.read_char_file(path, label)` (`shared/utils/core/module_cache.lua`) into `_G._stealth_settings`: a missing file, key, or a value of another type keeps the default silently; a file that does not compile or does not return a table is named in the chat (`MessageFormatter.show_error`), then the defaults apply. `set()` changes the value in memory, then the local `save` rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (_common/travel/STEALTH_CONFIG.lua missing)", template in `stealth_messages.lua`). Note: the template's header still suggests `//gs c stealth delay 2.5`, the old default.
 
 ## State & lifetime
 

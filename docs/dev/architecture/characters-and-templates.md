@@ -4,7 +4,7 @@ The job files GearSwap loads live in one folder per character (`data/Tetsouo/`, 
 
 In game, every job file resolves inside `data/<player.name>/`, `data/shared/` or GearSwap's `libs/`, with one exception: a character that became main with `//gs c main` and has no alt folder (`_common/dualbox/alt/`) reads its hand-written `<JOB>_ALT_CUSTOM` commands from `_master/config/alt/` (`load_job_config` in `shared/utils/dualbox/alt_commands.lua`). The generated alt command tables are read from `shared/data/alt/` for every character.
 
-This page covers how a live folder is built, how it drifts from its templates, and how to add a character or deploy a template change safely. Verified against the code on 2026-09-28: `clone_character.py` (version 4.1.0, 1094 lines on 2026-10-10), `CLONE_CHARACTER.bat` (67), `character_db.lua` (227), `.gitignore` (150), the entry templates. Functions are cited by name; line numbers only where a function name would not locate the spot.
+This page covers how a live folder is built, how it drifts from its templates, and how to add a character or deploy a template change safely. Verified against the code on 2026-09-28: `clone_character.py` (version 4.1.0, 1095 lines on 2026-11-04), `CLONE_CHARACTER.bat` (67), `character_db.lua` (261), `.gitignore` (190), the entry templates. Functions are cited by name; line numbers only where a function name would not locate the spot.
 
 ## Files
 
@@ -16,7 +16,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `character_db.lua` | yes | Roster: character -> jobs + role, archive list, all-jobs list, and a Lua query API that nothing calls |
 | `scripts/check_overlay.py` | yes | Lists the differences between a live folder and its overlay |
 | `scripts/check_syntax.py` | yes | `luac`-parses every Lua file, live folders included |
-| `.gitignore` | no (ignores itself, line 78) | Ignores the live folders and, through the same patterns, the overlays |
+| `.gitignore` | no (ignores itself, line 86) | Ignores the live folders and, through the same patterns, the overlays of the seven characters it names without a leading slash (lines 51-57); the four characters added on 2026-10-16 are ignored at the root only (lines 62-65) |
 | `_master/entry/Tetsouo_<JOB>.lua` | yes, 22 files | Generic entry templates, one per job (BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH SMN THF WAR WHM). Each is 15 lines: a header and `include('../shared/entry/<job>.lua')` |
 | `shared/entry/<job>.lua` | yes, 22 files (168-372 lines) | The entry code (`get_sets`, `user_setup`, `init_gear_sets`, `job_sub_job_change`, `job_update`, `file_unload`), the same for every character; not copied by the clone |
 | `_master/sets/<job>_sets.lua` | yes, 22 files | Generic flat set files, same 22 jobs |
@@ -25,15 +25,18 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/config/alt/` | yes, 11 files | Hand-written dual-box alt commands: 5 `<JOB>_ALT_CUSTOM.lua` (BLM GEO RDM SCH SMN) and 6 `.lua.example` (BLM COR GEO RDM SCH WHM). The `*.lua` files are deployed only to a character cloned as MAIN |
 | `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | yes, 22 files | Generated alt command tables, read from there by every character (moved out of `_master/config/alt/` and the character folders on 2026-09-30) |
 | `_master/config_global/` | yes, 22 files | `ADDONS_CONFIG` (since 2026-09-30, the four addons written `true`), `AUTO_MEDICINE_CONFIG` (since 2026-09-30, `AUTOCURE_CONFIG` until 2026-10-10; every key set to its default), `BUFF_CONFIG` (since 2026-10-01, every key set to its default; no `war_` key since 2026-10-10), `CLEANSE_CONFIG` (since 2026-10-01, every key set to its default), `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT_CONFIG` and `HP_PRIORITY_CONFIG` (`ELEMENTAL_BELT`, `HP_PRIORITY` until 2026-10-10), `FIGHTS_CONFIG`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `SUBJOB_CONFIG` and `WARP_CONFIG` (since 2026-10-10, every key set to its default), `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
-| `_master/Tetsouo/` | no, 73 files | Tetsouo overlay, no entries: `config/<job>/` for BLM BRD BST COR DNC PLD SMN THF WAR plus `config/craft/`, `config_global/{CRAFT_CONFIG,DUALBOX_CONFIG,HP_PRIORITY_CONFIG,REGION_CONFIG,SORTIE_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
-| `_master/Kaories/` | no, 36 files | Kaories overlay, no entries: 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,HP_PRIORITY_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
-| `_master/Gabvanstronger/` | no, 25 files | No entries, `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,CRAFT_CONFIG,WEAPON_CONFIG}.lua` (`AUTO_ABILITIES` is the file of before 2026-10-10: step 7 of a clone folds its values into the job files), flat sets + `sets/0_AugGear_Gabvanstronger.lua`, `sets/goldsmithing_sets.lua` |
-| `_master/Blodykiller/` | no, 19 files | No entries, `config/{brd,cor}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua` (same remark), flat sets + `sets/0_AugGear_Blodykiller.lua` |
+| `_master/Tetsouo/` | no, 85 files | Tetsouo overlay, no entries: `config/<job>/` for BLM BRD BST COR DNC PLD SMN THF WAR plus `config/craft/`, `config_global/{CRAFT_CONFIG,DUALBOX_CONFIG,HP_PRIORITY_CONFIG,REGION_CONFIG,SORTIE_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
+| `_master/Kaories/` | no, 48 files | Kaories overlay, no entries: 6 flat set files (BRD COR GEO PLD RDM WHM), `config/{cor,geo,pld,rdm,whm}/` (no `config/brd/`: a clone gives her the generic BRD configs), `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,HP_PRIORITY_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
+| `_master/Gabvanstronger/` | no, 79 files | No entries, `config/<job>/` for his 12 jobs (BLU BRD COR GEO MNK NIN PUP RDM RNG SAM SCH THF), 14 `config_global/` files among them `{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,CRAFT_CONFIG,WEAPON_CONFIG}.lua` (`AUTO_ABILITIES` is the file of before 2026-10-10: step 7 of a clone folds its values into the job files), flat sets + `sets/0_AugGear_Gabvanstronger.lua`, `sets/goldsmithing_sets.lua` |
+| `_master/Blodykiller/` | no, 61 files | No entries, `config/<job>/` for his 8 jobs (BLM BRD COR GEO MNK PUP THF WHM), 12 `config_global/` files among them `{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua` (same remark), flat sets + `sets/0_AugGear_Blodykiller.lua` |
+| `_master/Morphetrix/` | no, 98 files | No entries, converted from his Mote files by `scripts/convert` (2026-10-16): `config/<job>/` and a flat `sets/<job>_sets.lua` for his 21 jobs (every job but SMN), `config_global/SUBJOB_CONFIG.lua` |
 | `Tetsouo/` (live) | no | MAIN, 22 entry files (all jobs), modular sets for the jobs of his overlay |
-| `Kaories/` (live) | no | ALT, 4 jobs (COR GEO PLD RDM), flat sets |
+| `Kaories/` (live) | no | ALT, 6 jobs (BRD COR GEO PLD RDM WHM), flat sets |
+| `Morphetrix/` (live) | no | 21 entry files (every job but SMN) |
 | `Hysoka/`, `Gabvanstronger/` (live) | no | Frozen one-shot clones; not to be modified without the owner's approval |
+| Sephiroph, Thyrsa, Kevvansmoothie, Smoothastic | - | In `character_db.lua` only (2026-10-16): no live folder and no overlay on disk today |
 
-Tracked `_master/` totals 280 files (`git ls-files _master`, 2026-10-12): `config/` 212, `config_global/` 22, `entry/` 22, `sets/` 24.
+Tracked `_master/` totals 281 files (`git ls-files _master`, 2026-11-04): `config/` 213, `config_global/` 22, `entry/` 22, `sets/` 24.
 
 ## Folder model
 
@@ -82,7 +85,7 @@ Every path goes through `shared/utils/core/char_paths.lua`: kinds `common` (its 
 
 `migrate_config.py <Char>` (in `data/`, 414 lines; `--dry-run` only lists, `--templates` writes the ten `_master/config/<job>/<JOB>_CONFIG.lua`, the two new `config_global` files and BRD's block from its own tables) tidies a folder that already has `_common/` to the layout of 2026-10-10. In order (`Tidy.run`): each job folder that exists gets `<job>/combat/<JOB>_CONFIG.lua` with the values read from the old `TUNING.lua`, `AUTO_ABILITIES.lua` and `BUFF_CONFIG.lua` (through `lua5.1` or `lua` on the PATH), else the defaults; `DEBUFF_SONGS` and `REFRESH_BELOW` are added to `brd/combat/BRD_SONG_CONFIG.lua`; `_common/combat/SUBJOB_CONFIG.lua` and `_common/travel/WARP_CONFIG.lua` are written; the `war_` keys are taken out of `BUFF_CONFIG.lua`; `TUNING.lua` and `AUTO_ABILITIES.lua` are removed; the nine common files of `MOVES` go to their theme and name; `combat_mode.lua` and `treasure_mode.lua` go from `_common/keys/` to `saved/`. A copy of every file touched goes first to `data/_backups/<Char>_config_<date>_<time>/`; a file whose new place is taken is left and listed (`LEFT:`), except in a clone (`fresh`), where the job files just copied from the templates are written again with the values of the old files the overlay brought. It then rewrites `_WHERE-IS-WHAT.txt`. A folder that was not tidied keeps working (the code reads the places of before). `scripts/audit/config_layout_check.lua` (local, untracked) checks a folder.
 
-Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns for the live folders (`Tetsouo/`, `Kaories/`, `Gabvanstronger/`, `Blodykiller/`, no leading slash) also match `_master/<Name>/`, and the negations that used to re-include them are gone (comment at `.gitignore:59-62`). Consequences: overlays have no version history (a mistake there is recovered only from a live folder or a `clone_backups/` copy), and `git status` never shows an overlay change. Until 2026-09-28 this also left a fresh clone of the repository with no SMN entry at all; SMN now has a generic template.
+Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns for the live folders (`Morphetrix/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/`, `Typioni/`, `Kaories/`, `Tetsouo/`, no leading slash) also match `_master/<Name>/`, and the negations that used to re-include them are gone (comment at `.gitignore:67-70`). The list is by name, not every `_master/<Name>/`: the four characters added to `character_db.lua` on 2026-10-16 (Sephiroph, Thyrsa, Kevvansmoothie, Smoothastic) are written with a leading slash (`.gitignore:62-65`), which ignores their live folder only; an overlay made for one of them would be tracked until a pattern without the slash is added. Consequences: overlays have no version history (a mistake there is recovered only from a live folder or a `clone_backups/` copy), and `git status` never shows an overlay change. Until 2026-09-28 this also left a fresh clone of the repository with no SMN entry at all; SMN now has a generic template.
 
 ### How GearSwap finds a live folder
 
@@ -96,9 +99,9 @@ Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns
 
 | Tracked (`git ls-files`) | Ignored (`.gitignore`) |
 |---|---|
-| `_master/{entry,sets,config,config_global}/**` (280 files) | live folders `Morphetrix/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/`, `Typioni/`, `Kaories/`, `Tetsouo/` (lines 51-57), and through the same patterns every `_master/<Name>/` overlay |
-| `character_db.lua`, `clone_character.py`, `CLONE_CHARACTER.bat`, `.markdownlint.json`, `README.md` | `.gitignore` itself (78), `data.code-workspace` (65), `.vscode/` (31), `CLAUDE.md` and `.claude/` (75-76, again 118), `notes/` (132) |
-| `shared/**`, `docs/`, `scripts/check_syntax.py`, `scripts/check_overlay.py`, `scripts/item_db/`, `scripts/addon_patches/`, `scripts/atelier/` (negations at 98-106) | the rest of `scripts/` (94, e.g. the local `scripts/audit/` harnesses), `scripts/item_db/out/` (102), `_dev/` (90), `export/` (43), `*.log`, `*.png`, debug exports (122-128) |
+| `_master/{entry,sets,config,config_global}/**` (281 files) | live folders `Morphetrix/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/`, `Typioni/`, `Kaories/`, `Tetsouo/` (lines 51-57) and, through the same patterns, the overlays `_master/<Name>/` of these seven names; the live folders `/Sephiroph/`, `/Thyrsa/`, `/Kevvansmoothie/`, `/Smoothastic/` (lines 62-65, root only) |
+| `character_db.lua`, `clone_character.py`, `CLONE_CHARACTER.bat`, `.markdownlint.json`, `README.md` | `.gitignore` itself (86), `data.code-workspace` (73), `.vscode/` (31), `CLAUDE.md` and `.claude/` (83-84, again 129 and 136), `notes/` (150) |
+| `shared/**`, `docs/`, `scripts/check_syntax.py`, `scripts/check_overlay.py`, `scripts/item_db/`, `scripts/addon_patches/`, `scripts/atelier/`, `scripts/loadcheck/`, `scripts/convert/`, `scripts/release/`, `scripts/run_tests.py` (negations at 106-122) | the rest of `scripts/` (102, e.g. the local `scripts/audit/` harnesses), `scripts/item_db/out/` (111), `_dev/` (98), `export/` (43), `*.log`, `*.png`, debug exports (140-145) |
 
 Lines 8-11 ignore `Tetsouo/jobs/`, `Tetsouo/utils/`, `Kaories/jobs/`, `Kaories/utils/` (junctions from an old migration). Neither live folder contains them any more, and lines 56-57 already cover them.
 
@@ -190,7 +193,7 @@ Without `--source`, `S = 'Tetsouo'`. `_select_overlay(T)`:
 | Invocation | Target | Overlay used |
 |---|---|---|
 | default source | `Tetsouo` | `_master/Tetsouo/` (his modular sets, job configs, refill lists, wardrobe config, craft files) |
-| default source | a name with its own `_master/<Name>/` (`Kaories`, `Gabvanstronger`, `Blodykiller`) | that folder |
+| default source | a name with its own `_master/<Name>/` (`Kaories`, `Gabvanstronger`, `Blodykiller`, `Morphetrix`) | that folder |
 | default source | any other name | none: generic `_master/` files only |
 | `--source Kaories` | any name | `_master/Kaories/` |
 
@@ -203,7 +206,7 @@ Data:
 
 | Table | Content |
 |---|---|
-| `CHARACTERS` | `Tetsouo = { jobs = {` all 22 jobs `}, role = 'main' }`, `Kaories = { jobs = {RDM, COR, GEO, PLD}, role = 'alt' }`, `Gabvanstronger = { jobs = {RDM, THF, BLU}, role = 'main' }`, `Blodykiller = { jobs = {BRD, COR}, role = 'alt' }`. The comment above the last two says a job is listed only once its overlay exists, since a job without one would get the template's (Tetsouo's) gear |
+| `CHARACTERS` | 9 characters, in five commented sections (`character_db.lua:38-102`, 2026-11-04):<br>• MAIN CHARACTER: `Tetsouo`, all 22 jobs, `main`;<br>• ALT CHARACTER: `Kaories`, RDM COR GEO PLD WHM BRD, `alt`;<br>• GAB'S BOXES: `Gabvanstronger`, RDM THF BLU BRD COR GEO MNK NIN PUP RNG SAM SCH, `main`; `Blodykiller`, BRD COR BLM GEO MNK PUP THF WHM, `alt`. The comment says a job is listed only once it is converted into the overlay `_master/<Name>/`, since a job without one would get the template's (Tetsouo's) gear (RDM THF BLU and BRD COR since 2026-09-26, the others converted by `scripts/convert` on 2026-10-16);<br>• MORPH: `Morphetrix`, 21 jobs (all but SMN, which he did not have), `main`, overlay `_master/Morphetrix/`;<br>• GAB'S OTHER CHARACTERS (his old `0_Shared` files, gear converted on 2026-10-16, role `main` since none is known): `Sephiroph`, BLU COR DNC GEO PLD PUP SAM THF; `Thyrsa`, COR DRG DRK THF WAR; `Kevvansmoothie`, GEO SCH THF; `Smoothastic`, SCH THF WHM. None of these four has a live folder or an overlay on disk today |
 | `ARCHIVE_JOBS` | empty (every job has an owner) |
 | `MASTER` | `sets_dir = '_master/sets'`, `config_dir = '_master/config'` |
 | `ALL_JOBS` | 22 codes: BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH SMN THF WAR WHM |
@@ -215,7 +218,7 @@ Public API. Every function has **zero callers** in `shared/`, `_master/` and the
 | `get_jobs(name)` | job list or nil | case-insensitive; raises on a nil name |
 | `get_role(name)` | `'main'`/`'alt'`/nil | case-insensitive |
 | `has_job(name, job)` | boolean | |
-| `get_owner(job)` | first owner found, `'_archive'`, or nil | for a job with several owners (COR, BRD, PLD, RDM, THF) the result depends on `pairs()` order (`get_owner('COR')` returns `Blodykiller` under lua5.1 today) |
+| `get_owner(job)` | first owner found, `'_archive'`, or nil | every job but SMN has several owners, so the result depends on `pairs()` order and is not a fixed name (under lua5.1 on 2026-11-04, `get_owner('COR')` gave `Gabvanstronger` and `get_owner('BLM')` `Morphetrix`) |
 | `get_archive_jobs()`, `get_character_names()`, `get_all()`, `get_all_jobs()`, `get_master_paths()` | raw tables / list of names | |
 | `validate()` | `true, 'OK - all 22 jobs assigned'` (count from `ALL_JOBS`) or `false, msg` | Checks that no archived job has an owner and that every job in `ALL_JOBS` is owned or archived. Passes today (lua5.1, 2026-10-01). Nothing runs it. Its doc says a second owner needs an overlay, but it does not check for one |
 
@@ -223,7 +226,6 @@ What `clone_character.py` actually reads (`parse_character_db`):
 
 - The regex `([A-Z][a-z]\w*)\s*=\s*\{[^}]*jobs\s*=\s*\{([^}]*)\}[^}]*role\s*=\s*['"](\w+)['"]` (DOTALL). A block is recognised only if its name starts with one uppercase letter followed by a lowercase one, `jobs` comes before `role`, and no `}` appears between `jobs = {...}` and `role`. `ARCHIVE_JOBS`, `ALL_JOBS` and `MASTER` are ignored.
 - DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: the same 22 codes as `ALL_JOBS` (`clone_character.py:255-258`).
-- The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories.
 
 ## Per-character files read at runtime
 
@@ -360,7 +362,7 @@ Tests: `node scripts/atelier/update_test.js [--from <ref>] [--to <ref>]` (a play
 
 ## How to add a job to the templates
 
-1. `shared/entry/<job>.lua`: copy a similar shared entry. Reach the character's files only through `CharPaths` (`CharPaths.module('job', '<JOB>_STATES', '<JOB>')`, `CharPaths.relative('sets', '<job>_sets.lua', '<JOB>')`, `CharPaths.name()`), never a hard-coded name. Require `config_loader` before the other shared modules (it installs the require cache) and include INIT_SYSTEMS right after Mote-Include; see [core-lifecycle.md](../systems/core-lifecycle.md#how-a-job-file-boots).
+1. `shared/entry/<job>.lua`: copy a similar shared entry. Reach the character's files only through `CharPaths` (`CharPaths.module('job', '<JOB>_STATES', '<JOB>')`, `CharPaths.relative('sets', '<job>_sets.lua', '<JOB>')`, `CharPaths.name()`), never a hard-coded name. Require `char_paths` first (it installs the require cache), then `config_loader`, before the other shared modules, and include INIT_SYSTEMS right after Mote-Include; see [core-lifecycle.md](../systems/core-lifecycle.md#how-a-job-file-boots).
 2. `_master/entry/Tetsouo_<JOB>.lua`: a copy of another one-line entry with the job changed.
 3. `_master/sets/<job>_sets.lua` (flat) and `_master/config/<job>/`, with **every** file the shared entry `require`s without `pcall` (PUP did not load until 2026-09-29 because its entry required files `_master` did not ship).
 4. `shared/data/alt/<JOB>_ALT_COMMANDS.lua` if a dual-box alt on that job should answer commands.
@@ -391,7 +393,7 @@ Tests: `node scripts/atelier/update_test.js [--from <ref>] [--to <ref>]` (a play
 ## For maintainers / AI
 
 - **Never edit a live folder to fix a template bug.** Fix `_master/` (tracked) and then propagate by hand or by re-clone. The frozen clones (`Hysoka/`, the live `Gabvanstronger/`) are not to be touched without the owner's approval.
-- **ripgrep and the Grep tool skip gitignored folders**: `Tetsouo/`, `Kaories/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/` and every `_master/<Name>/` overlay are invisible to them. Any "no caller" or "no copy" claim that must cover those folders needs `grep -r` (or `rg -uu`).
+- **ripgrep and the Grep tool skip gitignored folders**: `Tetsouo/`, `Kaories/`, `Hysoka/`, `Gabvanstronger/`, `Morphetrix/` and the overlays `_master/{Tetsouo,Kaories,Gabvanstronger,Blodykiller,Morphetrix}/` are invisible to them. Any "no caller" or "no copy" claim that must cover those folders needs `grep -r` (or `rg -uu`).
 - **Test the cloner offline**: `SmartCharacterCloner(base_dir=<scratch copy of data>, source_name=None).clone(name, jobs, {'role': 'main', 'character_name': name, 'enabled': False}, 'US')` on a copy of `_master/` + `character_db.lua` in a scratch directory; never on `data/` itself. Compare with `diff -rq --strip-trailing-cr`.
 - **Test the Lua side offline**: `lua5.1 -e "package.path='./?.lua;'..package.path; local D=require('character_db'); print(D.validate())"` from `data/`; `luac5.1 -p _master/entry/*.lua shared/entry/*.lua` for the entries; `python scripts/check_syntax.py` for everything.
 - **Invariant**: any file a shared entry `require`s without `pcall` must exist in `_master/config/<job>/` or `_master/config_global/`, or the job does not load for a cloned character (PUP was the example until 2026-09-29).

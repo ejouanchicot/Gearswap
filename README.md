@@ -38,8 +38,8 @@ lockstyle, macro book) is common to all jobs.
 | PUP | Rewritten 2026-09-29, offered by the clone script. It loads, but has not been tested in game yet |
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,
-and COR, GEO, PLD and RDM on the dual-boxed alt. BLU (added 2026-09-26) is played
-by a friend's character. DRK, RUN, SAM and WHM exist as templates but no
+and BRD, COR, GEO, PLD, RDM and WHM on the dual-boxed alt. BLU (added 2026-09-26) is played
+by a friend's character. DRK, RUN and SAM exist as templates but no
 maintained character plays them, and DRG, MNK, NIN, PUP, RNG and SCH are new
 and not yet played.
 
@@ -216,6 +216,8 @@ lockstyle; open `data/atelier.html` in your browser to read them.
   open there.
 - **Every job at once**: `//gs c atelier all`, or `//gs c atelier tour` in the
   Mog House, which changes to each of your jobs in turn and comes back.
+
+The whole page, tab by tab: [Atelier page](docs/user/features/atelier.md).
 
 Keys and pieces you change in the page are written apart, in
 `data/<YourName>/atelier/overrides/`; "Push to GearSwap" writes a set into

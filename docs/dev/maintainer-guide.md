@@ -91,9 +91,9 @@ project fills Mote's hooks; it never replaces the engine-facing functions.
 | **Load** (`gs reload`, main job change, zone-in on another job, login) | `load_user_files` *(engine, `refresh.lua:62-184`)*: previous file's `file_unload`, unregister its events, delete texts and prims, build a new sandbox, run the file, call `get_sets()` | `include('Mote-Include.lua')` runs `init_include()` from the middle of the file (`Mote-Include.lua:188`): Mote states, `job_setup()`, `user_setup()` (`:171`), `init_gear_sets()` (`:175`); then Mote defines `handle_actions`, `cleanup_*`, `handle_equipping_gear` (`:227-456`) | Entry `get_sets()`: Mote, then `INIT_SYSTEMS.lua`, data loader, the three message hooks, configs, `JobChangeManager.cancel_all()`, the facade. Full order: [README.md, Boot sequence](README.md#boot-sequence-of-one-load) |
 | **Action** (spell, JA, WS, item, ranged) | `outgoing text` handler (`triggers.lua:41`) resolves the command, filters it (`filter_pretarget`), then calls `pretarget`, `precast`; `midcast` and `aftercast` follow the action packets | `handle_actions` (`Mote-Include.lua:227-283`): `filter_X` → `user_X` → `job_X` → `default_X` → `user_post_X` → `job_post_X` → `cleanup_X`; a cancel stops the chain but `cleanup_X` still runs | Precast pipeline, `MidcastManager`, message hooks on `user_post_precast` / `user_post_midcast`, wrappers on `cleanup_*` ([section 3](#3-the-gear-wrapper-chain)) |
 | **Status change** (idle, engaged, resting, dead) | `status change` event (`gearswap.lua:323-328`) | `status_change` → `user_status_change` → `job_status_change` → `handle_equipping_gear` (`Mote-Include.lua:995-1017`) | `<JOB>_STATUS.lua`, `LifecycleManager`, wrappers on `handle_equipping_gear` |
-| **Buff change** | packet 0x063 (`packet_parsing.lua:443-568`) fires `buff_change` / `buff_refresh` | `buff_change` updates `state.Buff[buff]`, then `user_buff_change`, `job_buff_change` (`Mote-Include.lua:1023-1043`). No gear re-equip | `<JOB>_BUFFS.lua`; `CustomStates` re-dresses when a buff its rules watch changes |
-| **Subjob change** | 0x061 with a new subjob id fires `sub_job_change` in the **same** sandbox (`packet_parsing.lua:419-428`) | `sub_job_change`: `user_setup()` again, `job_sub_job_change()`, `send_command('gs c update')` (`Mote-Include.lua:981-990`) | `JobChangeManager.on_job_change` schedules a `gs reload` (2.0 s, or 3.0 s when the main job also differs), so the sandbox is replaced anyway |
-| **Main job change** | the outgoing request 0x100 loads the new file (`packet_parsing.lua:733-751`) | runs as a fresh load | old file's `file_unload`; `JobSyncWatchdog` repairs a refused request ([section 2](#the-job-file-is-chosen-from-the-request)) |
+| **Buff change** | packet 0x063 (`packet_parsing.lua:442-573`) fires `buff_change` / `buff_refresh` | `buff_change` updates `state.Buff[buff]`, then `user_buff_change`, `job_buff_change` (`Mote-Include.lua:1023-1043`). No gear re-equip | `<JOB>_BUFFS.lua`; `CustomStates` re-dresses when a buff its rules watch changes |
+| **Subjob change** | 0x061 with a new subjob id fires `sub_job_change` in the **same** sandbox (`packet_parsing.lua:418-428`) | `sub_job_change`: `user_setup()` again, `job_sub_job_change()`, `send_command('gs c update')` (`Mote-Include.lua:981-990`) | `JobChangeManager.on_job_change` schedules a `gs reload` (2.0 s, or 3.0 s when the main job also differs), so the sandbox is replaced anyway |
+| **Main job change** | the outgoing request 0x100 loads the new file (`packet_parsing.lua:726-751`) | runs as a fresh load | old file's `file_unload`; `JobSyncWatchdog` repairs a refused request ([section 2](#the-job-file-is-chosen-from-the-request)) |
 | **Zone** | 0x00A: clears the command registry and the refused-equip list; reloads the file only if the zone packet carries another main job (`packet_parsing.lua:32-45`). No user hook | nothing | systems that care register `raw_register_event('zone change', ...)` (Treasure Hunter tags, for example) |
 | **`//gs c <cmd>`** | `self_command` | `self_command` → `job_self_command`; if not handled, Mote's `selfCommandMaps` (`Mote-SelfCommands.lua:9-35`) | `<JOB>_COMMANDS.lua` → `CommonCommands` → job commands → Mote → the alt's commands. See [commands-and-debug.md](systems/commands-and-debug.md) |
 | **`//lua reload gearswap`** | the whole addon restarts: `windower.*` values written from the sandbox are lost too | — | debug flags on `windower._gs_debug` reset; trace survives through its marker file |
@@ -129,8 +129,8 @@ metatable**. A global that is not listed there is `nil`:
   `require` one from project code (header of
   `shared/utils/equipment/slip_reader.lua`, which replaces `require('slips')`).
   The project's `ModuleCache`
-  (`shared/utils/core/module_cache.lua`, installed by `config_loader` and again
-  by INIT_SYSTEMS) caches per sandbox. See
+  (`shared/utils/core/module_cache.lua`, installed by `char_paths`, the first file of
+  every entry, with fallbacks in `config_loader` and INIT_SYSTEMS) caches per sandbox. See
   [core-lifecycle.md, ModuleCache](systems/core-lifecycle.md#modulecache).
 - `include_user` raises for a missing file (`:316`), a compile error, and any
   runtime error while running the file, including errors in files it requires
@@ -158,7 +158,7 @@ feature a degraded path.
 |---|---|---|
 | Sandbox `_G`, module locals, the `ModuleCache`, `sets`, Mote `state.*` | Until the next load | `user_env = nil` (`refresh.lua:83`), new table (`:114`) |
 | `windower.*` written from project code | Until `//lua reload gearswap` | `windower` is `user_windower`, one table created when the addon loads with `__index = windower` and no `__newindex` (`user_functions.lua:418-423`) |
-| `disable_table` (slot locks), Windower keybinds, `command_registry` | Engine lifetime: survives every load, even a main job change | `statics.lua:194-195`. On 0x100, `player.main_job_id` is assigned (`packet_parsing.lua:744`) before the "enable all slots" test compares it (`:756`), so that test never passes |
+| `disable_table` (slot locks), Windower keybinds, `command_registry` | Engine lifetime: survives every load, even a main job change | `statics.lua:194-195`. On 0x100, `player.main_job_id` is assigned (`packet_parsing.lua:737`) before the "enable all slots" test compares it (`:756`), so that test never passes |
 
 Consequences:
 
@@ -224,7 +224,7 @@ time.
   or a coroutine nothing is refreshed at all.
 - **Buffs.** `buffactive` is rebuilt from `player.buffs` inside
   `refresh_globals` (`refresh.lua:358`). In the 0x063 handler, `refresh_globals()`
-  runs (`packet_parsing.lua:554`) and the `buff_change` events fire before the
+  runs (`packet_parsing.lua:552`) and the `buff_change` events fire before the
   handler writes the new `player.buffs` (`:566-568`). A coroutine waiting for a
   buff must read `windower.ffxi.get_player().buffs` and map ids with
   `res.buffs` (see `AbilityHelper.is_buff_active`,
@@ -249,7 +249,7 @@ time.
 (`statics.lua:138-148, 189`; `helper_functions.lua:103-118`): every string key
 is lower-cased on read and on write. `buffactive['Chaos Roll']` works;
 numeric keys (`buffactive[317]`) work too. `buff_change(name, gain)` receives
-the exact-case name from `res.buffs` (`packet_parsing.lua:549`).
+the exact-case name from `res.buffs` (`packet_parsing.lua:547`).
 
 FFXI replaces the Light Arts / Dark Arts icon with Addendum: White / Black, so
 test the Addendum before the Arts.
@@ -316,7 +316,7 @@ a difference a bug. And `sets.a = sets.b` is an alias, not a copy: use
 ### The job file is chosen from the request
 
 The outgoing job-change request 0x100 sets `player.main_job_id` and sends
-`lua i gearswap load_user_files <job>` at once (`packet_parsing.lua:733-751`).
+`lua i gearswap load_user_files <job>` at once (`packet_parsing.lua:726-751`).
 The server's answer 0x061 corrects `main_job_id` (`:381`) but never reloads.
 A refused or reordered request leaves the previous job's file loaded.
 `shared/utils/core/job_sync_watchdog.lua` compares the loaded job with
@@ -479,7 +479,7 @@ folder is updated by hand or by re-clone. Stage explicit paths
 `_master/<Name>/` (same relative path replaces the template), substitutes the
 template name, generates `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`, moves an
 existing folder to `addons/GearSwap/clone_backups/`, and copies back the files
-written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-355`). The
+written in game (`KEPT_ON_RECLONE`, `clone_character.py:313-356`). The
 clone refuses jobs outside `ALL_VALID_JOBS` (`:255-258`). Two character folders
 are frozen clones: do not modify them without the owner's approval.
 
@@ -505,8 +505,9 @@ The files to create or touch:
       character file through `CharPaths` (`CharPaths.module('job',
       '<JOB>_STATES', '<JOB>')`, `CharPaths.relative('sets',
       '<job>_sets.lua', '<JOB>')`, `CharPaths.name()`), never a hard-coded
-      character name; require `config_loader` before the other shared
-      modules, include INIT_SYSTEMS right after Mote-Include.
+      character name; require `char_paths` first (it installs the
+      require cache), then `config_loader`, before the other shared
+      modules; include INIT_SYSTEMS right after Mote-Include.
 - [ ] `_master/entry/Tetsouo_<JOB>.lua`: copy another one-line entry and
       change the job (`include('../shared/entry/<job>.lua')`).
 - [ ] `_master/config/<job>/`: **every** file the shared entry requires

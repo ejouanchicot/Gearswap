@@ -42,15 +42,17 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
 | `shared/utils/precast/tp_bonus_handler.lua` | 86 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
+| `shared/utils/weaponskill/weapon_tp_bonus.lua` | 94 | `WeaponTP.of(weapon, tp_config)`: a weapon's TP Bonus, from the job's TP config, else the game's description and your gear scan |
+| `shared/utils/weaponskill/game_facts.lua` | 96 | Values a TP config leaves on `'auto'` (merits, job point gifts such as Fencer's, a piece owned), read from the game; nil outside it |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
 | `shared/utils/precast/tier_refiner.lua` | 230 | TierRefiner: cast the highest learned tier whose recast and MP allow it |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table for RDM enfeebles (`get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Tier table for nukes I-V, the GEO -ra nukes and Aspir (`get(family)`) |
-| `shared/utils/precast/cast_time.lua` | 346 | CastTime: cast-time estimate from the gear actually sent; `cleanup_precast` hook, `PRECAST` trace line |
+| `shared/utils/precast/cast_time.lua` | 349 | CastTime: cast-time estimate from the gear actually sent; `cleanup_precast` hook, `PRECAST` trace line |
 | `shared/utils/precast/flurry_tracker.lua` | 73 | FlurryTracker: Flurry I / II on this character, for `sets.precast.RA.Flurry1/2` |
-| `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast`: job ability messages |
-| `shared/hooks/init_ws_messages.lua` | 138 | Wraps `user_post_precast`: weaponskill messages |
-| `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast`: spell messages, Utsusemi: Ichi shadow cancel |
+| `shared/hooks/init_ability_messages.lua` | 100 | Wraps `user_post_precast`: job ability messages |
+| `shared/hooks/init_ws_messages.lua` | 141 | Wraps `user_post_precast`: weaponskill messages |
+| `shared/hooks/init_spell_messages.lua` | 100 | Wraps `user_post_midcast`: spell messages, Utsusemi: Ichi shadow cancel |
 
 Job files used to document the contract: every `shared/jobs/<job>/functions/<JOB>_PRECAST.lua`
 (22 files, one per job).
@@ -205,7 +207,7 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 22
 | DNC | Utsusemi: Ichi/Ni excluded from the spell cooldown check; `job_precast_samba` checks `spell.tp_cost` against `live_tp()` (skipped under Trance); Climactic timestamp; `job_precast_weaponskill` runs `WSPrecastHandler.handle` (range, AutoJump, TP), then `ClimaticManager.auto_trigger` (`AbilityHelper.try_ability_ws`, gated by `state.ClimacticAuto`). `job_post_precast` applies `WSVariantSelector.apply_variant` **then** the TP gear. `refine_waltz` is overridden with a no-op |
 | BLM | `check_recast_or_refine`: abilities in `BLM_SPELL_FILTERS.CHARGE_ABILITIES` skip the cooldown check; tiered spells go to BLM's own `refine_various_spells` (`logic/refiner/`, which calls `TierRefiner.find_available_tier`); others take the plain spell check |
 | BRD | `SongRefinement.refine_song` **before** the cooldown check; after the cancel check `job_precast_bardsong` (Pianissimo through `AbilityHelper.follow_up_or_abort`) and `try_marcato`; `WSPrecastHandler`; instrument lock for Honor March / Aria of Passion (`InstrumentLockConfig.requires_lock`) |
-| WHM | `retier_cure` **before** the cooldown check: a Cure/Curaga that `CureManager.select_cure_tier` swaps is cancelled and re-sent under the new name; a cure left as it is goes on to the cooldown check. `paralyna_on_self` sets `handled` (no swap) for Paralyna while paralyzed. See [factories and helpers](factories-and-helpers.md#whm-curemanager) |
+| WHM | `CureManager.retier` **before** the cooldown check: a Cure/Curaga that `CureManager.select_cure_tier` swaps is cancelled and re-sent under the new name; a cure left as it is goes on to the cooldown check. `paralyna_on_self` sets `handled` (no swap) for Paralyna while paralyzed. See [factories and helpers](factories-and-helpers.md#whm-curemanager) |
 | COR | `DoubleUp.redirect` (`cor/functions/logic/double_up.lua`) **before** the cooldown check: a roll already up becomes Double-Up or is refused. `apply_cor_precast`: Crooked Cards timestamp, `job_precast_corsairroll`, `FlurryTracker.apply_ranged_groups()` for `/ra`, Double-Up gear. `job_post_precast`: TP gear, Luzaf's Ring (`apply_luzaf`), `hold_fold_gear` |
 | RDM | Stages: `stage_guard`, `stage_cooldown` (tiered enfeebles, unless `state.EnfeebleTier` is Off, and tiered nukes go to `TierRefiner.refine` instead of the spell check), `stage_phalanx` (Phalanx II on self becomes Phalanx...), `stage_saboteur` (`AbilityHelper.try_ability_smart`), WS handler, `spell_gear_lock.begin`. `combat_mode.apply()` runs first. `//gs c debugprecast` prints each stage |
 | GEO | Tiered spells in `NUKE_TIERS` (nukes, -ra, Aspir) go to `TierRefiner.refine` instead of the cooldown check; then `geo_auto_abilities.apply` (Entrust / Full Circle, `AbilityHelper.try_ability`) |
@@ -498,16 +500,28 @@ piece is not overwritten.
 
 `TPBonusCalculator.calculate(tp, cfg, main, buffs, sub, worn, range)` (`tp_bonus_calculator.lua:205`):
 
-1. Effective TP (`effective_tp`) = current TP + `get_weapon_bonus(main)`
-   + `get_weapon_bonus(sub)` when the sub is a different weapon + `get_warcry_bonus()`
-   (only if `buffactive['Warcry']`) + `get_hagakure_bonus()` + `get_fencer_bonus(main, sub)`.
-2. Next threshold from `config.thresholds = {2000, 3000}` (`next_threshold`); none
+1. Effective TP (`effective_tp`) = current TP + `WeaponTP.of(main)` + `WeaponTP.of(sub)`
+   when the sub is a different weapon + `WeaponTP.of(range)` when the ranged weapon is a
+   third one + `get_warcry_bonus()` (only if `buffactive['Warcry']`) + `get_hagakure_bonus()`
+   + `get_fencer_bonus(main, sub)`. `WeaponTP.of(weapon, tp_config)`
+   (`shared/utils/weaponskill/weapon_tp_bonus.lua`): the job config's `get_weapon_bonus`
+   wins when it gives more than 0; otherwise the TP Bonus written in the game's item
+   description, plus the augments and path-rank stats of your copy as `//gs c gearscan`
+   read it (`<Char>/saved/gear_augments.lua`, ranks from `PATH_RANK_GEAR.lua`; nothing from
+   the scan when your copies differ). Cached per weapon for the load.
+2. Pieces already worn (`split_worn`): the TP pieces the weaponskill set puts on count
+   as there, added to the effective TP, and their slot leaves the candidates.
+3. Next threshold from `config.thresholds = {2000, 3000}` (`next_threshold`); none
    above 3000 -> nil.
-3. Pieces sorted by bonus descending (`ranked_pieces`). If the gap exceeds the sum -> nil.
-4. `pieces_for_gap`: first single piece whose bonus covers the gap, else the greedy
+4. Pieces sorted by bonus descending (`ranked_pieces`). If the gap exceeds the sum of the
+   pieces still available -> nil.
+5. `pieces_for_gap`: the smallest single piece whose bonus covers the gap, else the greedy
    largest-first combination.
 
-TP bonus from pieces already in the WS set is not part of step 1.
+`TPBonusHandler` calls `calculate` with no `worn` (step 2 counts nothing) and keeps its
+arguments in `_G.temp_tp_bonus_args`; `WSPrecastHandler.apply_tp_gear` runs it again in
+`job_post_precast` with `gearswap.equip_list` (the set about to be sent) as `worn`, so a
+TP piece already in the WS set (Boii Cuisses in the base set) is not added a second time.
 
 TP config schema (per job, `<Character>/<job>/combat/<JOB>_TP_CONFIG.lua`, loaded
 into `_G.<JOB>TPConfig` by the entry point): `pieces = { {slot, name, bonus}, ... }`
@@ -657,7 +671,7 @@ DW tiers stay off too (`GearHold.active()`, `shared/utils/core/gear_hold.lua`).
 
 **Spell: Cure IV on a party member, WHM main.**
 `refresh_globals` -> Mote `precast` -> `job_precast`: guard (no debuff) ->
-`retier_cure` (CureManager keeps Cure IV) -> `check_spell_cooldown` (ready) ->
+`CureManager.retier` (keeps Cure IV) -> `check_spell_cooldown` (ready) ->
 WS handler (non-WS, `true`) -> `default_precast`: `sets.precast.FC['Cure IV']` ->
 `FC.Cure` (spellMap) -> ... -> `user_post_precast` (no message: not an ability) ->
 `job_post_precast` -> `cleanup_precast`: belt (not elemental), TH (no), custom,

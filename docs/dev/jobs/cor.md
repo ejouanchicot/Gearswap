@@ -32,7 +32,7 @@ What COR adds on top of the shared pipeline:
 - **Weapon handling**: main weapon (its off-hand weapon only with Dual Wield,
   else `sets.SingleWield`'s sub or none) and the gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only; `refresh_mp_below` in `cor/combat/COR_CONFIG.lua`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)).
 - **External addon swap**: the `rolltracker` addon is unloaded while COR is
-  loaded and loaded again by `file_unload`, both through [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) (`rolltracker = false` in
+  loaded and loaded again once the game is off COR (`file_unload` checks 2 s later), both through [JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua) (`rolltracker = false` in
   `_common/tools/ADDONS_CONFIG.lua`: left alone).
 
 Checked against the working tree on 2026-09-28. Code is cited by file and
@@ -42,7 +42,7 @@ function; line numbers are given only where no function name fits.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/cor.lua` | 330 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (ends with `EntryKit.macro_and_lockstyle`), `job_update`, `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
+| `shared/entry/cor.lua` | 360 | Entry point (the same for every character; `<Char>_COR.lua` and its template `_master/entry/Tetsouo_COR.lua` are one `include` of it): `LOCKSTYLE_CONFIG`, `REGION_CONFIG` and `UIConfig` at file level, `init_party_tracking`, `get_sets`, `job_sub_job_change`, `user_setup` (ends with `EntryKit.macro_and_lockstyle`), `job_update`, `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/cor/functions/cor_functions.lua` | 132 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
 | `shared/jobs/cor/functions/COR_PRECAST.lua` | 225 | `job_precast` (guard, `DoubleUp.redirect`, cooldown, `apply_cor_precast`, WS) / `job_post_precast` (TP gear, `apply_luzaf`, `hold_fold_gear`, `RollDebug.note_precast`, `RollHold.start`); starts `flurry_tracker` at load |
 | `shared/jobs/cor/functions/COR_MIDCAST.lua` | 103 | `job_midcast` (empty) / `job_post_midcast` (RA with `RangedMode` + Triple Shot, Enhancing, `PASSTHROUGH_SKILLS`) |
@@ -65,7 +65,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/logs/rolls/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
-| `shared/jobs/cor/functions/logic/set_builder.lua` | 156 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
+| `shared/jobs/cor/functions/logic/set_builder.lua` | 137 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 7 binds, data only; `KeybindManager.create('COR', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -75,7 +75,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_CONFIG.lua` | 16 | The job's own settings, read through `JobConfig` (`refresh_mp_below = 50`) |
 | `_master/config/cor/COR_TP_CONFIG.lua` | 61 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
+| `_master/sets/cor_sets.lua` | 444 | Template sets (flat; `sets.SingleWield` as a commented example) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
 | `shared/utils/messages/utilities/party_messages.lua` | 48 | `//gs c party` listing |
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
@@ -473,8 +473,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 - Coroutines: the 0.2 s macro book step (dropped by a newer load, LoadGate),
   the 8 s lockstyle and the 1 s pouch check after `/ra`; the last two are not
   cancelled by a reload.
-- Outside GearSwap: `rolltracker` unloaded while COR is loaded, loaded again by
-  `file_unload` (also on every subjob change), unless `_common/tools/ADDONS_CONFIG.lua` sets it `false`.
+- Outside GearSwap: `rolltracker` unloaded by `get_sets` once, and loaded again once the game is off COR, unless `_common/tools/ADDONS_CONFIG.lua` sets it `false`. The flag `windower._cor_rolltracker_off` (it outlives the sandbox) is set when `get_sets` sends the unload, so a subjob change or `//gs reload` of COR sends nothing. `file_unload` -> local `release_rolltracker(next_file)`: when GearSwap itself unloads (`next_file` nil) it reloads the addon at once; otherwise it asks the game 2 s later and reloads it only when the main job is no longer COR (`shared/entry/cor.lua`, since `edbcfb96`).
 - Subjob change: `job_sub_job_change` hands over to `JobChangeManager`, which
   reloads. The reload wipes `cor_active_rolls` and `cor_last_roll`.
 
@@ -575,13 +574,6 @@ In game: `//gs c rolldebug` (per-roll gear report and `<Character>/logs/rolls/ro
   `//gs c rolls` calls `sync_with_buffs` (`roll_is_active`, `on_roll_cast`).
 - After a reload, `DoubleUp.redirect` sends Double-Up for any roll that is up
   (no last roll known), even when the other roll was the last one.
-- `rolltracker` is unloaded on every COR load and loaded on every COR unload,
-  including each subjob change and for players who never used it, unless the
-  player sets `rolltracker = false` in `_common/tools/ADDONS_CONFIG.lua` (since 2026-09-30).
-- Both macrobook/lockstyle blocks of `user_setup()` run on a fresh load: the
-  macro book is set twice and two lockstyles are scheduled.
-- The event cleanup at the top of `get_sets()` never finds anything, and its
-  comment describes a duplicate-handler scenario that cannot happen.
 - `_G.AltJobState.job` counts for the job bonus whether or not the partner is
   online, in the party or in the zone (`is_job_in_party_zone`).
 - The `on_roll_cast` docstring says `target_ids` is nil for "//gs c roll typed

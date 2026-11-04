@@ -110,9 +110,7 @@ sequenceDiagram
 
 1. `GEOStates.configure()`.
 2. `JobAddons.run('load', 'pettp')` ([JobAddons](../systems/factories-and-helpers.md#jobaddons-sharedutilscorejob_addonslua)): the PetTP addon, unloaded again in
-   `file_unload` the same way; `pettp = false` in `_common/tools/ADDONS_CONFIG.lua` skips both. This runs on every `user_setup()`, so a subjob change loads
-   it in the old sandbox, unloads it in that sandbox's `file_unload`, and
-   loads it again in the new one.
+   `file_unload`; `pettp = false` in `_common/tools/ADDONS_CONFIG.lua` skips both. The load is sent only when the flag `windower._geo_pettp_loaded` (it outlives the sandbox) is not set, so a subjob change or `//gs reload` of GEO sends neither the unload nor the load again. `file_unload(next_file)` unloads at once when GearSwap itself unloads (`next_file` nil); otherwise it asks the game 2 s later and unloads only when the main job is no longer GEO (`shared/entry/geo.lua`, since `edbcfb96`).
 3. `GEO_KEYBINDS` (which returns `KeybindManager.create('GEO', ...)`) ->
    global `GEOKeybinds`, `bind_all()`. `show_intro` `require`s
    `GEO_MACROBOOK.lua` and `GEO_LOCKSTYLE.lua` (both return nothing). A
@@ -404,7 +402,7 @@ T = in `_master/sets/geo_sets.lua`.
 - Module-local `escort_pending` / `escort_seq` die with the sandbox: an escort
   follow pending at a reload is only kept by its timer, which the old sandbox
   still runs.
-- Subjob change: Mote re-runs `user_setup()` (PetTP load, states reset, keys
+- Subjob change: Mote re-runs `user_setup()` (PetTP load skipped while `windower._geo_pettp_loaded` is set, states reset, keys
   rebound, macrobook / lockstyle again), then `job_sub_job_change` calls
   `JobChangeManager.on_job_change`, which schedules `gs reload`.
 
@@ -489,8 +487,9 @@ T = in `_master/sets/geo_sets.lua`.
 - `sets.midcast.Indi.Entrust = set_combine(sets.midcast.Indi, {...})` stores a
   sub-table inside `sets.midcast.Indi` (a copy since 2026-09-28, no longer
   `sets.luopan.idle` itself).
-- A subjob change runs `user_setup()` twice (old and new sandbox), so PetTP
-  is loaded, unloaded and loaded again.
+- A subjob change runs `user_setup()` twice (old and new sandbox); PetTP is
+  not touched: the load waits for the `windower._geo_pettp_loaded` flag to be clear,
+  and `file_unload` unloads only if the game is off GEO 2 s later.
 
 ### How to debug
 
@@ -524,8 +523,6 @@ T = in `_master/sets/geo_sets.lua`.
   `sets.engaged.PDT` are empty copies of Normal; not read while a luopan is
   out.
 - `IndicolureMode` has no reader.
-- PetTP is loaded on every `user_setup()`, including the old sandbox's run on
-  a subjob change, and unloaded on every `file_unload`.
 - No `sets.midcast['Healing Magic']` or `['Dark Magic']` in the template:
   those `MidcastManager` routes return false.
 - Fixed 2026-10-15: the initial macrobook / lockstyle no longer depend on

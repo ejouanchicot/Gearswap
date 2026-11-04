@@ -38,7 +38,7 @@ sender at all (each section says which).
 |---|---|---|---|
 | `jobs/blm_messages.lua` | 102 | 12 | `BLM` - element/storm cycles, refinement, arts, stratagems, BLM errors |
 | `jobs/brd_messages.lua` | 269 | 42 | `BRD` - JA, instrument lock, song packs, song refinement, BRD errors |
-| `jobs/bst_messages.lua` | 271 | 46 | `BST` - ecosystem/species, broth equip, pet engage, Ready moves, BST errors |
+| `jobs/bst_messages.lua` | 282 | 48 | `BST` - ecosystem/species, monster correlation, broth equip, pet engage, Ready moves, BST errors |
 | `jobs/cor_messages.lua` | 32 | 3 | `COR` - PartyTracker load failures |
 | `jobs/drg_messages.lua` | 37 | 4 | `DRG` - Jump errors (no sender) |
 | `jobs/geo_messages.lua` | 41 | 4 | `GEO` - Indi/Geo cast lines, tier refinement |
@@ -306,7 +306,7 @@ is empty when `chat.job_tag` is false.
   file executes again while that flag is set it empties both caches, which changes nothing because
   both are empty at that point (the comment says so).
 - GearSwap's sandbox `require` is `include_user`, which never stores results. The project's
-  `ModuleCache` (installed by `config_loader` before `user_setup`, see
+  `ModuleCache` (installed by `char_paths`, the entry's first file, before `user_setup`, see
   [core-lifecycle.md](core-lifecycle.md)) caches modules on the sandbox `_G`, so one engine instance
   and one copy of each data file exist per sandbox. The sandbox is rebuilt whenever GearSwap loads
   the job file (`gs reload`, main job change, and the `gs reload` JobChangeManager sends 2.0 s after
@@ -338,7 +338,7 @@ their line in the data file; they have no path from any caller (see Known issues
 |---|---|---|---|
 | `BLM` | 12 | 9 | 3 |
 | `BRD` | 42 | 23 | 19 |
-| `BST` | 46 | 13 | 33 |
+| `BST` | 48 | 15 | 33 |
 | `COR` / `GEO` | 3 / 4 | 3 / 4 | 0 |
 | `DRG` / `WHM` | 4 / 1 | 0 | 4 / 1 |
 | `RDM` | 15 | 10 | 5 |
@@ -383,8 +383,8 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `BST`
 
-- File: `data/jobs/bst_messages.lua` - 46 templates, 13 reachable. Sender: `formatters/jobs/message_bst.lua` (the facade exports eight functions twice, as `show_bst_<name>` and `show_<name>`). Callers: `BST_COMMANDS.lua`, BST `functions/logic/ecosystem_manager.lua`, `pet_manager.lua`. All `color = 1`. The broth count and Ready-move list screens are InfoBlocks since 2026-09-25, so their former templates (`broth_count_*`, `no_broths`, `ready_moves_header`, `ready_move_item`, `ready_moves_usage`) are gone.
-- Reachable: `no_pet`, `no_ready_moves` (job); `ecosystem_change` (job, ecosystem, count, species_text); `species_change` (job, species, count, jug_text); `broth_equip` (job, broth, pet); `pet_engage`, `pet_disengage` (job, pet); `ready_move_use`, `ready_move_auto_engage`, `ready_move_auto_sequence` (job, index, move); `invalid_index` (job, index); `index_out_of_range` (job, index, max); `module_not_loaded` (job, module). The error keys are sent by `show_error_*` functions.
+- File: `data/jobs/bst_messages.lua` - 48 templates, 15 reachable. Sender: `formatters/jobs/message_bst.lua` (the facade exports eight functions twice, as `show_bst_<name>` and `show_<name>`). Callers: `BST_COMMANDS.lua`, BST `functions/logic/ecosystem_manager.lua`, `pet_manager.lua`. All `color = 1`. The broth count and Ready-move list screens are InfoBlocks since 2026-09-25, so their former templates (`broth_count_*`, `no_broths`, `ready_moves_header`, `ready_move_item`, `ready_moves_usage`) are gone.
+- Reachable: `no_pet`, `no_ready_moves` (job); `ecosystem_change` (job, ecosystem, count, species_text); `ecosystem_correlation` (job, ecosystem, strong, weak) and `pet_correlation` (job, pet, ecosystem, strong, weak), both from `show_correlation`; `species_change` (job, species, count, jug_text); `broth_equip` (job, broth, pet); `pet_engage`, `pet_disengage` (job, pet); `ready_move_use`, `ready_move_auto_engage`, `ready_move_auto_sequence` (job, index, move); `invalid_index` (job, index); `index_out_of_range` (job, index, max); `module_not_loaded` (job, module). The error keys are sent by `show_error_*` functions.
 - Unreachable (33): `call_beast_used`:18, `bestial_loyalty_used`:23, `familiar_activated`:28, `familiar_active`:33, `spur_used`:38, `run_wild_used`:43, `tame_used`:48, `reward_used`:53, `reward_no_food`:58, `feral_howl_used`:63, `killer_instinct_activated`:68, `jug_equipped`:96, `pet_summoned`:105, `pet_dismissed`:120, `auto_engage_enabled`:125, `auto_engage_disabled`:130, `auto_engage_status`:135, `pet_tp_status`:140, `pet_hp_status`:145, `ready_move_precast`:154, `ready_move_physical`:159, `ready_move_magical`:164, `ready_move_breath`:169, `ready_move_tp_check`:174, `ready_move_recast`:194, `pet_charmed`:203, `pet_charm_failed`:208, `pet_died`:213, `pet_despawned`:218, `no_target`:252, `pet_too_far`:257, `no_jug_equipped`:262, `insufficient_hp`:267 - no sender since their `message_bst.lua` functions were removed on 2026-10-01.
 
 ### `BUFFS`, `COOLDOWNS`, `DEBUFFS`, `RDM_MIDCAST`

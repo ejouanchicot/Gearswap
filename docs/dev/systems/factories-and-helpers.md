@@ -595,9 +595,9 @@ No other job calls it. The gear rebuild on a buff change (`LifecycleManager.refr
 
 ## WHM CureManager
 
-`WHM_PRECAST.ensure_modules_loaded()` loads it lazily. It is called from `retier_cure`, which runs after PrecastGuard and **before** CooldownChecker in `job_precast`.
+`WHM_PRECAST.ensure_modules_loaded()` loads it lazily. Its `CureManager.retier(spell, eventArgs)` is called from `job_precast`, after PrecastGuard and **before** CooldownChecker in `job_precast`.
 
-- When `select_cure_tier` returns a different name, `retier_cure` cancels the cast, sends `input /ma "<new>" <spell.target.raw>`, and `job_precast` returns.
+- When `select_cure_tier` returns a different name, `CureManager.retier` cancels the cast, sends `input /ma "<new>" <spell.target.raw>`, and `job_precast` returns.
 - A `nil` return (same name, not a cure, or every tier on recast) lets the original cast go on to the recast check.
 
 A typed tier on recast is thus swapped for a ready one before CooldownChecker could cancel it. When every tier is on recast, `select_cure_tier` returns `nil` without a message, and CooldownChecker gives the one cooldown message, cancelling the cast if its recast is over the 2.0 s tolerance.

@@ -53,7 +53,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` (movement gear is in the set builder) |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ...)` wrappers |
 | `shared/jobs/sam/functions/SAM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('SAM', ...)` wrapper |
-| `shared/jobs/sam/functions/logic/set_builder.lua` | 188 | `build_idle_set` (town, PDT, HP, weapon, `BaseSetBuilder.apply_movement`), `apply_main_weapon`, `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
+| `shared/jobs/sam/functions/logic/set_builder.lua` | 189 | `build_idle_set` (town, PDT, HP, weapon, `BaseSetBuilder.apply_movement`), `apply_main_weapon`, `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
 | `_master/config/sam/SAM_STATES.lua` | 118 | `SAMStates.configure()` (HybridMode, OffenseMode, WeaponskillMode, MainWeapon, Stance, FastCast, AutoMedicine) |
 | `_master/config/sam/SAM_KEYBINDS.lua` | 53 | Data only: 4 binds handed to `KeybindManager.create('SAM', ...)` |
 | `_master/config/sam/SAM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |

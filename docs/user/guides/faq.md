@@ -117,12 +117,14 @@ or subjob change, except Auto Medicine. Change the default in
 
 ## Atelier page
 
-**The page asks for my Windower folder again / "Reload from files" fails.** Your
+The page itself, tab by tab: [Atelier page](../features/atelier.md).
+
+**The page asks for my Windower folder again / Files > Read fails.** Your
 browser keeps the folder you showed it the first time, and that memory can stop
 working (a browser update, a copy or restore of the folder), even with the same
 path. Nothing is broken:
 
-1. Click **⟳ Reload from files** again (or Save again).
+1. Click **Files > Read** again (or Save again).
 2. When the page asks "Where is Windower?", pick your Windower folder (the one
    that holds `addons` and `res`). It is kept for the next times.
 

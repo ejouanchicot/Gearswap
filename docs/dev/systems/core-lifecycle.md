@@ -80,13 +80,13 @@ When is `load_user_files` called:
 
 | Trigger | Path |
 |---|---|
-| Main job change request (outgoing 0x100) | `packet_parsing.lua:733-751`: sets `player.main_job_id` from the request and sends `lua i gearswap load_user_files <id>`. The server's answer (0x061, `packet_parsing.lua:376-381`) corrects `main_job_id` but never reloads the file |
+| Main job change request (outgoing 0x100) | `packet_parsing.lua:726-744`: sets `player.main_job_id` from the request and sends `lua i gearswap load_user_files <id>`. The server's answer (0x061, `packet_parsing.lua:374-379`) corrects `main_job_id` but never reloads the file |
 | Zone-in on a different job (0x00A) | `packet_parsing.lua:32-41` |
 | `//gs reload` / `//gs r` | `gearswap.lua` -> `refresh_user_env()` (`refresh.lua:657-666`), which reads the job from `windower.ffxi.get_player()` |
 | `//gs load <file>` | `gearswap.lua` |
 | Addon load / login | `gearswap.lua` `load` / `login` events (login schedules `refresh_user_env` 2 s later) |
 
-A subjob change does not reload anything: 0x061 with a new subjob id fires the `sub_job_change` user event in the current sandbox (`packet_parsing.lua:419-428`). Mote turns that into `user_setup()` then `job_sub_job_change()` then `send_command('gs c update')` (`Mote-Include.lua:981-990`). The project then asks for a reload itself through `JobChangeManager`.
+A subjob change does not reload anything: 0x061 with a new subjob id fires the `sub_job_change` user event in the current sandbox (`packet_parsing.lua:417-427`). Mote turns that into `user_setup()` then `job_sub_job_change()` then `send_command('gs c update')` (`Mote-Include.lua:981-990`). The project then asks for a reload itself through `JobChangeManager`.
 
 ## How a job file boots
 
@@ -613,7 +613,7 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `JobSyncWatchdog`, `LifecycleManager`, `ModuleCache`, `KeybindGuard` | module exports | no reader (in the GlobalProbe expected list) |
 | `require` (replaced), `__require_cache`, `__require_cache_installed`, `__require_cache_stats` | `ModuleCache.install` | every `require` |
 | `display_current_state` | `StateDisplayOverride.init` | Mote `handle_update` |
-| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | INIT_SYSTEMS lines 41-47 | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |
+| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | INIT_SYSTEMS lines 43-47 | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |
 | `keybind_ui_display`, `keybind_ui_visible`, `ui_manager_state.*` | cleared by `cleanup_all_systems` | UI manager |
 | `job_status_change`, `job_buff_change`, `job_aftercast`, `job_state_change` | job modules via `LifecycleManager` builders | Mote |
 | `handle_equipping_gear`, `cleanup_precast`, `cleanup_midcast`, `user_buff_change` (wrapped) | hook chain layers | Mote |
@@ -628,7 +628,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 | Field | Owner | Purpose |
 |---|---|---|
-| `_gs_reload_count` | INIT_SYSTEMS line 50 | Count of INIT runs; read by `system_checker` (hook-chain ratio), `full_test.lua`, `dualbox_manager.lua` (one auto-init per load) and the listener load stamps |
+| `_gs_reload_count` | INIT_SYSTEMS line 51 | Count of INIT runs; read by `system_checker` (hook-chain ratio), `full_test.lua`, `dualbox_manager.lua` (one auto-init per load) and the listener load stamps |
 | `_gs_debug` | `DEBUG_COMMANDS.lua` `flip_debug` (read by INIT) | The five persisted debug toggles |
 | `_load_gen` | `LoadGate.begin` (`config_loader`, each load) | Number of the live load; `LoadGate.defer` drops work scheduled by an older one |
 | `_job_sync_seq` | `job_sync_watchdog.lua` | Invalidates older check loops |
@@ -659,11 +659,11 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 
 | Transition | Sandbox | JCM | JobSyncWatchdog | MidcastWatchdog | ModuleCache | Hook chain |
 |---|---|---|---|---|---|---|
-| Cold load / `//lua reload gearswap` | new (addon state also new) | fresh STATE, seeded in `user_setup` | starts | starts at +2 s | installed by `config_loader` | laid by INIT |
+| Cold load / `//lua reload gearswap` | new (addon state also new) | fresh STATE, seeded in `user_setup` | starts | starts at +2 s | installed by `char_paths` (first file of the entry) | laid by INIT |
 | `//gs reload`, `//gs c reload`, JSW correction | new | old reload cancelled by `file_unload` | old loop superseded | old loop superseded at +2 s | new cache | re-laid on Mote's fresh functions |
 | Subjob change | same, then new after 2.0 s | cleanup + debounced reload | superseded after reload | stopped by cleanup, restarted at +2 s | new cache | re-laid |
 | Main job change / zone-in on another job | new | not involved | superseded | superseded at +2 s | new cache | re-laid |
-| Main job change to a job with no file | none | not involved | old loop keeps running and forces one reload | old loop keeps running | none | none |
+| Main job change to a job with no file | new (`data/default.lua` includes `shared/entry/no_job_file.lua`) | not involved | old loop superseded: `stop_last_load()` bumps `windower._job_sync_seq` | old loop superseded (`_midcast_wd_seq` bumped too, and `_automove_seq`) | installed by `no_job_file.lua` | none |
 | Zone on same job, death, raise | same | nothing | nothing | nothing | same | same |
 
 ## Interactions
@@ -698,11 +698,11 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 | `equip()` from a coroutine is never sent | Send `gs c update` instead |
 | `player.tp`, `buffactive` are GearSwap copies refreshed at event time | In a raw event or a coroutine, read `windower.ffxi.get_player()` (`live_tp()`, `.buffs`) |
 | `loadfile`, `setfenv`, `collectgarbage` are nil in the sandbox; `dofile` exists | Wrap doubtful stdlib with `rawget(_G, name)` |
-| `require` in the sandbox is `include_user` | Relative paths resolve through the character folder, `data/`, `libs/`; `ModuleCache` only from `config_loader` on |
+| `require` in the sandbox is `include_user` | Relative paths resolve through the character folder, `data/`, `libs/`; `ModuleCache` only from `char_paths` on (the first file every entry requires) |
 
 **Invariants to keep**
 
-1. `config_loader` is the first shared module an entry file requires (it installs the cache). Anything required before it is loaded twice.
+1. `char_paths` is the first shared module an entry file requires (it installs the cache at the end of its file). Anything required before it is loaded twice. `config_loader` comes next, at file level: it starts the load's number (`LoadGate.begin`).
 2. INIT_SYSTEMS is included right after Mote-Include, before the facade.
 3. Every hook layer: guard with a `_G` flag, refuse to install when the function it wraps is missing, `pcall` its own work so a failure never blocks the inner call.
 4. Every `file_unload` releases the slot locks its job owns, first, before anything that can throw.
@@ -752,7 +752,6 @@ Watching a new job's spells: call `_G.MidcastWatchdog.on_midcast_start(spell)` i
 Open:
 
 - `StateDisplayOverride` does not silence cycle messages and turns `//gs c update user` into "State: Unknown" or nothing (Mote calls it with no arguments; its header says so).
-- JobSyncWatchdog keeps running after a change to a job with no file and forces one misleading reload (`JobSyncWatchdog.start`).
 - `JobChangeManager.cancel_all()` in `get_sets()` is a no-op in a fresh sandbox (every entry, e.g. `shared/entry/war.lua` `get_sets`).
 - Fixed 2026-09-28: `watchdog test` labelled its default spell Teleport-Holla while using Warp II's id (262); the label is now Warp II. The first word of `//gs c watchdog ...` is read in any case (`Watchdog On` used to show the help).
 - `watchdog clear` during a test leaves test mode on; the next real cast is reported stuck (`MidcastWatchdog.clear_all`).
@@ -769,4 +768,5 @@ Fixed:
 - `JOBCHANGE_DEBUG` lost on every reload: now on `windower._gs_debug.JOBCHANGE`, restored by INIT.
 - `JobChangeManager.initialize({...})` called from `job_sub_job_change` with job modules nothing read: gone from every maintained entry (2026-09-25).
 - First macro book and lockstyle skipped without a word when the keybind file failed to load or bound no key (the entries found the two globals only through `show_intro()`'s require): `EntryKit.macro_and_lockstyle` waits for the facade instead (2026-10-15).
-- Require cache installed after `user_setup()` (about 230 extra file loads per job load): installed by `config_loader` at file level since 2026-09-27.
+- Require cache installed after `user_setup()` (about 230 extra file loads per job load): installed by `config_loader` at file level since 2026-09-27, and by `char_paths` (the entry's first file) since 2026-10-17.
+- JobSyncWatchdog kept running after a change to a job with no file and forced one misleading reload; AutoMove kept sending `gs c update`: `no_job_file.lua` `stop_last_load()` now calls `LoadGate.begin()` and bumps `windower._job_sync_seq`, `_automove_seq` and `_midcast_wd_seq`, so every loop and deferred task of the last load ends (audit 2026-10-28, fix C).

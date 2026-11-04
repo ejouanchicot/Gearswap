@@ -39,7 +39,7 @@ drift.
 |------|------:|------|
 | `shared/entry/run.lua` | 232 | Entry point (the same for every character; `<Char>_RUN.lua` and its template `_master/entry/Tetsouo_RUN.lua` are one `include` of it): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s (`EntryKit.macro_and_lockstyle`, `shared/utils/core/entry_kit.lua`) |
 | `shared/jobs/run/functions/run_functions.lua` | 113 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/run/functions/RUN_PRECAST.lua` | 180 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, self-cure FC, precast debug display) |
+| `shared/jobs/run/functions/RUN_PRECAST.lua` | 152 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, self-cure FC, precast debug display) |
 | `shared/jobs/run/functions/RUN_MIDCAST.lua` | 157 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (dispatch) |
 | `shared/jobs/run/functions/RUN_AFTERCAST.lua` | 38 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/run/functions/RUN_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -63,7 +63,7 @@ drift.
 | `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` (Moonshade piece, Lionheart weapon), loaded by the entry |
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
 | `_master/config/run/RUN_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/run_sets.lua` | 432 | Template sets (flat) |
+| `_master/sets/run_sets.lua` | 434 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
 
 Live copies: `Tetsouo/run/` (`keys/`, `display/`, `combat/`, `sets/`: the templates,

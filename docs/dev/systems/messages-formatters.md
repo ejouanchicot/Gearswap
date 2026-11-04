@@ -1,6 +1,6 @@
 # Message formatters and utilities
 
-The formatter layer turns "something happened" into coloured chat lines. It is the 32 modules under
+The formatter layer turns "something happened" into coloured chat lines. It is the 33 modules under
 `shared/utils/messages/formatters/` (split into `combat/`, `jobs/`, `magic/`, `system/`, `ui/`) plus the
 two helpers under `shared/utils/messages/utilities/`: `roll_messages.lua` and `party_messages.lua`.
 Game code reaches a formatter in one of two ways: through the facade
@@ -37,7 +37,7 @@ remain without a reachable caller are listed per module under Public API.
 | `formatters/jobs/message_blm.lua` | 196 | 11 | BLM cycles, refinement, Arts/stratagem, BLM errors |
 | `formatters/jobs/message_blm_midcast.lua` | 108 | 11 | BLM midcast router debug trace |
 | `formatters/jobs/message_brd.lua` | 300 | 23 | BRD songs, instruments, refinement, BRD errors |
-| `formatters/jobs/message_bst.lua` | 225 | 15 | BST ecosystem/broth, pet engage, ready moves, BST errors |
+| `formatters/jobs/message_bst.lua` | 237 | 16 | BST ecosystem/broth, monster correlation, pet engage, ready moves, BST errors |
 | `formatters/jobs/message_cor.lua` | 39 | 3 | PartyTracker load failures |
 | `formatters/jobs/message_geo.lua` | 183 | 4 | Indi/Geo cast line with element colour, tier refinement |
 | `formatters/jobs/message_rdm.lua` | 122 | 10 | RDM state/error lines, Phalanx swap |
@@ -61,6 +61,7 @@ remain without a reachable caller are listed per module under Public API.
 | `formatters/ui/message_info.lua` | 66 | 3 | `//gs c info <name>` card, usage, not found |
 | `formatters/ui/message_keybinds.lua` | 113 | 5 | Keybind list line format and bind errors |
 | `formatters/ui/message_status.lua` | 72 | 6 | Generic error/warning/success/info, Mote state line, TP ready line |
+| `formatters/ui/message_synth.lua` | 61 | 2 | `SYNTH` block of each synthesis, in chat channel 121, in two times: `show_start(result)` when the animation starts, `show_result(result, item, count, lost, started)` when the result comes |
 | `formatters/ui/message_ui.lua` | 231 | 12 | `//gs c ui` feedback, look settings, theme list, UI help |
 | `utilities/roll_messages.lua` | 564 | 8 | COR Phantom Roll result in three styles, bust, Double-Up, active roll list |
 | `utilities/party_messages.lua` | 48 | 1 | COR `//gs c party` listing |
@@ -178,6 +179,7 @@ each spell), and the diagnostic tools (`debugstate`, `fulltest`, `syscheck`, `wa
 | message_alt_commands | none | B (pieces) |
 | message_commands | `COMMANDS` | B, E |
 | message_dualbox / keybinds / status | `DUALBOX` / `KEYBINDS` / `STATUS` | keybinds: C (correct order) |
+| message_synth | none | B (`InfoBlock.show` with `channel = 121`, `head` / `foot`) |
 | message_ui | `UI` | B |
 | message_info | `INFO` (`not_found`) | B |
 | roll_messages / party_messages | none | B, D, E |
@@ -191,8 +193,8 @@ intro block became an InfoBlock, the `SYSTEM.intro_*` templates are no longer se
 The facade caches each formatter in an upvalue on first call (the `get_<Module>()` getters at the top
 of `message_formatter.lua`). GearSwap's `require` is `include_user`, which never writes
 `package.loaded`. `ModuleCache.install()` (`shared/utils/core/module_cache.lua`) replaces `require`
-on the sandbox `_G` with a caching version; since 2026-09-27 it is installed by `config_loader` before
-Mote's `user_setup`. A formatter required before that point is a separate copy. None of the formatters
+on the sandbox `_G` with a caching version; since 2026-10-17 it is installed by `char_paths` (the entry's first
+file) before Mote's `user_setup`. A formatter required before that point is a separate copy. None of the formatters
 keep state that matters, so the only visible effect is load cost.
 
 ### Job tag
@@ -301,12 +303,12 @@ formatter file. `(dead)` means no reachable caller was found (2026-09-28 scan, s
   `message_ja_buffs.lua` one; `show_target_error` is `MessageCombat`'s, while `dualbox_manager.lua`
   calls `MessageDualbox.show_target_error`. BST functions are exported twice, as `show_bst_x` and
   `show_x`, except `show_broth_list`, `show_ready_moves_list` (exported only as `show_bst_broth_list` /
-  `show_bst_ready_moves_list`) and the five `show_error_*` (exported only under their own name).
+  `show_bst_ready_moves_list`), `show_correlation` (exported only as `show_bst_correlation`) and the five `show_error_*` (exported only under their own name).
 - Not in the facade at all: `message_weaponskill`, `message_blm_midcast`, `message_rdm_midcast`,
   `message_midcast`, `message_precast`, `message_init`, `message_warp`, `message_watchdog`,
   `message_commands`, `message_dualbox`, `message_info`, `message_ui`, `message_alt_commands`,
-  `message_altgroup`, `message_sortie`, `message_stealth`, `message_tempbind` (their callers `require`
-  them directly).
+  `message_altgroup`, `message_sortie`, `message_stealth`, `message_tempbind`, `message_synth` (their
+  callers `require` them directly; `message_synth`: `craft/synth_results.lua`).
 
 ### combat/message_combat.lua
 
@@ -359,7 +361,7 @@ lines only when `TPBonusCalculator.config.debug_mode`).
 | message_blm | `show_element_cycle(state_type, element_name)`, `show_storm_cycle(storm_name)`; `show_spell_refinement(original, downgrade, recast_seconds)` (BLM `refiner/special_handlers.lua`, `precast/tier_refiner.lua`); `show_arts_already_active(arts_status)`, `show_stratagem_no_charges(stratagem_name, recast_minutes)` (`scholar/scholar_actions.lua`); `show_spell_replacement_error` (`replacement_logic.lua`), `show_spell_refinement_error`, `show_spell_recasts_error` (`spell_refiner.lua`, `storm_manager.lua`), `show_breakga_blocked` (`special_handlers.lua`) | `show_mp_conservation(mp_status)`, `show_buff_status(status_string)` |
 | message_blm_midcast | all 11: `show_elemental_routing(magic_burst_mode)`, `show_mode_value`, `show_mp_conservation(current_mp, mp_threshold)`, `show_normal_mp`, `show_elemental_match(reason)`, `show_elemental_return`, `show_dark_routing`, `show_dark_return`, `show_enfeebling_routing`, `show_enfeebling_return`, `show_skill_not_handled(spell_skill)`, from BLM `functions/logic/midcast_router.lua` (as `ctx.messages`) and `BLM_MIDCAST.lua` | none |
 | message_brd | `show_marcato_used`, `show_pianissimo_used`, `show_ability_command(ability_name)`, `show_lullaby_cast(spell)`, `show_elegy_cast(spell)`, `show_requiem_cast(spell)` (the spell sent, `BRDSongConfig.DEBUFF_SONGS` of `BRD_SONG_CONFIG.lua`; defaults `Lullaby` / `Elegy` / `Requiem` when nil), `show_threnody_cast(element)`, `show_carol_cast(element)`, `show_etude_cast(stat)`, `show_no_element_selected`, `show_no_carol_element`, `show_no_etude_type`, `show_no_song_in_slot(slot)` (`BRD_COMMANDS.lua`); `show_pianissimo_target(target_name)`, `show_instrument_locked(song_name, instrument)` (`BRD_PRECAST.lua`); `show_instrument_released` (`BRD_AFTERCAST.lua`); `show_songs_casting(song_count, rotation_type)`, `show_song_pack(pack_name, song_list)`, `show_dummy_casting(total_songs)`, `show_pack_not_found(pack_name)` (`song_rotation_manager.lua`); `show_daurdabla_dummy(song_name, instrument)` (BRD `midcast_router.lua`); `show_song_refinement`, `show_song_refinement_failed` (`song_refinement.lua`) | none |
-| message_bst | `show_ecosystem_change(ecosystem, num_species)`, `show_species_change(species, num_jugs)`, `show_broth_equip(pet_name, broth_name)` (BST `ecosystem_manager.lua`); `show_pet_engage`, `show_pet_disengage` (`pet_manager.lua`); `show_broth_list(broth_counts)`, `show_ready_moves_list(pet_name, moves)` (InfoBlock), `show_ready_move_use`, `show_ready_move_auto_engage`, `show_ready_move_auto_sequence(index, move_name)`, `show_error_no_pet`, `show_error_no_ready_moves`, `show_error_invalid_index(index)`, `show_error_index_out_of_range(index, max)`, `show_error_module_not_loaded(module_name)` (`BST_COMMANDS.lua`) | none |
+| message_bst | `show_ecosystem_change(ecosystem, num_species)`, `show_species_change(species, num_jugs)`, `show_broth_equip(pet_name, broth_name)` (BST `ecosystem_manager.lua`); `show_correlation(ecosystem, strong, weak, pet)` (templates `ecosystem_correlation` / `pet_correlation`; facade `show_bst_correlation`, called by `EcosystemManager.show_correlation` from the ecosystem change and `BST_STATUS.lua`); `show_pet_engage`, `show_pet_disengage` (`pet_manager.lua`); `show_broth_list(broth_counts)`, `show_ready_moves_list(pet_name, moves)` (InfoBlock), `show_ready_move_use`, `show_ready_move_auto_engage`, `show_ready_move_auto_sequence(index, move_name)`, `show_error_no_pet`, `show_error_no_ready_moves`, `show_error_invalid_index(index)`, `show_error_index_out_of_range(index, max)`, `show_error_module_not_loaded(module_name)` (`BST_COMMANDS.lua`) | none |
 | message_cor | all 3: `show_rolltracker_load_failed`, `show_packets_load_failed`, `show_resources_load_failed` (`cor/functions/logic/party_tracker.lua`) | none |
 | message_geo | all 4: `show_indi_cast(spell_name)`, `show_geo_cast(spell_name)` (`GEO_MIDCAST.lua` `midcast_geomancy`); `show_spell_refined(desired, final)`, `show_no_tier_available(desired)` (`geo_spell_refiner.lua`) | none |
 | message_rdm | `show_element_list`, `show_storm_current(storm_value)`, `show_no_enspell_selected`, `show_gain_spell_not_configured`, `show_bar_element_not_configured`, `show_bar_ailment_not_configured`, `show_spike_not_configured`, `show_storm_requires_sch` (`RDM_COMMANDS.lua`); `show_phalanx_downgrade`, `show_phalanx_upgrade` (`RDM_PRECAST.lua`) | none |
@@ -402,6 +404,7 @@ Several `message_warp` functions are intentionally empty ("Silent init"): `show_
 | message_info | all 3: `show_entity(name, kind, fields)`, `show_usage`, `show_not_found(name)` (`commands/info_command.lua`) | none |
 | message_keybinds | `show_no_binds_error(job_name)`, `show_bind_failed_error(bind_key, reason)` (`keybinds/keybind_manager.lua`); `format_keybind_line(key, description)` (`ui/UI_FORMATTER.lua`, `ui/UI_SECTIONS.lua`); `calculate_max_width` (internal) | `show_keybind_list(title, keybinds)` is reached only through the `show_binds` method `KeybindManager.create` attaches to each keybind module, which nothing calls (the frozen Hysoka and Gabvanstronger files define their own uncalled `show_binds`) |
 | message_status | `show_error(message)`, `show_warning`, `show_success`, `show_info` (widely), `show_state_display(state_name, value)` (`core/state_display_override.lua`, BRD `functions/logic/dummy_next.lua`), `show_tp_ready(job, tp_value)` (`drg/DRG_JUMP_MANAGER.lua`) | none |
+| message_synth | both: `show_start(result)`, `show_result(result, item, count, lost, started)` (`craft/synth_results.lua`) | none |
 | message_ui | all 12: `show_toggle(component, enabled)` (`ui_appearance.lua`, `ui_section_toggles.lua`), `show_enabled`, `show_disabled`, `show_position_saved(x, y)`, `show_position_save_failed` (`ui_visibility.lua`), `show_error(error_text)`, `show_help`, `show_theme_list` (`UI_COMMANDS.lua`), `show_style_set(option, value, error_text)`, `show_style_list(fields)` (`ui_style_commands.lua`), `show_background_preset(name, r, g, b, a)`, `show_background_rgba(r, g, b, a)` (`ui_appearance.lua`) | none |
 
 `MessageStatus.show_error(message)` takes one argument. `DEBUG_COMMANDS.lua` `handle_memcheck` and

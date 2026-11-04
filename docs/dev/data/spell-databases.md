@@ -49,7 +49,7 @@ table, with a line number only where it was re-read that day.
 | `shared/data/spells/BLM_SPELL_FILTERS.lua` | 126 | 3 sets | `REFINEMENT_SPELLS`, `ELEMENTAL_NO_TIERS`, `CHARGE_ABILITIES`: refinement vs cooldown check in `BLM_PRECAST` |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | 11 families | Tier-downgrade map for RDM enfeebles (`TIERS`, `get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | 13 families | Tier-downgrade map for nukes V..I, -ra III..I and Aspir III..I (`TIERS`, `get(family)`), RDM and GEO (since 2026-09-26) |
-| `shared/utils/data/data_loader.lua` | 300 | - | Lazy `_G.FFXI_DATA` view of spells (15 aggregators), job abilities and weaponskills; used by `//gs c info` |
+| `shared/utils/data/data_loader.lua` | 296 | - | Lazy `_G.FFXI_DATA` view of spells (15 aggregators), job abilities and weaponskills; used by `//gs c info` |
 | `shared/data/magic/dark/README_DARK_MAGIC.md` | 234 | - | Human reference for the Dark Magic modules (the only non-Lua file under `shared/data/`) |
 
 The gitignored `_dev/SPELL_DATABASES_SYSTEM.md` (local only) documents the deleted
@@ -254,7 +254,7 @@ sequenceDiagram
 ### Runtime path 2: midcast routing (`database_func`)
 
 `MidcastManager.resolve_metadata` calls `pcall(config.database_func, spell.english)`
-(`shared/utils/midcast/midcast_manager.lua:336-337`) and uses the returned string as the "type" key for
+(`shared/utils/midcast/midcast_manager.lua:337-338`) and uses the returned string as the "type" key for
 `sets.midcast[skill][type]...` and `sets.midcast[type]` (the `resolve_type_*` resolvers). Which DB
 function each job passes:
 
@@ -385,8 +385,8 @@ Checked with `grep -r` over `shared/`, `_master/` and the live folders on 2026-1
 
 | Command | Handler | Effect |
 |---|---|---|
-| `//gs c info <name>` | `CommonCommands.handle_command` (`info` branch) -> `DebugCommands.handle_info` (`DEBUG_COMMANDS.lua:247`) -> `InfoCommand.handle` (`info_command.lua:360`) | Prints the ability, spell or weaponskill record found by `data_loader` |
-| `//gs c spellmsg <full\|on\|off>` | `DebugCommands.handle_spellmsg` (`DEBUG_COMMANDS.lua:229`) | Not in this area, but it is the only switch for the messages that read these DBs |
+| `//gs c info <name>` | `CommonCommands.handle_command` (`info` branch) -> `DebugCommands.handle_info` (`DEBUG_COMMANDS.lua:249`) -> `InfoCommand.handle` (`info_command.lua:360`) | Prints the ability, spell or weaponskill record found by `data_loader` |
+| `//gs c spellmsg <full\|on\|off>` | `DebugCommands.handle_spellmsg` (`DEBUG_COMMANDS.lua:231`) | Not in this area, but it is the only switch for the messages that read these DBs |
 
 ## Configuration
 

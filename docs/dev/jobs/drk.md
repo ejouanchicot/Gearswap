@@ -41,8 +41,8 @@ function; line numbers are deliberately not used.
 |------|------:|------|
 | `shared/entry/drk.lua` | 224 | Entry point (the same for every character; `<Char>_DRK.lua` and its template `_master/entry/Tetsouo_DRK.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/drk/functions/drk_functions.lua` | 99 | Facade: includes `message_buffs.lua` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/drk/functions/DRK_PRECAST.lua` | 132 | `job_precast` (guard, cooldown, pending flags, WS handler, JA gear, FC) / `job_post_precast` (TP gear) |
-| `shared/jobs/drk/functions/DRK_MIDCAST.lua` | 146 | `job_midcast` (empty) / `job_post_midcast`: watchdog + `JOB_POST_MIDCAST_HANDLERS` (Dark, Enfeebling, Elemental) |
+| `shared/jobs/drk/functions/DRK_PRECAST.lua` | 128 | `job_precast` (guard, cooldown, pending flags, WS handler, JA gear, FC) / `job_post_precast` (TP gear) |
+| `shared/jobs/drk/functions/DRK_MIDCAST.lua` | 150 | `job_midcast` (empty) / `job_post_midcast`: watchdog + `JOB_POST_MIDCAST_HANDLERS` (Dark, Enfeebling, Elemental) |
 | `shared/jobs/drk/functions/DRK_AFTERCAST.lua` | 86 | `job_aftercast` (watchdog, pending flags), empty `job_post_aftercast` |
 | `shared/jobs/drk/functions/DRK_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/drk/functions/DRK_ENGAGED.lua` | 46 | `customize_melee_set` -> `SetBuilder.build_engaged_set(weapon, hybrid)` (Mote's set is discarded) |

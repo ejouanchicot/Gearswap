@@ -36,7 +36,7 @@ a name would not locate the spot (they move often in this folder).
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 359 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 189 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 477 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 369 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
+| `shared/utils/dualbox/alt_window.lua` | 384 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/saved/dualbox_role.lua` |
 | `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll results and busts sent to the main (`gs c rollshow`) and shown there in the same format |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the box-group modules (including `not_ready`, `window_main_only`, `no_follower`) |
@@ -69,7 +69,7 @@ were read. Then all 27 command/custom files were loaded with `lua5.1` to count k
 ### Module load and auto-init (`dualbox_manager.lua`)
 
 The module body schedules the auto-init. It runs when the module is `require`d without a cache hit,
-which since the require cache is installed by `config_loader` (at the entry's file level) means
+which since the require cache is installed by `char_paths` (the first file of the entry, at file level) means
 **once per load**:
 
 - Every shared entry requires it at the end of `user_setup()` (e.g. `shared/entry/war.lua:245`). That is the first `require` of the load, so it executes the body.

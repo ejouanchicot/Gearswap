@@ -57,8 +57,8 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config(CharPaths.name(), 'WAR')
 
--- Core modules, after config_loader: it installs the require cache, and
--- UI_MANAGER reads _G.UIConfig when it loads.
+-- Core modules, after config_loader: UI_MANAGER reads _G.UIConfig when it loads.
+-- The require cache is already in (char_paths.lua, required first, installs it).
 local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
 local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
 

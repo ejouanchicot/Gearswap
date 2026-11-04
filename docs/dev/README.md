@@ -36,17 +36,16 @@ Mote-Include:
   dual-boxed). Their folders are built from the tracked templates in `_master/`
   by `clone_character.py`.
 
-Measured on 2026-10-12 from `data/`, on the working tree (no code file was
-modified or untracked that day;
-`shared/config/message_mode_config.lua`, untracked on 2026-09-25, is tracked and counted):
+Measured on 2026-11-04 from `data/`, on the working tree (files not yet tracked are not
+counted: `shared/utils/atelier/clean_measure.lua`, 109 lines, that day):
 
 | Area | Lua files | Lines | Command |
 |---|---:|---:|---|
-| `shared/` | 958 | 147 305 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
-| `_master/` | 274 | 27 197 | same with `'_master/*.lua'` |
-| Total tracked Lua (adds `character_db.lua` and the 18 Lua files under `scripts/`) | 1 251 | 176 997 | same with `'*.lua'` |
-| Live `Tetsouo/` (gitignored) | 370 | — | `find Tetsouo -name '*.lua' \| wc -l` |
-| Live `Kaories/` (gitignored) | 97 | — | `find Kaories -name '*.lua' \| wc -l` |
+| `shared/` | 980 | 151 081 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
+| `_master/` | 275 | 27 395 | same with `'_master/*.lua'` |
+| Total tracked Lua (adds `character_db.lua`, `default.lua`, `atelier/gear/dump_lua.lua` and the 58 Lua files under `scripts/`) | 1 316 | 185 981 | same with `'*.lua'` |
+| Live `Tetsouo/` (gitignored) | 398 | — | `find Tetsouo -name '*.lua' \| wc -l` |
+| Live `Kaories/` (gitignored) | 181 | — | `find Kaories -name '*.lua' \| wc -l` |
 
 `shared/data/equipment/ITEM_HP_MP.lua` alone is 6 657 of those lines (generated
 data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
@@ -66,7 +65,7 @@ data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
    loads a new file *(engine)*. A subjob change is handled by Mote in the same
    sandbox, but the project turns it into a `gs reload` 2.0 s later (3.0 s
    when the main job is not the one this sandbox was seeded with) through
-   `JobChangeManager.on_job_change` (`shared/utils/core/job_change_manager.lua:135-193`). So
+   `JobChangeManager.on_job_change` (`shared/utils/core/job_change_manager.lua:134-192`). So
    "per sandbox" means "until the next job, subjob or reload".
 3. **Mote-Include owns the hook order.** The project never hooks GearSwap
    directly for actions; it fills Mote's `job_*` / `user_*` hooks
@@ -75,7 +74,7 @@ data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
    (`Mote-Include.lua:170`).
 4. **The job file is chosen from the request, not the answer.** GearSwap loads
    the new file on the outgoing job-change request (0x100,
-   `packet_parsing.lua:733-751`) and never re-checks the server's reply
+   `packet_parsing.lua:726-744`) and never re-checks the server's reply
    (0x061). `shared/utils/core/job_sync_watchdog.lua` detects a mismatch and
    reloads.
 5. **`equip()` only works synchronously inside an event.** Gear queued from a
@@ -170,7 +169,7 @@ includes `shared/entry/war.lua`:
 The file header (`INIT_SYSTEMS.lua:11-20`) keeps the same list.
 
 The four deferred blocks go through `LoadGate.defer`
-(`shared/utils/core/load_gate.lua`; `INIT_SYSTEMS.lua:144-149`): a block is
+(`shared/utils/core/load_gate.lua`; `INIT_SYSTEMS.lua:155-160`): a block is
 dropped when a newer load has started or the subjob changed, and waits (0.5 s
 at a time, 10 s at most) for the game to report the load's main job; see
 [job-change-lifecycle.md](architecture/job-change-lifecycle.md#loadgate) and
@@ -228,7 +227,7 @@ no midcast, no aftercast.
   `gs reload` after 2.0 s (3.0 s if the main job differs from the seed). A
   newer change invalidates the older one through the counter. A round trip
   (WAR → DNC → WAR) still reloads, on purpose: the teardown has already run
-  (`job_change_manager.lua:159-167`).
+  (`job_change_manager.lua:158-166`).
 - **Main job change**: the engine loads the new file directly; the old file's
   `file_unload` cancels pending lockstyles; keys stay down and the new load
   sends only the difference, through a paced queue.
@@ -257,7 +256,7 @@ Consequences worth remembering:
   done" flag is silently lost at the next load: register listeners on every
   load, as WarpInit now does (see [warp.md](systems/warp.md)).
 - Slot locks are not released by a main job change
-  (`packet_parsing.lua:744` assigns `main_job_id` before `:756` compares it).
+  (`packet_parsing.lua:737` assigns `main_job_id` before `:749` compares it).
 
 ## Characters and templates
 
@@ -320,6 +319,15 @@ including what a re-clone would overwrite today.
 | [systems/equipment-and-inventory.md](systems/equipment-and-inventory.md) | `checksets`, wardrobe audit, refill, quiver, HP equip priority and how `ITEM_HP_MP.lua` is regenerated |
 | [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | `//gs c wo`: phases, pins and placement rules (`WARDROBE_CONFIG.lua`), `wo alt` |
 
+### Atelier
+
+| Page | Covers |
+|---|---|
+| [maintainer-guide.md#change-the-atelier-page](maintainer-guide.md#change-the-atelier-page) | How to change the Atelier page safely: its sources, the build, the checks |
+| [../../atelier/src/README.md](../../atelier/src/README.md) | The page's sources (TypeScript + Svelte), the build (`npm run build`), where each screen is |
+| [systems/commands-and-debug.md](systems/commands-and-debug.md#files) | The export the page reads (`shared/utils/atelier/`, `//gs c atelier`), the live link |
+| [../user/features/atelier.md](../user/features/atelier.md) | The page as a player sees it, tab by tab |
+
 ### Data
 
 | Page | Covers |
@@ -344,7 +352,7 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 ### Elsewhere
 
 - The per-character overlays `_master/<Name>/` (Tetsouo, Kaories, Gabvanstronger,
-  Blodykiller) are not in the public repository since 2026-09-27: they stay on
+  Blodykiller, Morphetrix) are not in the public repository since 2026-09-27: they stay on
   the author's disk for `clone_character.py`. Paths to them in these pages
   describe that local layout.
 

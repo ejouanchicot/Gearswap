@@ -10,7 +10,7 @@ Re-checked against the code on 2026-09-30, after commit `1c42340` ("the organize
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/wardrobe/wardrobe_organizer.lua` | 725 | Public API, phase chain, outer retry loop, module run state (`IS_RUNNING`, iteration counters, `start_job_tag`), `release_stance_locks`, chat panels (`free_of`, `primary_label`) |
+| `shared/utils/wardrobe/wardrobe_organizer.lua` | 727 | Public API, phase chain, outer retry loop, module run state (`IS_RUNNING`, iteration counters, `start_job_tag`), `release_stance_locks`, chat panels (`free_of`, `primary_label`) |
 | `shared/utils/wardrobe/lib/config.lua` | 398 | Defaults (bag lists, timing, limits, log path), bag-name parser `Config.bag_id`, `Config.refresh()` which reads `data/<char>/_common/inventory/WARDROBE_CONFIG.lua` and computes the rule bags (`Config.RULE_BAGS`), `Config.use_all_jobs_layout()` |
 | `shared/utils/wardrobe/lib/rules.lua` | 161 | `PLACE` / `JOBS` / `TYPES` of the config turned into pins and merged with the sets' own `bag = '...'` pins and the doubled-item pins (`Rules.pins`); item type from `res.items` slots (`Rules.item_type`). New 2026-09-30 (`1c42340`; doubled items `2588c3c`) |
 | `shared/utils/wardrobe/lib/phases.lua` | 760 | Phase 0 (unequip + lock), shared burst loop, Phase 2/3/3.5/3.6/4, `enable_slots`, `force_enable_all`, `count_unpacked` |
@@ -51,7 +51,7 @@ External dependency: `shared/utils/equipment/wardrobe_auditor.lua` provides `bui
 
 `handle_wardrobeorganize(arg, arg2)` (`COMMON_COMMANDS.lua:185-228`) compares `arg` case-sensitively (the router lower-cases only the command name). Anything unrecognised falls through to `organize()`.
 
-`WardrobeOrganizer.organize(all_jobs)` (`wardrobe_organizer.lua:574-595`):
+`WardrobeOrganizer.organize(all_jobs)` (`wardrobe_organizer.lua:576-597`):
 
 1. Refuses if `IS_RUNNING` or if `_G.sets` is not a table.
 2. `Config.refresh()` (see Configuration).
@@ -106,10 +106,10 @@ Each outer iteration re-enters `start_organize`, not `organize`, so the config i
 
 As soon as a check finds no equipped slot, or after the fourth attempt regardless of the result (`try_next`), it sends `gs disable all` and calls the continuation 0.3 s later (`lock_and_finish`, `:119-125`). Because each iteration re-enters Phase 0, the slots are briefly re-enabled at the start of every retry.
 
-**Phase 1 - recensement** (`build_state_and_dispatch`, `wardrobe_organizer.lua:475-524`). Checks `job_changed()`, builds the state (`State.build_state`, below), counts inventory gear split into used/unused (`count_inv_gear`, `:226`) and the number of used items that could move from a later used bag into an earlier one (`Phases.count_unpacked`, `phases.lua:614`). Then:
+**Phase 1 - recensement** (`build_state_and_dispatch`, `wardrobe_organizer.lua:475-526`). Checks `job_changed()`, builds the state (`State.build_state`, below), counts inventory gear split into used/unused (`count_inv_gear`, `:226`) and the number of used items that could move from a later used bag into an earlier one (`Phases.count_unpacked`, `phases.lua:614`). Then:
 
-- nothing to evict, promote, clean or pack: success message, `clean_exit`, `schedule_lockstyle`;
-- nothing to evict or promote: skip to Phase 3.5 then Phase 4;
+- nothing to evict, promote, clean or pack, and no used gear left in the inventory (`inv_used == 0`, `wardrobe_organizer.lua:502-503`): success message, `clean_exit`, `schedule_lockstyle`. Before 2026-11-03 (`978f0117`) a piece of the job's sets left in the inventory did not count, so `wo` answered "already optimized" with it still there and room in the used bags;
+- nothing to evict or promote: skip to Phase 3.5 then Phase 4 (which puts used inventory gear in `PRIMARY_BAGS`);
 - otherwise Phase 2 (`start_phase2`).
 
 **Phase 2 - empty the used bags** (`Phases.empty_w1w2`, `phases.lua:343`; chat title `Empty <used bag names>`, for instance `Empty W1/W2`, `primary_label`, `wardrobe_organizer.lua:123`). Pending = movable items in `PRIMARY_BAGS` that are unused and unpinned, or whose pin resolves to another bag. Drainable = movable inventory gear that is pinned (destinations = its pins, empty pins first) or unused (destinations = `OVERFLOW_BAGS`). Used unpinned inventory gear is left for Phase 3.
@@ -164,7 +164,7 @@ Per step (`step()`, `:225`):
 3. Pulls call `pull_slot(bag, slot)` for the first `pull_budget` pending entries.
 4. Delay before the next step: `max(1.0, min(POST_BURST_DELAY (3.0), packets * 0.1))` (`ADAPTIVE_DELAY_FLOOR` / `ADAPTIVE_DELAY_PER_PACKET`, `:203-204`).
 
-`space_in` reads `windower.ffxi.get_bag_info` (`Moves.space_in`, `moves.lua:40`) and is not decremented locally, so within one burst several pushes can target a bag that has fewer free slots than pushes; whatever did not land is still in the inventory at the next step, where it is re-discovered and routed again (by then the full bag reports no space). A pull-only step leaves `pending + drainable` unchanged (the items move from one list to the other), so the cycle counter only trips when pushes also fail for several consecutive steps.
+`space_in` reads `windower.ffxi.get_bag_info` (`Moves.space_in`, `moves.lua:37`) and is not decremented locally, so within one burst several pushes can target a bag that has fewer free slots than pushes; whatever did not land is still in the inventory at the next step, where it is re-discovered and routed again (by then the full bag reports no space). A pull-only step leaves `pending + drainable` unchanged (the items move from one list to the other), so the cycle counter only trips when pushes also fail for several consecutive steps.
 
 ### Move primitives
 
@@ -208,13 +208,13 @@ Why the doubled-item layer: GearSwap tells two copies of an item without augment
 4. Else, if the entry already sits in one of its pins, return that bag (no move).
 5. Else `nil` (pinned, but not in any pin and no free pin) - it then follows the used/unused rules.
 
-`Moves.unclaimed_pins_first` (`moves.lua:136`) orders the same pins for the drainers: pins holding no copy first, pins holding a copy last. Steps 3 and 4 of `pin_target_for` were aligned with that ordering by commits `22df295` and `ea818c8` (2026-09-18) so the snapshot never asks for a move the drainer then undoes.
+`Moves.unclaimed_pins_first` (`moves.lua:133`) orders the same pins for the drainers: pins holding no copy first, pins holding a copy last. Steps 3 and 4 of `pin_target_for` were aligned with that ordering by commits `22df295` and `ea818c8` (2026-09-18) so the snapshot never asks for a move the drainer then undoes.
 
 Phase 2 and Phase 3 re-run `pin_target_for` with a fresh `claim_pool` over only their own source bags (their `discover_pending`), so their claims can differ from the snapshot's when copies are spread over used and unused bags; the drainer's ordering is what finally decides the destination.
 
 ### `wo alt` (every job at once)
 
-`organize_alt()` (`wardrobe_organizer.lua:721-723`) is `organize(true)`. Since 2026-09-30 it runs the chain above, pins and rules included, with Phase 3.5, the outer retry and the last-chance verify. The only differences from `wo` are the settings `use_all_jobs_layout()` applies after `refresh()`:
+`organize_alt()` (`wardrobe_organizer.lua:723-725`) is `organize(true)`. Since 2026-09-30 it runs the chain above, pins and rules included, with Phase 3.5, the outer retry and the last-chance verify. The only differences from `wo` are the settings `use_all_jobs_layout()` applies after `refresh()`:
 
 | Setting | `wo` | `wo alt` |
 |---|---|---|
@@ -228,7 +228,7 @@ Before 2026-09-30, `wo alt` ran a separate chain (`lib/orchestrator_alt.lua`, `P
 
 ### Read-only commands
 
-- `preview()` (`wardrobe_organizer.lua:598-661`): refresh config, build the state, print a panel titled `Wardrobe Preview (job loaded)` or `(every job)` after `SCOPE` (it does not apply `use_all_jobs_layout`; there is no `wo alt preview`) with `Inventory free`, `Used bags free`, `Other bags free`, `Out of <used bags>`, `Into their bag`, `Placed by a rule` (moves of pinned entries, sets' pins included) and the config warnings, and log every planned move to `wardrobe_debug.log` (the log is truncated first).
+- `preview()` (`wardrobe_organizer.lua:600-663`): refresh config, build the state, print a panel titled `Wardrobe Preview (job loaded)` or `(every job)` after `SCOPE` (it does not apply `use_all_jobs_layout`; there is no `wo alt preview`) with `Inventory free`, `Used bags free`, `Other bags free`, `Out of <used bags>`, `Into their bag`, `Placed by a rule` (moves of pinned entries, sets' pins included) and the config warnings, and log every planned move to `wardrobe_debug.log` (the log is truncated first).
 - `verify_global()` (`:664-686`): refresh config, build the state, report `Misplaced (total)`, `To leave <used bags>` (`w1w2_unused`) and `Not in their bag` (`w3w6_used`). Neither counts Phase 3.5 packing or inventory leftovers, and neither prints the config warnings.
 - `Reports.show_kept()` (`reports.lua:212`): lists `KEEP` (`Config.KEEP_ITEMS`) and, when the unused bags are not all equippable, the warp items and where the list came from.
 - `Reports.scan_warp_items()` (`reports.lua:170`): `WarpOwned.scan()` walks every bag of `windower.ffxi.get_items()` (storage included, `warp_owned.lua:55`), saves the names found to `data/<char>/saved/WARP_ITEMS_OWNED.lua` (`WarpOwned.save`, `:98`), then writes `data/wardrobe_scan_<char>.txt` (`write_scan_report`, `reports.lua:61`): bag occupancy, warp items with their bag, and per-job "declared in the sets vs held" counts from `WardrobeAuditor.build_frequency_map()`.
@@ -270,7 +270,7 @@ All are `//gs c wo <arg> [arg2]` or `//gs c worganize ...`; arguments are case-s
 
 | Syntax | Effect | Handler |
 |---|---|---|
-| `wo` | Organize according to the config (`SCOPE`, `USED`, `UNUSED`, rules) | `organize()` `wardrobe_organizer.lua:574` |
+| `wo` | Organize according to the config (`SCOPE`, `USED`, `UNUSED`, rules) | `organize()` `wardrobe_organizer.lua:576` |
 | `wo alt` / `wo kaories` | Same flow, every job's gear, `USED_WHEN_ALL` / `UNUSED_WHEN_ALL` bags | `organize_alt()` `:721` |
 | `wo global` | Same as `wo` (alias) | `:707` |
 | `wo preview` / `wo dry` / `wo global preview` / `wo global dry` | Dry run of the `wo` plan | `preview()` `:598` |
@@ -350,7 +350,7 @@ Both converted to the new key names on 2026-09-30; the commit reports that the p
 |---|---|---|
 | `SCOPE` | `'active_job'` | `'active_job'` |
 | `USED` | `{'wardrobe', 'wardrobe 2'}` | `{'wardrobe', 'wardrobe 2'}` |
-| `UNUSED` | `{'wardrobe 8', 'wardrobe 6', 'wardrobe 5', 'wardrobe 4', 'wardrobe 3'}` | `{'wardrobe 4', 'wardrobe 3', 'sack', 'case', 'satchel'}` |
+| `UNUSED` | `{'wardrobe 3', 'wardrobe 4', 'wardrobe 5', 'wardrobe 6', 'wardrobe 8'}` | `{'wardrobe 4', 'wardrobe 3', 'sack', 'case', 'satchel'}` |
 | `NEVER_TOUCH` | `{'wardrobe 7'}` | `{}` |
 | `ALL_WARDROBES` | not set (default: used + unused) | `{'wardrobe', 'wardrobe 2', 'wardrobe 3', 'wardrobe 4'}` |
 | `KEEP` | `{}` | `{}` |
@@ -377,7 +377,7 @@ Behaviour on lifecycle events during a run:
 | Main or sub job change | GearSwap rebuilds the sandbox (new organizer instance, `IS_RUNNING = false` there). The old chain keeps running with the old job's `used_names` until its next `job_changed()` check (start of an iteration > 1, Phase 1, Phase 2 -> 3, before Phase 4), which aborts and sends `gs enable all`. Until then the new job's slots stay disabled. The Phase 3 -> 3.5 transition, `finish_run` (its snapshot and verify evaluate the old job's `sets`, so a change during Phase 4 can still end on the "Layout OK" panel) and the inside of every phase have no check |
 | `gs reload` on the same job (typed, or `//gs c reload` -> `JobChangeManager.force_reload`) | Same sandbox rebuild, but `job_changed()` stays false, so the old chain runs to completion, including retries, while the new sandbox accepts another `wo` |
 | `//lua reload gearswap` | The addon's Lua state is destroyed with every coroutine; slots are left as they were (possibly disabled). Recovery: `wo recover` or the Phase 0 unlock of the next run |
-| Zone | Not handled; the chat tells the player not to zone (`start_organize`, `wardrobe_organizer.lua:550`) |
+| Zone | Not handled; the chat tells the player not to zone (`start_organize`, `wardrobe_organizer.lua:552`) |
 | Lua error in a phase coroutine | Only `build_state_and_dispatch`, `finish_run.snapshot` and `finish_run.verify` are wrapped by `with_panic_unlock` (`:197`). An error elsewhere kills that coroutine and leaves `IS_RUNNING = true` and the slots disabled; `wo reset` / `wo recover` clear both |
 
 ## Interactions
@@ -477,6 +477,7 @@ Fixed since the page was first written:
 - 2026-09-30: the chat panels printed W1..W8 free slots by fixed bag id whatever the configured lists; they now print the character's used and other bags by name.
 - 2026-09-30: removing a key from `WARDROBE_CONFIG.lua` kept its old value until the sandbox was rebuilt; `refresh()` now resets to the defaults first.
 - 2026-09-30: the doc comment of `CommonCommands.handle_wardrobeorganize` described `wo global` as a "cross-job freq-based static layout"; it now says alias.
+- 2026-11-03 (`978f0117`): Phase 1 answered "already optimized" with a piece of the job's sets in the inventory; it now also requires `inv_used == 0`.
 - 2026-09-30: the defaults were Tetsouo's layout (W7 protected, W8 first), wrong for a character with fewer wardrobes; they now follow the unlocked wardrobes.
 - 2026-09-30 (`2588c3c`, offline only): a rule bag in neither the used nor the unused list (the default when `UNUSED` is not written) was scanned but never pulled from, so gear no rule puts there was counted misplaced and never moved (retries until `TRULY_STUCK_THRESHOLD`). Such bags are now `Config.RULE_BAGS`: the snapshot queues their unpinned unused gear (`w3w6_used`), Phase 3 scans them and pulls out what no rule puts there (used gear on to the used bags, the rest through Phase 4 to the unused bags).
 - 2026-09-30 (`2588c3c`): stale comments fixed: `CommonCommands.handle_wardrobeorganize` (W7 "in none of the bag lists"; now: the bags come from `WARDROBE_CONFIG.lua`, `NEVER_TOUCH` taken out of every list; `wo verify` "checks every item is where the config puts it"), the header of `lib/phases.lua` (alt phases "A2 and A3"), the header of `lib/state.lua` (`ALL_WARDROBES` "default W1-W6 + W8").
@@ -484,17 +485,18 @@ Fixed since the page was first written:
 
 Still open:
 
-- `wo reset` / `wo recover` and a same-job `gs reload` do not stop an in-flight chain; a second `wo` then runs concurrently with it - `WardrobeOrganizer.reset` / `recover`, `shared/utils/wardrobe/wardrobe_organizer.lua:689-704`
-- `wo reset` and the two "crashed" paths call `Phases.enable_slots()` without `release_stance_locks`, so a stance flag can stay set - `wardrobe_organizer.lua:689`. Since 2026-09-29 the lock's `CombatMode.hold` record stays too, so the next update closes the slot again, in line with the flag (checked offline only).
+- `wo reset` / `wo recover` and a same-job `gs reload` do not stop an in-flight chain; a second `wo` then runs concurrently with it - `WardrobeOrganizer.reset` / `recover`, `shared/utils/wardrobe/wardrobe_organizer.lua:691-706`
+- `wo reset` and the two "crashed" paths call `Phases.enable_slots()` without `release_stance_locks`, so a stance flag can stay set - `wardrobe_organizer.lua:691`. Since 2026-09-29 the lock's `CombatMode.hold` record stays too, so the next update closes the slot again, in line with the flag (checked offline only).
 - Gear in unused bags that are not in `ALL_WARDROBES` is invisible to the snapshot, so "already optimized" / "Layout OK" are reported while used gear sits there. Since 2026-09-30 the default `ALL_WARDROBES` includes the unused bags, so this only happens when the config sets `ALL_WARDROBES` (Kaories: Sack, Case, Satchel left out) - `State.build_state`, `shared/utils/wardrobe/lib/state.lua:181`
 - `FILL_FALLBACK` mirrors the unused bags by default, so for a character whose unused bags end in Sack/Case/Satchel (Kaories) Phase 4 files used or pinned gear there when the used bags and pins are full; with Kaories' `ALL_WARDROBES` the snapshot does not scan those bags, so the run then reports the layout as OK - `Config.refresh`, `lib/phases.lua` `build_plan`
 - A `bag = 'wardrobe 7'` pin in a set file still sends gear into a `NEVER_TOUCH` W7: `strip_protected` takes the bag out of the organizer's own lists and the config's rules, not out of the sets' pins - `shared/utils/wardrobe/lib/config.lua:274`
-- `verify` / `preview` ignore Phase 3.5 packing and inventory leftovers - `shared/utils/wardrobe/wardrobe_organizer.lua:598-686`
+- `verify` / `preview` ignore Phase 3.5 packing and inventory leftovers - `shared/utils/wardrobe/wardrobe_organizer.lua:600-688`
 - The scan report matches set names against `en` only; the many set files that use the long log name are reported as "declared but not held" - `owned_item_names`, `shared/utils/wardrobe/lib/reports.lua:35`
 - Warp-keep reachability and source selection are implemented twice - `Reports.show_kept`, `Items.add_always_kept`
 - Dead helpers and constants: `Chat.kv`, `Config.UNEQUIP_DELAY`, `Config.EQUIP_SLOTS`, `Config.BAG_NAME_TO_ID`
 - No `job_changed()` check between Phase 3 and Phase 3.5, nor in `finish_run` - `start_phase_pack`, `shared/utils/wardrobe/wardrobe_organizer.lua:425`, `:308-408`
 - Phase 3.5 over-pulls: pending ignores items already waiting in the inventory, so the surplus goes back to the bag it came from - `Phases.compact_primary`, `shared/utils/wardrobe/lib/phases.lua:651`
+- `finish_run` and the last-chance verify do not count used gear left in the inventory (`inv_used`), unlike Phase 1 since `978f0117`: if Phase 4 cannot place such a piece, the run ends on "Layout OK" - `finish_run`, `shared/utils/wardrobe/wardrobe_organizer.lua:327-328`
 - Phase 3.5 prints as "Phase 3" - `start_phase_pack`, `Chat.phase` (`('Phase %d'):format(3.5)`)
 - Phase 0's fourth strategy sends `/equip left_ear empty` etc. with Windower key names; whether the game accepts them is untested (Z07-P3-14, needs a game test) - `NAKED_SLOTS`, `phases.lua:57`
 - The doubled-item layer counts copies whatever their status and in every scanned bag, but pins them only to `PRIMARY_BAGS` and the equippable `FILL_FALLBACK` bags; with a single used bag and no equippable fallback the list has one bag and the copies are not spread (the equip hook then warns) - `duplicate_pins`, `shared/utils/wardrobe/lib/rules.lua:108`

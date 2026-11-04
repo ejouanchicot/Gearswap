@@ -72,7 +72,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
 | `_master/config/dnc/DNC_CONFIG.lua` | 16 | The job's own settings (`auto_presto = true`), read through `auto_options.lua` / `job_config.lua` |
 | `_master/config/dnc/DNC_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/dnc_sets.lua` | 1040 | Template sets (flat; data, size not a defect) |
+| `_master/sets/dnc_sets.lua` | 1041 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
 Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
@@ -487,7 +487,8 @@ gitignored `scripts/audit/` holds differential tests (`difftest_*.lua`) to
 copy from.
 
 In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
-`//gs c debugmidcast`, `//gs c debugprecast`.
+`//gs c debugmidcast`. `//gs c debugprecast` has no effect on DNC: only BRD, RDM
+and RUN read `_G.PrecastDebugState` (`BRD_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`).
 
 ### Traps
 

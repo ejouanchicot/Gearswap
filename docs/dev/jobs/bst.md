@@ -45,17 +45,17 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/entry/bst.lua` | 372 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
-| `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
+| `shared/entry/bst.lua` | 376 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
+| `shared/jobs/bst/functions/bst_functions.lua` | 109 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
-| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 112 | `job_aftercast`: pet damage set for Ready moves that were not interrupted (held by `ReadyHold`), delayed `start_pet_monitoring`; `job_pet_aftercast` lets the hold go |
+| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 127 | `job_aftercast`: pet damage set for Ready moves that were not interrupted (held by `ReadyHold`), delayed `start_pet_monitoring`; `job_pet_aftercast` lets the hold go |
 | `shared/jobs/bst/functions/BST_PET_MIDCAST.lua` | 57 | `job_pet_midcast`: returns without doing anything |
 | `shared/jobs/bst/functions/BST_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/bst/functions/BST_ENGAGED.lua` | 41 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/bst/functions/BST_STATUS.lua` | 33 | `job_status_change = LifecycleManager.status_change()`; `job_pet_change`: a pet out says its correlation in the chat |
 | `shared/jobs/bst/functions/BST_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/bst/functions/BST_COMMANDS.lua` | 479 | `job_self_command` router, local `display_broth_count`; `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/bst/functions/BST_COMMANDS.lua` | 486 | `job_self_command` router, local `display_broth_count`; `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/bst/functions/BST_MOVEMENT.lua` | 41 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/bst/functions/BST_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('BST', 'config/bst/BST_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/bst/functions/BST_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('BST', 'config/bst/BST_MACROBOOK', 'SAM', 1, 1)` wrapper |
@@ -63,8 +63,8 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/logic/ready_hold.lua` | 70 | `ReadyHold`: a Ready move's set held until the pet's move lands (8 s at most, LoadGate), laid over any idle / engaged set rebuilt meanwhile (weapons left out) |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 170 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 217 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
-| `shared/jobs/bst/functions/logic/set_builder.lua` | 198 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
-| `_master/config/bst/BST_STATES.lua` | 77 | `BSTStates.configure()` |
+| `shared/jobs/bst/functions/logic/set_builder.lua` | 233 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
+| `_master/config/bst/BST_STATES.lua` | 80 | `BSTStates.configure()` |
 | `_master/config/bst/BST_KEYBINDS.lua` | 48 | 7 binds, data only; `KeybindManager.create('BST', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/bst/BST_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/bst/BST_HUD.lua` | 31 | Per-job HUD section / row order (empty) |
@@ -75,7 +75,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 151 | Monster correlation matrix (BG-Wiki Killer pages, 2026-10-27), loaded by the entry into `_G.BSTEcosystemData` (optional): said in the chat on an `Ecosystem` change and when a pet comes out |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
-| `_master/sets/bst_sets.lua` | 685 | Template sets (flat) |
+| `_master/sets/bst_sets.lua` | 690 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 225 + 271 | BST chat messages; the unprefixed facade copies of eight functions have no caller (callers use `show_bst_*`), and 33 templates have no sender (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
 

@@ -11,14 +11,14 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 | Path | Lines | Role |
 |---|---|---|
 | `shared/utils/ui/UI_MANAGER.lua` | 156 | Facade. Seeds the `_G` UI globals (stub `UIConfig` keys, `ui_display_config`, `ui_manager_state`), records the live load in `windower._ui_live_state`, loads the sub-modules and builds the `KeybindUI` table that jobs call |
-| `shared/utils/ui/ui_lifecycle.lua` | 210 | `init`, `smart_init`, `safe_init`, `destroy`; per-job readiness anchors; creates and destroys the `texts` object |
+| `shared/utils/ui/ui_lifecycle.lua` | 185 | `init`, `smart_init`, `safe_init`, `destroy`; per-job readiness anchors (`READY_ANCHOR` table); creates and destroys the `texts` object |
 | `shared/utils/ui/ui_update_orchestrator.lua` | 161 | `update` (repaint only when states changed), `force_reinit` |
 | `shared/utils/ui/ui_visibility.lua` | 149 | `toggle`, `show`, `hide`, `is_visible`, `enable`, `disable`, `save_position` |
 | `shared/utils/ui/ui_section_toggles.lua` | 194 | Header / legend / column-header / footer toggles; moves the box by the measured height change |
 | `shared/utils/ui/ui_appearance.lua` | 155 | Background preset, custom RGBA, background toggle, font |
 | `shared/utils/ui/ui_display.lua` | 74 | Collects the keybinds and pushes the rendered string to the `texts` object |
 | `shared/utils/ui/UI_LOADER.lua` | 88 | Requires `<job>/keys/<JOB>_KEYBINDS`, hard-coded COR/GEO fallbacks, appends the BRD song-slot rows |
-| `shared/utils/ui/UI_DISPLAY_BUILDER.lua` | 224 | Sorts binds into spell / ja / weapon / mode: `layout.move_to_section`, then `bind.section`, then substring rules on `bind.state` |
+| `shared/utils/ui/UI_DISPLAY_BUILDER.lua` | 225 | Sorts binds into spell / ja / weapon / mode: `layout.move_to_section`, then `bind.section`, then substring rules on `bind.state` |
 | `shared/utils/ui/UI_SECTIONS.lua` | 348 | Filters the rows (`hud_rows`, hidden rows, row order), renders the full text: header, column headers, sections in the player's order, footer |
 | `shared/utils/ui/UI_FORMATTER.lua` | 367 | Line formatting, column widths, header / legend text, section titles |
 | `shared/utils/ui/COLOR_SYSTEM.lua` | 505 | Picks the colour code for each value, with per-character overrides from `UI_COLOR_CONFIG.lua` |
@@ -32,9 +32,9 @@ Line counts re-measured on 2026-09-28 (`wc -l`); the files trimmed on 2026-10-01
 | `shared/utils/ui/ui_config_writer.lua` | 179 | Saves one look option into `UI_CONFIG.lua` by rewriting its line only |
 | `shared/utils/ui/hud_job_config.lua` | 207 | A job's own HUD settings, `<Character>/<job>/display/<JOB>_HUD.lua` (section and row order that replace the `UI_CONFIG.lua` defaults on that job); writes the file with its explanation |
 | `shared/config/ui_settings.lua` | 364 | Per-character store: `_G.UI_SETTINGS` plus file I/O (`dofile` / `io.open`). The saved file wins over `UI_CONFIG.lua`, but it keeps a `seed` block, what `UI_CONFIG.lua` said when the two were last lined up: at a load, a setting whose config value no longer matches its seed was changed in `UI_CONFIG.lua` since (by hand, or from the Atelier page) and follows the config, the others keep what the game saved (`follow_config`; a file saved before the seed existed only records it; nothing is done at a load that has not read `UI_CONFIG.lua`). Test: `lua5.1 scripts/atelier/ui_settings_test.lua` |
-| `shared/utils/config/config_loader.lua` | 101 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
+| `shared/utils/config/config_loader.lua` | 115 | Installs the require cache, then `load_ui_config(char, job)`: `dofile` of `UI_CONFIG.lua`, fills `_G.UIConfig` and `_G.ui_display_config` |
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (see Interactions) |
-| `shared/utils/core/optional_state.lua` | 149 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
+| `shared/utils/core/optional_state.lua` | 150 | `OptionalState.create{...}`: a Mote state the project adds to jobs, with a HUD row and key shown or hidden per job (Combat Mode, Treasure Mode) |
 | `shared/utils/core/optional_state_commands.lua` | 147 | `//gs c <mode> [show\|hide\|key <key>\|help]` for an optional state; rewrites its settings file |
 | `_master/config_global/UI_CONFIG.lua` | 537 | Template for `data/<char>/_common/display/UI_CONFIG.lua` (display defaults, 36 presets, `layout` / `colors` / `chat` / `rolls` blocks) |
 | `_master/config_global/UI_COLOR_CONFIG.lua` | 275 | Template for the per-character value-colour overrides |
@@ -475,7 +475,7 @@ Binds whose `desc` contains `←` are dropped.
 2. Add `{key = "^numpadN", command = "cyclestate MyState", desc = "My State", state = "MyState"}` to `_master/config/<job>/<JOB>_KEYBINDS.lua` (templates are flat) and to `<job>/keys/<JOB>_KEYBINDS.lua` in each live character folder that plays the job (`Tetsouo/`, `Kaories/`; gitignored, so `grep -r`, not ripgrep, finds them). Keep the key unique in the file.
 3. Check the bucket with the pattern table: if the name matches the wrong bucket (substring, mode first), add `section = 'spells'` etc. to the entry rather than a new broad pattern. Only add a pattern to `UI_DISPLAY_BUILDER.lua` `categorization_rules` when a whole family of names needs it, and re-check every existing state name against it.
 4. For a row that should appear only sometimes, use `subjob` / `exclude_subjob` (fixed per load), `weapon`, `alt`, or `visible = function() ... end` (state-dependent; must not error).
-5. If the job's states are created after `user_setup` starts, add an anchor in `ui_lifecycle.lua` `are_states_ready`. Optionally add a title to `UI_FORMATTER.lua` `job_titles` and a section title in `get_section_title`.
+5. If the job's states are created after `user_setup` starts, add the job's anchor state to the `READY_ANCHOR` table of `ui_lifecycle.lua` (read by `are_states_ready`; a job missing from it is ready at once). Optionally add a title to `UI_FORMATTER.lua` `job_titles` and a section title in `get_section_title`.
 6. Check the state's values for colours (`COLOR_SYSTEM.lua` `DESCRIPTION_PALETTES`, `MODE_SUBSTRINGS`, `SPELL_COLOR_PROBES`, `EXACT_VALUE_COLORS`), and that the row appears in game with `//lua reload gearswap`.
 
 **Add a `//gs c ui` look option**

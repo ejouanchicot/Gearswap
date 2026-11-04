@@ -404,9 +404,9 @@ The data files register no command. Commands that reach them:
 
 | Command | Handler | Effect on this area |
 |---------|---------|---------------------|
-| `//gs c info <name>` | `CommonCommands.handle_command` (`info` branch) -> `DebugCommands.handle_info` (`DEBUG_COMMANDS.lua:247`) -> `InfoCommand.handle` (`info_command.lua:360`) | Loads all JA module files and/or all 13 WS files into `_G.FFXI_DATA` on first use, prints the entry |
-| `//gs c jamsg <full\|on\|off>` | `DebugCommands.handle_jamsg` (`DEBUG_COMMANDS.lua:221`) | Chooses whether JA announcements print `description` |
-| `//gs c wsmsg <full\|on\|off\|tp>` | `DebugCommands.handle_wsmsg` (`DEBUG_COMMANDS.lua:236`) | `full` prints WS `description`, and prints nothing for a WS missing from the database; `tp` is an alias of `on` |
+| `//gs c info <name>` | `CommonCommands.handle_command` (`info` branch) -> `DebugCommands.handle_info` (`DEBUG_COMMANDS.lua:249`) -> `InfoCommand.handle` (`info_command.lua:360`) | Loads all JA module files and/or all 13 WS files into `_G.FFXI_DATA` on first use, prints the entry |
+| `//gs c jamsg <full\|on\|off>` | `DebugCommands.handle_jamsg` (`DEBUG_COMMANDS.lua:223`) | Chooses whether JA announcements print `description` |
+| `//gs c wsmsg <full\|on\|off\|tp>` | `DebugCommands.handle_wsmsg` (`DEBUG_COMMANDS.lua:238`) | `full` prints WS `description`, and prints nothing for a WS missing from the database; `tp` is an alias of `on` |
 
 RDM's `//gs c <ability, WS or spell name> [<target>]` fallback (the end of `job_self_command` in
 `RDM_COMMANDS.lua`) does not reach these databases: `resolve_action_prefix` sends `/ja` when

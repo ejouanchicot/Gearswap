@@ -15,10 +15,10 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/midcast_manager.lua` | 764 | `select_set()` with the standard chain (P0-P9, plus P8b) and the Singing chain, persistent debug toggle, Composure target helper, song helpers |
 | `shared/utils/midcast/midcast_fallback.lua` | 62 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
 | `shared/utils/midcast/midcast_trace.lua` | 81 | `MIDCAST` lines in `<Character>/logs/trace/trace.log` (chosen path and pieces, or "no set"); slot-name aliasing |
-| `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
+| `shared/utils/midcast/utsusemi_shadows.lua` | 52 | Cancels Copy Image buffs during Utsusemi: Ichi's cast, before its end (Cancel addon) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 14 jobs that call it (see [MidcastDeps](#midcastdeps)) |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 130 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
-| `shared/utils/set_building/base_set_builder.lua` | 216 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
+| `shared/utils/set_building/base_set_builder.lua` | 248 | `apply_movement`, `lay_weapon`, `lay_weapons`, `kraken_in_offhand`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 438 | The one buff engine: `collect(list)` (names or entries -> what to cast now, and the status of the rest; tiers of one buff best first; `$State` names, groups of alternatives; a buff under `refresh_below` recast), `cast(to_cast)` (shared action queue, `cancel_first`, buff guard), `show_status(status)`; the names with a rule (Warcry, Hasso / Seigan, Utsusemi, Haste Samba) |
 | `shared/utils/buffs/buff_timers.lua` | 160 | `BuffTimers`: decodes packet 0x063 order 9 (`read`, also used by `stealth_timers.lua`), keeps each own buff's end time and full length, `left(id)`, `fraction_left(id)`, `start()` |
 | `shared/utils/buffs/buff_guard.lua` | 141 | `BuffGuard.check(step)`: the `ActionQueue` guard of each `//gs c buff` step, also called by BRD `song_queue.lua` before each song (debuff landed: stop, skip, drop the spells, or cure first); `reset()` per press |
@@ -236,7 +236,7 @@ Each call is a no-op while the trace is off (`trace_log.enabled()`).
 
 ### UtsusemiShadows
 
-`UtsusemiShadows.on_midcast(spell)`: for `Utsusemi: Ichi` only, sends `wait 2.3; cancel <id>` for each Copy Image buff id (66, 444, 445, 446), so Ichi can replace shadows it could not overwrite. Needs Windower's Cancel addon. Caller: `shared/hooks/init_spell_messages.lua` (`user_post_midcast`), so it runs for every job; DNC used to do it on its own. The `wait` chains cannot be cancelled: an interrupted Ichi still drops the shadows 2.3 s later.
+`UtsusemiShadows.on_midcast(spell)`: for `Utsusemi: Ichi` only, sends `wait <delay>; cancel <id>` for each Copy Image buff id (66, 444, 445, 446), so Ichi can replace shadows it could not overwrite. Needs Windower's Cancel addon. `UtsusemiShadows.delay(spell)` works out `<delay>` from the cast time the precast stored for this spell (`_G._precast_cast_time`, `shared/utils/precast/cast_time.lua`): `max(EARLIEST, min(CANCEL_DELAY, seconds - MARGIN))` with `CANCEL_DELAY = 2.3`, `MARGIN = 0.8`, `EARLIEST = 0.5`; 2.3 s when no cast time is stored for this spell id. A fixed 2.3 s fell after the end of the cast past about 42 % Fast Cast (Ichi is 4 s), so Ichi landed on the shadows and did nothing (audit 2026-10-28, fix D). Test: `lua5.1 scripts/atelier/utsusemi_shadows_test.lua`. Caller: `shared/hooks/init_spell_messages.lua` (`user_post_midcast`), so it runs for every job; DNC used to do it on its own. The `wait` chains cannot be cancelled: an interrupted Ichi still drops the shadows `<delay>` s later.
 
 ### Helpers and presets
 
@@ -475,7 +475,7 @@ The buff engine reads `BUFF_CONFIG.lua` (above); the other modules read no confi
 - Mote states: whatever a caller passes as `mode_state`; `state.Moving`; `state.MainInstrument` (BRD router).
 - Mote data: `classes.SpellMaps` and `job_get_spell_map` (P8b through `get_spell_map`).
 - Globals: `buffactive`, `player`, `world`, `areas.Cities`, `_G.SongRotationManager`, `is_recast_ready` (from `RECAST_CONFIG.lua`, tolerance 2.0 s).
-- Hard-coded constants: `RENEWED = 3` (buff timers), `AFTER_SPELL = 3.0`, `AFTER_ITEM = 1.0` (buff guard cure steps), `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `stratagem_full_recharge` of `_common/combat/SUBJOB_CONFIG.lua`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3` and Copy Image ids (Utsusemi).
+- Hard-coded constants: `RENEWED = 3` (buff timers), `AFTER_SPELL = 3.0`, `AFTER_ITEM = 1.0` (buff guard cure steps), `CAST_COOLDOWN = 2.0`, `DEFAULT_AFTER_SPELL = 3.0`, `DEFAULT_AFTER_ABILITY = 0.5`, `WAIT_MARGIN = 3.0`, `HASTE_SAMBA_TP = 350` (buff engine); `STEP_SPACING = 2`, `POLL_INTERVAL = 0.5`, `POLL_GRACE = 6.0` (scholar chains); `STRATAGEM_RECAST_ID = 231` (stratagems; the 240 s full recharge is now `DEFAULT_FULL_RECHARGE`, overridable by `stratagem_full_recharge` of `_common/combat/SUBJOB_CONFIG.lua`); WAR recast ids 1/4/2; `CANCEL_DELAY = 2.3`, `MARGIN = 0.8`, `EARLIEST = 0.5` and Copy Image ids (Utsusemi).
 
 ## State & lifetime
 

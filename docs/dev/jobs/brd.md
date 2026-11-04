@@ -43,7 +43,7 @@ function; line numbers are given only where no function name fits.
 |------|------:|------|
 | `shared/entry/brd.lua` | 263 | Entry point (the same for every character; `<Char>_BRD.lua` and its template `_master/entry/Tetsouo_BRD.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (song slots, then `EntryKit.update_hud`), `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/brd/functions/brd_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/brd/functions/BRD_PRECAST.lua` | 322 | `job_precast` (guard, `SongRefinement.refine_song`, cooldown, `job_precast_bardsong` Pianissimo, `try_marcato`, WS, `job_precast_bardsong_2` instrument lock) / `job_post_precast` (TP gear, precast debug) |
+| `shared/jobs/brd/functions/BRD_PRECAST.lua` | 324 | `job_precast` (guard, `SongRefinement.refine_song`, cooldown, `job_precast_bardsong` Pianissimo, `try_marcato`, WS, `job_precast_bardsong_2` instrument lock) / `job_post_precast` (TP gear, precast debug) |
 | `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 145 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough, never called), `job_post_midcast` (context + skill dispatch to the router) |
 | `shared/jobs/brd/functions/BRD_AFTERCAST.lua` | 73 | `job_aftercast`: watchdog, Pianissimo flag, `SongQueue.on_aftercast`, `DummyNext.on_aftercast`, instrument lock release |
 | `shared/jobs/brd/functions/BRD_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -54,18 +54,18 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 39 | `job_handle_equipping_gear` (re-equips the locked instrument) |
 | `shared/jobs/brd/functions/BRD_LOCKSTYLE.lua` | 55 | Lazy `LockstyleManager.create('BRD', ..., 1, 'WHM')` wrappers |
 | `shared/jobs/brd/functions/BRD_MACROBOOK.lua` | 49 | Lazy `MacrobookManager.create('BRD', ..., 'WHM', 1, 1)` wrapper |
-| `shared/jobs/brd/functions/logic/midcast_router.lua` | 296 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
+| `shared/jobs/brd/functions/logic/midcast_router.lua` | 327 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 272 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 113 | `plan` (one `SONGS` trace line per plan), `inputs`, `songs_up` (through `song_owner`), `instrument_extra` |
-| `shared/jobs/brd/functions/logic/song_owner.lua` | 338 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `own_songs`, `family_of`, `start`. With no other bard in the party here (every member's job known, none BRD main or sub: `party_jobs.lua`), every song up counts as ours whatever the pairing kept |
+| `shared/jobs/brd/functions/logic/song_owner.lua` | 392 | Which songs up are ours, from the caster of each song (packets 0x028 + 0x063): `counts`, `own_songs`, `family_of`, `start`. With no other bard in the party here (every member's job known, none BRD main or sub: `party_jobs.lua`), every song up counts as ours whatever the pairing kept |
 | `shared/jobs/brd/functions/logic/song_opening.lua` | 176 | What goes before the songs: `nothing_to_sing`, `start` (Nightingale then Troubadour through `AbilityHelper.ensure`, then the queue), `running`, `stop`, `marcato_then`, `is_marcato_replay` |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 197 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 104 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 60 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 167 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
-| `_master/config/brd/BRD_STATES.lua` | 223 | All states (`BRDStates.configure()`) |
-| `_master/config/brd/BRD_KEYBINDS.lua` | 62 | 12 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/brd/BRD_STATES.lua` | 229 | All states (`BRDStates.configure()`) |
+| `_master/config/brd/BRD_KEYBINDS.lua` | 65 | 13 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/brd/BRD_CUSTOM.lua` | 131 | Player modes and gear rules (all examples commented out, DummySong switch included) |
 | `_master/config/brd/BRD_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 305 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
@@ -74,7 +74,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; also by `lockstyle_pieces.lua`, for `//gs c lockscan`) |
 | `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
 | `_master/config/brd/BRD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/brd_sets.lua` | 519 | Template sets (flat) |
+| `_master/sets/brd_sets.lua` | 522 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 300 + 269 | BRD chat messages |
 | `shared/utils/messages/formatters/magic/message_precast.lua` | 135 | `debugprecast` output used by `job_post_precast` |
 | `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 63 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line. `song_buffs.lua` is over the project's 800-line hard limit for a file |

@@ -29,22 +29,22 @@ does not).
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/messages/message_formatter.lua` | 307 | Facade: 130 lazy one-line wrappers `MessageFormatter.show_x -> <module>.show_y`, the `COLORS` proxy, `show_debug` |
+| `shared/utils/messages/message_formatter.lua` | 308 | Facade: 130 lazy one-line wrappers `MessageFormatter.show_x -> <module>.show_y`, the `COLORS` proxy, `show_debug` |
 | `shared/utils/messages/message_core.lua` | 196 | Colour-code builder, job tag and job prefix, `SEPARATOR_WIDTH` (player's `chat.width` or 69), separator line, direct-output helpers (`info/success/error/warning/raw/...`); installs the chat-line filter on the sandbox `add_to_chat` |
 | `shared/utils/messages/chat_separators.lua` | 145 | `ChatSeparators.apply(text)`: redraws or drops separator lines and framed titles according to the player's `chat` options; called for every chat line by the wrapper in `message_core.lua` |
 | `shared/utils/messages/chat_palette.lua` | 113 | Named chat colours (template tags) with the player's `chat.colors` overrides, alias rules, job-tag switch and `strip_job_tag` |
 | `shared/utils/messages/message_colors.lua` | 204 | Named colour constants (`SUCCESS`, `ERROR`, `WARNING`...) resolved at each read through the player's overrides; region-dependent orange; `//gs c trace` probe of the orange |
-| `shared/utils/messages/info_block.lua` | 134 | `InfoBlock`: one renderer for data blocks (`TAG :: title`, aligned `Label : value` fields), namespace `BLOCK` |
+| `shared/utils/messages/info_block.lua` | 152 | `InfoBlock`: one renderer for data blocks (`TAG :: title`, aligned `Label : value` fields), namespace `BLOCK` |
 | `shared/utils/messages/help_screen.lua` | 178 | `HelpScreen`: one renderer for help screens (groups, dot-leader rows, notes), namespace `HELP` |
 | `shared/utils/messages/api/messages.lua` | 436 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
 | `shared/utils/messages/core/message_engine.lua` | 334 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
-| `shared/utils/messages/core/message_renderer.lua` | 255 | Final template-path output: master toggle, filter level, colour scheme, timestamp, newline split, statistics |
+| `shared/utils/messages/core/message_renderer.lua` | 260 | Final template-path output: master toggle, filter level, colour scheme, timestamp, newline split, statistics |
 | `shared/utils/messages/message_validator.lua` | 425 | `//gs c msgtests`: static checks of job templates and job formatter exports, JSON and TXT reports |
 | `shared/utils/messages/handlers/ability_message_handler.lua` | 284 | Finds a JA in the per-job JA databases (or a Blood Pact in the SMN database) and prints it via `show_ja_activated` |
 | `shared/utils/messages/handlers/spell_message_handler.lua` | 315 | Finds a spell in the magic databases and prints it via `show_spell_activated` |
-| `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast` -> ability handler |
-| `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast` -> spell handler |
-| `shared/hooks/init_ws_messages.lua` | 138 | Wraps `user_post_precast` -> WS line from `UNIVERSAL_WS_DATABASE` |
+| `shared/hooks/init_ability_messages.lua` | 100 | Wraps `user_post_precast` -> ability handler |
+| `shared/hooks/init_spell_messages.lua` | 100 | Wraps `user_post_midcast` -> spell handler |
+| `shared/hooks/init_ws_messages.lua` | 141 | Wraps `user_post_precast` -> WS line from `UNIVERSAL_WS_DATABASE` |
 | `shared/config/message_settings.lua` | 184 | Loads/saves `<Char>/saved/message_modes.lua` into `_G.MESSAGE_SETTINGS` |
 | `shared/config/message_mode_config.lua` | 82 | Factory `MessageModeConfig.create(opts)` that builds the four mode configs below |
 | `shared/config/JA_MESSAGES_CONFIG.lua` | 38 | `MessageModeConfig.create{...}` over `ja_mode` |
@@ -275,6 +275,8 @@ is unreachable because `load()` raises instead of returning `false`.
 2. If `_config.color_mode ~= "normal"`, remaps the base colour through `COLOR_SCHEMES` (`colorblind`,
    `monochrome`; only codes 1, 8, 122, 158, 167, 200 are mapped, `transform_color`). Inline `0x1F`
    codes inside the string are not touched.
+   Then `options.channel`, when given, replaces the colour: the chat channel the caller chose (121 =
+   the synthesis messages' window, `info_block.lua` `spec.channel`); the template's inline codes stay.
 3. `message = tostring(message)`; prefixes `[HH:MM:SS]` if `_config.timestamp`.
 4. If the message contains `\n`, splits it with `gmatch("[^\n]+")` and calls `add_to_chat(color, line)`
    per line; empty lines are dropped, which is why templates use `"\n \n"` for a blank line. Each line
@@ -409,7 +411,8 @@ overrides, the job-tag switch and the chat-line filter apply.
 
 | Function | Behaviour |
 |---|---|
-| `InfoBlock.show(spec)` | `spec = {tag, title, fields?, lines?, width?}`: header, `fields(fields, width)`, then each of `lines` (a string, or `{text, kind}` with kind `dim` or `bad`), footer |
+| `InfoBlock.show(spec)` | `spec = {tag, title, fields?, lines?, width?, channel?, head?, foot?}`: sets the block's chat channel (`channel`, passed to `M.send` as `{channel = ...}`), then `InfoBlock.draw(spec)` under `pcall` and clears the channel again (an error is re-raised) |
+| `InfoBlock.draw(spec)` | header (unless `head == false`), `fields(fields, width)`, then each of `lines` (a string, or `{text, kind}` with kind `dim` or `bad`), footer (unless `foot == false`). `head` / `foot` false show a block in two times: its title when it starts, the rest when it is known |
 | `InfoBlock.header(tag, title)` | separator, `"  TAG :: title"`, separator |
 | `InfoBlock.fields(fields, width?)` | one line per `{label, value, kind}`, labels padded to `width` (default `label_width(fields)`), long values wrapped |
 | `InfoBlock.field(label, value, kind?)` | one `Label : value` line; `label` must already be padded |
@@ -427,7 +430,8 @@ status), `equipment/dual_wield.lua`, `equipment/elemental_belt.lua`, `keybinds/k
 `combat/fight_hits.lua`, `combat/fight_sheet.lua`, `combat/fight_tracker.lua`,
 `combat/random_deal_watch.lua`, `debuff/auto_medicine.lua`, `debuff/cleanse.lua`,
 `equipment/gear_scan.lua`, `equipment/hp_priority.lua`, `lockstyle/lockstyle_pieces.lua`,
-`party/support_tier.lua`, `wardrobe/bag_mover.lua`, `wardrobe/porter_run.lua`. Pieces (`header`, `fields`, `separator`, `footer`): `message_equipment.lua`
+`party/support_tier.lua`, `wardrobe/bag_mover.lua`, `wardrobe/porter_run.lua`,
+`formatters/ui/message_synth.lua` (synthesis start and result, in channel 121). Pieces (`header`, `fields`, `separator`, `footer`): `message_equipment.lua`
 (`//gs c checksets`).
 
 Not converted on purpose: Sortie's own blocks (the model, same look, own templates), in-game event
