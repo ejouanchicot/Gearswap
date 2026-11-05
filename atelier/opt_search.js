@@ -347,20 +347,29 @@
     O.prunedChoices = function (ctx, start, choices, opts) { return prunedChoices(ctx, start, choices, opts); };
     // A whole run from plain data (what a worker receives): {ctx: O.context's input, start, choices, opts, prefilter
     // (keep each slot's best n first), starts (the walks to make, every one by default), seed (optional: the set the
-    // walks start from instead of `start`, which stays the set the result is compared with)}; its progress in
+    // walks start from instead of `start`, which stays the set the result is compared with), prepareOnly (only the
+    // pieces to choose from, returned: prepareGen), prepared (those pieces, made already)}; its progress in
     // opts.prog while it searches. A generator: it stops after each try of a set, so a caller can spread it over time
     // (O.runPaced)
+    // The pieces the walks choose from: the Ambuscade capes of the game built, each slot's best kept (prefilter), and
+    // in the fast search only the pieces that can be the best of their slot. Plain data, the same in every worker: the
+    // page has it made once and hands it to the others (input.prepareOnly, then input.prepared: app/js/engine.js
+    // optPoolRun). It leaves nothing on the context the walks need
+    function* prepareGen(ctx, input, opts) {
+        var seed = input.seed || input.start;
+        var from0 = input.opts.scratch ? bare(seed, input.choices) : seed;
+        var all = O.ambuGen ? yield* O.ambuGen(ctx, from0, input.choices, opts) : input.choices;
+        var choices = input.prefilter ? yield* prefilterGen(ctx, from0, all, opts, input.prefilter) : all;
+        if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, seed, choices, opts).choices;
+        return choices;
+    }
     function* runGen(input) {
         var ctx = O.context(input.ctx), opts = Object.assign({}, input.opts, {prog: {evals: 0, moves: []}, base: input.start});
         ctx._fast = !!input.opts.fast;
         yield opts.prog;
+        if (input.prepareOnly) return yield* prepareGen(ctx, input, opts);
         var seed = input.seed || input.start;
-        var from0 = input.opts.scratch ? bare(seed, input.choices) : seed;
-        // the Ambuscade capes of the game built (atelier/opt_ambu.js)
-        var all = O.ambuGen ? yield* O.ambuGen(ctx, from0, input.choices, opts) : input.choices;
-        var choices = input.prefilter ? yield* prefilterGen(ctx, from0, all, opts, input.prefilter) : all;
-        // the fast search: only the pieces that can be the best of their slot
-        if (ctx._fast && ctx.mode !== "stats") choices = prunedChoices(ctx, seed, choices, opts).choices;
+        var choices = input.prepared || (yield* prepareGen(ctx, input, opts));
         var res = null, evals = 0, starts = input.starts || O.startsFor(choices, opts);
         for (var i = 0; i < starts.length; i++) {
             var r = yield* walk(ctx, seed, choices, opts, starts[i]);

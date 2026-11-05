@@ -102,6 +102,10 @@ function optPoolRun(input, shares, h){
   // neither left busy for good nor doubled
   optPoolStopAll();
   const ws = optPoolTake(shares.length), id = ++OPT_POOL.run;
+  // a search over every item of the game (a prefilter): the pieces to choose from made once, by the first worker, then
+  // handed to all (opt_search.js prepareGen), instead of the same 50 to 250 ms of work in each worker
+  let prep = input.prefilter > 0 && ws.length > 1;
+  const launch = (w, i, extra) => { w._running = true; w.postMessage(Object.assign({}, input, extra, {starts: shares[i], id})); };
   ws.forEach((w, i) => {
     w.onerror = e => { optPoolDrop(w); h.fail(e.message || 'worker'); };
     w.onmessage = e => {
@@ -110,11 +114,12 @@ function optPoolRun(input, shares, h){
       if (d.progress) return h.step(i, d.progress);
       w._running = false;
       if (d.error) { optPoolDrop(w); return h.fail(d.error); }
+      if (prep && i === 0) { prep = false; return ws.forEach((x, j) => launch(x, j, {prepared: d.done})); }
       h.done(i, d.done);
     };
-    w._running = true;
-    w.postMessage(Object.assign({}, input, {starts: shares[i], id}));
   });
+  if (prep) { ws[0]._running = true; ws[0].postMessage(Object.assign({}, input, {prepareOnly: true, id})); }
+  else ws.forEach((w, i) => launch(w, i));
   return ws;
 }
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
