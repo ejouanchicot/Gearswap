@@ -24,7 +24,7 @@ function optStop(){
   // a run over every set (opt_sets.js) waits for this search: told it was stopped
   osSearchEnd({stopped: true});
   OPT_SEQ++;
-  OPT_WORKERS.forEach(w => w.terminate()); OPT_WORKERS = [];
+  optPoolStopAll();
   if (OPT_PAGE_STOP) { OPT_PAGE_STOP(); OPT_PAGE_STOP = null; }
   clearInterval(OPT_RUN_CLOCK); S._optRun = null;
   searchPark().replaceChildren();
@@ -307,37 +307,34 @@ async function optLaunch(s, k, input, o){
     // left for another character or job meanwhile: the result is not laid on that one's sets
     if (at !== S.char + '|' + S.job) return optStop();
     optResult(s, k, out, out.gains, o); }, 500); };
-  let workers;
-  try { workers = shares.map(() => optWorker()); } catch (e) { workers = null; }
-  if (!workers) {   // no worker (an old browser): the search runs on the page, paced so it stays usable
-    OPT_WORKERS = [];
-    OPT_PAGE_STOP = FFXI.opt.runPaced(Object.assign({}, input, {starts}), p => optRunStep(0, p), out => { OPT_PAGE_STOP = null; finish(out); }, e => fail(e.message), input.pace.work, input.pace.rest);
-    return;
-  }
   // the end: once the main walks are done, the shuffled ones still going are not waited for (more cores never make it
   // longer); the best of the walks that finished is kept. The fast search waits for every walk: they are quick, and
   // the shuffled ones are the ones that find a set behind a step
   const outs = [], left = new Set(input.opts.fast ? starts : starts.filter(x => !/^mix\d+$/.test(x)));
+  let workers = null;
   const end = () => {
     // ranked on the score before the Pet DT / Charm+ passes (opt.js runGen `rank`), which lower it on purpose
     const rk = o => o.rank != null ? o.rank : o.score;
     const best = outs.reduce((a, b) => rk(b) > rk(a) ? b : a);
     best.evals = outs.reduce((a, b) => a + b.evals, 0);
-    OPT_WORKERS.forEach(x => x.terminate()); OPT_WORKERS = [];
+    optPoolGive(workers);
     finish(best);
   };
-  workers.forEach((w, i) => {
-    w.onerror = e => fail(e.message || 'worker');
-    w.onmessage = e => {
-      if (!mine()) return;
-      if (e.data.progress) return optRunStep(i, e.data.progress);
-      if (e.data.error) return fail(e.data.error);
-      outs.push(e.data.done);
-      shares[i].forEach(walk => { optRunWalkDone(walk); left.delete(walk); });
-      if (!left.size || outs.length === workers.length) end();
-    };
-    w.postMessage(Object.assign({}, input, {starts: shares[i]}));
-  });
+  try {
+    workers = optPoolRun(input, shares, {
+      step: (i, p) => { if (mine()) optRunStep(i, p); },
+      fail: msg => fail(msg),
+      done: (i, out) => {
+        if (!mine()) return;
+        outs.push(out);
+        shares[i].forEach(walk => { optRunWalkDone(walk); left.delete(walk); });
+        if (!left.size || outs.length === shares.length) end();
+      }});
+  } catch (e) { workers = null; }
+  if (!workers) {   // no worker (an old browser): the search runs on the page, paced so it stays usable
+    OPT_PAGE_STOP = FFXI.opt.runPaced(Object.assign({}, input, {starts}), p => optRunStep(0, p), out => { OPT_PAGE_STOP = null; finish(out); }, e => fail(e.message), input.pace.work, input.pace.rest);
+    return;
+  }
 }
 /* ---- the search window: what each walk does, the best set found so far, the moves as they come ---- */
 // S._optRun: {t0, cores, walks: {walk: {stage, phase, round, evals, start, best, done}}, feed: [], series: [[s, value]],

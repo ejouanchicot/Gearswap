@@ -77,20 +77,16 @@ function oaSearch(input, seq, show){
     starts.forEach((x, i) => shares[i % n].push(x));
     // the search window of a single search (optimizer.js optRunOpen: the moogle, the walks, the moves), one version a time
     if (show) show(starts, n);
-    let workers;
-    try { workers = shares.map(() => optWorker()); } catch (e) { return reject(e); }
-    // a stop (optStop) drops the workers: nothing comes back, so the wait ends itself
+    // a stop (optStop) hands the workers back to the pool: nothing comes back, so the wait ends itself
     const watch = setInterval(() => { if (seq !== OPT_SEQ) { clearInterval(watch); reject(new Error('stopped')); } }, 300);
-    const end = () => { clearInterval(watch); workers.forEach(w => w.terminate()); OPT_WORKERS = OPT_WORKERS.filter(w => !workers.includes(w));
-      resolve(outs.reduce((a, b) => b.score > a.score ? b : a)); };
-    workers.forEach((w, i) => {
-      w.onerror = e => { clearInterval(watch); reject(new Error(e.message || 'worker')); };
-      w.onmessage = e => { if (seq !== OPT_SEQ) return;
-        if (e.data.progress) return optRunStep(i, e.data.progress);
-        if (e.data.error) { clearInterval(watch); return reject(new Error(e.data.error)); }
-        if (e.data.done) { outs.push(e.data.done); shares[i].forEach(optRunWalkDone); if (outs.length === workers.length) end(); } };
-      w.postMessage(Object.assign({}, input, {starts: shares[i]}));
-    });
+    let workers;
+    const end = () => { clearInterval(watch); optPoolGive(workers); resolve(outs.reduce((a, b) => b.score > a.score ? b : a)); };
+    try {
+      workers = optPoolRun(input, shares, {
+        step: (i, p) => { if (seq === OPT_SEQ) optRunStep(i, p); },
+        fail: msg => { clearInterval(watch); optPoolGive(workers || []); reject(new Error(msg)); },
+        done: (i, out) => { if (seq !== OPT_SEQ) return; outs.push(out); shares[i].forEach(optRunWalkDone); if (outs.length === shares.length) end(); }});
+    } catch (e) { clearInterval(watch); return reject(e); }
   });
 }
 // fn() with a version's buffs: its support profile's, and the set shown being that version (its dance, Climactic)

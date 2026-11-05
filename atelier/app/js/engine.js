@@ -33,19 +33,89 @@ function loadRanked(done){
 }
 // The engine in workers, built from the same parts (a page opened from the disk cannot load a worker file: the
 // source is a Blob), so a search never freezes the page. Each worker runs its share of the search's walks
-// (FFXI.opt.STARTS) on its own core, paced (FFXI.opt.runPaced: work, then a pause) so the game stays smooth
-let ENGINE_PARTS = [], OPT_WORKER_URL = null, OPT_WORKERS = [], OPT_PAGE_STOP = null;
+// (FFXI.opt.STARTS) on its own core, paced (FFXI.opt.runPaced: work, then a pause) so the game stays smooth.
+// A worker takes {...input, starts, id} and runs it, or {stop: true}; a run arriving stops the one under way. What it
+// sends back carries its run's id: {id, progress} | {id, done} | {id, error}
+let ENGINE_PARTS = [], OPT_WORKER_URL = null, OPT_PAGE_STOP = null;
+const OPT_WORKER_MAIN = 'var stop = null;\nself.onmessage = function (e) { var d = e.data, id = d.id, pace = d.pace || {};' +
+  ' if (stop) { stop(); stop = null; } if (d.stop) return;' +
+  ' var send = function (m) { m.id = id; self.postMessage(m); };' +
+  ' stop = FFXI.opt.runPaced(d, function (p) { send({progress: p}); }, function (r) { stop = null; send({done: r}); },' +
+  ' function (err) { stop = null; send({error: String(err && err.message || err)}); }, pace.work, pace.rest); };';
 function optWorker(){
   if (!OPT_WORKER_URL) {
     const src = 'var CALC = {};\n' + (window.CALC_PARTS || []).map(p => '(' + p.toString() + ')(CALC);').join('\n') +
-      `\nvar FFXI = {};\n` + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') +
-      '\nself.onmessage = function (e) { var pace = e.data.pace || {}; FFXI.opt.runPaced(e.data, function (p) { self.postMessage({progress: p}); },' +
-      ' function (r) { self.postMessage({done: r}); }, function (err) { self.postMessage({error: String(err && err.message || err)}); }, pace.work, pace.rest); };';
+      `\nvar FFXI = {};\n` + ENGINE_PARTS.map(p => '(' + p.toString() + ')(FFXI);').join('\n') + '\n' + OPT_WORKER_MAIN;
     OPT_WORKER_URL = URL.createObjectURL(new Blob([src], {type: 'text/javascript'}));
   }
-  const w = new Worker(OPT_WORKER_URL);
-  OPT_WORKERS.push(w);
-  return w;
+  return new Worker(OPT_WORKER_URL);
+}
+// The workers kept between two searches: 8 workers made at once take 0.4 to 0.7 s to be ready (each reads the
+// engine and its 4.6 MB catalogue), on every search before (measured 2026-11-05, notes/docs-perso/perf-optimiseur-
+// 2026-11-05/SPEC.md). Kept 60 s after the last search (about 22 MB each), then closed. Each worker's engine keeps
+// nothing of one run for the next but what comes from the catalogue: a run's caches live on its own context
+const OPT_POOL = {idle: [], busy: new Set(), timer: null, run: 0}, OPT_POOL_KEEP = 60000;
+// n workers for a run: the idle ones first, new ones for the rest (throws where there is no Worker)
+function optPoolTake(n){
+  clearTimeout(OPT_POOL.timer);
+  const ws = OPT_POOL.idle.splice(0, n);
+  while (ws.length < n) ws.push(optWorker());
+  ws.forEach(w => OPT_POOL.busy.add(w));
+  return ws;
+}
+// Workers handed back: one still running is told to stop (it would work on for nothing), then kept idle
+function optPoolGive(ws){
+  for (const w of ws) {
+    if (!OPT_POOL.busy.delete(w)) continue;
+    w.onmessage = null; w.onerror = null;
+    if (w._running) { w.postMessage({stop: true}); w._running = false; }
+    OPT_POOL.idle.push(w);
+  }
+  optPoolClock();
+}
+// The 60 s clock, started again whenever no worker is busy any more
+function optPoolClock(){
+  clearTimeout(OPT_POOL.timer);
+  if (!OPT_POOL.busy.size) OPT_POOL.timer = setTimeout(optPoolClose, OPT_POOL_KEEP);
+}
+// A worker that failed is never used again
+function optPoolDrop(w){
+  OPT_POOL.busy.delete(w);
+  const i = OPT_POOL.idle.indexOf(w);
+  if (i >= 0) OPT_POOL.idle.splice(i, 1);
+  w.onmessage = null; w.onerror = null; w.terminate();
+  optPoolClock();
+}
+// Every search stopped (optStop): the busy workers stop and go back to the pool
+const optPoolStopAll = () => optPoolGive([...OPT_POOL.busy]);
+// The idle workers closed: 60 s without a search, or the page leaving
+function optPoolClose(){
+  clearTimeout(OPT_POOL.timer);
+  OPT_POOL.idle.splice(0).forEach(w => w.terminate());
+}
+window.addEventListener('pagehide', () => { optPoolClose(); [...OPT_POOL.busy].forEach(optPoolDrop); });
+// One search's shares run on the pool, one worker a share. h.step(i, progress), h.done(i, result) once a worker's walks
+// are over, h.fail(message) when a worker fails (it is dropped). Messages of an older run are left: each carries its id.
+// Returns the workers, to hand back with optPoolGive once the search is over
+function optPoolRun(input, shares, h){
+  // one search at a time (OPT_SEQ): one launched over another takes the other's workers back, stopped, so they are
+  // neither left busy for good nor doubled
+  optPoolStopAll();
+  const ws = optPoolTake(shares.length), id = ++OPT_POOL.run;
+  ws.forEach((w, i) => {
+    w.onerror = e => { optPoolDrop(w); h.fail(e.message || 'worker'); };
+    w.onmessage = e => {
+      const d = e.data;
+      if (!d || d.id !== id) return;
+      if (d.progress) return h.step(i, d.progress);
+      w._running = false;
+      if (d.error) { optPoolDrop(w); return h.fail(d.error); }
+      h.done(i, d.done);
+    };
+    w._running = true;
+    w.postMessage(Object.assign({}, input, {starts: shares[i], id}));
+  });
+  return ws;
 }
 const engineReady = () => !!(window.FFXI && FFXI.opt && FFXI.CATALOG && FFXI.average_ws);
 // why the optimizer is off: a part that threw while loading, or the engine folder really absent
