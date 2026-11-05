@@ -7,7 +7,7 @@
 //   - sets.pet.engagedBoth (both fight): the master's engaged optimizer as it is, then Pet damage taken, then the pet's
 //     levels, where the master's figure loses 0.1 % at most (the player's rules, 2026-10-26: "the master, and with
 //     what is left, pet DT", then the level pieces too);
-//     the pass is opt.js petDtPass.
+//     the pass is opt_search.js petDtPass.
 // Figures from players' guides, none measured here (HYP):
 //   - Accuracy first, then Attack (FFXIAH The Beastmaster Compendium, ffxiah.com/node/227); the Attack factor of each
 //     pet multiplies every piece's Attack alike, so it never changes which one wins: not counted;
@@ -95,7 +95,7 @@ const isPetSet = s => isPetEngaged(s) || isPetIdle(s) || !!readyKind(s);
 // 2025-06: CHR +233, M.Acc +189, Charm +87, no weapon, no defense). Worn for the ability's instant: no damage taken
 // floor (stat_opt.js statFloorDefault), the weapons never searched (optimizeStats: the TP stays)
 // then Charm+ given back where CHR and Magic Accuracy lose 2 % at most (the player's rule, 2026-10-27: CHR strictly
-// first traded An. Jackcoat +3 and Ankusa Gaiters +3, 41 Charm+, for 9 CHR): opt.js tolGainPass
+// first traded An. Jackcoat +3 and Ankusa Gaiters +3, 41 Charm+, for 9 CHR): opt_search.js tolGainPass
 const CHARM_TOL = {gain: 'charmplus', keep: ['chr', 'macc'], tol: 0.02};
 const isCharmSet = s => S.job === 'BST' && !!s && /^sets\.precast\.JA\.Charm$/.test(s.path);
 // The set worn while both fight (sets.pet.engagedBoth and its versions)
@@ -154,12 +154,12 @@ function petVec(r, slot){
   if (lv) out[slot === 'main' || slot === 'sub' ? 'petlvw' : 'petlv'] = lv;
   return out;
 }
-// The pet's physical damage taken a piece cuts, as a positive % (the engaged search's pass, opt.js petDtPass)
+// The pet's physical damage taken a piece cuts, as a positive % (the engaged search's pass, opt_search.js petDtPass)
 function petDtOf(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null;
   return r ? petPdtOfStats(r) : 0;
 }
-// The levels a piece gives the pet (the engaged search's pass, opt.js petDtPass)
+// The levels a piece gives the pet (the engaged search's pass, opt_search.js petDtPass)
 function petLvOf(p, slot){
   const r = p && !isEmpty(p) ? pieceStats(p, slot) : null;
   return r ? petLevelOf(r, slot) : 0;

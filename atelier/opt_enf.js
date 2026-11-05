@@ -1,7 +1,7 @@
 // Atelier optimizer: enfeebling magic. What a set gives the spells cast in it: their length, their potency on the
-// target and the magic accuracy they land with. One part of the engine (FFXI_PARTS, after atelier/opt.js): no DOM,
+// target and the magic accuracy they land with. One part of the engine (FFXI_PARTS, after atelier/opt.js and opt_stat.js): no DOM,
 // no page state, so it also runs in the search's workers. The page (app/js/enfeeble.js) says which spells a set is
-// cast for, the character and the target (ctx.stat.base); opt.js O.statFigures calls O.enfeeblingFigures.
+// cast for, the character and the target (ctx.stat.base); opt_stat.js O.statFigures calls O.enfeeblingFigures.
 //
 // Length (BG Wiki Enfeebling_Magic, wiki.ffo.jp 弱体魔法; measured on Kaories RDM 2026-10-14, 11 cases within 0.5 s):
 //   floor((base x Saboteur + 6 s a merit level + the job points' seconds) x Composure x (1 + % written on the pieces)

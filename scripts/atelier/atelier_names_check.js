@@ -30,7 +30,7 @@ function check(){
   for (const dir of DIRS) {
     for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.js') && !SKIP.test(f))) {
       const file = path.join(dir, f), rel = path.relative(path.dirname(ROOT), file).split(path.sep).join('/');
-      // calc/ and opt.js wrap their code in a function handed to CALC_PARTS / FFXI_PARTS: their names are their own
+      // calc/ and opt*.js wrap their code in a function handed to CALC_PARTS / FFXI_PARTS: their names are their own
       if (/CALC_PARTS|FFXI_PARTS/.test(fs.readFileSync(file, 'utf8').slice(0, 2000))) continue;
       for (const {name, line} of names(file)) {
         if (!seen.has(name)) seen.set(name, []);

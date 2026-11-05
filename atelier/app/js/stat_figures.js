@@ -1,4 +1,4 @@
-// GearSwap Atelier · stat_figures.js: a set's figures as the stats optimizer counts them (statFigures, opt.js
+// GearSwap Atelier · stat_figures.js: a set's figures as the stats optimizer counts them (statFigures, opt_stat.js
 // O.statFigures), the tank figures the Paladin guide adds (Shield Barrier, the Protect gift, the shields' block) and
 // the HP cycle; the optimizer reads them, atelier/src/screens/sets/figures.ts shows them
 // (loaded before stat_opt.js, whose statContext and withVec it calls: see atelier/src/legacy/files.ts)

@@ -2,14 +2,15 @@
 // (loaded in the order of atelier/src/legacy/files.ts)
 /* ---- the gear catalogue (atelier/gear/: items.js, augments_ranked.js from LandSandBoat's augment bundles, the
    Ambuscade capes capes.js, the augment reader augments_parse.js) ---- */
-// The gear catalogue, the optimizer (atelier/opt.js) and our engine (atelier/calc/): loaded once, run into window.FFXI.
+// The gear catalogue, the optimizer (atelier/opt.js and its parts) and our engine (atelier/calc/): loaded once, run into window.FFXI.
 // The engine before (atelier/engine/, wsdist's formulas) is no longer loaded: it stays on this PC for the tests only
 // (notes/docs-perso/moteur-sans-wsdist-2026-10-22/SPEC.md, Lot 5)
 const CALC_FILES = ['abilities', 'attributes', 'buffs', 'derived', 'enemy', 'gear', 'jobs_fighters', 'jobs_mages', 'round_average', 'round_damage', 'round_swings',
   'round_time', 'sets', 'skills', 'stats', 'tables', 'traits', 'ws_average', 'ws_base', 'ws_details', 'ws_hits', 'ws_pdif', 'ws_table',
   'ws_tp', 'ws_magic', 'ws_ranged', 'page', 'magic_spells', 'magic', 'aftermath'];
 const ENGINE_FILES = ['items', 'augments_ranked', 'capes', 'augments_parse'].map(f => `atelier/gear/${f}.js`)
-  .concat(['atelier/opt.js', 'atelier/opt_enf.js', 'atelier/opt_ambu.js'])
+  // the optimizer: opt.js first (it makes FFXI.opt), then its parts, each reading what came before it
+  .concat(['opt', 'opt_round', 'opt_stat', 'opt_enf', 'opt_ambu', 'opt_search'].map(f => `atelier/${f}.js`))
   // our engine (atelier/calc/: its parts, then calc_load.js builds CALC), and last the functions the page calls
   // (calc_bridge.js)
   .concat(CALC_FILES.concat(['load', 'bridge']).map(f => `atelier/calc/calc_${f}.js`))

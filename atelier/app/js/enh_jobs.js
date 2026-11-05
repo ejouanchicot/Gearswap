@@ -2,7 +2,7 @@
 // A set named for an enhancing spell (sets.midcast.Aquaveil, .Regen, .BarElement...) is judged on the highest tier the
 // shown job can cast: the main job at its level (and the job point spells: Refresh III at 1200 spent), the subjob at
 // its level (49, up to 59 with master levels: buffs.js jaLevels), never a spell its job casts as main job only
-// (SPELL_MAIN_ONLY, from shared/data/magic). The job's own bonuses ride with it; the figures are opt.js
+// (SPELL_MAIN_ONLY, from shared/data/magic). The job's own bonuses ride with it; the figures are opt_stat.js
 // O.enhancingFigures. Spells, levels and formulas: BG Wiki, read 2026-10-22
 // (notes/docs-perso/renfort-tous-jobs-2026-10-22/SPEC.md).
 
@@ -159,7 +159,7 @@ function enhJobBonus(kind, c, via){
     }
     out.notes.push(t('enhLight') + regen);
   }
-  // Perpetuance (SCH 87, main): the next white enhancing spell x2, the Bracers' own figure instead (opt.js t.perp)
+  // Perpetuance (SCH 87, main): the next white enhancing spell x2, the Bracers' own figure instead (opt_stat.js t.perp)
   if (job === 'SCH' && lv.main >= 87 && !ENH_BLACK.has(kind) && o.enhPerp) out.perp = true;
   // WHM: Regen +1 HP a tick a merit (5 at most) and +5 from the 545 job points gift; Bar-element +2 a merit (BG Wiki
   // White_Mage, Category:Barspell). The job points' seconds and Bar-element levels: not in the export, not counted

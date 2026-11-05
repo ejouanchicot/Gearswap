@@ -16,7 +16,7 @@
 (globalThis.CALC_PARTS = globalThis.CALC_PARTS || []).push(function (CALC) {
     // A Samurai's merits in Ikishoten, all bought like the other job merits (DIFFERENCES.md, D2)
     var IKISHOTEN_MERITS = 5;
-    // the page's OA list is by position (atelier/opt.js oaOf): "attacks N times" of the main hand at OA_MAIN[N], of the
+    // the page's OA list is by position (atelier/opt_round.js oaOf): "attacks N times" of the main hand at OA_MAIN[N], of the
     // off-hand at OA_SUB[N]
     var OA_LENGTH = 14, OA_MAIN = {2: 1, 3: 0, 4: 13, 5: 12, 6: 11, 7: 10, 8: 9}, OA_SUB = {2: 8, 3: 7, 4: 6, 5: 5, 6: 4, 7: 3, 8: 2};
     var WS_VALUE = {"Damage dealt": 0, "TP return": 1};

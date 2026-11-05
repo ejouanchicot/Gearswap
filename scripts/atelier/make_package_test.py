@@ -109,7 +109,8 @@ for name, info in sorted(chars.items()):
             with zipfile.ZipFile(path) as zx:
                 index = zx.read('GearSwap/data/atelier/index.js').decode('utf-8')
                 exports = [n for n in zx.namelist() if n.startswith(prefix + 'atelier/exports/')]
-                icons = {n for n in zx.namelist() if n.startswith('GearSwap/data/atelier/icons/')}
+                # each icon goes with its .js (the page reads it from the disk): the .bmp are counted
+                icons = {n for n in zx.namelist() if n.startswith('GearSwap/data/atelier/icons/') and n.endswith('.bmp')}
                 named = set()
                 for n in exports:
                     m = re.search(r'"icons":(\{[^{}]*\})', zx.read(n).decode('utf-8'))

@@ -1,5 +1,5 @@
 // Atelier optimizer: the pieces the game offers that a search builds or picks the version of. One part of the engine
-// (FFXI_PARTS, after atelier/opt.js, which calls O.ambuGen in its runs and O.primeId in its gear): no DOM, no page
+// (FFXI_PARTS, after atelier/opt.js, whose gear calls O.primeId, and before opt_search.js, whose runs call O.ambuGen): no DOM, no page
 // state, so it also runs in the search's workers.
 //   O.ambuGen   the Ambuscade capes of the game (the page's app/js/optimizer.js gameChoices: {name, ambu: true}) built
 //               at each material's maximum, a material at a time

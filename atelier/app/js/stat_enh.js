@@ -2,7 +2,7 @@
 // and what the spell is worth (the figures: atelier/opt.js O.enhancingFigures). Out of stat_opt.js, which reads it
 // (loaded right after it: see atelier/src/legacy/files.ts)
 
-/* ---- enhancing magic: what a set is cast for, on whom, and what the spell is worth (opt.js O.enhancingFigures) ---- */
+/* ---- enhancing magic: what a set is cast for, on whom, and what the spell is worth (opt_stat.js O.enhancingFigures) ---- */
 // Any job's enhancing set: {kind, base, comp, name, ...} or null. The set's spell, its tier and its base seconds are the
 // highest the job or its subjob can cast (enh_jobs.js enhSpellOf: "Enhancing Magic", laid under the others, on its
 // shortest spell so a long one never hides what a piece adds); the job's bonuses come with it (enhJobBonus).
@@ -99,7 +99,7 @@ function statDefaultOf(s){
   if (fam === 'fc') return ['fc', 'hp', 'pdtRed'];
   // Phalanx first, then the damage taken (no DT floor: the Phalanx comes before it)
   if (/phalanx/i.test(p)) return ['phalanx', 'pdtRed', 'mdtRed'];
-  // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt.js cureEnm), then the heal
+  // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt_stat.js cureEnm), then the heal
   // itself; a healer the heal (its own Cure potency received in), then as little enmity as its Cure on the others
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'enmityLow', 'pdtRed'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
