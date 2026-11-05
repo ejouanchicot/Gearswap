@@ -19,8 +19,10 @@ const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enm
   // the Chevalier's set's absorb (opt.js STAT_SETS), a PLD's experience sets' (xpSet)
   'absorb',
   // a job ability's set: its pieces that boost that ability (abilityName)
-  'jaPlus'];
-const STAT_PCT = new Set(['holyWater', 'absorb', 'fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt', 'move']);
+  'jaPlus',
+  // a Bard's song sets (brd_song.js)
+  'songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc'];
+const STAT_PCT = new Set(['songDurPct', 'holyWater', 'absorb', 'fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt', 'move']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -29,7 +31,7 @@ const enhTimeText = v => `${Math.floor(v / 60)}:${String(Math.round(v % 60)).pad
 // (the least enmity is ranked by its opposite: shown as the Enmity it is)
 // the figures kept as a reduction (68 = 68 % less damage taken): written as the game writes them, "−68 %"
 const STAT_NEG = new Set(['ecritRed', 'pdtRed', 'mdtRed']);
-const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' || k === 'darkTime' || k === 'charmDur' ? enhTimeText(v)
+const statFmt = k => v => v == null ? '—' : k === 'enmityLow' ? statFmt('enmity')(-v) : k === 'cureEnm' ? cureEnmText(v) : k === 'enhTime' || k === 'enfTime' || k === 'edTime' || k === 'darkTime' || k === 'charmDur' || k === 'songTime' ? enhTimeText(v) : k === 'songTimeShort' ? enhTimeText(-v)
   : (STAT_NEG.has(k) && v > 0 ? '−' : '') + ((Math.round(v * 10) / 10) || 0).toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US') + (STAT_PCT.has(k) ? ' %' : '');
 const cureEnmText = v => { const ce = Math.round(v / 7), n = x => x.toLocaleString(S.lang === 'fr' ? 'fr-FR' : 'en-US'); return `${n(ce)} CE · ${n(Math.round(v - ce))} VE`; };
 // A set the stats optimizer takes: every set but the weaponskill, engaged and Jump ones (their own optimizers), and
@@ -64,7 +66,7 @@ const enmityMaxSet = s => !!s && segs(s.path)[0] === 'EnmityMax' && ['PLD', 'RUN
 const CITY_MOVE = {Adoulin: {"Councilor's Garb": 25}};
 const cityMove = (p, s) => { const m = s && CITY_MOVE[segs(s.path)[0]]; return (m && p && m[p.name]) || 0; };
 // (a BST's sets.pet.engaged is one: the pet's stats, bst_pet.js; its Ready move sets are not)
-const statSet = s => !!s && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
+const statSet = s => !!s && !songInstrumentSet(s) && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
 // Phalanx then DEF; Fast Cast then HP)
 // A tank (PLD, RUN) wants Enmity on every action its set is worn for, after what the action itself needs (the
@@ -97,7 +99,7 @@ function withSird(s, list){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'absorb', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['jaPlus', 'enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'holyWater', 'cursnaRecv', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['move', ['move']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['song', ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc']], ['move', ['move']]];
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
@@ -108,6 +110,7 @@ function statRelevant(s, chosen){
   add(luopanRelevant(s));
   if (isPetSet(s)) { add([...petRelevant(s), 'pdtRed', 'mdtRed', 'hp']); return out; }
   if (isCharmSet(s)) { add(charmRelevant(s)); return out; }
+  if (songOf(s)) { add(songRelevant(s)); return out; }
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'cmp', 'hp',
     ...(['PLD', 'RUN'].includes(S.job) ? ['enmity', 'def'] : [])]); return out; }

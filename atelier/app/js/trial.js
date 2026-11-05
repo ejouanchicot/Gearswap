@@ -90,7 +90,9 @@ function trialSaved(s){
 const LOCKABLE = slot => !['main', 'sub', 'range'].includes(slot);
 // (a base set, sets.Cure: the slots no set built on it wears count as locked, the optimizer leaves them as they are:
 // a piece found for them would change nothing in game. core.js baseReach)
-const lockedSlots = s => { const own = Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
+// (a Bard's song set keeps its instrument: GearSwap lays the Main Instrument's, or the one a song needs: brd_song.js)
+const lockedSlots = s => { let own = Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
+  if (typeof songOf === 'function' && songOf(s) && !own.includes('range')) own = own.concat('range');
   if (!baseOnly(s)) return own;
   const reached = new Set(baseReach(s).flatMap(r => r.slots));
   return [...new Set(own.concat(SLOTS.filter(x => LOCKABLE(x) && !reached.has(x))))]; };

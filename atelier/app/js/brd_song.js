@@ -66,33 +66,36 @@ function songVec(r, name){
 // Each family: the song its set is judged on (the highest a BRD 99 sings), its Song+ cap from equipment, its
 // potency (buffs.js SONGS: [base, per Song+], the stat shown first) and the combined skill (Singing + instrument)
 // past which the potency stops growing.
-// Caps: Category:Minuet, March, Ballad, Scherzo +8, Threnody +9 (read 2026-11-05); the others buffs.js SONGS' lim
-// (BGWiki:SongPotency, 2026-11-02). Skill caps (Category:Minuet, March, Madrigal, Minne, Paeon, Etude, Scherzo,
-// 2026-11-05): Valor Minuet V 871~874, Victory March "> 600" (to verify, the page says), Honor March 900, Blade
-// Madrigal "< 850", Knight's Minne V "< 850", Army's Paeon VI 434~778, Herculean Etude 450, Sentinel's Scherzo 800,
-// Mage's Ballad "No Effect"; the top of each range kept
+// Caps, each family's page read on 2026-11-05 ("The maximum ... bonus available from equipment is"): Minuet, March,
+// Ballad, Scherzo, Prelude +8; Madrigal, Minne, Paeon, Mambo, Etude, Carol, Threnody, Lullaby +9; Honor March +4
+// (buffs.js SONGS' lim holds the same). Whether Song+ past the cap still lengthens the song: not stated, the cap is
+// taken for both. Skill caps (Category:Minuet, March, Madrigal, Minne, Paeon, Etude, Scherzo; Honor_March "Skill cap
+// is 900"): Valor Minuet V 871~874, Victory March "> 600" (to verify, the page says), Honor March 900, Blade Madrigal
+// "< 850", Knight's Minne V "< 850", Army's Paeon VI 434~778, Herculean Etude 450, Sentinel's Scherzo 800, Mage's
+// Ballad "No Effect"; the top of each range kept. They are combined skills (Singing + instrument): BG Wiki does not
+// name the skill, but one skill cannot reach 874 (459 at ML50, the +13 gift and the gear's ~140)
 const SONG_FAMILY = {
   minuet: {spell: 'Minuet V', skill: 874}, march: {spell: 'Victory March', skill: 600},
   madrigal: {spell: 'Blade Madrigal', skill: 850}, ballad: {spell: "Mage's Ballad III", skill: 0},
   paeon: {spell: "Army's Paeon VI", skill: 778}, minne: {spell: "Knight's Minne V", skill: 850},
   mambo: {spell: 'Dragonfoe Mambo'}, etude: {spell: 'Herculean Etude', skill: 450}, carol: {spell: 'Fire Carol'},
-  prelude: {spell: "Archer's Prelude"}, dirge: {spell: "Adventurer's Dirge"}, scherzo: {spell: "Sentinel's Scherzo", cap: 8, skill: 800},
-  // Threnody II: "every Threnody +1 ... gives an additional -5 Magic Evasion" from 160 (Category:Threnody); Lullaby:
-  // 30 s of sleep, +9 at most (BGWiki:SongPotency: 57 s at +9)
+  prelude: {spell: "Archer's Prelude"}, aria: {spell: 'Aria of Passion'}, dirge: {spell: "Adventurer's Dirge"}, scherzo: {spell: "Sentinel's Scherzo", cap: 8, skill: 800},
+  // Threnody II: "every Threnody +1 ... gives an additional -5 Magic Evasion" from 160 (Category:Threnody); Lullaby II
+  // (Foe and Horde): "Sleep effect duration is 60 seconds before Lullaby-enhancing gear", 114 s at +9, "The maximum
+  // Lullaby bonus available from equipment is +9" (BG Wiki Foe_Lullaby_II, Horde_Lullaby_II, Category:Lullaby)
   threnody: {spell: 'Threnody II', cap: 9, pot: {meva: [160, 5]}, debuff: true},
-  lullaby: {spell: 'Foe Lullaby II', cap: 9, base: 30, debuff: true}};
+  lullaby: {spell: 'Foe Lullaby II', cap: 9, base: 60, debuff: true}};
 const SONG_HONOR = {spell: 'Honor March', cap: 4, skill: 900};
 // The debuff songs judged on landing (no Song+ figure of their own here); the songs sung to fill a slot, to be
 // overwritten soon: the shortest one wanted (the player, 2026-11-05: "a set for the songs with the shortest duration,
 // to replace them"), a party buff's 120 s base
 const SONG_DEBUFF = /lullaby|elegy|requiem|finale|nocturne|virelai|threnody|debuffsong|magic finale|pining/i;
-const SONG_DUMMY = /dummysong|capriccio|gavotte|aubade|pastoral|fantasia|operetta|puppet's|herb pastoral/i;
+const SONG_DUMMY = /dummysong|placeholder|capriccio|gavotte|aubade|pastoral|fantasia|operetta|puppet's|herb pastoral/i;
 // The song a set is cast for, from its names (core.js setNames): null when it is no song set of a Bard
 function songOf(s){
   if (S.job !== 'BRD' || !s || family(s.path, s.pieces) !== 'midcast') return null;
   const p = setNames(s);
-  if (!/song|singing|dirge|minuet|march|madrigal|ballad|paeon|minne|mambo|etude|carol|prelude|scherzo|lullaby|elegy|requiem|finale|nocturne|virelai|threnody|capriccio|gavotte|aubade|pastoral|honormarch|honor march/i.test(p)) return null;
-  if (/aria|passion/i.test(p)) return null;
+  if (!/song|singing|dirge|aria|passion|minuet|march|madrigal|ballad|paeon|minne|mambo|etude|carol|prelude|scherzo|lullaby|elegy|requiem|finale|nocturne|virelai|threnody|capriccio|gavotte|aubade|pastoral|honormarch|honor march/i.test(p)) return null;
   if (SONG_DUMMY.test(p)) return {kind: 'dummy'};
   if (/honor ?march/i.test(p)) return Object.assign({kind: 'buff', fam: 'march'}, SONG_HONOR);
   const fam = Object.keys(SONG_FAMILY).find(f => new RegExp(f, 'i').test(p));
@@ -100,8 +103,8 @@ function songOf(s){
   if (SONG_DEBUFF.test(p)) return {kind: 'debuff', fam: null};
   if (fam) return Object.assign({kind: 'buff', fam}, SONG_FAMILY[fam]);
   // the base set (sets.midcast.BardSong) and the ones an instrument is laid on (sets.midcast.Songs.Gjallarhorn): any
-  // song with no set of its own, judged on All songs
-  return {kind: 'buff', fam: null};
+  // song with no set of its own, judged on All songs; its skill floor the highest a set of its own may need (Minuet V)
+  return {kind: 'buff', fam: null, skill: 874};
 }
 // The character's Singing, Wind and String skills without gear: the export's skills count the pieces worn when it was
 // taken (Tetsouo 2026-11-05: Singing and Wind 473 with Gjallarhorn's +25 on, String 448), so those pieces' are taken off
@@ -129,3 +132,46 @@ function songBase(s){
     songGift: (c.jp_spent || 0) >= 1200 ? 5 : 0,
     songSing: bare.sing, songWind: bare.wind, songString: bare.string};
 }
+
+/* ---- the objectives of a song set (stat_enh.js statDefaultOf, stat_opt.js statRelevant) ---- */
+// sets.midcast.Songs.<instrument>: only its range is worn (shared/jobs/brd/functions/logic/midcast_router.lua
+// apply_main_instrument; Marsyas and Loughnashade laid for the song that needs them): nothing for the stats optimizer
+// to fill. sets.midcast.Songs.Duration (laid on top under Troubadour) stays a set of its own
+const songInstrumentSet = s => S.job === 'BRD' && !!s && /^sets\.midcast\.Songs(\.|\[)/.test(s.path) && !/\bDuration\b/.test(s.path);
+// A song set's objectives (the player's rules, 2026-11-05): a buff its Song+ (capped), then its length, then damage
+// taken; a debuff its landing first (Threnody: its Magic Evasion down next); a filler song the shortest it can be; the
+// Troubadour layer its length first
+function songObjectives(s){
+  const g = songOf(s);
+  if (!g) return null;
+  if (g.kind === 'dummy') return ['songTimeShort', 'pdtRed', 'mdtRed'];
+  if (g.kind === 'debuff') return g.fam === 'threnody' ? ['songAcc', 'songPlus', 'songDurPct'] : ['songAcc', 'songDurPct', 'pdtRed'];
+  if (/\bDuration\b/.test(s.path)) return ['songDurPct', 'songPlus', 'pdtRed'];
+  return ['songPlus', 'songDurPct', 'pdtRed'];
+}
+// The floor of a buff song's set: its combined skill at the song's skill cap, past which the potency of BG Wiki's
+// tables holds (under it the song is weaker, by how much BG Wiki does not say). A character far under the cap gets
+// the skill first (the floor counts before every objective); Tetsouo (448 + 448 without gear) stays over it
+function songFloor(s){
+  const g = songOf(s);
+  return g && g.kind === 'buff' && g.skill ? {min: {songSkill: g.skill}} : null;
+}
+// What a song set shows and can be after
+const songRelevant = () => ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc', 'macc', 'pdtRed', 'mdtRed', 'hp'];
+
+Object.assign(T.fr, {statGrp_song: 'Chants',
+  statObj_songPlus: 'Song+ (plafonné)', statD_songPlus: 'All songs + le bonus de la famille du set (« Minuet »+1…), jusqu’au plafond de la famille (Minuet, March, Ballad, Scherzo +8, Honor March +4, Madrigal, Minne, Etude… +9 : BG Wiki) ; au-delà, une pièce ne donne plus rien',
+  statObj_songPot: 'Puissance du chant', statD_songPot: 'la table de BG Wiki (SongPotency) au Song+ du set, skill au plafond ; mérites et job points du Minuet comptés (5/5, 20/20)',
+  statObj_songDurPct: 'Durée du chant (%)', statD_songDurPct: 'durée des pièces + 10 % par Song+ + 5 % du gift (1200 points de job) ; additionnés (BG Wiki Category:Song)',
+  statObj_songTime: 'Durée du chant', statD_songTime: '120 s × (1 + durée %) pour un buff, 30 s pour Foe Lullaby ; × 2 sous Troubadour ; sans les job points de Clarion Call, Tenuto, Marcato',
+  statObj_songTimeShort: 'Durée la plus courte', statD_songTimeShort: 'un chant de remplissage (DummySong) : le plus court possible, pour qu’il soit vite remplacé',
+  statObj_songSkill: 'Skill de chant', statD_songSkill: 'Singing + le skill de l’instrument porté (Wind pour un cor, String pour une harpe) : tes skills sans gear + ceux des pièces',
+  statObj_songAcc: 'Précision des chants', statD_songAcc: 'CHR + skill de chant + précision magique, chacun compté une fois : BG Wiki dit seulement que la réussite monte avec la CHR et le skill (supposé)'});
+Object.assign(T.en, {statGrp_song: 'Songs',
+  statObj_songPlus: 'Song+ (capped)', statD_songPlus: 'All songs + the set’s family bonus (“Minuet”+1…), up to the family’s cap (Minuet, March, Ballad, Scherzo +8, Honor March +4, Madrigal, Minne, Etude… +9: BG Wiki); past it, a piece gives nothing',
+  statObj_songPot: 'Song potency', statD_songPot: 'BG Wiki’s table (SongPotency) at the set’s Song+, skill at its cap; Minuet merits and job points counted (5/5, 20/20)',
+  statObj_songDurPct: 'Song duration (%)', statD_songDurPct: 'the pieces’ duration + 10 % a Song+ + the 5 % gift (1200 job points); added up (BG Wiki Category:Song)',
+  statObj_songTime: 'Song duration', statD_songTime: '120 s × (1 + duration %) for a buff, 30 s for Foe Lullaby; × 2 under Troubadour; without Clarion Call, Tenuto, Marcato job points',
+  statObj_songTimeShort: 'Shortest duration', statD_songTimeShort: 'a filler song (DummySong): as short as it can be, so it is soon replaced',
+  statObj_songSkill: 'Song skill', statD_songSkill: 'Singing + the worn instrument’s skill (Wind for a horn, String for a harp): your skills without gear + the pieces’',
+  statObj_songAcc: 'Song accuracy', statD_songAcc: 'CHR + song skill + magic accuracy, each counted once: BG Wiki only says landing grows with CHR and skill (assumed)'});

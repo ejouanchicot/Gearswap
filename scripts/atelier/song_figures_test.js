@@ -33,13 +33,13 @@ const CASES = [
   ['no instrument: Singing alone', MINUET, {body: FILI_BODY}, {songSkill: 448 + 24}],
   // no gift under 1200 job points
   ['no gift', Object.assign({}, MINUET, {songGift: 0}), {range: HORN}, {songDurPct: 40, songTime: 168}],
-  // Foe Lullaby: 30 s, BG Wiki's table 42 s at +4 (with the 5 % gift: 43.5 -> 43); landing CHR + skill + Magic Accuracy
+  // Foe Lullaby II: 60 s, BG Wiki's table 84 s at +4 (with the 5 % gift: 87 s); landing CHR + skill + Magic Accuracy
   // a filler song: 120 s base, the shorter the better (songTimeShort); here the horn's All songs +4 lengthens it:
   // 40 % + the 5 % gift -> 174 s
   ['DummySong', Object.assign({}, MINUET, {songKind: 'dummy', songFam: null, songCap: null, songPot: null}), {range: HORN},
     {songPlus: 4, songTime: 174, songTimeShort: -174}],
-  ['Lullaby', {songKind: 'debuff', songFam: 'lullaby', songCap: 9, songDurBase: 30, songGift: 5, songSing: 448, songWind: 448, chr: 100},
-    {range: HORN, body: {songchr: 40, macc: 50}}, {songPlus: 4, songTime: 43, songSkill: 946, songAcc: 100 + 40 + 946 + 50}]];
+  ['Lullaby', {songKind: 'debuff', songFam: 'lullaby', songCap: 9, songDurBase: 60, songGift: 5, songSing: 448, songWind: 448, chr: 100},
+    {range: HORN, body: {songchr: 40, macc: 50}}, {songPlus: 4, songTime: 87, songSkill: 946, songAcc: 100 + 40 + 946 + 50}]];
 
 (async () => {
   const browser = await B.puppeteer.launch({executablePath: B.CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
@@ -77,7 +77,7 @@ const CASES = [
     'sets.midcast.March': 'buff/march', 'sets.midcast.HonorMarch': 'buff/march', 'sets.midcast.Ballad': 'buff/ballad',
     'sets.midcast.Etude': 'buff/etude', 'sets.midcast.Minne': 'buff/minne', 'sets.midcast.Scherzo': 'buff/scherzo',
     'sets.midcast.Lullaby': 'debuff/lullaby', 'sets.midcast.DebuffSong': 'debuff/', 'sets.midcast.Threnody': 'debuff/threnody',
-    'sets.midcast.DummySong': 'dummy/', 'sets.midcast.AriaPassion': 'none', 'sets.midcast.Dirge': 'buff/dirge'};
+    'sets.midcast.DummySong': 'dummy/', 'sets.midcast.AriaPassion': 'buff/aria', 'sets.midcast.Dirge': 'buff/dirge'};
   for (const r of rows) {
     const kind = r.g ? r.g.kind + '/' + (r.g.fam || '') : 'none', want = WANT[r.path];
     const ok = want == null || want === kind;

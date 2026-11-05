@@ -77,6 +77,8 @@ function statDefaultOf(s){
   if (doomSet(s)) return ['holyWater', 'cursnaRecv'];
   if (xpSet(s)) return segs(s.path)[0] === 'meleeXp' ? ['blockGear', 'absorb', 'def'] : ['absorb', 'def', 'meva'];
   if (enmityMaxSet(s)) return ['enmity'];
+  // a Bard's song set (brd_song.js): Song+, then length; a debuff's landing; a filler's shortness
+  if (songObjectives(s)) return songObjectives(s);
   // a dark magic set (dark_magic.js): Drain, Aspir, the Absorbs, Stun, Bio, Dread Spikes, Endark
   if (darkObjectives(s)) return darkObjectives(s);
   const enh = enhContext(s);
@@ -178,11 +180,13 @@ function statFloorDefault(s, first){
   // keeps the HP band all the same: a piece that takes it over the Fast Cast cuts HP when the next set goes on
   if (jaOverlayBase(s)) return hpBand(s);
   if (enmityMaxSet(s)) return {};
+  // a Bard's buff song: its skill at the song's cap (brd_song.js songFloor); no damage taken floor
+  if (songOf(s)) return songFloor(s) || {};
   // a BST's Charm set: worn for the ability's instant (bst_pet.js isCharmSet)
   if (isCharmSet(s)) return {};
   // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
   if (readyKind(s)) return readyKind(s) === 'phys' || readyKind(s) === 'multi' ? {petAccBase: PET_ENG.accBase} : {};
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) ? {} : {pdt: -50, mdt: -29};
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) || songOf(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird);
   const hp = hpBand(s);

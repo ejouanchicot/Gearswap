@@ -303,7 +303,9 @@
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
         "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "bioDot", "dreadSpikes", "endark",
-        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb"];
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb",
+        // a Bard's songs (atelier/opt_song.js)
+        "songPlus", "songPot", "songDurPct", "songTime", "songTimeShort", "songSkill", "songAcc"];
     function statShort(f, fl) {
         if (!fl) return 0;
         var n = 0, num = function (k) { return fl[k] != null && fl[k] !== "" && isFinite(+fl[k]) && +fl[k] !== 0; };
