@@ -7,11 +7,10 @@
 //   1. every mode shown has its explanation in French and in English (state_help_fr.js, state_help_data.js);
 //   2. every settings file has its French name and purpose (module_catalog.js MOD_FILE_FR) and its group;
 //   3. every entry of the options catalog (MOD_CATALOG) is a setting some job's files hold, and can be changed;
-//   4. every job has its presentation in both languages (job_guide_fr.js, job_guide_data.js);
-//   5. every module has its group, its "what it does" in both languages;
-//   6. every other setting of every file (the Advanced view) has its French name (module_rest_fr.js).
+//   4. every module has its group, its "what it does" in both languages;
+//   5. every other setting of every file (the Advanced view) has its French name (module_rest_fr.js).
 // Exit code 1 when a check fails. Run it after a change to a settings file, a states file, the catalog or the docs
-// the page's texts come from (then: python scripts/atelier/build_state_help.py, build_job_guides.py).
+// the page's texts come from (then: python scripts/atelier/build_state_help.py).
 //
 // @author ejouanchicot
 // @date   Created: 2026-10-11
@@ -22,8 +21,8 @@ const read = f => fs.readFileSync(path.join(JS, f), 'utf8');
 
 // the page's own code, outside the page: the catalog, the texts and the reader of settings files
 const T = {fr: {}, en: {}}, S = {char: '', lang: 'fr', job: ''};
-const api = new Function('T', 'S', 'document', 't', 'esc', ['usables_data.js', 'job_guide_data.js', 'job_guide_fr.js', 'state_help_data.js', 'state_help_fr.js', 'module_catalog.js', 'module_rows.js', 'module_rest_fr.js', 'module_ux.js', 'modules.js'].map(read).join('\n') +
-  ';return {MOD_CATALOG, MOD_GROUPS, MOD_FILE_FR, MOD_FILE_GROUP, JOB_GUIDE_EN, JOB_GUIDE_FR, STATE_HELP_EN, STATE_HELP_FR, STATE_HELP_COMMON_EN, STATE_HELP_MORE_EN, mcRows, modParsed, modKnown, modRestFr, MOD_TOOL_FILE};')(T, S, {addEventListener() {}}, k => k, s => s);
+const api = new Function('T', 'S', 'document', 't', 'esc', ['usables_data.js', 'state_help_data.js', 'state_help_fr.js', 'module_catalog.js', 'module_rows.js', 'module_rest_fr.js', 'module_ux.js', 'modules.js'].map(read).join('\n') +
+  ';return {MOD_CATALOG, MOD_GROUPS, MOD_FILE_FR, MOD_FILE_GROUP, STATE_HELP_EN, STATE_HELP_FR, STATE_HELP_COMMON_EN, STATE_HELP_MORE_EN, mcRows, modParsed, modKnown, modRestFr, MOD_TOOL_FILE};')(T, S, {addEventListener() {}}, k => k, s => s);
 
 const isChar = n => fs.existsSync(path.join(DATA, n, 'atelier/exports'));
 const chars = process.argv.slice(2).length ? process.argv.slice(2) : fs.readdirSync(DATA).filter(isChar);
@@ -68,7 +67,6 @@ say('every character settings file has a group', [...noGroup]);
 const orphans = []; api.MOD_CATALOG.forEach(fam => fam.items.forEach((it, i) => { if (!it.optional && !shown.has(fam.id + '.' + i)) orphans.push(fam.id + ': ' + it.file + ' ' + it.key); }));
 say('every catalog entry is a setting some job holds', files ? orphans : ['no export holds settings files yet (reload the job in game, or //gs c atelier all)']);
 say('every other setting of the Advanced view has its French name (' + rest + ' read)', [...noRest]);
-say('every job has its presentation in French and English', [...jobs].filter(j => !api.JOB_GUIDE_FR[j] || !api.JOB_GUIDE_EN[j]));
 const groups = new Set(api.MOD_GROUPS.map(g => g.id));
 say('every module has a group and says what it does in both languages', api.MOD_CATALOG.filter(m => !groups.has(m.group) || !(m.tip && m.tip[0] && m.tip[1]) || !m.fr || !m.en).map(m => m.id));
 say('every catalog entry has a title in both languages', api.MOD_CATALOG.flatMap(m => m.items.filter(it => !it.fr[0] || !it.en[0]).map(it => m.id + ': ' + it.key)));
