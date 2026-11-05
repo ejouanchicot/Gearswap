@@ -172,7 +172,8 @@ function pieceStats(p, slot){
   const key = S.char + '|' + p.name + '|' + (id || '') + '|' + (p.augs || []).join('|') + '|' + (p.rank ?? '') + '|' + (window.FFXI && FFXI.RANKED ? 1 : 0) + '|' + side + (enchantKept(p.name) ? '|kept' : '');
   if (PIECE_CACHE[key] && PIECE_CACHE[key].text === text) return PIECE_CACHE[key];
   // base: what the description gives; aug: what the augments add (the set's, the scanned ones, a path's rank)
-  const r = {text, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};
+  // id: the item read, for a piece whose figure depends on its level and not on its text (brd_song.js SONG_DUR_TEXT)
+  const r = {text, id: id || null, base: {}, aug: {}, stats: {}, pet: {}, free: [], cond: [], unity: {}, path: null, weapon: null, known: !!text};
   // after "Pet:" (or Avatar:, Wyvern:...) the lines are the pet's, after any other condition they only apply sometimes
   let mode = null, cur = -1;
   // the game wraps long phrases: a line starting in lower case goes on the previous one

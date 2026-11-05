@@ -249,6 +249,7 @@ function statVec(p, slot){
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
   if (S.job === 'BST') Object.assign(out, petVec(r, slot));
+  if (S.job === 'BRD') Object.assign(out, songVec(r, p.name));
   Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), darkVec(r, all), healerVec(p.name, slot), castVec(r));
   if (v('mab')) out.mab = v('mab');
   if (slot === 'main' && ENLIGHT_WEAPON[p.name]) out.enl = ENLIGHT_WEAPON[p.name];
