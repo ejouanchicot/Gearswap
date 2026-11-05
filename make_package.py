@@ -52,7 +52,7 @@ TREES = ['libs', 'data/shared', 'data/atelier/app', 'data/atelier/calc', 'data/a
          # "No template" in every package (audit 2026-10-28 H, the player's choice)
          'data/_master/entry', 'data/_master/config', 'data/_master/sets']
 DATA_FILES = ['data/atelier.html', 'data/atelier/index.html', 'data/atelier/opt.js', 'data/atelier/opt_round.js', 'data/atelier/opt_stat.js',
-              'data/atelier/opt_enf.js', 'data/atelier/opt_ambu.js', 'data/atelier/opt_search.js',
+              'data/atelier/opt_enf.js', 'data/atelier/opt_song.js', 'data/atelier/opt_ambu.js', 'data/atelier/opt_search.js',
               'data/atelier/targets.js', 'data/scripts/atelier/load_job.lua',
               # the gear catalogue the page reads (atelier/gear/: its build scripts and caches stay out)
               'data/atelier/gear/items.js', 'data/atelier/gear/augments_ranked.js', 'data/atelier/gear/capes.js',

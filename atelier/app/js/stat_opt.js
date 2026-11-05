@@ -337,6 +337,9 @@ function statContext(s){
   if (dark) Object.assign(base, dark);
   const pet = petBase(s);
   if (pet) Object.assign(base, pet);
+  // a Bard's song set (brd_song.js): the song, its Song+ cap, the duration's base, the skills without gear
+  const song = songBase(s);
+  if (song) Object.assign(base, song);
   if (enh) Object.assign(base, {enhKind: enh.kind, comp: enh.comp, enhBase: enh.base, refBase: enh.refBase, regenBase: enh.regenBase, temperCap: enh.temperCap, enGifts: enh.enGifts,
     barAdd: enh.barAdd, durMul: enh.durMul, potMul: enh.potMul, perp: enh.perp,
     // Bar-status: +30 on oneself, +20 for the -ra (BG Wiki Category:Barspell); a WHM's set is for the -ra it casts on

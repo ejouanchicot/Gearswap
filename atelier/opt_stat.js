@@ -41,7 +41,12 @@
         "cursna", "auspice", "sneaksec", "invissec", "barstat", "esuna", "erase", "naveil", "mab", "macc",
         // the casting time cuts of one kind of spell (the page's stat_opt.js castVec): cc_<kind>
         "cc_cure", "cc_healing", "cc_enhancing", "cc_stoneskin", "cc_enfeebling", "cc_elemental", "cc_dark", "cc_black", "cc_blue",
-        "cc_song", "cc_utsusemi", "cc_summoning", "cc_arts", "cc_grimoire"];
+        "cc_song", "cc_utsusemi", "cc_summoning", "cc_arts", "cc_grimoire",
+        // a Bard's songs (the page's brd_song.js songVec, the figures atelier/opt_song.js): All songs, each family's
+        // Song+, duration %, recast, extra songs, Singing / Wind / String skill, CHR, the instrument's kind
+        "songall", "song_minuet", "song_march", "song_madrigal", "song_ballad", "song_paeon", "song_minne", "song_mambo",
+        "song_etude", "song_carol", "song_prelude", "song_scherzo", "song_threnody", "song_lullaby", "songdur", "songrecast",
+        "songextra", "sing", "wind", "string", "songchr", "instwind", "inststring"];
     // A single target Cure (BG Wiki Cure_Formula, last edited 2026-02-09): Power = MND/2 + VIT/4 + Healing Magic skill;
     // the base by power steps [power floor, rate, HP floor], highest first, up to the spell's hard cap; + jp (the Cure
     // potency of job points and gifts: a PLD's gift Cure Potency Bonus +50 from 1200 JP, BG Wiki Paladin, checked in game
@@ -245,6 +250,8 @@
         if (O.eleDebuffFigures) O.eleDebuffFigures(f, t, b);
         // dark magic (atelier/opt_enf.js): after the HP, Dread Spikes reading them
         if (O.darkFigures) O.darkFigures(f, t, b);
+        // a Bard's song set (atelier/opt_song.js): only on a set the page gave a song (b.songKind)
+        if (O.songFigures && b.songKind) O.songFigures(f, t, b);
         // the block the gear adds (Guide_Paladin: block rate = the shield's base + (shield skill - attacker's) x 0.2325,
         // and the pieces' "Chance of successful block"), the status and elemental resistances (the 8 elements' mean)
         f.blockGear = Math.round((t.shield * 0.2325 + t.block) * 10) / 10;

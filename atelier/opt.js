@@ -2,7 +2,7 @@
 // weaponskill's average damage and a set's value. One part of the engine (FFXI_PARTS): no DOM, no page state, so it
 // also runs in a Web Worker (app/js/engine.js optWorker). Its other parts, loaded after it in this order
 // (app/js/engine.js ENGINE_FILES): opt_round.js (an engaged set's round), opt_stat.js (the sets judged by their
-// stats), opt_enf.js (enfeebling, elemental debuffs, dark magic), opt_ambu.js (the Ambuscade capes, a prime weapon's
+// stats), opt_enf.js (enfeebling, elemental debuffs, dark magic), opt_song.js (a Bard's songs), opt_ambu.js (the Ambuscade capes, a prime weapon's
 // stage), opt_search.js (the search for the best set).
 //
 //   FFXI.opt.gear(piece, slot, ctx)   one piece as the engine reads it (catalogue + its augments)
