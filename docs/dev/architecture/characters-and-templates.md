@@ -408,12 +408,12 @@ Open:
 - The overlay `DUALBOX_CONFIG`/`REGION_CONFIG` are always overwritten, contrary to the comment above the global-config copy in `clone`.
 - Kaories live lacks `_common/inventory/CRAFT_CONFIG.lua`, `_common/gear/WEAPON_CONFIG.lua`, `pld/keys/PLD_CUSTOM.lua` and `pld/combat/PLD_WS_CONFIG.lua`, which a re-clone would add (each reader falls back to defaults).
 - The Kaories overlay duplicates the generic templates line for line: `_master/Kaories/config/`.
-- The overlays of Gabvanstronger and Blodykiller keep `@author Tetsouo` in their config headers (the project rule is `@author ejouanchicot`).
 - `.gitignore` does not cover `wardrobe_scan_*.txt` (written by `shared/utils/wardrobe/lib/reports.lua`), and lines 8-11 are dead.
 - The user docs misdescribe the clone (`docs/user/getting-started/installation.md`, `README.md`, `docs/user/guides/dualbox.md`).
 
 Fixed:
 
+- Every live folder, overlay, `_dev/`, `_backups/` and Atelier backup kept old `@author` lines (`Tetsouo`, or the character's own name a clone wrote): all `@author ejouanchicot` since 2026-11-05. An Atelier export (`<Perso>/atelier/exports/`) holds a copy of the files as they were at export time and follows at the next export.
 - Re-clone did not deploy `config/alt`, craft files or Tetsouo's modular sets: step 3 copies the overlay's `sets/<job>/`, `sets/common/` and loose sets, and step 4b copies `config/craft/` and, for a MAIN, `config/alt/`.
 - `--source <Name>` left `Tetsouo` require paths in files taken from the generic layer: `_replace_references` now also replaces `Tetsouo` in generic files (not on `@author` lines).
 - The default source ignored an existing `_master/<target>/` overlay: `_select_overlay` now uses it.
