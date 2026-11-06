@@ -252,7 +252,8 @@ async function optimizeEngaged(s){
   const k = trialKey(s), o = engOpts(s), base = lockedBase(s, withoutTrial(() => withWeapons(s).pieces));
   // pieces worn for their TP Bonus only (ONLY_AUGS: Moonshade) do nothing for an engaged set
   const choices = lockChoices(s, optChoices(new Set(Object.keys(ONLY_AUGS))));
-  const weapons = o.freeWeapons ? weaponPairs(base) : gripPairs(s, base);
+  // (a Kraken Club set keeps the club in the off hand: eng_modes.js engKrakenOnly)
+  const weapons = engKrakenOnly(s, o.freeWeapons ? weaponPairs(base) : gripPairs(s, base));
   if (weapons) choices.weapons = weapons;
   const input = {ctx: engContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
     opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
@@ -341,7 +342,7 @@ async function optLaunch(s, k, input, o){
 // fmt, low (a time: smaller is better), done}
 function optRunOpen(s, o, starts, cores, floor){
   const eng = !!o.eng, obj = o.stat || (eng ? (o.engObj || 'tp_real') : (o.obj || 'damage')), time = eng && /^tp_(real|time)$/.test(obj);
-  const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
+  const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : eng && engObjFmt(obj) ? engObjFmt(obj) : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
   const objLabel = o.nuke ? t(isBurstSet(s.path) ? 'nukeObjMb' : 'nukeObj') : o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
@@ -468,8 +469,10 @@ function optResult(s, k, res, gains, o){
   const tr = {}, plain = withoutTrial(() => { S._noTpGear = true; try { return withWeapons(s).pieces; } finally { S._noTpGear = false; } });
   // a slot another piece blocks (Onca Suit: no leggear) is emptied in the draft
   const blocked = FFXI.opt.blocked(res.pieces);
-  for (const slot of Object.keys(blocked)) if (plain[slot] && !isEmpty(plain[slot])) tr[slot] = null;
-  for (const [slot, p] of Object.entries(res.pieces)) {
+  // a Dual Wield tier (eng_modes.js): only what differs from the engaged set it is laid on
+  if (o.dw) dwTrialOf(s, res, o.dw, tr);
+  else for (const slot of Object.keys(blocked)) if (plain[slot] && !isEmpty(plain[slot])) tr[slot] = null;
+  if (!o.dw) for (const [slot, p] of Object.entries(res.pieces)) {
     // a stats set's weapons go in its try like its other pieces (a PLD's shield is part of each set); the other
     // optimizers force them in the page (below)
     if ((['main', 'sub'].includes(slot) && !o.stat && !o.nuke) || slot === 'range' || !p || blocked[slot]) continue;
@@ -515,14 +518,16 @@ function optResult(s, k, res, gains, o){
   const pct = h => h == null ? '—' : Math.floor(h) + ' %', bh = res.best.hits;
   const hitTxt = bh ? ' ' + t('optHit', {f: pct(bh.first), h: pct(bh.rest), e: enemyKey(buffState().enemy)}) : '';
   const sd = res.start.def || {}, startMiss = res.start.miss ? t('optStartMiss', {p: Math.round(sd.pdt || 0), m: Math.round(sd.mdt || 0), sb: Math.round(sd.sb || 0), h: pct((res.start.hits || {}).rest)}) + ' ' : '';
-  const engV = v => o.engObj === 'dps' || o.engObj === 'cycle' ? fmtDmg(v) : o.engObj === 'tp_round' ? Math.round(v) : v.toFixed(2) + ' s';
+  const engV = v => engObjFmt(o.engObj) ? engObjFmt(o.engObj)(v) : o.engObj === 'dps' || o.engObj === 'cycle' ? fmtDmg(v) : o.engObj === 'tp_round' ? Math.round(v) : v.toFixed(2) + ' s';
   const done = o.eng ? t('engDone_' + (o.engObj || 'tp_real'), {a: engV(res.start.raw), b: engV(res.best.raw), g: (+gain > 0 ? '+' : '') + gain, n: Object.keys(tr).length,
       p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0), sb: Math.round(def.sb || 0)})
     : t(o.obj === 'tp_return' ? 'optDoneTp' : 'optDone', {g: gain, d: fmtDmg(res.best.raw), n: Object.keys(tr).length,
       p: Math.round(def.pdt || 0), m: Math.round(def.mdt || 0), sb: Math.round(def.sb || 0)});
-  S.toast = `${buffTier()} · ` + startMiss + (res.best.miss ? t('optMiss') + ' ' : '') + done + weapons + hitTxt + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
+  // a Dual Wield tier says what it was searched over, at which magic haste and for which subjob
+  const dwTxt = o.dw ? t('dwDone', {t: o.dw.tier, p: shortPath(o.dw.basePath), h: o.dw.haste, sub: o.dw.sub}) + ' · ' : '';
+  S.toast = `${buffTier()} · ` + dwTxt + startMiss + (res.best.miss ? t('optMiss') + ' ' : '') + done + weapons + hitTxt + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
   // nothing better found: said plainly, draft B left empty, no Compare with nothing to compare
-  if (!Object.keys(tr).length) S.toast = `${buffTier()} · ` + startMiss + (o.eng ? t('engSame', {v: engV(res.best.raw)}) : t('optSame', {d: fmtDmg(res.best.raw)})) + weapons + hitTxt;
+  if (!Object.keys(tr).length) S.toast = `${buffTier()} · ` + dwTxt + startMiss + (o.eng ? t('engSame', {v: engV(res.best.raw)}) : t('optSame', {d: fmtDmg(res.best.raw)})) + weapons + hitTxt;
   // a set judged by its stats (stat_opt.js): its own words, no damage
   if (o.stat) S.toast = `${buffTier()} · ` + (res.best.miss ? t('optMiss') + ' ' : '') + statDoneText(s, res, tr) + weapons + (extra.length ? ' ' + t('optLack', {l: extra.join(' · ')}) : '');
   save();

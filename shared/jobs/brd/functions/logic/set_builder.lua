@@ -59,31 +59,32 @@ end
 ---
 ---   Priority order:
 ---   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
----   2. EngagedMode (STP/Acc/DT/SB)  >> sets.engaged[EngagedMode]
+---   2. EngagedMode (STP/Acc/SB)     >> sets.engaged[EngagedMode]
 ---   3. Fallback                      >> base_set
 ---
 ---   @param base_set table Base engaged set
 ---   @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise EngagedMode/base)
+---   @return string|nil The mode's name (PDTKC, STP...), nil for the base set
 function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 1: Check for Kraken Club in sub-weapon slot
     if player and player.equipment and player.equipment.sub then
         local sub_weapon = player.equipment.sub
         if sub_weapon == 'Kraken Club' and sets.engaged.PDTKC then
-            return sets.engaged.PDTKC
+            return sets.engaged.PDTKC, 'PDTKC'
         end
     end
 
-    -- PRIORITY 2: Use EngagedMode state to select engaged set (STP, Acc, DT, SB)
+    -- PRIORITY 2: Use EngagedMode state to select engaged set (STP, Acc, SB)
     if state.EngagedMode and state.EngagedMode.current then
         local mode = state.EngagedMode.current
 
         -- Select set based on EngagedMode
         if sets.engaged and sets.engaged[mode] then
-            return sets.engaged[mode]
+            return sets.engaged[mode], mode
         end
     end
 
-    return base_set
+    return base_set, nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -114,8 +115,11 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set (Kraken Club, then EngagedMode)
-    local result = SetBuilder.select_engaged_base(base_set)
+    -- Step 1: Select base set (Kraken Club, then EngagedMode); the Dual Wield
+    -- tiers laid after it read that mode's own first (sets.DW.SB.MaxHaste)
+    local result, mode = SetBuilder.select_engaged_base(base_set)
+    -- (under pcall: the engaged set is built whatever happens to the Dual Wield system)
+    pcall(function() require('shared/utils/equipment/dual_wield').note_mode(mode) end)
     -- the party support's version of it (.Solo, .Group: shared/utils/party/support_tier.lua)
     result = require('shared/utils/party/support_tier').engaged(result)
 

@@ -106,7 +106,7 @@ function opObjList(kind){
   return ENG_OBJS.concat(cycleReady() ? ['cycle'] : []);
 }
 function opObj(kind){
-  const o = S.optOpts || {}, list = opObjList(kind), cur = kind === 'ws' ? o.obj : o.engObj;
+  const o = kind === 'eng' ? engOpts(S._optSet) : S.optOpts || {}, list = opObjList(kind), cur = kind === 'ws' ? o.obj : o.engObj;
   return kind === 'jump' ? 'jump' : kind === 'nuke' ? 'nuke' : list.includes(cur) ? cur : list[0];
 }
 function opObjLabel(kind, k){
@@ -213,7 +213,7 @@ function opFigures(s, kind, plain){
 }
 // The lines of the table: every figure of the family, the objective's first (low: smaller is better)
 function opRows(kind, obj){
-  const o = S.optOpts || {}, pc = v => opNum(100 * v) + ' %', s2 = v => v.toFixed(2) + ' s', [a, b] = avgRange(o);
+  const o = kind === 'eng' ? engOpts(S._optSet) : S.optOpts || {}, pc = v => opNum(100 * v) + ' %', s2 = v => v.toFixed(2) + ' s', [a, b] = avgRange(o);
   let rows;
   if (kind === 'nuke') {
     rows = [
@@ -235,6 +235,8 @@ function opRows(kind, obj){
     {id: 'tp_time', label: t('rdvAvg'), get: f => f.r.time, fmt: s2, low: true},
     {id: 'dps', label: 'DPS', get: f => f.r.dps, fmt: fmtDmg},
     {id: 'tp_round', label: t('cmpEngTp'), get: f => f.r.tp, fmt: v => opNum(v)},
+    // (the hit chance only on a set whose goal it is: the Acc mode, eng_modes.js)
+    {id: 'acc', label: t('engHitLbl'), get: f => obj === 'acc' ? engHitPct(f.r) : null, fmt: v => opNum(v, 2) + ' %'},
     {id: 'jump', label: t('cmpEngTp'), get: f => kind === 'jump' ? f.r.tp : null, fmt: v => opNum(v)},
     {id: 'tphit', label: t('cycTpHit'), get: f => f.r.detail ? f.r.detail.tpPerHit : null, fmt: v => opNum(v)},
     {id: 'attacks', label: t('rdvAttacks'), get: f => f.r.attacks ? f.r.attacks.swings : null, fmt: v => v.toFixed(2)},

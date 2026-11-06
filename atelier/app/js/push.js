@@ -37,7 +37,8 @@ function openVersion(s){
 // A set laid on top of another one: the catalog's "on top of the idle set" (shared/utils/atelier/set_catalog_common.lua:
 // MoveSpeed, Adoulin), Mote's sets.Kiting (libs/Mote-Include.lua), TreasureHunter, the buffs' sets.buff.X, RDM's
 // Saboteur. An `empty` there strips the piece of the set under it
-const OVERLAY_SETS = new Set(['MoveSpeed', 'Adoulin', 'Kiting', 'TreasureHunter', 'buff']);
+// (DW: the Dual Wield tiers, laid over the engaged set by shared/utils/equipment/dual_wield.lua)
+const OVERLAY_SETS = new Set(['MoveSpeed', 'Adoulin', 'Kiting', 'TreasureHunter', 'buff', 'DW']);
 const overlaySet = s => sabOverlay(s) || OVERLAY_SETS.has(segs(s.path)[0]);
 // One entry per slot the draft or the saved pieces change: the piece, `empty`, or `inherit`
 // (the line goes, the set takes its base's piece again)

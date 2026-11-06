@@ -58,12 +58,15 @@ const pctText = (d: number) => `${d >= 0 ? '+' : '−'}${opNum(Math.abs(d), 1)} 
 // what is looked for: the limits first, the objective, its settings, the search (opWhatHTML)
 function whatOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']> {
   const S0 = st(), o = S0.optOpts = Object.assign({obj: 'damage', pdt: -50, mdt: -21, sb: 0, hit: 0, engObj: 'tp_real', engAt: 1000}, S0.optOpts || {});
+  // (the set first: an engaged set with a mode by its name has its own goal and limits, eng_modes.js engModeOpts)
+  S0._optSet = s;
+  const mine = kind === 'eng' ? engOpts(s) : o;
   const cur = opObj(kind), key = kind === 'ws' ? 'obj' : 'engObj', [a, b] = avgRange(o);
   const objs = opObjList(kind).map((k: string) => ({key, v: k, on: k === cur, tip: t('objTip_' + k, {tp: S0.wsTp || 3000, a, b}), label: opObjLabel(kind, k), desc: t('objD_' + k), disabled: kind === 'jump'}));
   S0._optSet = s;
   const help = S0._help === 'optpage' ? `${t(kind === 'ws' ? 'optWhy' : kind === 'nuke' ? 'nukeWhy' : kind === 'jump' ? 'jumpWhy' : 'engWhy', {tp: S0.wsTp || 3000})} ${optSettingsHelp(kind === 'ws')} ${t('opHelp')}` : '';
   // the limits first: what a result may never go past is read before what it maximises
-  const lim = (k: string, label: string) => limitTile('data-optopt', k, label, o[k]);
+  const lim = (k: string, label: string) => limitTile('data-optopt', k, label, mine[k]);
   const top = kind === 'nuke' ? nukeTop(s)
     : {k: 'limits' as const, limits: limitsView(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
   return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), search: searchView(o, kind === 'ws')};
@@ -180,6 +183,7 @@ function visualOf(obj: string, main: LegacyAny, now: LegacyAny, was: LegacyAny):
 // the result: the objective's figure, big, with its difference to your set and its verdict, its picture, every
 // figure of the family (opResultHTML)
 function resultOf(s: LegacyAny, kind: string): NonNullable<OptPageView['result']> {
+  (S as LegacyAny)._optSet = s;
   const obj = opObj(kind), now = opFigures(s, kind), was = trialCount(s) ? opFigures(s, kind, true) : null;
   const base = {title: t('opResult'), none: null, big: null, visual: null, was: !!was, heads: [], rows: [], changes: null, trial: null, noTry: '', notes: '', calc: null};
   if (!now) return {...base, none: kind === 'eng' && obj === 'cycle' ? t('cycNoWs') : noEngineText()};

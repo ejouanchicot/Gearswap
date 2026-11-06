@@ -63,7 +63,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 197 | `start`, `stop`, `on_aftercast`; retry / timeout logic; buff guard before each song; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 104 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 60 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
-| `shared/jobs/brd/functions/logic/set_builder.lua` | 167 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
+| `shared/jobs/brd/functions/logic/set_builder.lua` | 167 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode; returns the mode taken, which `build_engaged_set` hands to `DualWield.note_mode`), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
 | `_master/config/brd/BRD_STATES.lua` | 229 | All states (`BRDStates.configure()`) |
 | `_master/config/brd/BRD_KEYBINDS.lua` | 65 | 13 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/brd/BRD_CUSTOM.lua` | 131 | Player modes and gear rules (all examples commented out, DummySong switch included) |

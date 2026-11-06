@@ -74,7 +74,8 @@ document.addEventListener('click', e => {
   if ('optall' in d) { optAllOpen(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('oago' in d) { optAllGo(); return; }
   // "Tout optimiser" (opt_sets.js): open, its start window's ticks, start, the summary's ticks, write, undo
-  if ('optsets' in d) { optSetsOpen(); return; }
+  // (data-optsets="eng": the engaged sets and their Dual Wield tiers only, eng_modes.js)
+  if ('optsets' in d) { optSetsOpen(d.optsets || ''); return; }
   if (d.osset != null || d.osfam != null || d.osonly != null || 'osscratch' in d) { optSetsClick(d); return; }
   if ('osgo' in d) { optSetsGo(); return; }
   if (d.ossel) { optSetsTick(d.ossel); return; }
@@ -83,7 +84,8 @@ document.addEventListener('click', e => {
   if (d.oasel) { optAllToggle(d.oasel); return; }
   if ('tiercost' in d) { openTierCost(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
-  if (d.optobj) { S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
+  // an engaged set with a mode by its name keeps its own goal (eng_modes.js engModeWrite)
+  if (d.optobj) { if (!engModeWrite(d.optobj, d.v)) S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
   if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
   // the objectives' list of the stats optimizer beside the set, folded but the first (StatPage.svelte compact)
@@ -278,7 +280,9 @@ document.addEventListener('change', e => {
     S.optOpts = Object.assign({}, S.optOpts, {nukeSpells: all}); save(); render(); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v}); save();
+    // (an engaged set with a mode by its name keeps its own goal and limits: eng_modes.js engModeWrite)
+    if (!engModeWrite(e.target.dataset.optopt, v)) S.optOpts = Object.assign({}, S.optOpts, {[e.target.dataset.optopt]: v});
+    save();
     // a piece's stats change with it (stats.js ENCHANT_KEPT): everything worked out from them is redone
     if (ENCHANT_OPTS.includes(e.target.dataset.optopt)) { DATA_GEN++; render(); }
     // the objective shows or hides the TP range; the range reads back rounded to 250; a limit is written in the

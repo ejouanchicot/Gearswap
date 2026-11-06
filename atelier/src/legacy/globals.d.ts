@@ -370,6 +370,8 @@ declare const ROLE_COLOR: Record<string, string>;
 declare const JOBS: LegacyAny[];
 /* ---- the optimizer's page (opt_page.js, optimizer.js, ws_page.js, stat_opt.js, nuke_layers.js), loosely typed ---- */
 declare function opObj(kind: string): string;
+// eng_modes.js / ws_page.js: an engaged set's settings (its mode's goal and limits, then those kept for it)
+declare function engOpts(s: LegacyAny): LegacyAny;
 declare function opObjList(kind: string): string[];
 declare function opObjLabel(kind: string, k: string): string;
 declare function avgRange(o: LegacyAny): [number, number];

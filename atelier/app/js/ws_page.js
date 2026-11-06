@@ -190,13 +190,15 @@ function optSettingsHelp(hit){
   return [t('optWardTip'), 'DT+PDT : ' + t('optPdtTip'), 'DT+MDT : ' + t('optMdtTip'), 'Subtle Blow : ' + t('optSbTip')].concat(hit ? [t('optHitLbl') + ' : ' + t('optHitTip')] : []).join('. ') + '.';
 }
 /* ---- the engaged optimizer: the attack round (atelier/engine/actions.js average_attack_round) ---- */
-const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round'];
+// (acc and sb: the goals of the Acc and SB modes, eng_modes.js; the time to the weaponskill decides after them)
+const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round', 'acc', 'sb'];
 // A Jump (and High Jump, the same set): one attack round in its own set (BG Wiki: Double / Triple Attack and multi-hit
 // weapons count), so the optimizer reads the TP of a round (the defense floors are the engaged ones)
 const isJumpSet = path => /^sets\.precast\.JA(\.Jump|\["High Jump"\])$/.test(path || '');
 const roundSet = s => family(s.path, s.pieces) === 'engaged' || isJumpSet(s.path);
-// The engaged optimizer's settings for a set: a Jump's are fixed
-const engOpts = s => Object.assign({}, S.optOpts, isJumpSet(s && s.path) ? {engObj: 'tp_round'} : {});
+// The engaged optimizer's settings for a set: a Jump's are fixed; a set with a mode by its name (eng_modes.js: .STP,
+// .Acc, .SB, a Kraken Club set) its mode's goal and limits, then the ones kept for that set
+const engOpts = s => Object.assign({}, S.optOpts, typeof engModeOpts === 'function' ? engModeOpts(s) : {}, isJumpSet(s && s.path) ? {engObj: 'tp_round'} : {});
 // An engaged set's attack round with the set as shown (weapons, tried pieces; plain: the file's, no try), or null
 function engRound(s, plain){
   if (!engineReady() || !roundSet(s)) return null;

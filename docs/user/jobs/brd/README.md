@@ -174,7 +174,7 @@ starts, after its recast check, never by the command.
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns. Not while engaged |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge...) and subjob nukes when the day, weather or distance gives enough (`//gs c belt`). Songs never get it |
-| Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC) |
+| Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC). An Engaged Mode (or Kraken Club, `PDTKC`) can have its own: `sets.DW.Acc.NoHaste`, `sets.DW.SB.MaxHaste`..., worn before the common ones |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none) |
 | Combat Mode | Off and hidden. **On BRD it also locks the instrument slot**: no instrument can change, dummy songs use whatever you wear, and Honor March / Aria of Passion are refused unless Marsyas / Loughnashade is already on. Leave it hidden unless you want exactly that |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |

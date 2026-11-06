@@ -41,7 +41,7 @@ export function optSetsView(R: LegacyAny): OptSetsView {
   const done = R.finished ? Object.values(R.by || {}) as LegacyAny[] : [], u = done.filter(x => x.sel).length;
   const secs = osDur(R.finished ? R.secs || 0 : osEstimate(R));
   return {finished: !!R.finished, title: t(R.finished ? 'osSumTitle' : 'osTitle'), sub: R.finished ? t('osSum', {u, n: done.length, s: secs}) : t('osPick', {n: ticked.length, d: secs}),
-    fams, shortcuts: [{key: 'stat', label: t('osOnlyStat')}, {key: 'all', label: t('osAll')}, {key: 'none', label: t('osNone')}],
+    fams, shortcuts: [{key: 'stat', label: t('osOnlyStat')}, {key: 'eng', label: t('osOnlyEng')}, {key: 'all', label: t('osAll')}, {key: 'none', label: t('osNone')}],
     scratch: {label: t('osScratch'), on: !!R.scratch}, mine: t('osMine'), go: ticked.length ? t('osGo', {n: ticked.length}) : '',
     heads: [t('osHeadSet'), t('osHeadObj'), t('osHeadVs'), t('osHeadGain'), t('osHeadN')], rows: R.finished ? R.todo.map((x: LegacyAny, i: number) => rowOf(R, x, i)) : [],
     writing: R.writing || '', noLive: R.finished && !liveWrite() ? t('osNoLive') : '', write: R.finished && u && liveWrite() && !R.writing ? t('osWrite', {n: u}) : '',

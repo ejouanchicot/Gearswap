@@ -14,6 +14,14 @@
 --- much only costs a little damage, too little slows every attack). No tier
 --- filled: nothing happens.
 ---
+--- Tiers by engaged mode: the job's set builder says which engaged set it took
+--- (DualWield.note_mode: BRD's STP, Acc, SB, PDTKC); sets.DW.<Mode>.<Tier>
+--- (sets.DW.SB.MaxHaste) then comes before sets.DW.<Tier>, for that mode only.
+--- The mode's own tiers are tried first, from the tier down; none filled at or
+--- below it: the common ones, from the tier down. A job that says nothing, or
+--- a mode with no tiers of its own, keeps the common ones
+--- (SPEC notes/docs-perso/engaged-par-mode-2026-11-06).
+---
 --- Magic haste is estimated from the buffs up (read from the game) and the
 --- spells that gave them (the action packet: Haste or Haste II, which March):
 --- values in <Character>/_common/gear/DW_CONFIG.lua, the nominal ones (Haste
@@ -143,19 +151,58 @@ local function dual_wielding()
     return data ~= nil and data.category == 'Weapon' and (data.skill or 0) > 0
 end
 
---- The tier's set, or the closest one below it with pieces (more Dual Wield).
---- @param tier string
---- @return table|nil set, string|nil name
-local function tier_set(tier)
-    local dw = sets and sets.DW
-    if type(dw) ~= 'table' then return nil end
-    local index = 1
-    for i, name in ipairs(TIERS) do if name == tier then index = i end end
+--- The engaged set the job's set builder took last ('STP', 'Acc', 'SB',
+--- 'PDTKC'...; nil: the base set, or a job that does not say). Per load: the
+--- builder runs before every engaged equip, so it is always the current one.
+--- @param mode string|nil
+function DualWield.note_mode(mode)
+    _G._dual_wield_mode = type(mode) == 'string' and mode or nil
+end
+
+--- @return string|nil the engaged mode noted last
+function DualWield.mode()
+    return rawget(_G, '_dual_wield_mode')
+end
+
+--- In one table of tiers, the tier asked or the closest one below it with pieces.
+--- @return table|nil set, string|nil tier name
+local function filled_from(dw, index)
     for i = index, 1, -1 do
         -- (an empty tier, as the job templates declare them, is one not filled yet: the one below it, the safe side)
         if type(dw[TIERS[i]]) == 'table' and next(dw[TIERS[i]]) ~= nil then return dw[TIERS[i]], TIERS[i] end
     end
     return nil
+end
+
+--- The tier's set, or the closest one below it with pieces (more Dual Wield):
+--- the engaged mode's own tiers first (sets.DW.<Mode>), then the common ones.
+--- @param tier string
+--- @param mode string|nil Engaged mode (DualWield.mode())
+--- @return table|nil set, string|nil name ('MaxHaste', or 'SB.MaxHaste' for a mode's own)
+local function tier_set(tier, mode)
+    local dw = sets and sets.DW
+    if type(dw) ~= 'table' then return nil end
+    local index = 1
+    for i, name in ipairs(TIERS) do if name == tier then index = i end end
+    -- (a mode named as a tier would read a set as a table of tiers: never taken as a mode's)
+    local own = mode and type(dw[mode]) == 'table' and dw[mode] or nil
+    for _, name in ipairs(TIERS) do if mode == name then own = nil end end
+    if own then
+        local set, name = filled_from(own, index)
+        if set then return set, mode .. '.' .. name end
+    end
+    return filled_from(dw, index)
+end
+
+--- Write the set chosen to the trace when it changed (TraceLog is a no-op while off).
+local function trace_choice(tier, mode, name)
+    local key = tostring(mode) .. '|' .. tostring(name)
+    if windower._dw_traced == key then return end
+    windower._dw_traced = key
+    pcall(function()
+        require('shared/utils/debug/trace_log').log('DW', 'mode %s, tier %s -> %s', tostring(mode or 'base'), tostring(tier),
+            name and ('sets.DW.' .. name) or 'none')
+    end)
 end
 
 --- Auto DW on for the job played: the character's switch, then the job's own
@@ -175,7 +222,9 @@ function DualWield.apply(status)
     if not DualWield.on_for_job() or not dual_wielding() then return end
     -- A COR roll holds the gear until it lands (roll_hold.lua): leave it be
     if require('shared/utils/core/gear_hold').active() then return end
-    local set, name = tier_set((DualWield.tier()))
+    local tier, mode = (DualWield.tier()), DualWield.mode()
+    local set, name = tier_set(tier, mode)
+    trace_choice(tier, mode, name)
     if set then
         equip(set)
         windower._dw_last_tier = name
@@ -218,7 +267,7 @@ local function on_buff(id)
         -- (re-dress only for a tier that lays pieces, on a job with Auto DW on and two weapons held: with no tier
         -- filled, every Haste or March gained or lost sent an update, which re-dresses mid-cast)
         if not DualWield.on_for_job() or not dual_wielding() then return end
-        local _, name = tier_set((DualWield.tier()))
+        local _, name = tier_set((DualWield.tier()), DualWield.mode())
         if name and name ~= windower._dw_last_tier then send_command('gs c update') end
     end, 0.3)
 end
@@ -253,10 +302,12 @@ function DualWield.command(args)
     if word then send_command('gs c update') end
     local haste, parts = DualWield.magic_haste()
     local tier, forced = DualWield.tier()
-    local _, used = tier_set(tier)
+    local mode = DualWield.mode()
+    local _, used = tier_set(tier, mode)
     local fields = {
         {'Auto DW', DualWield.on_for_job() and 'ON' or ('OFF' .. (DualWield.settings().enabled and ' (this job: DW_CONFIG jobs)' or '')), DualWield.on_for_job() and 'good' or 'bad'},
         {'Magic haste', ('%.2f %% (%s)'):format(haste, #parts > 0 and table.concat(parts, ', ') or 'none')},
+        {'Engaged mode', mode or 'base set (or not told by the job)'},
         {'Tier', tier .. (forced and ' (forced: //gs c dw auto to undo)' or ' (estimated)')},
         {'Set used', used and ('sets.DW.' .. used) or 'none (no sets.DW here)', used and 'good' or 'warn'},
         {'Two weapons', dual_wielding() and 'yes' or 'no'},

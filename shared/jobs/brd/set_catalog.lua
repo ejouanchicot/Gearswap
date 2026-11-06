@@ -53,6 +53,11 @@ return {
     {'engaged.{EngagedMode}', when = 'Weapon out, fighting, with that Engaged Mode', fr = 'Quand tu combats, arme sortie, avec cet Engaged Mode.', base = 'engaged'},
     -- Mote get_melee_set (sets.engaged[OffenseMode]): the base select_engaged_base falls back to
     {'engaged.{OffenseMode}', when = 'Fighting while the Engaged Mode value has no set of its own', fr = 'Quand tu combats et que la valeur de ton Engaged Mode n’a pas de set à elle.', base = 'engaged'},
+    -- shared/utils/equipment/dual_wield.lua tier_set: the mode the set builder noted (note_mode) before the common tiers
+    {'DW.{EngagedMode}.{NoHaste|Haste|HasteII|MaxHaste}', when = 'Two weapons held, fighting in that Engaged Mode: its own Dual Wield pieces by your magic haste, before the common tiers',
+        fr = 'Quand tu combats avec deux armes dans cet Engaged Mode : ses propres pièces de Dual Wield selon ton haste magique, avant les paliers communs.', base = 'DW.{NoHaste|Haste|HasteII|MaxHaste}', needs = {'dw'}},
+    {'DW.PDTKC.{NoHaste|Haste|HasteII|MaxHaste}', when = 'Two weapons held, fighting with Kraken Club: its own Dual Wield pieces by your magic haste, before the common tiers',
+        fr = 'Quand tu combats avec la Kraken Club : ses propres pièces de Dual Wield selon ton haste magique, avant les paliers communs.', base = 'DW.{NoHaste|Haste|HasteII|MaxHaste}', needs = {'dw'}},
 
     ---------------------------------------------------------------- precast
     -- Mote get_precast_set: sets.precast.FC[spell.type] when sets.precast.FC.Singing does not exist

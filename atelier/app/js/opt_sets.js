@@ -27,6 +27,8 @@ Object.assign(T.en, {osBtn: 'Optimize all', osBtnTip: 'Optimizes every set of th
 // null when it has none (weapon sets, a job ability no piece can boost, a weaponskill the engine does not know)
 function osKind(s){
   if (family(s.path, s.pieces) === 'weapons' || (S.job === 'PLD' && s.path === 'sets.idle')) return null;
+  // a Dual Wield tier: searched over its mode's engaged set (eng_modes.js)
+  if (dwTierOf(s.path)) return 'dw';
   const wsName = family(s.path, s.pieces) === 'ws' && (wsOfSet(s) || genericWsOf(s));
   if (wsName) return FFXI.opt.knowsWs(wsForSet(s)) ? 'ws' : null;
   if (isNukeSet(s.path)) return 'nuke';
@@ -34,15 +36,16 @@ function osKind(s){
   if (statSet(s)) return jaOverlayBase(s) && !jaBoostable(s) ? null : 'stat';
   return null;
 }
-const OS_RUN = {stat: s => optimizeStats(s), ws: s => optimizeWs(s), nuke: s => optimizeNuke(s), eng: s => optimizeEngaged(s)};
+const OS_RUN = {stat: s => optimizeStats(s), ws: s => optimizeWs(s), nuke: s => optimizeNuke(s), eng: s => optimizeEngaged(s), dw: s => optimizeDwTier(s)};
 // Seconds a search takes, by kind: a first guess, then what this page measured
-const OS_TIMES = {stat: 5, ws: 25, nuke: 20, eng: 25};
+const OS_TIMES = {stat: 5, ws: 25, nuke: 20, eng: 25, dw: 25};
 // The run's order: the Fast Cast sets first (they set every tank set's HP band: stat_opt.js hpRef), then each set after
 // the set it is built on (sets.precast.JA before the abilities' sets, sets.Cure before Cure Self), then the list's order
 function osOrder(list){
   const by = new Map(list.map(x => [x.s.path, x])), out = [], seen = new Set();
   const add = x => { if (seen.has(x.s.path)) return; seen.add(x.s.path);
-    const over = jaOverlayBase(x.s), base = by.get(x.s.base) || (over && by.get(over.path));
+    // (a Dual Wield tier after the engaged set it is laid on: searched over that set's new pieces)
+    const over = jaOverlayBase(x.s), dwOn = dwTierOf(x.s.path) && dwBaseSet(x.s), base = by.get(x.s.base) || (over && by.get(over.path)) || (dwOn && by.get(dwOn.path));
     if (base) add(base);
     out.push(x); };
   list.filter(x => family(x.s.path, x.s.pieces) === 'fc').forEach(add);
@@ -58,13 +61,17 @@ function osSets(){
   }
   return out;
 }
+// "Engaged only": each engaged mode (its set itself, not its Solo / Group / Trust versions, which follow the support)
+// and the Dual Wield tiers (eng_modes.js engModeOf, dwTierOf)
+const osEngaged = x => x.kind === 'dw' || (x.kind === 'eng' && !!engModeOf(x.s.path) && !/\.(Group|Solo|Trust)$/.test(x.s.path));
 const osDur = n => n < 90 ? t('osSec', {n: Math.round(n)}) : t('osMin', {n: Math.round(n / 60)});
 
 /* ---- the start window ---- */
-function optSetsOpen(){
+// preset 'eng': the engaged sets with a mode by their name and the Dual Wield tiers ticked, the others not
+function optSetsOpen(preset){
   if (!engineReady() || S._optBusy) return;
   const list = osOrder(osSets());
-  S._optSets = {at: S.char + '|' + S.job, list, on: Object.fromEntries(list.map(x => [x.s.path, true])), scratch: false};
+  S._optSets = {at: S.char + '|' + S.job, list, on: Object.fromEntries(list.map(x => [x.s.path, preset === 'eng' ? osEngaged(x) : true])), scratch: false};
   osPaint();
 }
 function osPaint(){
@@ -80,7 +87,7 @@ function optSetsClick(d){
   if (!R || R.running) return;
   if (d.osset != null) R.on[d.osset] = !R.on[d.osset];
   if (d.osfam != null) { const fam = R.list.filter(x => x.fam === d.osfam), on = !fam.every(x => R.on[x.s.path]); fam.forEach(x => { R.on[x.s.path] = on; }); }
-  if (d.osonly != null) R.list.forEach(x => { R.on[x.s.path] = d.osonly === 'all' || (d.osonly === 'stat' && x.kind === 'stat'); });
+  if (d.osonly != null) R.list.forEach(x => { R.on[x.s.path] = d.osonly === 'all' || (d.osonly === 'stat' && x.kind === 'stat') || (d.osonly === 'eng' && osEngaged(x)); });
   if ('osscratch' in d) R.scratch = !R.scratch;
   osPaint();
 }
@@ -142,7 +149,7 @@ function osRecord(x, out){
   if (out.error) return {x, error: out.error, sel: false};
   const {res, tr, o} = out, eng = !!o.eng, obj = o.stat || (eng ? (o.engObj || 'tp_real') : o.nuke ? 'nuke' : (o.obj || 'damage'));
   const time = eng && /^tp_(real|time)$/.test(obj), low = time || obj === 'hpLow';
-  const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
+  const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : eng && engObjFmt(obj) ? engObjFmt(obj) : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
   const label = o.stat ? t('statObj_' + obj) : o.nuke ? t(isBurstSet(x.s.path) ? 'nukeObjMb' : 'nukeObj') : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: 1000, b: 3000});
   const g = (low ? res.start.raw / res.best.raw : res.best.raw / res.start.raw) - 1, n = Object.keys(tr).length, miss = !!res.best.miss;
   return {x, label, from: fmt(res.start.raw), to: fmt(res.best.raw), gain: isFinite(g) ? g * 100 : 0, n, miss, sel: n > 0 && !miss};

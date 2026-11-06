@@ -92,6 +92,15 @@ weapon). Hover a set to pin it to the top or put it in a group of your own;
 drag to reorder. Only the sets your job can use with the subjob shown are
 listed; the others are counted under the list. **Optimize all** searches
 every set of the job in turn (see the [FAQ](../guides/faq.md#atelier-page)).
+**Optimize all engaged** (in the list's ⋯ menu, or **Engaged only** in the
+Optimize all window) ticks only each engaged mode and its Dual Wield tiers:
+each mode with its goal, then each tier (`sets.DW.<tier>`, or the mode's own
+`sets.DW.<Mode>.<tier>`) laid over that mode's engaged set (the common tiers
+over `sets.engaged`) at the tier's magic haste (0, 15, 30 %, the cap), for
+/DNC (the subjob that gives the least Dual Wield), the limits held; only the
+slots that differ from the engaged set go in the tier. The Solo / Group /
+Trust versions are left as they are. Nothing is written before you tick and
+push.
 
 The line over the sets says what the figures are **Calculated with**: the
 situation (Full, Group, Solo, Trust), your saved profile, the target, and a
@@ -182,7 +191,14 @@ One view, with what never changes in sight:
     **Average damage from 1000 to 3000 TP** (the range too), **TP return
     (save TP)**;
   - an engaged set: **Real time to WS** (hit by hit), **Average time**, **DPS
-    (auto-attacks)**, **TP per round**;
+    (auto-attacks)**, **TP per round**, **Hit chance, then time to WS**,
+    **Subtle Blow to its cap, then time to WS**. An engaged set whose name is a
+    mode starts with that mode's goal and with DT+PDT ≤ -50, DT+MDT ≤ -29:
+    `sets.engaged` and `.STP` the real time, `.Acc` the hit chance, `.SB`
+    Subtle Blow (75 % at most, I and II 50 each), a Kraken Club set (`.PDTKC`,
+    `NaeglingKC`) the real time with the club kept in the off hand; its
+    Solo / Group / Trust versions the same. What you choose on such a set's page
+    is kept for that set alone;
   - a Jump set: **TP per Jump**; a nuke set: its damage, with the situation of
     the fight.
 - **Limits**: **DT+PDT ≤** (-50 by default), **DT+MDT ≤** (-21: -50 with Shell

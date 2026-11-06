@@ -230,6 +230,12 @@
         if (c.warcryTpDelta) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
+        // a Dual Wield tier's search (the page's dw_tiers.js): the magic haste of that tier in place of the buffs' (Haste,
+        // Marches, Geo-Haste...), a fraction (0.15; the cap 448/1024), as GearSwap picks the tier from it
+        if (c.magicHaste != null) {
+            for (var src in agg[0]) if (agg[0][src] && agg[0][src]["Magic Haste"]) { agg[0][src] = Object.assign({}, agg[0][src]); delete agg[0][src]["Magic Haste"]; }
+            agg[0].dw_tier = {"Magic Haste": c.magicHaste};
+        }
         var out = {job: c.job.toLowerCase(), sub: (c.sub || "war").toLowerCase(), ml: c.ml || 0, buffs: agg[0], abilities: withNakedHp(withBase(c), c),
             enemy: CALC.makeEnemy(FFXI.ENEMIES, c.enemy, agg[1]), ws: c.ws, wsType: c.wsType || "melee", metric: c.metric || "Damage dealt",
             primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,

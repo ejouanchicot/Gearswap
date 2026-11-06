@@ -512,6 +512,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 
 - **When it applies.** The status is Engaged, `enabled` is true, and the sub slot holds a weapon with a combat skill. The sub item is read from the game by id in `gearswap.res`: a shield is Armor, and a grip has skill 0. It is skipped while a COR roll hold is open (`GearHold.active()`, `shared/utils/core/gear_hold.lua`, which reads `_G.cor_roll_hold`).
 - **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
+- **Tiers by engaged mode** (2026-11-06, SPEC `notes/docs-perso/engaged-par-mode-2026-11-06`). A job's set builder calls `DualWield.note_mode(name)` with the engaged set it took (BRD `set_builder.lua`: `PDTKC`, `STP`, `Acc`, `SB`; nil for the base set), kept in `_G._dual_wield_mode` (each engaged equip runs the builder before `apply`). `tier_set(tier, mode)` reads `sets.DW.<Mode>` first, from the tier down; nothing filled there: the common tiers, from the tier down. A mode named as a tier is never read as a mode. A job that does not call it keeps the common tiers. The set chosen goes to the trace (tag `DW`) when it changes; `windower._dw_last_tier` holds `SB.MaxHaste` for a mode's own tier.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
   - the value of each from `<Character>/_common/gear/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`), low on purpose;
@@ -525,6 +526,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 | `settings()` | Defaults merged with `DW_CONFIG.lua`, cached in `_G._dual_wield_settings` |
 | `magic_haste()` -> percent, parts | Estimate and its parts |
 | `tier()` -> name, forced | Forced tier or the estimate's |
+| `note_mode(mode)`, `mode()` | The engaged mode the job's set builder took last |
 | `apply(status)` | Equip the tier set |
 | `install()` | Wrap + raw events, once per sandbox (`_G._dual_wield_installed`) |
 | `command(args)` | `//gs c dw` |

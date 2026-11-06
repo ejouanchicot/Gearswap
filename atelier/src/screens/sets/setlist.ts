@@ -44,6 +44,8 @@ function listMenu(): ListMenuItem[] {
   const p = listPrefs(), item = (attrs: Record<string, string>, label: string, on: boolean | null = null, tip = ''): ListMenuItem => ({k: 'item', attrs, label, on, tip});
   const out: ListMenuItem[] = [item({'data-famall': '1'}, t('lpOpenAll')), item({'data-famall': '0'}, t('lpCloseAll')), {k: 'hr'},
     item({'data-listpaths': ''}, t('lpPaths'), !!(S as LegacyAny).listPaths, t('lpPathsTip')), item({'data-listall': ''}, t('lpAll'), !!(S as LegacyAny)._listAll), {k: 'hr'}, item({'data-listnew': ''}, t('lpNewGroup'))];
+  // every engaged mode and its Dual Wield tiers in one run ("Tout optimiser" with only those ticked: eng_modes.js)
+  if (engineReady()) out.push({k: 'hr'}, item({'data-optsets': 'eng'}, t('osEngBtn'), null, t('osEngTip')));
   if (p.hide.length) out.push({k: 'hr'}, {k: 'small', label: t('lpHidden')}, ...p.hide.map((f: string): ListMenuItem => ({k: 'show', f, label: listFamLabel(f), em: t('lpShow')})));
   if ((S as LegacyAny)._listUnsaved) out.push({k: 'hr'}, {k: 'small', label: t('lpBrowserOnly')}, item({'data-listsave': ''}, t('lpSaveFile')));
   return out;
