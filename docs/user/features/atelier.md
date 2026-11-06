@@ -64,7 +64,7 @@ House) changes to each of your jobs in turn and exports it
 | Macro book, Lockstyle, Export | What GearSwap sets for this job and subjob, and when the job was exported (`live` while the game is linked, `offline` after Files > Read) |
 | **Files** | **Read** (above); **History**: everything the page wrote into your GearSwap, with the way back |
 | **GearSwap** | Linked to the game: **Reload** (`//gs reload`: your sets, settings and the code read again, quick) and **Restart** (`//lua r gearswap`: everything unloaded and loaded again, when something behaves oddly or after an update). An order shows on its button until the game has done it |
-| **Page** | **Settings**: theme (Vana'diel, Grimoire, Atelier dark, Atelier light), language, animations, the Moogle assistant, and the calculation engine (what it did not compute since the page opened); **Update** (below) |
+| **Page** | **Settings**: theme (Vana'diel, Grimoire, Atelier dark, Atelier light), language, animations, the sets page's view (Detailed or Simple, see [Sets](#sets)), the Moogle assistant, and the calculation engine (what it did not compute since the page opened); **Update** (below) |
 
 ## The tabs
 
@@ -114,6 +114,15 @@ link to the Buffs & target tab.
 - **Equip in game** puts the set on now, as the page shows it.
 - **Delete this set…** takes a set out (refused for the job's base sets and
   for a set others are built on).
+- **Simple view** (in the set's **⋯**, or Page > Settings > Sets page) shows less
+  at once, with the same figures and searches: beside the grid, the set's
+  objectives and floors as small tiles, its weapons as their icons (hover one for
+  its name; **Change** opens the menus) and the set's code under **Show the
+  code**; each note on one line (hover it for
+  the whole text), the missing pieces as one line that opens ("13 piece(s) not in
+  your bags"), and in the optimizer only the minimums you set ("No minimum ·
+  set" opens the others) and a stats set's result once a search has tried
+  pieces. **Detailed view** puts everything back.
 
 **Trying pieces.** Click a slot: **Choose a piece…** (your copies the job can
 wear, with where they are; tick **Every item in the game** for the rest),

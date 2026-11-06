@@ -11,10 +11,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
-  const info = () => page.evaluate(() => `cfg ${S._cfg} theme ${S.theme}/${document.documentElement.dataset.theme} lang ${S.lang} motion ${S.motion} guide ${S.guide && S.guide.mode} pressed ${[...document.querySelectorAll('#view [aria-pressed="true"]')].map(b => b.dataset.themeSet || b.dataset.lang || b.dataset.motionSet || b.dataset.guideMode || b.dataset.engine).join(',')} text ${document.getElementById('view').textContent.replace(/\s+/g, ' ').length}`);
-  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); document.querySelector('[data-config]').click(); }); await wait(300);
+  const info = () => page.evaluate(() => `cfg ${S._cfg} theme ${S.theme}/${document.documentElement.dataset.theme} lang ${S.lang} motion ${S.motion} sets ${S.setsView || 'full'} guide ${S.guide && S.guide.mode} pressed ${[...document.querySelectorAll('#view [aria-pressed="true"]')].map(b => b.dataset.themeSet || b.dataset.lang || b.dataset.motionSet || b.dataset.guideMode || b.dataset.setsviewSet || b.dataset.engine).join(',')} text ${document.getElementById('view').textContent.replace(/\s+/g, ' ').length}`);
+  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); S._cfg = true; render(); }); await wait(300);
   out.push('open: ' + await info());
-  for (const sel of ['[data-theme-set="grimoire"]', '[data-lang="en"]', '[data-motion-set="off"]', '[data-guide-mode="ask"]', '[data-lang="fr"]', '[data-motion-set="on"]', '[data-theme-set="vanadiel"]', '[data-guide-mode="off"]']) {
+  for (const sel of ['[data-theme-set="grimoire"]', '[data-lang="en"]', '[data-motion-set="off"]', '[data-guide-mode="ask"]', '[data-setsview-set="simple"]', '[data-lang="fr"]', '[data-setsview-set="full"]', '[data-motion-set="on"]', '[data-theme-set="vanadiel"]', '[data-guide-mode="off"]']) {
     await page.evaluate(s => document.querySelector('#view ' + s).click(), sel); await wait(250); out.push(sel + ': ' + await info()); }
   await page.evaluate(() => new Promise(r => loadRanked(r))); await page.evaluate(() => render()); await wait(300);
   out.push('engine loaded: ' + await info() + ' engine box ' + await page.evaluate(() => [...document.querySelectorAll('#view .box h3')].map(h => h.textContent).join(' / ')));

@@ -200,6 +200,16 @@ sets.precast.FC = {
     back = Intarabus.fc
 }
 
+-- • FAST CAST FOR SONGS: Mote puts it on every song (sets.precast.FC.Singing does not exist).
+--   Its pieces' "Song spellcasting time" adds to Fast Cast here, up to 80 % in all
+--   (Fili Calot, Brioso Justaucorps, Bihu Slippers). A copy of the general one to start from.
+sets.precast.FC.BardSong = set_combine(sets.precast.FC, {})
+
+-- • FAST CAST FOR CURES (Cure, Curaga from /WHM...): Mote picks it by the spell's map.
+--   "Cure spellcasting time" adds to Fast Cast here. A copy of the general one to start from.
+sets.precast.FC.Cure = set_combine(sets.precast.FC, {})
+sets.precast.FC.Curaga = sets.precast.FC.Cure
+
 -- • JOB ABILITIES
 -- • Nightingale (Extend song duration) - Bihu Slippers +3
 sets.precast.JA.Nightingale = {feet = 'Bihu Slippers +3'}

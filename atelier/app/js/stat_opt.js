@@ -100,6 +100,15 @@ function withSird(s, list){
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'absorb', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['jaPlus', 'enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'holyWater', 'cursnaRecv', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
   ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['song', ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc']], ['move', ['move']]];
+// The objectives only one kind of job has a use for (the player, 2026-11-05: "Luopan que GEO, pet que BST, PUP, SMN"):
+// a luopan's for a GEO; a pet's for the jobs with one (a wyvern: DRG); Charm's for a BST. Never shown elsewhere, not
+// even with every objective shown
+const STAT_JOB_ONLY = [[['luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'], ['GEO']],
+  [['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb'], ['BST', 'PUP', 'SMN', 'DRG']],
+  [['chr', 'macc', 'charmPlus', 'charmDur'], ['BST']],
+  // a Bard's songs (brd_song.js)
+  [['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc'], ['BRD']]];
+const statJobOk = k => { const hit = STAT_JOB_ONLY.find(([keys]) => keys.includes(k)); return !hit || hit[1].includes(S.job); };
 // What a set's kind can be after (its name, as statDefaultOf reads it), its chosen objectives always in
 function statRelevant(s, chosen){
   const p = setNames(s), fam = family(s.path, s.pieces), out = new Set(chosen);
@@ -214,6 +223,13 @@ function castVec(r){
 // FC.Cure) are spells it is worn for among others
 function castKindsOf(s){
   if (family(s.path, s.pieces) !== 'fc') return [];
+  // a Bard's Fast Cast with no kind (sets.precast.FC): Mote puts it on every song while neither
+  // sets.precast.FC.BardSong nor .Singing exists (shared/jobs/brd/set_catalog.lua, Mote get_precast_set): its songs'
+  // casting time cut counts then (Fili Calot); with one of them it is the general Fast Cast
+  if (S.job === 'BRD' && /^sets\.precast\.FC$/.test(s.path)) {
+    const d = data(), own = d && (d.sets || []).some(x => /^sets\.precast\.FC\.(BardSong|Singing)$/.test(x.path));
+    return own ? [] : ['song'];
+  }
   const p = s.path, kind = /statusremoval/i.test(p) ? 'cure' : magicKindOf(p), out = [];
   if (kind === 'cure') out.push(...(/cur(e|a)/i.test(p) ? ['cure', 'healing'] : ['healing']));
   if (kind === 'enhancing') out.push('enhancing', ...(/stoneskin/i.test(p) ? ['stoneskin'] : []));
@@ -441,7 +457,11 @@ function statRows(s){
   // the gap (and the Cure's power) right under the objectives: it is what the pair of sets is for; Lowest HP only as an objective
   const near = rows.filter(r => (['gap', 'ref', 'cure4'].includes(r.id) || r.id.startsWith('act:') || r.id.startsWith('enf:')) && !first.includes(r));
   // (the least enmity is the Enmity row again: shown only as an objective)
-  const rest = rows.filter(r => !first.includes(r) && !near.includes(r) && r.id !== 'hpLow' && r.id !== 'enmityLow' && (r.id !== 'move' || moveSet(s)) && (!['holyWater', 'cursnaRecv'].includes(r.id) || doomSet(s)));
+  let rest = rows.filter(r => !first.includes(r) && !near.includes(r) && statJobOk(r.id) && r.id !== 'hpLow' && r.id !== 'enmityLow' && (r.id !== 'move' || moveSet(s)) && (!['holyWater', 'cursnaRecv'].includes(r.id) || doomSet(s)));
+  // a Bard's song set: the song's lines and the damage taken only, in the song's order (brd_song.js songRelevant):
+  // a Cure's heal, Phalanx or a luopan's lines mean nothing there (the player, 2026-11-05)
+  if (songOf(s)) { const order = [...songRelevant(), 'pdt', 'mdt'];
+    rest = rest.filter(r => order.includes(r.id)).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)); }
   return first.concat(near, rest);
 }
 // The toast once a search is done

@@ -382,7 +382,7 @@
     O.defense = function (set, sbBuff) {
         var sum = function (k) { var n = 0; for (var sl in set) n += set[sl][k] || 0; return n; };
         var sb = Math.min(75, Math.min(50, sum("Subtle Blow") + (sbBuff || 0)) + Math.min(50, sum("Subtle Blow II")));
-        return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sb};
+        return {pdt: sum("DT") + sum("PDT"), mdt: sum("DT") + sum("MDT"), sb: sb, hpGear: sum("HP"), hpPct: sum("HP%")};
     };
     // Fan Dance up (ctx.fanDance = {merit}): the physical damage taken is the gear's DT + PDT, capped at -50 %, times the
     // dance's cut, which is no part of that cap (BG Wiki, Fan Dance: "does not count towards the Physical Damage Taken cap
@@ -394,6 +394,8 @@
     O.fanCut = function (merit, hands) { return 20 + (hands && FAN_HANDS.test(hands) ? merit || 0 : 0); };
     function defOf(ctx, set, pieces) {
         var def = O.defense(set, ctx.sbBuff);
+        // the set's HP: (the character without gear, ctx.hpBase, + the gear's) x (1 + HP %), as calc/calc_page.js counts it
+        def.hp = Math.round(((ctx.hpBase || 0) + def.hpGear) * (1 + def.hpPct / 100));
         if (!ctx.fanDance) return def;
         var hands = !O.blocked(pieces).hands && pieces.hands && pieces.hands.name;
         def.fan = O.fanCut(ctx.fanDance.merit, hands);
@@ -516,7 +518,10 @@
     // Between sets of the same value, the one that takes less damage, then the one that keeps more of the set's own
     // pieces (opts.base): a slot where nothing matters keeps its piece, rather than the first one tried (Baetyl Pendant,
     // first by name, for an engaged set whose accuracy is capped)
-    function tieBreak(pieces, def, opts, v) {
+    // An engaged set (withHp): its HP after the damage taken, the most it can have (the player, 2026-11-05: "we do not
+    // want to lose DPS for HP, just the most HP after damage, TP speed, PDT, MDT"): a point of PDT or MDT weighs as
+    // 10 000 HP; HP is told apart to about 20 HP (the figure's rounding), and a piece of the set kept weighs 30 HP
+    function tieBreak(pieces, def, opts, v, withHp) {
         var keep = 0, base = opts.base || {};
         for (var k in base) if (pieces[k] && base[k] && pieces[k].name === base[k].name) keep++;
         // relative to the value: a fixed 1e-12 is lost to rounding on a 50 000 damage value
@@ -524,6 +529,8 @@
         // a set laid over another one (the page's stat_opt.js moveSet): the fewest pieces part the sets as good, every
         // slot left out is the set's under it (the damage taken added Defending Ring and co to sets.MoveSpeed)
         if (opts.bare) { var n = 0; for (var sl in pieces) if (pieces[sl]) n++; return sc * (-n * 1e-13 + keep * 1e-15); }
+        // (the damage taken counted up to its -50 % cap there: what passes it is lost, never worth HP)
+        if (withHp) return sc * (-Math.max(-50, (def && def.pdt) || 0) * 1e-13 - Math.max(-50, (def && def.mdt) || 0) * 1e-13 + ((def && def.hp) || 0) * 1e-17 + keep * 3e-16);
         return sc * (-((def && def.pdt) || 0) * 1e-13 - ((def && def.mdt) || 0) * 1e-13 + keep * 1e-15);
     }
     O.value = function (ctx, pieces, opts) {
@@ -550,7 +557,7 @@
             var e0 = O.roundValue(ctx, pieces, opts);
             if (!e0) return {v: -Infinity};
             var miss0 = shortfall(e0.def, opts.floor, null);
-            return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts, e0.v), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
+            return {v: e0.v - 1e6 * miss0 + tieBreak(pieces, e0.def, opts, e0.v, true), raw: e0.raw, def: e0.def, miss: miss0, round: e0.round};
         }
         var tps = opts.objective === "damage_avg" ? (opts.tps || [1000, 1500, 2000, 2500, 3000]) : [opts.tp];
         var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, under = 0, def = null;

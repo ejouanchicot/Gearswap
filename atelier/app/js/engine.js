@@ -167,7 +167,9 @@ function engContextInput(s){
   const base = optContextInput(s);
   // Climactic Flourish is a weaponskill's first hit here, never an average round's
   delete base.abilities['Climactic Flourish'];
-  return Object.assign(base, {mode: 'engaged', ws: null, physRes: physResOf(b, skills[main] || ''), physResBy});
+  // the HP without gear: an engaged set's ties go to the most HP (atelier/opt.js tieBreak)
+  const naked = charStats(s, {}), hpBase = naked && naked.cur ? naked.cur.hp || 0 : 0;
+  return Object.assign(base, {mode: 'engaged', ws: null, physRes: physResOf(b, skills[main] || ''), physResBy, hpBase});
 }
 // A set of damaging spells (opt_page.js isNukeSet): the spells it is judged on and whether it is the job's Magic Burst set,
 // for FFXI.opt.nuke (atelier/opt.js) and the search's workers

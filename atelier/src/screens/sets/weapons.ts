@@ -21,11 +21,10 @@ export function weaponMenusView(s: LegacyAny): WeaponMenu[] {
   // a weaponskill's set offers only the weapons that open it (its skill; the weapon itself for a relic or prime)
   const ws = wsOfSet(s), only = (m: LegacyAny) => m.name !== 'MainWeapon' || !ws ? m
     : Object.assign({}, m, {values: m.values.filter((v: string) => wsWeaponFits(m, v, ws as string) || v === explicitWeapon(m))});
-  const modes = weaponModes(d).filter((m: LegacyAny) => !m.onlyEmpty && !isEmpty(s.pieces[weaponModeSlot(m)])).map(only);
-  const hm = modes.length ? hybridMode(d) : null;
+  const hm = hybridMode(d), modes = weaponModes(d).filter((m: LegacyAny) => !m.onlyEmpty && !isEmpty(s.pieces[weaponModeSlot(m)]) && !unread(s, m, hm)).map(only);
   const opt = (v: string, on: boolean, label = v): WsOption => ({value: v, label, selected: on});
   // the stance the job's weapon rules hang on (PLD's HybridMode: its shield and stance weapon), always one of its values
-  const stance: WeaponMenu[] = hm ? [{name: hm.name, desc: hm.desc, mode: hm.name, cls: 'wmenu buffsel', options: hm.values.map((v: string) => opt(v, v === chosenWeapon(hm)))}] : [];
+  const stance: WeaponMenu[] = hm && modes.length ? [{name: hm.name, desc: hm.desc, mode: hm.name, cls: 'wmenu buffsel', options: hm.values.map((v: string) => opt(v, v === chosenWeapon(hm)))}] : [];
   // each weapon state under its name in game (MainWeapon, SubWeapon...): Auto first, what the job's code puts there
   return stance.concat(modes.map((m: LegacyAny) => {
     const ex = explicitWeapon(m), auto = withWeapons(s, m.name).pieces[weaponModeSlot(m)];
@@ -34,6 +33,16 @@ export function weaponMenusView(s: LegacyAny): WeaponMenu[] {
     return {name: m.name, desc: m.desc, mode: m.name, cls: `wmenu buffsel ${ex ? 'set' : ''}`,
       options: [opt('', !ex, t('auto') + ' · ' + (off ? gate.when + ' off' : auto && !isEmpty(auto) ? auto.name : '—')), ...m.values.map((v: string) => opt(v, v === ex))]};
   }));
+}
+
+// The Simple view (sets_simple.js) leaves out the weapon state the stance does not read: StanceWeapon in a stance with
+// no weapon of its own, MainWeapon in one that has one (PLD's Tanking: Burtgang, weapons.js withWeapons stance_weapon:
+// the stance's weapon wins over MainWeapon, even chosen; a weaponskill it cannot open takes the first of MainWeapon's
+// list that can, not the one chosen)
+function unread(s: LegacyAny, m: LegacyAny, hm: LegacyAny): boolean {
+  if (!setsSimple() || !hm || !weaponModes(data()).some((x: LegacyAny) => x.name === 'StanceWeapon')) return false;
+  const hybrid = setStance(s.path, hm) || chosenWeapon(hm), own = !!(hybrid && ((data() as LegacyAny).weapon_rules || {}).stance_weapon?.[hybrid]);
+  return m.name === 'StanceWeapon' ? !own : m.name === 'MainWeapon' && own;
 }
 
 /** What the job's GearSwap puts with the weapons, a slot no weapon state names (weaponResultLines) */
@@ -46,6 +55,8 @@ export function weaponResults(s: LegacyAny): WeaponResult[] {
     const p = eff.pieces[slot];
     if (stated.has(slot) || !p || isEmpty(p)) continue;
     const forced = !!f[slot] && f[slot].name === p.name;
+    // (the Simple view leaves out a piece the set wears itself: the grid already shows it; GearSwap's or a forced one stays)
+    if (setsSimple() && !forced && !eff.from[slot]) continue;
     out.push({label: names[slot]!, name: p.name, note: forced ? t('forcedTag') : t(eff.from[slot] ? 'byGearSwap' : 'bySet'),
       noteTitle: forced ? '' : t(eff.from[slot] ? 'ttByGs' : 'ttBySet'), unforce: forced ? slot : null, backLabel: back});
   }

@@ -45,9 +45,12 @@ export interface CardView {
   // the pane's head band: "Set · Idle" (its family)
   pane: string;
   // the weapons' menus folded in one line (data-fold="wfold"): what they hold now, open or not
-  weapons: {line: string; label: string; open: boolean; parts: Array<{cap: string; val: string}>; change: string};
+  weapons: {line: string; label: string; open: boolean; parts: Array<{cap: string; val: string; iconHtml: string}>; change: string};
   // the set as its file writes it, beside the equipment (setLuaOf)
   lua: SetLua;
+  // the Simple view (sets_simple.js): the pieces' names beside the equipment, the code folded behind codeLabel, each
+  // note on one line (its whole text in noteTip)
+  simple: boolean; codeLabel: string; noteTip: string;
 }
 // The set as GearSwap's file writes it: its head (built on another set or not), one line a slot of its own (the tried
 // pieces in, marked), its tail; a value too long for the line keeps its whole text in `full`
@@ -57,7 +60,9 @@ export type CardOrPage = CardView | {k: 'page'; view: OptPageView};
 const st = (): LegacyAny => S;
 const TIERS3 = ['Group', 'Solo', 'Trust'];
 
-export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string}; prev: null | {label: string; title: string} }
+export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string}; prev: null | {label: string; title: string};
+  // the Simple / Detailed view switch, in the set's menu (sets_simple.js data-setsview-set)
+  view: {to: string; label: string; title: string} }
 export interface TitleView extends TitleActs { kicker: string; name: string; version: string; tag: string; when: string; facts: string[]; factsTip: string; path: string; pathTip: string }
 
 // Undoing the optimizer's last run (events.js data-tryprev: the trial it found replaced by the one before it), in the
@@ -199,7 +204,9 @@ function weaponLineOf(ctl: CardView['ctl']): CardView['weapons'] {
     .concat(ctl.results.map(r => ({cap: r.label, val: r.name}))).filter((x, i, all) => x.val && all.findIndex(y => y.val === x.val) === i);
   // (Combat Mode On: an action's set wears the hands held, said under the weapons: weapons.js combatLocked)
   const locked = combatLocked() ? [{cap: t('wLockedTip'), val: t('wLocked')}] : [];
-  return {line: [...new Set(parts.map(x => x.val))].join(' · '), label: t('wLine'), open: !!st().boxOpen.wfold, parts: parts.concat(locked), change: t('wChange')};
+  // (the Simple view shows a weapon as its icon, its name on hover: sets_simple.js simpleIcon)
+  const simple = setsSimple(), withIcon = (x: {cap: string; val: string}) => ({...x, iconHtml: simple ? simpleIcon(x.val) : ''});
+  return {line: [...new Set(parts.map(x => x.val))].join(' · '), label: t('wLine'), open: !!st().boxOpen.wfold, parts: parts.concat(locked).map(withIcon), change: t('wChange')};
 }
 
 // The set as its file writes it (the trial's pieces in, as "Copy as Lua" gives them: trial.js trialLua): built on its
@@ -253,9 +260,16 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   for (const slot of SLOTS) { const h = holdState(slot, eff.pieces[slot]); if (h && !holds[h]!.includes(eff.pieces[slot].name)) holds[h]!.push(eff.pieces[slot].name); }
   // at the Porter Moogle: which slip, to take it out
   const slipOf = (n: string) => [...new Set(Object.values(ownedOf()).flat().filter((x: LegacyAny) => x.name === n).flatMap((x: LegacyAny) => x.where || []))].map((w: LegacyAny) => w.replace(/^Slip/, 'slip')).join(', ');
-  if (holds.porter!.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter!.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
-  if (holds.missing!.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing!.join(', '))})}</span>`);
-  if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
+  const simple = setsSimple();
+  if (simple) {
+    if (holds.porter!.length) foot.push(simpleHoldHtml('holdporter', 'ssPorter', holds.porter!.map(n => n + ' (' + slipOf(n) + ')')));
+    if (holds.missing!.length) foot.push(simpleHoldHtml('holdmiss', 'ssMissing', holds.missing!));
+    if (holds.short!.length) foot.push(simpleHoldHtml('holdshort', 'ssShort', holds.short!));
+  } else {
+    if (holds.porter!.length) foot.push(`<span class="holdporter">${t('holdPorter', {l: esc(holds.porter!.map(n => n + ' (' + slipOf(n) + ')').join(', '))})}</span>`);
+    if (holds.missing!.length) foot.push(`<span class="holdmiss">${t('holdMissing', {l: esc(holds.missing!.join(', '))})}</span>`);
+    if (holds.short!.length) foot.push(`<span class="holdshort">${t('holdShort', {l: esc(holds.short!.join(', '))})}</span>`);
+  }
   // a piece that gives the set its effect, missing while you own it (catalog `key`, add_set.js keyMissing)
   for (const k of keyMissing(s.path, eff.pieces))
     foot.push(`<span class="keymiss">${t('keyMissing', {p: esc(k.names[0]), e: esc(k.effect),
@@ -271,7 +285,8 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   // column switches)
   const opt = optable && optPageOpen(s) ? optPageView(s, statOnly ? null : wsName) : null;
   // its actions on the title line: the optimizer, then deleting it
-  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s), prev: prevOf(s)};
+  const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s), prev: prevOf(s),
+    view: {to: simple ? 'full' : 'simple', label: t(simple ? 'ssToFull' : 'ssToSimple'), title: t('ssViewTip')}};
   // a job ability's set on sets.precast.JA that no piece of the game can boost: nothing to optimize here, the gear it
   // wears is sets.precast.JA's (stat_opt.js jaOverlayBase, jaBoostable)
   if (acts.opt && jaOverlayBase(s) && !jaBoostable(s)) {
@@ -292,7 +307,10 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
     base: locked && !ws ? baseNote(s) : ''};
   // goals and limits only on a set the optimizer takes: a base others are built from (sets.Cure) is never worn alone,
   // its figures would be judged against limits it is never held to
-  const trial = trialBarView(s), equip = equipOf(), chips = ws || !optable ? null : chipsOf(s), wantsHtml = chips ? '' : ui2Wants(s);
+  const trial = trialBarView(s), equip = equipOf(), chips = ws || !optable ? null : chipsOf(s);
+  // what the set is after, on one line in the Simple view (its whole text as the tooltip)
+  const wants = chips ? '' : wantsLine(s), wantsHtml = chips ? '' : !simple ? ui2Wants(s) : wants ? `<p class="ui2wants small one" title="${esc(plainText(wants))}">${wants}</p>` : '';
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s)};
+  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s),
+    simple, codeLabel: t('ssCode'), noteTip: simple ? [notes.fam && !notes.fam.none ? plainText(notes.fam.textHtml) : '', notes.base].filter(Boolean).join(' · ') : ''};
 }

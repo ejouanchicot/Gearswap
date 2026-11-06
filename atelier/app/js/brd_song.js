@@ -75,17 +75,19 @@ function songVec(r, name){
 // Ballad "No Effect"; the top of each range kept. They are combined skills (Singing + instrument): BG Wiki does not
 // name the skill, but one skill cannot reach 874 (459 at ML50, the +13 gift and the gear's ~140)
 const SONG_FAMILY = {
-  minuet: {spell: 'Minuet V', skill: 874}, march: {spell: 'Victory March', skill: 600},
+  minuet: {spell: 'Minuet V', name: 'Valor Minuet V', skill: 874}, march: {spell: 'Victory March', skill: 600},
   madrigal: {spell: 'Blade Madrigal', skill: 850}, ballad: {spell: "Mage's Ballad III", skill: 0},
   paeon: {spell: "Army's Paeon VI", skill: 778}, minne: {spell: "Knight's Minne V", skill: 850},
   mambo: {spell: 'Dragonfoe Mambo'}, etude: {spell: 'Herculean Etude', skill: 450}, carol: {spell: 'Fire Carol'},
-  prelude: {spell: "Archer's Prelude"}, aria: {spell: 'Aria of Passion'}, dirge: {spell: "Adventurer's Dirge"}, scherzo: {spell: "Sentinel's Scherzo", cap: 8, skill: 800},
+  prelude: {spell: "Archer's Prelude"}, aria: {spell: 'Aria of Passion'}, dirge: {spell: "Adventurer's Dirge", cap: null}, scherzo: {spell: "Sentinel's Scherzo", cap: 8, skill: 800},
   // Threnody II: "every Threnody +1 ... gives an additional -5 Magic Evasion" from 160 (Category:Threnody); Lullaby II
   // (Foe and Horde): "Sleep effect duration is 60 seconds before Lullaby-enhancing gear", 114 s at +9, "The maximum
   // Lullaby bonus available from equipment is +9" (BG Wiki Foe_Lullaby_II, Horde_Lullaby_II, Category:Lullaby)
   threnody: {spell: 'Threnody II', cap: 9, pot: {meva: [160, 5]}, debuff: true},
   lullaby: {spell: 'Foe Lullaby II', cap: 9, base: 60, debuff: true}};
 const SONG_HONOR = {spell: 'Honor March', cap: 4, skill: 900};
+// A song whose potency does not grow with Song+ (Adventurer's Dirge: SONGS lim 0) has no cap of its own (cap: null):
+// "All Songs" gear still lengthens it, "by 10% per +1" (BG Wiki Category:Nocturne, the same kind of song)
 // The debuff songs judged on landing (no Song+ figure of their own here); the songs sung to fill a slot, to be
 // overwritten soon: the shortest one wanted (the player, 2026-11-05: "a set for the songs with the shortest duration,
 // to replace them"), a party buff's 120 s base
@@ -127,7 +129,8 @@ function songBase(s){
   const c = measuredChar() || {}, bare = songSkillsBare(c), row = g.spell && typeof SONGS === 'object' ? SONGS[g.spell] : null;
   const potRow = g.pot || (row ? Object.fromEntries(Object.entries(row).filter(([k]) => k !== 'lim')) : {});
   const [stat, pot] = Object.entries(potRow)[0] || [null, null];
-  return {songKind: g.kind, songFam: g.fam, songSpell: g.spell || null, songCap: g.cap != null ? g.cap : row ? row.lim : null,
+  return {songKind: g.kind, songFam: g.fam, songSpell: g.spell || null, songCap: 'cap' in g ? g.cap : row ? row.lim : null, songName: g.name || g.spell || null,
+    songPots: Object.entries(potRow),
     songPotStat: stat, songPot: pot, songDurBase: g.kind === 'buff' || g.kind === 'dummy' ? 120 : g.base || 0, songSkillCap: g.skill != null ? g.skill : null,
     songGift: (c.jp_spent || 0) >= 1200 ? 5 : 0,
     songSing: bare.sing, songWind: bare.wind, songString: bare.string};
@@ -157,13 +160,13 @@ function songFloor(s){
   return g && g.kind === 'buff' && g.skill ? {min: {songSkill: g.skill}} : null;
 }
 // What a song set shows and can be after
-const songRelevant = () => ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc', 'macc', 'pdtRed', 'mdtRed', 'hp'];
+const songRelevant = () => ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc', 'pdtRed', 'mdtRed', 'hp'];
 
 Object.assign(T.fr, {statGrp_song: 'Chants',
   statObj_songPlus: 'Song+ (plafonné)', statD_songPlus: 'All songs + le bonus de la famille du set (« Minuet »+1…), jusqu’au plafond de la famille (Minuet, March, Ballad, Scherzo +8, Honor March +4, Madrigal, Minne, Etude… +9 : BG Wiki) ; au-delà, une pièce ne donne plus rien',
   statObj_songPot: 'Puissance du chant', statD_songPot: 'la table de BG Wiki (SongPotency) au Song+ du set, skill au plafond ; mérites et job points du Minuet comptés (5/5, 20/20)',
   statObj_songDurPct: 'Durée du chant (%)', statD_songDurPct: 'durée des pièces + 10 % par Song+ + 5 % du gift (1200 points de job) ; additionnés (BG Wiki Category:Song)',
-  statObj_songTime: 'Durée du chant', statD_songTime: '120 s × (1 + durée %) pour un buff, 30 s pour Foe Lullaby ; × 2 sous Troubadour ; sans les job points de Clarion Call, Tenuto, Marcato',
+  statObj_songTime: 'Durée du chant', statD_songTime: '120 s × (1 + durée %) pour un buff, 60 s pour Foe et Horde Lullaby II ; × 2 sous Troubadour ; sans les job points de Clarion Call, Tenuto, Marcato',
   statObj_songTimeShort: 'Durée la plus courte', statD_songTimeShort: 'un chant de remplissage (DummySong) : le plus court possible, pour qu’il soit vite remplacé',
   statObj_songSkill: 'Skill de chant', statD_songSkill: 'Singing + le skill de l’instrument porté (Wind pour un cor, String pour une harpe) : tes skills sans gear + ceux des pièces',
   statObj_songAcc: 'Précision des chants', statD_songAcc: 'CHR + skill de chant + précision magique, chacun compté une fois : BG Wiki dit seulement que la réussite monte avec la CHR et le skill (supposé)'});
@@ -171,7 +174,67 @@ Object.assign(T.en, {statGrp_song: 'Songs',
   statObj_songPlus: 'Song+ (capped)', statD_songPlus: 'All songs + the set’s family bonus (“Minuet”+1…), up to the family’s cap (Minuet, March, Ballad, Scherzo +8, Honor March +4, Madrigal, Minne, Etude… +9: BG Wiki); past it, a piece gives nothing',
   statObj_songPot: 'Song potency', statD_songPot: 'BG Wiki’s table (SongPotency) at the set’s Song+, skill at its cap; Minuet merits and job points counted (5/5, 20/20)',
   statObj_songDurPct: 'Song duration (%)', statD_songDurPct: 'the pieces’ duration + 10 % a Song+ + the 5 % gift (1200 job points); added up (BG Wiki Category:Song)',
-  statObj_songTime: 'Song duration', statD_songTime: '120 s × (1 + duration %) for a buff, 30 s for Foe Lullaby; × 2 under Troubadour; without Clarion Call, Tenuto, Marcato job points',
+  statObj_songTime: 'Song duration', statD_songTime: '120 s × (1 + duration %) for a buff, 60 s for Foe and Horde Lullaby II; × 2 under Troubadour; without Clarion Call, Tenuto, Marcato job points',
   statObj_songTimeShort: 'Shortest duration', statD_songTimeShort: 'a filler song (DummySong): as short as it can be, so it is soon replaced',
   statObj_songSkill: 'Song skill', statD_songSkill: 'Singing + the worn instrument’s skill (Wind for a horn, String for a harp): your skills without gear + the pieces’',
   statObj_songAcc: 'Song accuracy', statD_songAcc: 'CHR + song skill + magic accuracy, each counted once: BG Wiki only says landing grows with CHR and skill (assumed)'});
+
+/* ---- the line under a song set's objectives (atelier/src/screens/optimizer/statpage.ts) ---- */
+// What a song's potency is called, as the game names the stat (buffs.js SONGS' keys)
+const SONG_STAT_FR = {enmity: 'Enmity', atk: 'Attaque', acc: 'Précision', mhaste: 'Haste magique', refresh: 'Refresh (MP/tick)', regen: 'Regen (HP/tick)',
+  def: 'DEF', eva: 'Évasion', racc: 'Préc. à distance', str: 'STR', dex: 'DEX', vit: 'VIT', agi: 'AGI', int: 'INT', mnd: 'MND', chr: 'CHR',
+  scherzo: 'Scherzo', pdl: 'PDL', meva: 'Éva. magique de la cible −', res_fire: 'Résist. feu', res_ice: 'Résist. glace',
+  res_wind: 'Résist. vent', res_earth: 'Résist. terre', res_lightning: 'Résist. foudre', res_water: 'Résist. eau', res_light: 'Résist. lumière', res_dark: 'Résist. ténèbres'};
+const SONG_STAT_EN = {enmity: 'Enmity', atk: 'Attack', acc: 'Accuracy', mhaste: 'Magic Haste', refresh: 'Refresh (MP/tick)', regen: 'Regen (HP/tick)',
+  def: 'DEF', eva: 'Evasion', racc: 'Ranged Acc.', str: 'STR', dex: 'DEX', vit: 'VIT', agi: 'AGI', int: 'INT', mnd: 'MND', chr: 'CHR',
+  scherzo: 'Scherzo', pdl: 'PDL', meva: 'target’s Magic Evasion −', res_fire: 'Fire resist.', res_ice: 'Ice resist.',
+  res_wind: 'Wind resist.', res_earth: 'Earth resist.', res_lightning: 'Lightning resist.', res_water: 'Water resist.', res_light: 'Light resist.', res_dark: 'Dark resist.'};
+// the songs' stats counted in %
+const SONG_PCT = new Set(['mhaste', 'scherzo', 'pdl']);
+// The song set's line: the song and its potency, how long it lasts (and under Troubadour), Song+ against its cap and
+// what passes it, the skill when under the song's cap (line); what is counted and what is not (more: the Simple view
+// shows it as the line's tooltip, sets_simple.js). Null on a set that is no song's
+function songNoteParts(s){
+  const g = songOf(s);
+  if (!g) return null;
+  const f = statFigures(s), b = songBase(s) || {}, fr = S.lang === 'fr';
+  const num = v => (Math.round(v * 10) / 10).toLocaleString(fr ? 'fr-FR' : 'en-US');
+  const time = v => enhTimeText(v), parts = [];
+  if (g.kind === 'dummy') return {line: t('songNoteDummy', {d: time(f.songTime)}), more: ''};
+  const spell = b.songName || (g.kind === 'debuff' ? t('songNoteDebuffs') : t('songNoteAny'));
+  // every stat the song gives at the set's Song+ (Honor March: Haste, Attack and Accuracy), the game's signs and units
+  for (const [k, [base, step]] of b.songPots || []) {
+    const v = base + f.songPlus * step, name = (fr ? SONG_STAT_FR : SONG_STAT_EN)[k] || k;
+    if (!v) continue;
+    parts.push(k === 'meva' ? `${name}${num(v)}` : `${name} ${v < 0 ? '−' : '+'}${num(Math.abs(v))}${SONG_PCT.has(k) ? ' %' : ''}`);
+  }
+  if (g.kind === 'debuff') parts.push(`${t('statObj_songAcc')} ${num(f.songAcc)}`);
+  parts.push(f.songTime ? t('songNoteTime', {d: time(f.songTime), t: time(f.songTimeTroub)}) : t('songNoteDurPct', {p: num(f.songDurPct)}));
+  parts.push(b.songCap != null ? `Song+ ${f.songPlus}/${b.songCap}` : `Song+ ${f.songPlus}`);
+  let line = `${spell} : ${parts.join(' · ')}.`;
+  if (f.songLost > 0) line += ' ' + t('songNoteLost', {n: f.songLost});
+  if (b.songSkillCap && f.songSkill < b.songSkillCap) line += ' ' + t('songNoteSkill', {k: f.songSkill, c: b.songSkillCap, sp: spell});
+  // (only the Minuet's merits and job points are in its potency, buffs.js SONGS)
+  return {line, more: t(g.kind !== 'buff' ? 'songNoteLeftDebuff' : g.fam === 'minuet' ? 'songNoteLeft' : 'songNoteLeftAny')};
+}
+/** The song set's whole line (statpage.ts) */
+function songNote(s){
+  const p = songNoteParts(s);
+  return !p ? '' : p.more ? p.line + ' ' + p.more : p.line;
+}
+Object.assign(T.fr, {songNoteAny: 'Tout chant sans set à lui', songNoteDebuffs: 'Les chants d’affaiblissement sans set à eux',
+  songNoteTime: '{d} ({t} sous Troubadour)', songNoteDurPct: 'durée +{p} %',
+  songNoteDummy: 'Chant de remplissage : {d}, le plus court possible pour être vite remplacé. L’instrument reste celui du set (GearSwap le met).',
+  songNoteLost: '{n} Song+ perdus au-delà du plafond : une pièce de moins ferait pareil.',
+  songNoteSkill: 'Skill de chant {k} / {c} pour {sp} : sous le plafond, la puissance réelle est plus basse (BG Wiki ne donne pas de formule).',
+  songNoteLeft: 'Mérites et job points du Minuet comptés (5/5, 20/20), le gift de durée aussi ; pas Soul Voice, Marcato, ni les job points de Clarion Call, Marcato, Tenuto. L’instrument reste celui du set.',
+  songNoteLeftAny: 'Le gift de durée compté ; pas Soul Voice, Marcato, ni les job points de Clarion Call, Marcato, Tenuto. L’instrument reste celui du set.',
+  songNoteLeftDebuff: 'Pas de taux de réussite : BG Wiki ne donne pas de formule, la précision des chants additionne CHR, skill et précision magique (supposé). L’instrument reste celui du set.'});
+Object.assign(T.en, {songNoteAny: 'Any song with no set of its own', songNoteDebuffs: 'The debuff songs with no set of their own',
+  songNoteTime: '{d} ({t} under Troubadour)', songNoteDurPct: 'duration +{p} %',
+  songNoteDummy: 'Filler song: {d}, as short as can be, so it is soon replaced. The instrument stays the set’s (GearSwap lays it).',
+  songNoteLost: '{n} Song+ lost past the cap: one piece fewer would do the same.',
+  songNoteSkill: 'Song skill {k} / {c} for {sp}: under the cap, the real potency is lower (BG Wiki gives no formula).',
+  songNoteLeft: 'Minuet merits and job points counted (5/5, 20/20), the duration gift too; not Soul Voice, Marcato, nor Clarion Call, Marcato, Tenuto job points. The instrument stays the set’s.',
+  songNoteLeftAny: 'The duration gift counted; not Soul Voice, Marcato, nor Clarion Call, Marcato, Tenuto job points. The instrument stays the set’s.',
+  songNoteLeftDebuff: 'No landing rate: BG Wiki gives no formula, song accuracy adds CHR, skill and magic accuracy (assumed). The instrument stays the set’s.'});

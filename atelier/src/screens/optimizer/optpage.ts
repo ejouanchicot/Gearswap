@@ -41,6 +41,9 @@ export interface OptPageView {
   tabs: Array<{id: string; label: string; sub: string; on: number; tip: string}>;
   // the search's settings unfolded (data-fold="optset"), read at each redraw of the page
   settingsOpen: boolean;
+  // the Simple view (sets_simple.js): a stats set's result only once a search tried pieces (before, the card's tiles
+  // say the same), the buttons after the two searches as links
+  simple: boolean;
   noEngine: string | null;
   statWhat: StatWhatView | null;
   statResult: StatResultView | null;
@@ -228,11 +231,12 @@ function roundCalc(x: LegacyAny, real: LegacyAny): RoundCalc {
 export function optPageView(s: LegacyAny, ws: unknown): OptPageView {
   const kind = ws ? 'ws' : isNukeSet(s.path) ? 'nuke' : isJumpSet(s.path) ? 'jump' : roundSet(s) ? 'eng' : 'stat';
   const act = ws ? 'optws' : kind === 'nuke' ? 'optnuke' : kind === 'stat' ? 'optstat' : 'opteng', b = buffState();
+  const simple = setsSimple(), more = simple ? 'linkbtn opgolink' : 'btn ghost';
   const goHtml = st()._optBusy ? `<span class="optprog">${t('optStart')}</span>${searchParked() ? `<button class="btn" data-orshow>${t('orShow')}</button>` : ''}<button class="btn ghost" data-optstop>${t('optStop')}</button>`
-    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="btn ghost" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
-      (ws ? `<button class="btn ghost" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
+    : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="${more}" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
+      (ws ? `<button class="${more}" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = {backTitle: t('ttOptBack'), back: t('optBack'), title: t('optPageTitle'), set: shortPath(s.path), ctx: `${buffTier()} · ${enemyKey(b.enemy)}`, goHtml};
-  const out: OptPageView = {head, settings: t('optSettings'), tab: '', tabs: [], settingsOpen: !!(S as LegacyAny).boxOpen.optset, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
+  const out: OptPageView = {head, settings: t('optSettings'), tab: '', tabs: [], settingsOpen: !!(S as LegacyAny).boxOpen.optset, simple, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
   if (!engineReady()) return {...out, noEngine: noEngineText()};
   // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
   // (beside the set, the column's result keeps the useful lines: card.ts opt)

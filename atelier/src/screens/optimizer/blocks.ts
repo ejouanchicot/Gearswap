@@ -9,7 +9,8 @@
 // @author  ejouanchicot
 
 export interface LimitTile { attr: Record<string, string>; name: string; sign: string; value: string; tip: string }
-export interface LimitsView { title: string; titleTip: string; many: boolean; tiles: LimitTile[] }
+// more: in the Simple view (sets_simple.js), the link that shows or folds the limits left at 0 (data-limopen)
+export interface LimitsView { title: string; titleTip: string; many: boolean; tiles: LimitTile[]; more: null | {label: string} }
 export interface ChangesView { title: string; rows: Array<{slot: string; from: string; to: string}> }
 
 /** A limit as a tile: its name above, its sign and its value below ("DT+PDT ≤" gives DT+PDT, then ≤ and the number);
@@ -19,10 +20,17 @@ export function limitTile(attr: string, key: string, label: string, value: Legac
   const tip = attr === 'data-optopt' && (T as LegacyAny)[(S as LegacyAny).lang]['ttLim_' + key] ? t('ttLim_' + key) : t('ttLim');
   return {attr: {[attr]: key}, name, sign: m ? m[2]! : '', value: value == null ? '' : String(value), tip};
 }
-/** The limits block; more than four tiles (the stats optimizer's minimums) go two across */
+/** The limits block; more than four tiles (the stats optimizer's minimums) go two across. In the Simple view only the
+ * limits given a value show (0 = none), the others one click away, and the two HP ones say min and max */
 export function limitsView(title: string, tiles: Array<LimitTile | null>, titleTip = ''): LimitsView {
-  const shown = tiles.filter((x): x is LimitTile => !!x);
-  return {title, titleTip, many: shown.length > 4, tiles: shown};
+  let shown = tiles.filter((x): x is LimitTile => !!x), more: LimitsView['more'] = null;
+  if (setsSimple()) {
+    const unset = (x: LimitTile) => !+x.value, n = shown.filter(unset).length;
+    if (n && !(S as LegacyAny)._limOpen) shown = shown.filter(x => !unset(x));
+    if (n) more = {label: (S as LegacyAny)._limOpen ? t('ssLimFold') + ' ▾' : t(shown.length ? 'ssLimMore' : 'ssLimNone', {n}) + ' ▸'};
+    shown = shown.map(x => x.name === 'HP' && x.sign ? {...x, name: t(x.sign === '≥' ? 'ssHpMin' : 'ssHpMax'), sign: ''} : x);
+  }
+  return {title, titleTip, many: shown.length > 4, tiles: shown, more};
 }
 /** The pieces the try changes: the slot, your piece, the try's; null when it changes none */
 export function changesView(s: LegacyAny): ChangesView | null {

@@ -20,7 +20,9 @@ export interface WsTp {
 }
 /** A set for weaponskills in general: the weaponskill it is worked out on, and the others it can be */
 export interface WsGeneric { line: WsLine; key: string; options: WsOption[] }
-export interface WsHeadView { generic: WsGeneric | null; weapon: WsWeapon | null; tp: WsTp }
+/** The Simple view's weapons (sets_simple.js): one folded line of icons, the menus under it once opened (data-fold="wfold") */
+export interface WsFold { label: string; open: boolean; change: string; parts: Array<{cap: string; val: string; iconHtml: string}> }
+export interface WsHeadView { generic: WsGeneric | null; weapon: WsWeapon | null; tp: WsTp; fold: WsFold | null }
 
 const S0 = (): LegacyAny => S;
 // a line of the head: its label, its ⓘ and its explanation, open under it on a click
@@ -85,6 +87,15 @@ function genericOf(s: LegacyAny): WsGeneric | null {
 
 /** The head of a weaponskill set (wsHeadHTML); a set for weaponskills in general holds the weapon mode's weapon */
 export function wsHeadView(s: LegacyAny): WsHeadView {
-  const generic = genericOf(s);
-  return {generic, weapon: generic ? null : weaponOf(s), tp: tpOf(s)};
+  const generic = genericOf(s), weapon = generic ? null : weaponOf(s);
+  return {generic, weapon, tp: tpOf(s), fold: weapon && setsSimple() ? foldOf(s, weapon) : null};
+}
+
+// the weapons as icons in the Simple view: a stance's menus as they hold now, else the weapons the set is worked out with
+function foldOf(s: LegacyAny, w: WsWeapon): WsFold {
+  const pick = (m: WeaponMenu) => ((m.options.find(o => o.selected) || {label: ''}).label || '').replace(/^Auto\s*·\s*/, '');
+  const pieces = withWeapons(s).pieces, held = (k: string) => pieces[k] && !isEmpty(pieces[k]) ? pieces[k].name : '';
+  const raw = w.k === 'menus' ? w.menus.map(m => ({cap: m.name, val: pick(m)})) : [{cap: 'Main', val: held('main')}, {cap: 'Sub', val: held('sub')}];
+  const parts = raw.filter((x, i, all) => x.val && all.findIndex(y => y.val === x.val) === i).map(x => ({...x, iconHtml: simpleIcon(x.val)}));
+  return {label: t('wLine'), open: !!S0().boxOpen.wfold, change: t('wChange'), parts};
 }

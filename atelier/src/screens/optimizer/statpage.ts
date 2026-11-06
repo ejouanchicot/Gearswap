@@ -17,7 +17,7 @@ export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; value: string; none: {value: string; label: string; selected: boolean}; groups: Array<{label: string; options: Array<{value: string; label: string; selected: boolean}>}>}>};
-  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
+  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; noteTips: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
   // the objectives' list folded in the column beside the set (StatPage compact): open or not, its link's two texts
   objsOpen: boolean; objsShow: string; objsHide: string;
 }
@@ -55,13 +55,16 @@ function thenSelect(i: number, objs: string[], cur: string, shown: Set<string>) 
 export function statWhatView(s: LegacyAny): StatWhatView {
   const S0 = S as LegacyAny, o = S0.optOpts || {}, so = statOpts(s), cur = so.objs[0];
   // the objectives by kind, only the ones that mean something for this set (statRelevant) unless all are asked for
-  const all = !!o.statAll, shown: Set<string> = all ? new Set(STAT_OBJS) : statRelevant(s, so.objs);
+  // (a luopan's objectives only on a GEO, a pet's on a job with a pet: stat_opt.js statJobOk)
+  const all = !!o.statAll, every = STAT_OBJS.filter(statJobOk), shown: Set<string> = all ? new Set(every) : new Set([...statRelevant(s, so.objs)].filter(statJobOk));
   const groups = STAT_OBJ_GROUPS.map(([g, keys]: [string, string[]]) => ({label: t('statGrp_' + g),
     objs: keys.filter(k => shown.has(k)).map(k => ({k, on: k === cur, name: t('statObj_' + k), desc: t('statD_' + k)}))})).filter((g: LegacyAny) => g.objs.length);
-  const hidden = STAT_OBJS.length - shown.size;
+  const hidden = every.length - shown.size;
   const num = (k: string, label: string) => limitTile('data-statfloor', k, label, so.floor[k]);
   // the floors of the stats this set is after (and any floor given a value), the others hidden with their objectives
-  const has = (k: string, obj: string) => all || shown.has(obj) || !!+so.floor[k], opt = (k: string, obj: string, label: string) => has(k, obj) ? num(k, label) : null;
+  // (a Bard's song set: only its own minimums, even with every objective shown: a luopan's or a pet's mean nothing there)
+  const song = !!songOf(s), mine: Set<string> = song ? statRelevant(s, so.objs) : shown;
+  const has = (k: string, obj: string) => statJobOk(obj) && ((all && !song) || mine.has(obj) || !!+so.floor[k]), opt = (k: string, obj: string, label: string) => has(k, obj) ? num(k, label) : null;
   // the set's own settings kept from an earlier visit: one click back to the defaults (they change as the page learns)
   const kept = (o.statBy || {})[s.path];
   const reset = kept ? `<p class="muted small">${esc(t('statKept'))} <button class="linkbtn" data-statreset>${esc(t('statReset'))}</button></p>` : '';
@@ -71,11 +74,15 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     opt('sird', 'sird', t('statSird')), opt('fc', 'fc', t('statFc')), opt('ecrit', 'ecritRed', t('statEcrit')), opt('enmity', 'enmity', t('statEnm')),
     opt('phalanx', 'phalanx', t('statPhx')), opt('ceLoss', 'ceLoss', t('statCeLoss')), opt('luDt', 'luDt', t('statLuDt')), opt('petAccBase', 'petAcc', t('statPetBase'))], t('statFloorsWhy')), floorsAfterHtml =
     (S0._help === 'optpage' ? `<p class="muted small">${esc(t('statFloorsWhy'))}</p>` : '') + reset;
-  const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [];
+  const jaList = abilityPieces(s), ref = cureGap(s) ? null : hpRef(s), enh = enhContext(s), notes: string[] = [], noteTips: string[] = [];
   // Burn and the other elemental debuffs: what the figures take (ele_debuff.js)
   if (edNote(s)) notes.push(edNote(s));
   // a dark magic set: the spell, skill and INT the figures take (dark_magic.js)
   if (darkNote(s)) notes.push(darkNote(s));
+  // a Bard's song set: the song, its potency and length, Song+ against its cap, the skill under it (brd_song.js); in
+  // the Simple view what is counted goes to the line's tooltip
+  const sung = songNoteParts(s);
+  if (sung && setsSimple() && sung.more) { noteTips[notes.length] = sung.more; notes.push(sung.line + ' ⓘ'); } else if (sung) notes.push(songNote(s));
   if (ref) notes.push(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}));
   // an enhancing set: the spell and its base length, with or without Composure, and the job's bonuses counted (enh_jobs.js)
   if (enh) notes.push(t('statEnhNote', {s: enh.spell === 'enhancing' ? enh.name : enh.spell, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : enh.comp === 'self' ? 'statEnhSelf' : 'statEnhPlain')}), ...(enh.notes || []));
@@ -85,7 +92,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     then: {label: t('statThen'), selects: [1, 2].map(i => thenSelect(i, so.objs, cur, shown))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : '',
+    notes, noteTips, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : '',
     objsOpen: !!S0._optObjsOpen, objsShow: t('optObjsShow'), objsHide: t('optObjsHide')};
 }
 

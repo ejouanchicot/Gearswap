@@ -2,7 +2,7 @@
 // songObjectives; notes/docs-perso/chants-brd-2026-11-05/SPEC.md §3.3, §4.3). For each set: its default objectives,
 // then a search among the character's own pieces, the result checked against what the set is for:
 //   a family set takes its family's piece, its Song+ at the family's cap with nothing lost past it;
-//   every song set keeps its instrument (range); a filler song gets no longer, a debuff loses no song accuracy;
+//   every song set keeps its instrument (range) and its ammo slot (an instrument leaves none); a filler song gets no longer, a debuff loses no song accuracy;
 //   the instrument-only sets (sets.midcast.Songs.Gjallarhorn...) are left to GearSwap (no stats search).
 //
 //   node scripts/atelier/song_search_test.js      (PAGE_URL: the page to open; else data/atelier/index.html)
@@ -49,7 +49,7 @@ const CASES = [
       if (!s || s.path !== path) return {missing: true};
       S.optOpts = Object.assign({}, S.optOpts, {where: 'mine'}); S._optScratch = false;
       const before = statFigures(s, true);
-      const objs = statDefault(s), locked = lockedSlots(s), range0 = (withWeapons(s).pieces.range || {}).name || null;
+      const objs = statDefault(s), locked = lockedSlots(s), range0 = (withWeapons(s).pieces.range || {}).name || null, ammo0 = (withWeapons(s).pieces.ammo || {}).name || null;
       const res = window.optResult; let got = null;
       window.optResult = function (set, k, o) { got = o; return res.apply(this, arguments); };
       await window.optimizeStats(s);
@@ -58,7 +58,7 @@ const CASES = [
       const pieces = got && got.pieces || {}, f = got ? FFXI.opt.statFigures(statContext(s).stat, withVecs(pieces, s)) : null;
       closeOverlay(); render();
       const pick = k => f && {plus: f.songPlus, raw: f.songPlusRaw, lost: f.songLost, pct: f.songDurPct, time: f.songTime, acc: f.songAcc, skill: f.songSkill}[k];
-      return {objs, locked, range0, floor: (statOpts(s).floor.min || {}).songSkill || 0, range1: (pieces.range || {}).name || null, names: Object.values(pieces).map(p => p && p.name).filter(Boolean),
+      return {objs, locked, range0, ammo0, ammo1: (pieces.ammo || {}).name || null, floor: (statOpts(s).floor.min || {}).songSkill || 0, range1: (pieces.range || {}).name || null, names: Object.values(pieces).map(p => p && p.name).filter(Boolean),
         before: {plus: before.songPlus, pct: before.songDurPct, time: before.songTime, acc: before.songAcc},
         after: f && {plus: pick('plus'), raw: pick('raw'), lost: pick('lost'), pct: pick('pct'), time: pick('time'), acc: pick('acc'), skill: pick('skill')}};
     }, path);
@@ -68,6 +68,8 @@ const CASES = [
     if (!r.locked.includes('range')) { fail(`${path} range not kept`); continue; }
     if (!r.after) { fail(`${path} no result`); continue; }
     if (r.range0 !== r.range1) { fail(`${path} instrument ${r.range0} -> ${r.range1}`); continue; }
+    // an instrument leaves no room for ammo (opt.js O.blocks): the search proposed Aurgelmir Orb +1 with Gjallarhorn
+    if (r.ammo0 !== r.ammo1) { fail(`${path} ammo ${r.ammo0} -> ${r.ammo1} with an instrument on`); continue; }
     if (must && !r.names.includes(must)) { fail(`${tag}: ${must} not taken`); continue; }
     if (objs[0] === 'songPlus' && (r.after.plus < r.before.plus || r.after.lost > 0)) { fail(`${tag}: Song+ lost or past its cap`); continue; }
     // a buff song keeps its combined skill at the song's cap (brd_song.js songFloor: Honor March 900, Minuet V 874...)

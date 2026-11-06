@@ -90,9 +90,11 @@ function trialSaved(s){
 const LOCKABLE = slot => !['main', 'sub', 'range'].includes(slot);
 // (a base set, sets.Cure: the slots no set built on it wears count as locked, the optimizer leaves them as they are:
 // a piece found for them would change nothing in game. core.js baseReach)
-// (a Bard's song set keeps its instrument: GearSwap lays the Main Instrument's, or the one a song needs: brd_song.js)
+// (a Bard's song set keeps its instrument: GearSwap lays the Main Instrument's, or the one a song needs: brd_song.js;
+// and its ammo slot as it is, an instrument leaving no room for ammo: opt.js O.blocks. The search proposed Aurgelmir
+// Orb +1 with Gjallarhorn on, 2026-11-05)
 const lockedSlots = s => { let own = Object.keys((S.locks || {})[trialKey(s)] || {}).filter(LOCKABLE);
-  if (typeof songOf === 'function' && songOf(s) && !own.includes('range')) own = own.concat('range');
+  if (typeof songOf === 'function' && songOf(s)) own = [...new Set(own.concat('range', 'ammo'))];
   if (!baseOnly(s)) return own;
   const reached = new Set(baseReach(s).flatMap(r => r.slots));
   return [...new Set(own.concat(SLOTS.filter(x => LOCKABLE(x) && !reached.has(x))))]; };

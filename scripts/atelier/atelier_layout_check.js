@@ -2,7 +2,8 @@
 // Chrome at several widths, every character / job, the sections and the main windows, and each place where a text or
 // a block goes past its box: a box whose content is wider than it (and that does not scroll or end in "…"), a block
 // that spills out of its parent, the page scrolling sideways.
-//   node scripts/atelier/atelier_layout_check.js [--widths 1920,1280,390] [--char Tetsouo] [--shots DIR]
+//   node scripts/atelier/atelier_layout_check.js [--widths 1920,1280,390] [--char Tetsouo] [--shots DIR] [--simple]
+// --simple: the Sets page in its Simple view (sets_simple.js, a choice of the Settings)
 // Same needs as atelier_test.js (Puppeteer, Chrome). The game is never asked: the page's fetch is stubbed.
 // Prints each problem once (where it is, its text, the widths and views it was seen in), most frequent first.
 //
@@ -15,7 +16,7 @@ const CHROME = require(path.join(__dirname, 'lib/browser.js')).CHROME;
 const PAGE = process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../atelier/index.html').split(path.sep).join('/');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const WIDTHS = arg('--widths', '1920,1440,1280,1024,768,390').split(',').map(Number);
-const ONLY_CHAR = arg('--char', null), SHOTS = arg('--shots', null);
+const ONLY_CHAR = arg('--char', null), SHOTS = arg('--shots', null), SIMPLE = process.argv.includes('--simple');
 
 // in the page: every visible element of the regions given whose content goes past its box
 function scan(view, regions){
@@ -68,7 +69,7 @@ function scan(view, regions){
   const browser = await puppeteer.launch({executablePath: CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); } catch (e) {} });
+  await page.evaluateOnNewDocument(simple => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); if (simple) localStorage.setItem('atelier', JSON.stringify({setsView: 'simple'})); } catch (e) {} }, SIMPLE);
   await page.goto(PAGE, {waitUntil: 'load'});
   // the built page (atelier/src/) loads the old page's scripts after the document: drawn once its bridge says so
   await page.waitForFunction(() => window.__atelier && window.__atelier.loaded, {timeout: 60000});

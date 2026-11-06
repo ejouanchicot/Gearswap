@@ -84,6 +84,36 @@ const CASES = [
     if (!ok) bad++;
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${r.path} -> ${kind}${want != null && !ok ? ' (want ' + want + ')' : ''}${r.f ? ' ' + JSON.stringify(r.f) : ''}`);
   }
+  // the line under the objectives (brd_song.js songNote): the game's song names, every stat of the song, no Song+
+  // lost on a song whose potency does not grow (Adventurer's Dirge: All songs still lengthens it)
+  const notes = await page.evaluate(() => { S.lang = 'fr'; S.char = 'Tetsouo'; S.job = 'BRD'; render();
+    return Object.fromEntries(data().sets.filter(s => songOf(s)).map(s => [s.path, songNote(s)])); });
+  for (const [p, want, not] of [['sets.midcast.Minuet', 'Valor Minuet V : Attaque +248', null],
+    ['sets.midcast.HonorMarch', 'Honor March : Haste magique +17 % · Attaque +232 · Précision +58', null],
+    ['sets.midcast.Dirge', 'Enmity −32', 'perdus'], ['sets.midcast.Lullaby', 'Foe Lullaby II', null]]) {
+    const n = notes[p] || '', ok = n.includes(want) && !(not && n.includes(not));
+    if (!ok) bad++;
+    console.log(`${ok ? 'ok  ' : 'FAIL'} note ${p}${ok ? '' : ': ' + n}`);
+  }
+  // the result's lines on a song set: the song's and the damage taken only, every objective shown or not (the
+  // player, 2026-11-05: "Soin du Cure etc on s'en fiche complètement")
+  const lines = await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'BRD'; render();
+    const s = data().sets.find(x => x.path === 'sets.midcast.Minuet');
+    return statRows(s).map(r => r.id); });
+  const allowed = new Set(['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc', 'pdtRed', 'mdtRed', 'hp', 'pdt', 'mdt']);
+  const extra = lines.filter(k => !allowed.has(k));
+  if (extra.length) { bad++; console.log('FAIL Minuet result lines not about the song: ' + extra.join(', ')); } else console.log('ok   Minuet result lines: ' + lines.join(', '));
+  // a luopan's lines only on a GEO, a pet's on a job with a pet, Charm's on a BST, the songs' on a BRD (stat_opt.js
+  // statJobOk: the player, 2026-11-05)
+  const byJob = await page.evaluate(() => Object.fromEntries(['BRD', 'WAR', 'GEO', 'BST'].map(j => { S.char = 'Tetsouo'; S.job = j; render();
+    const s = data().sets.find(x => statSet(x) && family(x.path, x.pieces) === 'idle');
+    return [j, s ? statRows(s).map(r => r.id) : []]; })));
+  const JOB_LINES = {BRD: [/^lu|^geo/, /^pet|^charm|^chr$|^macc$/], WAR: [/^lu|^geo/, /^pet|^charm|^chr$|^macc$/, /^song/],
+    GEO: [/^pet|^charm|^chr$|^macc$/, /^song/], BST: [/^lu|^geo/, /^song/]};
+  for (const [j, res] of Object.entries(JOB_LINES)) {
+    const wrong = byJob[j].filter(k => res.some(re => re.test(k)));
+    if (wrong.length) { bad++; console.log(`FAIL ${j} idle shows ${wrong.join(', ')}`); } else console.log(`ok   ${j} idle: no line of another job's`);
+  }
   const b0 = (rows.find(r => r.b) || {}).b;
   console.log('Tetsouo without gear:', JSON.stringify(b0));
   // the export's 473 Singing and Wind count Gjallarhorn's +25, worn when it was taken: 448 each without gear

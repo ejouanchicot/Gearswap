@@ -84,8 +84,11 @@ list lives in `BRD_TP_CONFIG.lua`; how it works: [TP bonus gear](../../features/
 |---|---|
 | `sets.precast.FC['Song name']` | That song: `sets.precast.FC['Honor March']` |
 | `sets.precast.FC.<Family>` | Its family, as the game library groups songs: `sets.precast.FC.Lullaby`, `.Minuet`, `.March`, `.Madrigal`, `.Etude`, `.Carol`, `.Threnody`, `.Elegy`, `.Requiem`, `.Ballad`, `.Paeon`, `.Minne`, `.Mambo`, `.Prelude`, `.Mazurka` |
-| `sets.precast.FC.Singing` or `sets.precast.FC.BardSong` | Any song (Singing is checked first) |
+| `sets.precast.FC.Singing` or `sets.precast.FC.BardSong` | Any song (Singing is checked first). The provided file has `BardSong`: its "Song spellcasting time" pieces add to Fast Cast, 80 % in all |
 | `sets.precast.FC` | None of the above exists |
+
+Other spells: `sets.precast.FC.Cure` (and `Curaga`, the same set) for your Cures from /WHM or
+/RDM, else `sets.precast.FC`, the general Fast Cast.
 
 Honor March and Aria of Passion get their instrument (Marsyas / Loughnashade) put in
 `range` by the job at this moment. If the Fast Cast set you wear for them has a
@@ -234,7 +237,6 @@ Magic']` as an empty set and none of the other three.
 | `sets.midcast.Songs.Loughnashade` | Added on top of Aria of Passion |
 | `sets.midcast.Songs.Duration` | Duration gear on every song under Troubadour |
 | `sets.midcast.Prelude`, `.Mazurka`, `.Hymnus`, `.Sirvente`... | Families with no set of their own (they use `BardSong`) |
-| `sets.precast.FC.BardSong` | Fast Cast for songs only (precast reads under `sets.precast.FC`, never `sets.precast.BardSong`) |
 | `sets.precast.JA.Marcato`, `.Pianissimo`, `['Clarion Call']`, `.Tenuto` | Those abilities |
 
 Check which set a song picked: `//gs c debugmidcast`, then sing.
