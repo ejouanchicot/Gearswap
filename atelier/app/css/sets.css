@@ -2331,3 +2331,27 @@
 .ophpref .ophpk{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .ophpref .ophpseg button{padding:3px 10px;font-size:12px}
 .ophpref .ophpsel{flex:1 1 160px;min-width:0;max-width:280px}
+/* the figures' "Character" tab (Figures.svelte .figall, Globals.svelte fold false: its boxes without a .globals of their
+   own): each box keeps its room inside (.figpage .boxb has none), the boxes apart, on two columns when wide enough */
+.figpage .figall{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:stretch}
+.figpage .figall > .box{margin:0}
+.figpage .figall .boxb{padding:6px 14px 10px}
+/* the figures' Summary tab: the set's own figures (Tanking, Attack, Cure) then what it is after, each under its lead */
+.setsx.ui2 .figpage .figsum .figlead{margin:0 0 4px}
+.figpage .figsum{display:flex;flex-direction:column;gap:16px}
+.figpage .figsum .figsec + .figsec{padding-top:14px;border-top:1px solid var(--line)}
+.figpage .figsum .figsec > .boxb .note-m{margin:0 0 4px}
+.figpage .figsum .figsec > .boxb + .statlist{margin-top:6px}
+/* the figures' Set stats tab (Sheet.svelte): every group of stats a box of its own, on two columns when wide enough,
+   what only applies sometimes under them, as wide as the pane */
+.figpage .figsheet .sgroups{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-top:10px}
+.figpage .figsheet .sgcol{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.figpage .figsheet .sgcol > .box{margin:0}
+.figpage .figsheet .sgroups + .sgcond{margin-top:12px}
+.figpage .figsheet .sgcond > .box{margin:0}
+.figpage .figsheet .sgroup .boxb{padding:6px 14px 10px}
+.figpage .figsheet .sgroup .boxh .meta{color:var(--muted);font-size:11px}
+/* the Character tab's two boxes side by side line for line: the same size of line in both (no big figures) */
+.setsx.ui2 .figpage .figall .statlist.big{font-size:inherit}
+.setsx.ui2 .figpage .figall .statlist.big b{font-size:inherit}
+.setsx.ui2 .figpage .figall .statlist li{padding:6px 0;line-height:1.35}

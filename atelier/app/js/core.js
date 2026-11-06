@@ -350,7 +350,7 @@ const MAGIC_KINDS = [
   ['elemental', /elemental|magicburst|magic burst|nuke|helix|impact|burst|meteor|comet|burn|frost|choke|rasp|shock|drown/i],
   ['dark', /dark|drain|aspir|absorb|stun|\bbio|death|kaustra|klimaform|tractor|endark|dread spikes/i],
   ['divine', /divine|banish|holy|flash|\benlight\b|repose/i],
-  ['song', /song|march|minuet|madrigal|ballad|minne|paeon|mambo|scherzo|lullaby|elegy|requiem|threnody|carol|etude|prelude|mazurka|nocturne|dirge|sirvente|hymnus|singing/i],
+  ['song', /song|march|minuet|madrigal|ballad|minne|paeon|mambo|scherzo|lullaby|elegy|requiem|threnody|carol|etude|prelude|mazurka|nocturne|dirge|sirvente|hymnus|singing|\baria|virelai|finale/i],
   ['geomancy', /geo|indi|geomancy/i], ['ninjutsu', /ninjutsu|utsusemi|migawari|monomi|tonko|kakka|myoshu|yurin|gekka|yain/i],
   ['summoning', /summoning|bloodpact|blood pact|avatar/i], ['enmity', /enmity|provoke|foil|crusade/i]];
 const magicKindOf = text => (MAGIC_KINDS.find(([, re]) => re.test(text)) || [])[0] || null;

@@ -13,7 +13,8 @@ export interface GlobalsView { noChar: string; youTitle: string; foldTitle: stri
 
 const st = (): LegacyAny => S;
 
-/** The figures of the set s: folded boxes and the measure's note (only 'stats'), or the three open cards ('cards') */
+/** The figures of the set s: the character's and attribute boxes and the measure's note ('stats', the figures' Character
+ *  tab: the gear's caps are in its Summary), or the three open cards ('cards', My character) */
 export function globalsView(s: LegacyAny, only: 'stats' | 'cards'): GlobalsView {
   const S0 = st();
   S0._curSet = s;
@@ -37,6 +38,6 @@ export function globalsView(s: LegacyAny, only: 'stats' | 'cards'): GlobalsView 
   const edited = Object.keys(S0.meritEdits[meritKey()] || {}).length;
   return {noChar: '', youTitle: '', foldTitle,
     boxes: [box('you', 'g-you', t('youTitle') + (edited ? ` <span class="edited">· ${t('meritsEdited', {n: edited})}</span>` : ''), main, true, vsSet ? t('vsSet') : ''),
-      box('attr', 'g-attr', t('attrTitle'), attrs), box('caps', 'g-caps', t('gearKey'), gear)],
+      box('attr', 'g-attr', t('attrTitle'), attrs)],
     noteHtml: (levels ? esc(levels) + ' · ' : '') + t('measured', {at: esc(c.at), s: esc(c.sub || '—')})};
 }

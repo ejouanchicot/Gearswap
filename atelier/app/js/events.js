@@ -177,7 +177,6 @@ document.addEventListener('click', e => {
   // the names a set is shared under, folded under it in the set list (sets_view.js)
   if (d.aliasfold) { const k = S.job + '|' + d.aliasfold; S._aliasOpen = Object.assign({}, S._aliasOpen, {[k]: !(S._aliasOpen || {})[k]}); render(); return; }
   if (d.wskill) { const k = S.job + '|' + d.wskill; S.wsList = Object.assign({}, S.wsList, {[k]: !(S.wsList || {})[k]}); render(); return; }
-  if (d.stattab) { S._statTab = d.stattab; render(); return; }
   if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
   // a tab of the set's figures (Figures.svelte): kept for the next set shown

@@ -15,7 +15,9 @@ import {sheetView, type SheetView} from './sheet';
 export interface StatRow { k: 'row'; cls: string; title: string | undefined; labelHtml: string; valueHtml: string; extraHtml: string }
 export type BoxItem = StatRow | {k: 'html'; html: string};
 // bare: only its note, no list (a nuke set the engine cannot sheet)
-export interface StatBox { key: string; cls: string; titleHtml: string; open: boolean; summary: string; count: number; noteHtml: string; items: BoxItem[]; foldTitle: string; bare?: boolean }
+export interface StatBox { key: string; cls: string; titleHtml: string; open: boolean; summary: string; count: number; noteHtml: string; items: BoxItem[]; foldTitle: string; bare?: boolean;
+  // its few lines the Summary tab shows (Figures.svelte), the whole box when absent
+  brief?: BoxItem[] }
 export interface FiguresView {
   title: string;
   boxes: StatBox[];
@@ -24,7 +26,7 @@ export interface FiguresView {
   sheet: SheetView | null;
   sheetTab: string;
   allTab: string;
-  summaryTitle: string; summaryBack: string; emptyNote: string;
+  summaryTitle: string; capsTitle: string; summaryBack: string; emptyNote: string;
   all: {open: boolean; title: string; label: string; globals: GlobalsView};
 }
 
@@ -102,7 +104,8 @@ function tankBox(r: LegacyAny): StatBox {
     const pot = phalanxPotency(skill);
     items.push(row('Phalanx', `−${pot + v('phalanx')}`, '', '', t('phalanxTip', {p: pot, s: skill, g: v('phalanx')})));
   }
-  return statBox('tank', 'g-tank', t('tankTitle'), items, '', `<p class="note-m">${t('tankNote')}</p>`);
+  // in the Summary: what is left of a physical hit, a spell and a breath
+  return {...statBox('tank', 'g-tank', t('tankTitle'), items, '', `<p class="note-m">${t('tankNote')}</p>`), brief: items.slice(0, 3)};
 }
 
 /** The attack of the set: accuracy, haste, TP a hit, a round, the hit rate, the target's defense, multi-attacks,
@@ -127,16 +130,19 @@ function offenseBox(r: LegacyAny, s: LegacyAny): StatBox | null {
   // food and buffs
   const accB = Math.floor(B.acc || 0), items: BoxItem[] = [];
   if (cur.acc != null) items.push(row(t('accTotal'), cur.acc, t('accTotalNote', {g: v('acc'), b: accB}), '', t('accTotalTip', {g: v('acc'), b: accB, w: cur.wskill || '—', l: cur.level || 0})));
-  items.push(row(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})),
-    row(t('tpHit'), tph, '', '', t('tpTip', {d: Math.round(mdelay), s: stp})), row(t('hitsTo'), Math.ceil(1000 / tph), ''), row(t('roundLbl'), `${r1(round)} s`, ''));
+  const tpRow = row(t('tpHit'), tph, '', '', t('tpTip', {d: Math.round(mdelay), s: stp})), hitsRow = row(t('hitsTo'), Math.ceil(1000 / tph), ''), roundRow = row(t('roundLbl'), `${r1(round)} s`, '');
+  items.push(row(t('hasteTot'), `${r1(haste)} %`, haste >= 93.75 ? 'cap' : '', '', t('hasteTip', {g: r1(gh), m: r1(mh), j: r1(jh)})), tpRow, hitsRow, roundRow);
+  // in the Summary: the round, TP a hit, hits to 1000 TP, the hit rate
+  const brief: BoxItem[] = [roundRow, tpRow, hitsRow];
   if (cur.acc != null) { const rate = Math.max(20, Math.min(cap, 75 + 0.5 * (cur.acc - eva)));
-    items.push(row(t('hitRate'), `${Math.floor(rate)} %`, `cap ${cap}`, '', t('hitTip', {a: cur.acc, e: eva, n: enemyName}) + (two ? ' · ' + t('twoHand') : ''))); }
+    const rateRow = row(t('hitRate'), `${Math.floor(rate)} %`, `cap ${cap}`, '', t('hitTip', {a: cur.acc, e: eva, n: enemyName}) + (two ? ' · ' + t('twoHand') : ''));
+    items.push(rateRow); brief.push(rateRow); }
   items.push(row(t('enemyDef'), edef, B.edefp ? `−${Math.round(B.edefp * 1000) / 10} %` : '', '', t('enemyDefTip', {n: enemyName})));
   const da = v('da') + traitOf('da', c) + giftOf('da', c) + (B.da || 0), ta = v('ta') + (B.ta || 0);
   if (da || ta || v('qa')) items.push(row(t('multiLbl'), `${r1(da)} · ${ta} · ${v('qa')} %`, ''));
   const crit = v('crit') + (B.crit || 0);
   if (crit) items.push(row(t('critLbl'), `${r1(crit)} %`, ''));
-  return statBox('off', 'g-off', t('offTitle'), items, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : '');
+  return {...statBox('off', 'g-off', t('offTitle'), items, cur.acc != null ? `${t('accLabel')} ${cur.acc}` : ''), brief};
 }
 
 /** The "In combat" box of a nuke set (fight_stats.js fightFigures): the spell's damage in its band, the totals it is
@@ -161,9 +167,11 @@ function fightBox(s: LegacyAny): StatBox | null {
   // the burst's bonus as calc_magic.js burstBonusTerm counts it: the first capped, the second and the job's trait on top
   const mb = {a: sheet['Magic Burst Damage'] || 0, b: sheet['Magic Burst Damage II'] || 0, t: sheet['Magic Burst Damage Trait'] || 0, c: CALC.BURST_GEAR_CAP};
   if (mb.a || mb.b || mb.t) rows.splice(4, 0, row(esc(t('fightMbdAll')), '+' + fmt(Math.min(mb.a, mb.c) + mb.b + mb.t, true), '', '', t('fightMbdAllFrom', mb)));
-  rows.unshift(row(esc(t('fightMacc')), fmt(r.macc), '', '', fightMaccTip(sheet, enemy, spells[0], isBurstSet(s.path), r.macc)),
-    row(esc(t('fightHit')), fmt(100 * r.hitRate, true), '', '', t('fightHitCap', {e: enemy['Magic Evasion'] || 0})));
-  return statBox('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`);
+  const hitRow = row(esc(t('fightHit')), fmt(100 * r.hitRate, true), '', '', t('fightHitCap', {e: enemy['Magic Evasion'] || 0}));
+  rows.unshift(row(esc(t('fightMacc')), fmt(r.macc), '', '', fightMaccTip(sheet, enemy, spells[0], isBurstSet(s.path), r.macc)), hitRow);
+  // in the Summary: the spell's damage and its hit rate
+  const brief: BoxItem[] = [row(esc(t('figSpellDmg', {sp: spells[0]})), fmtDmg(r.damage), ''), hitRow];
+  return {...statBox('fight', 'g-mag', esc(t('fightTab')), rows, fmtDmg(r.damage), `<p class="note-m">${esc(t('fightHead', {sp: spells.join(', '), foe: f.input.enemy || ''}))}</p>`), brief};
 }
 
 export interface HpCycleView { open: boolean; title: string; foldTitle: string; note: string; ref: string; heads: string[];
@@ -252,7 +260,8 @@ function cureBox(s: LegacyAny): StatBox | null {
   // open until closed: its fold key notes the closing (events.js flips S.boxOpen[key], unset at first)
   const b = statBox('cureShut', 'g-skill', t('cbTitle'), items, String(f.cureOther), `<p class="note-m">${esc(t('cbNote'))}</p>`);
   b.open = !st().boxOpen.cureShut;
-  return b;
+  // in the Summary: the HP the Cure heals
+  return {...b, brief: items.slice(0, 1)};
 }
 
 /** The column of figures of a set (setPanelHTML), with what it keeps in the page's state (S._curSet) */
@@ -267,5 +276,5 @@ export function figuresView(s: LegacyAny): FiguresView {
   // (in the old page's order: the set's own figures, every stat, then its HP cycle and Luopan, its sheet)
   const all = {open: !!S0._ui2AllOpen, title: t('ttAllStats'), label: t('ui2All'), globals: globalsView(s, 'stats')};
   const hp = hpCycle(s), luopan = luopanView(s), sheet = sheetView(s);
-  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), allTab: t('figAllTab'), summaryTitle: t('figSumTitle'), summaryBack: t('figSumBack'), emptyNote: t('figSumEmpty'), all};
+  return {title: t('ui2SetTitle'), boxes, hp, luopan, sheet, sheetTab: t('figSheetTab'), allTab: t('figAllTab'), summaryTitle: t('figSumTitle'), capsTitle: t('figCaps'), summaryBack: t('figSumBack'), emptyNote: t('figSumEmpty'), all};
 }
