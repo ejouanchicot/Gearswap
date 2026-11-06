@@ -10,10 +10,26 @@
 ---   sets.DW.HasteII    30 % or more    (Haste II, Geo-Haste, two Marches)
 ---   sets.DW.MaxHaste   43.75 % (cap)   (Haste II + a March...)
 ---
---- Why: attack delay cannot go under 20 %. With capped gear haste, the Dual
---- Wield needed (job trait included) is 74 % with no haste, 67 % at 15 %,
---- 56 % at 30 %, 36 % at the cap. Each tier holds only the DW pieces you
---- still need; what you take off becomes damage gear.
+--- Why: attack delay cannot go under 20 % ((1 - DW) x (1 - haste) >= 0.2), and
+--- Dual Wield past that only lowers the TP per hit. Each tier holds only the DW
+--- pieces you still need; what you take off becomes damage gear.
+---
+--- Dual Wield to wear in GEAR, by your job's trait and magic haste (BG Wiki,
+--- Dual_Wield cheatsheet, capped gear haste 25 %, no Haste Samba; read
+--- 2026-11-06):
+---
+---   trait (where from)                 no haste  15 %  30 %  cap
+---   DW I    10 % (THF main 83)            60      50    33     0
+---   DW II   15 % (/DNC, DNC main 40)      55      45    28     0
+---   DW III  25 % (/NIN, NIN main 45)      45      35    18     0
+---   DW IV   30 % (NIN 65, DNC 80, THF)  40      30    13     0
+---   DW V    35 % (NIN 85)                 35      25     8     0
+---
+--- A subjob is level 49 at 99, one more each 5 Master Levels (59 at ML 50):
+--- /NIN keeps DW III and /DNC DW II up to ML 50. BLU gets the trait from the
+--- Blue Magic it sets (tier IV from spells, V and VI with job point gifts).
+--- Haste Samba on you lowers these numbers (BG Wiki's own columns).
+--- A set file serves both subjobs: fill it for the one needing more (/DNC).
 ---
 --- Put the tiers in your job's set file (<Character>/sets/<job>_sets.lua):
 ---   sets.DW = {}
