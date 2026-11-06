@@ -5,10 +5,21 @@ const WEAPON_SLOTS = new Set(['main', 'sub', 'range', 'ammo']);
 const WEAPON_CACHE = new WeakMap();
 // Modes whose values name a top-level weapon set (MainWeapon "Excalibur" -> sets.Excalibur),
 // the main hand first, the sub and range ones after so they win on their own slots
+// SubWeapon with a subjob that gives no Dual Wield: only its shields and grips, as the game's offhand_filter.lua does
+// (SPEC subweapon-selon-sub-2026-11-06); a list with no shield is left whole (sets.SingleWield swaps the weapon)
+function offhandOnly(m, d){
+  if (['NIN', 'DNC', 'THF', 'BLU'].includes(S.job) || ['NIN', 'DNC'].includes(d.sub)) return m;
+  const type = v => { const p = (m.sets[v].pieces || {}).sub, it = itemOf(p && p.name); return it ? it.Type : ''; };
+  const keep = m.values.filter(v => type(v) !== 'Weapon');
+  if (!keep.some(v => ['Shield', 'Grip'].includes(type(v))) || keep.length === m.values.length) return m;
+  return Object.assign({}, m, {values: keep, current: keep.includes(m.current) ? m.current : keep[0]});
+}
 function weaponModes(d){
   if (!d) return [];
   const cached = WEAPON_CACHE.get(d);
-  if (cached && cached.lang === S.lang) return cached.modes;
+  // (the item list comes with the engine: the menus are made again once it is there, offhandOnly reads it)
+  const items = !!itemOf('Genmei Shield');
+  if (cached && cached.lang === S.lang && cached.items === items && cached.sub === d.sub) return cached.modes;
   const top = {};
   for (const s of d.sets) {
     const m = s.path.match(/^sets(?:\.([\w-]+)|\["([^"]+)"\])$/), slots = Object.keys(s.pieces);
@@ -22,6 +33,7 @@ function weaponModes(d){
   const broths = new Set(Object.keys(top).filter(n => broth(top[n])));
   const modes = d.modes.filter(m => m.name !== 'ammoSet' && m.values.some(v => top[v]))
     .map(m => ({name: m.name, desc: m.desc || m.name, values: m.values.filter(v => top[v]), current: m.current, sets: top}))
+    .map(m => m.name === 'SubWeapon' ? offhandOnly(m, d) : m)
     .sort((a, b) => rank(a.name) - rank(b.name));
   // One-piece weapon sets no mode names (PLD's sets.Duban, sets.Aegis...): a choice per slot,
   // used where neither the set nor a weapon mode fills it; by default the piece the job's sets use most
@@ -53,7 +65,7 @@ function weaponModes(d){
     if (items.length) modes.push({name: m.name, desc: m.desc || m.name, values: items, current: m.current,
       sets: Object.fromEntries(items.map(v => [v, {path: v, pieces: {[slot]: {name: v}}}]))});
   }
-  WEAPON_CACHE.set(d, {lang: S.lang, modes});
+  WEAPON_CACHE.set(d, {lang: S.lang, items, sub: d.sub, modes});
   return modes;
 }
 // The slot of a weapon state a value can be worn in as an item

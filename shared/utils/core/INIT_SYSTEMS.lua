@@ -32,6 +32,10 @@ pcall(function() require('shared/utils/debug/trace_log').log('LOAD', 'INIT_SYSTE
 -- init_gear_sets has just built (shared/utils/atelier/set_overrides.lua)
 pcall(function() require('shared/utils/atelier/set_overrides').apply(player and player.main_job) end)
 
+-- SubWeapon reduced to the shields when the subjob gives no Dual Wield, the value last chosen on that side given back
+-- (shared/utils/equipment/offhand_filter.lua): after init_gear_sets, which built the weapon sets the values name
+pcall(function() require('shared/utils/equipment/offhand_filter').apply(player and player.main_job) end)
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RESTORE PERSISTENT DEBUG FLAGS (survives job changes)
 ---  ═══════════════════════════════════════════════════════════════════════════

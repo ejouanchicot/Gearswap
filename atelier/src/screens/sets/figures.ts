@@ -201,7 +201,7 @@ function hpCycle(s: LegacyAny): HpCycleView | null {
     rows: rows.filter((x: LegacyAny) => famOf(x) === f).map(row)}));
   if (S0.boxOpen.hpcycle === undefined) S0.boxOpen.hpcycle = true;
   return {open: !!S0.boxOpen.hpcycle, title: t('cyTitle'), foldTitle: t('ttFold'), note: t('cyNote', {i: top, n: shortPath(idle.path)}),
-    ref: ref ? t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}) + (top > ref.hp + HP_SPREAD ? ' ' + t('cyIdleHigh', {n: top - ref.hp}) : '') : '',
+    ref: ref ? hpRefLine(ref) + (top > ref.hp ? ' ' + t('cyIdleHigh', {n: top - ref.hp}) : '') : '',
     heads: [t('cyAct'), t('cyPre'), t('cyMid'), t('cyLoss')], groups};
 }
 

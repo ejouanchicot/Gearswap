@@ -531,3 +531,24 @@ sets.buff.Doom = {
     ring2 = "Blenmot's Ring +1",   -- Doom resistance
     waist = "Gishdubar Sash"       -- Doom resistance
 }
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- DUAL WIELD TIERS (see _common/gear/DW_CONFIG.lua, "Auto DW", and //gs c dw)
+-- ═══════════════════════════════════════════════════════════════════════════
+-- With /NIN or /DNC, two weapons held and engaged, the pieces of one tier go
+-- on top of the engaged set, chosen by your magic haste. Only the Dual Wield
+-- pieces you still need at that haste; a tier left empty uses the one below.
+-- All empty: nothing changes. e.g.
+--   sets.DW.NoHaste  = { left_ear = "Suppanomimi", right_ear = "Eabani Earring", waist = "Reiki Yotai" }
+--   sets.DW.HasteII  = { waist = "Reiki Yotai" }
+sets.DW = {}
+sets.DW.NoHaste  = {}   -- no haste
+sets.DW.Haste    = {}   -- 15 %
+sets.DW.HasteII  = {}   -- 30 %
+sets.DW.MaxHaste = {}   -- cap (43.75 %)
+
+-- • Off hand when Dual Wield is not there (a subjob other than /NIN or /DNC,
+--   or a subjob at level 0 as in Sheol Gaol): replaces the off-hand weapon of
+--   the weapon sets, e.g. {sub = "Genmei Shield"}. Empty: the off hand is left
+--   out.
+sets.SingleWield = {}

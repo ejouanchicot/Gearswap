@@ -59,6 +59,7 @@ sets = {}
 -- /NIN or /DNC give it): replaces the off-hand weapon of the weapon sets.
 -- Without it the off hand is left as it is. Example:
 -- sets.SingleWield = {sub = "Nusku Shield"}
+sets.SingleWield = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MOVEMENT AND TOWN
@@ -154,13 +155,19 @@ sets.engaged.DT = set_combine(sets.engaged, {})      -- Hybrid Mode DT (also und
 -- ═══════════════════════════════════════════════════════════════════════════
 -- While two weapons are held (/NIN, /DNC) and engaged, the pieces of one tier
 -- go on top of the engaged set, chosen by your magic haste. A tier left out
--- uses the one below. Uncomment and fill with your own gear:
+-- uses the one below. Fill with your own
+-- gear (all left empty: nothing changes):
 --
 -- sets.DW = {}
 -- sets.DW.NoHaste  = {}   -- magic haste under 15 %
 -- sets.DW.Haste    = {}   -- 15 %
 -- sets.DW.HasteII  = {}   -- 30 %
 -- sets.DW.MaxHaste = {}   -- cap
+sets.DW = {}
+sets.DW.NoHaste  = {}   -- no haste
+sets.DW.Haste    = {}   -- 15 %
+sets.DW.HasteII  = {}   -- 30 %
+sets.DW.MaxHaste = {}   -- cap (43.75 %)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- TREASURE HUNTER (optional)

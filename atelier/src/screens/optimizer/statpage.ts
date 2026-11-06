@@ -17,7 +17,7 @@ export interface StatWhatView {
   floors: LimitsView; floorsAfterHtml: string; titleHtml: string; help: string;
   groups: Array<{label: string; objs: Array<{k: string; on: boolean; name: string; desc: string}>}>; toggle: string;
   then: {label: string; selects: Array<{i: number; value: string; none: {value: string; label: string; selected: boolean}; groups: Array<{label: string; options: Array<{value: string; label: string; selected: boolean}>}>}>};
-  own: null | {tip: string; checked: boolean; label: string}; notes: string[]; noteTips: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
+  own: null | {tip: string; checked: boolean; label: string}; hpRef: ReturnType<typeof hpRefView>; notes: string[]; noteTips: string[]; boxes: Array<{key: string; checked: boolean; label: string}>; enf: EnfNote | null; search: SearchView; weaponsNote: string;
   // the objectives' list folded in the column beside the set (StatPage compact): open or not, its link's two texts
   objsOpen: boolean; objsShow: string; objsHide: string;
 }
@@ -83,7 +83,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
   // the Simple view what is counted goes to the line's tooltip
   const sung = songNoteParts(s);
   if (sung && setsSimple() && sung.more) { noteTips[notes.length] = sung.more; notes.push(sung.line + ' ⓘ'); } else if (sung) notes.push(songNote(s));
-  if (ref) notes.push(t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp, b: ref.hp + HP_SPREAD}));
+  if (ref) notes.push(hpRefLine(ref));
   // an enhancing set: the spell and its base length, with or without Composure, and the job's bonuses counted (enh_jobs.js)
   if (enh) notes.push(t('statEnhNote', {s: enh.spell === 'enhancing' ? enh.name : enh.spell, b: enh.base, c: t(enh.comp === 'others' ? 'statEnhOthers' : enh.comp === 'self' ? 'statEnhSelf' : 'statEnhPlain')}), ...(enh.notes || []));
   if (['PLD', 'RUN'].includes(S0.job)) notes.push(t('statAssumed', {m: S0.job === 'PLD' ? t('statAssumedMaj') : ''}));
@@ -92,7 +92,7 @@ export function statWhatView(s: LegacyAny): StatWhatView {
     then: {label: t('statThen'), selects: [1, 2].map(i => thenSelect(i, so.objs, cur, shown))},
     own: jaList.length ? {tip: t('statKeepOwnTip', {b: segs(s.path).pop()}), checked: keptSlots(s).length > 0,
       label: t('statKeepOwn', {p: jaList.map((sl: string) => (withWeapons(s).pieces[sl] || {}).name || sl).join(', ')})} : null,
-    notes, noteTips, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : '',
+    hpRef: hpRefView(), notes, noteTips, boxes: enhBoxes(s), enf: enfNote(s), search: searchView(o, false), weaponsNote: o.freeWeapons ? t('statWeaponsNote') : '',
     objsOpen: !!S0._optObjsOpen, objsShow: t('optObjsShow'), objsHide: t('optObjsHide')};
 }
 

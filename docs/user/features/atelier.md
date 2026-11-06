@@ -114,6 +114,12 @@ link to the Buffs & target tab.
 - **Equip in game** puts the set on now, as the page shows it.
 - **Delete this set…** takes a set out (refused for the job's base sets and
   for a set others are built on).
+- **HP reference** (in the optimizer, under the minimums), job by job: **Ceiling**
+  keeps the job's sets between the reference − 100 and it (going to it before a
+  spell never cuts your HP), **Floor** keeps them at or over it, **None** sets no
+  bound. The reference is the lowest Fast Cast set unless you pick another set.
+  PLD and RUN start on Ceiling, the other jobs on None. An HP minimum typed on a
+  set comes first.
 - **Simple view** (in the set's **⋯**, or Page > Settings > Sets page) shows less
   at once, with the same figures and searches: beside the grid, the set's
   objectives and floors as small tiles, its weapons as their icons (hover one for

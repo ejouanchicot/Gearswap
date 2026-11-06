@@ -44,5 +44,6 @@ after `--` in `quick`).
 | `newplayer` | a brand-new player: nothing exported, the game linked on a job with no file, "+ Add a job" sent |
 | `lh`, `list`, `sw` | the list of sets and its head menu, the subjob warning |
 | `simple` | the Sets page's Simple view: switched on in the settings, a set's tiles and weapon icons beside its equipment, its code, missing pieces and minimums folded and opened, a stats search's result shown once it tried pieces, back to the detailed view |
+| `hpref` | the job's HP reference in the stats optimizer: Tetsouo's BRD from no rule to Ceiling, Floor, another set as the reference, kept in the browser; PLD on Ceiling |
 | `optsets` | "Tout optimiser": its start window, a run of two stats sets, its summary, Undo all, a run stopped (1 to 2 min) |
 | `tip`, `weap`, `wshead` | the hover card, the weapon menus, a weaponskill set's head (the longest: 2 to 6 min) |

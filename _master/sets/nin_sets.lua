@@ -150,14 +150,20 @@ sets.engaged.DT = set_combine(sets.engaged, {})      -- Hybrid Mode DT (any Offe
 -- While two weapons are held and engaged, the pieces of one tier go on top of
 -- the engaged set, chosen by your magic haste. Ninja has Dual Wield V of its
 -- own, so it needs fewer pieces than a /NIN or /DNC job at each tier. Only
--- the Dual Wield pieces you still need at that haste; a tier left out uses
--- the one below. Uncomment and fill with your own gear:
+-- the Dual Wield pieces you still need at that haste; a tier left out or empty uses
+-- the one below. Fill with your own
+-- gear (all left empty: nothing changes):
 --
 -- sets.DW = {}
 -- sets.DW.NoHaste  = { waist = "Reiki Yotai" }   -- no haste
 -- sets.DW.Haste    = { waist = "Reiki Yotai" }   -- 15 %
 -- sets.DW.HasteII  = {}                          -- 30 %
 -- sets.DW.MaxHaste = {}                          -- cap
+sets.DW = {}
+sets.DW.NoHaste  = {}   -- no haste
+sets.DW.Haste    = {}   -- 15 %
+sets.DW.HasteII  = {}   -- 30 %
+sets.DW.MaxHaste = {}   -- cap (43.75 %)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- COMBAT MODE (optional)

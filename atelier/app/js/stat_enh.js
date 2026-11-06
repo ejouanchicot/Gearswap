@@ -181,14 +181,14 @@ function statFloorDefault(s, first){
   if (jaOverlayBase(s)) return hpBand(s);
   if (enmityMaxSet(s)) return {};
   // a Bard's buff song: its skill at the song's cap (brd_song.js songFloor); no damage taken floor
-  if (songOf(s)) return songFloor(s) || {};
+  if (songOf(s)) return Object.assign({}, songFloor(s), hpBand(s));
   // a BST's Charm set: worn for the ability's instant (bst_pet.js isCharmSet)
   if (isCharmSet(s)) return {};
   // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
   if (readyKind(s)) return readyKind(s) === 'phys' || readyKind(s) === 'multi' ? {petAccBase: PET_ENG.accBase} : {};
   const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) || songOf(s) ? {} : {pdt: -50, mdt: -29};
   if (first === 'fc') return Object.assign({fc: 80}, always);
-  if (!tank) return Object.assign(always, sird);
+  if (!tank) return Object.assign(always, sird, hpBand(s));
   const hp = hpBand(s);
   // damage taken at its cap on every tank set worn more than an instant: DT+PDT -50, DT+MDT -50 less what Shell gives
   // (Shell V -29.3 %: -21 left to the gear)
@@ -212,16 +212,55 @@ function statFloorDefault(s, first){
 // the bottom, the others up to 200 over it: every spell then cut what they had over it). Not for the Fast Cast sets
 // themselves, nor the self Cure pair (its gap is on purpose: cureGap). {hp, path} or null
 const HP_SPREAD = 100;
-// A tank's set between HP_SPREAD under the Fast Cast and the Fast Cast ({hp, hpMax} as floors), or none
-function hpBand(s){
-  const ref = ['PLD', 'RUN'].includes(S.job) ? hpRef(s) : null;
-  return ref && !cureGap(s) ? {hp: ref.hp - HP_SPREAD, hpMax: ref.hp} : {};
+// The HP reference rule of the job shown, chosen job by job in the optimizer (S.hpRefBy['<char>/<job>'], the player,
+// 2026-11-06: notes/docs-perso/repere-hp-par-job-2026-11-06/SPEC.md): rule 'ceil' (the sets between the reference less
+// HP_SPREAD and it), 'floor' (never under it) or 'none'; PLD and RUN start on 'ceil', their rule of 2026-11-01, the
+// others on 'none'. path: the set that is the reference, '' for the lowest of the classic Fast Cast sets (on another
+// job the set with the fewest HP may not be a Fast Cast)
+function hpRefRule(){
+  const mine = (S.hpRefBy || {})[S.char + '/' + S.job] || {};
+  return {rule: mine.rule || (['PLD', 'RUN'].includes(S.job) ? 'ceil' : 'none'), path: mine.path || ''};
 }
+// A set's HP bounds from the reference ({hp, hpMax} as floors), or none
+function hpBand(s){
+  const {rule} = hpRefRule(), ref = rule === 'none' ? null : hpRef(s);
+  if (!ref || cureGap(s)) return {};
+  return rule === 'floor' ? {hp: ref.hp} : {hp: ref.hp - HP_SPREAD, hpMax: ref.hp};
+}
+// The line that says the reference and what it holds the sets to
+function hpRefLine(ref){
+  return hpRefRule().rule === 'floor' ? t('statRefLineFloor', {h: ref.hp, f: shortPath(ref.path)})
+    : t('statRefLine', {h: ref.hp, f: shortPath(ref.path), a: ref.hp - HP_SPREAD, b: ref.hp});
+}
+// The reference's menus, in the stats optimizer (statpage.ts): its rule, and the set it is
+function hpRefView(){
+  const {rule, path} = hpRefRule(), d = data();
+  const sets = d ? d.sets.filter(x => !baseOnly(x) && statSet(x)).map(x => ({value: x.path, label: shortPath(x.path), selected: x.path === path})) : [];
+  return {title: t('hrTitle'), tip: t('hrTip'), rules: [['none', 'hrNone'], ['ceil', 'hrCeil'], ['floor', 'hrFloor']].map(([v, k]) => ({v, label: t(k), pressed: rule === v})),
+    sets: rule === 'none' ? null : [{value: '', label: t('hrAuto'), selected: !path}, ...sets]};
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-hpref-rule]');
+  if (!b) return;
+  const k = S.char + '/' + S.job;
+  S.hpRefBy = Object.assign({}, S.hpRefBy, {[k]: Object.assign({}, (S.hpRefBy || {})[k], {rule: b.dataset.hprefRule})});
+  render();
+});
+document.addEventListener('change', e => {
+  const sel = e.target.closest && e.target.closest('[data-hpref-set]');
+  if (!sel) return;
+  const k = S.char + '/' + S.job;
+  S.hpRefBy = Object.assign({}, S.hpRefBy, {[k]: Object.assign({}, (S.hpRefBy || {})[k], {path: sel.value})});
+  render();
+});
 function hpRef(s){
-  if (!['PLD', 'RUN'].includes(S.job) || family(s.path, s.pieces) === 'fc') return null;
-  const d = data(), list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
+  const {rule, path} = hpRefRule();
+  if (rule === 'none' || family(s.path, s.pieces) === 'fc') return null;
+  // (during a run over every set, opt_sets.js, the reference as just found: the sets after it follow its new HP)
+  const d = data(), chosen = path && d ? d.sets.find(x => x.path === path) : null;
+  if (chosen) return chosen.path === s.path ? null : {hp: statFigures(chosen, !S._optChain).hp, path: chosen.path};
+  const list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
   let low = null;
-  // (during a run over every set, opt_sets.js, the Fast Cast as just found: the sets after it follow its new HP)
   for (const x of list) { const hp = statFigures(x, !S._optChain).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
   return low;
 }

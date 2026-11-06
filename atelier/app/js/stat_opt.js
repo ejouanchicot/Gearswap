@@ -450,7 +450,7 @@ function statRows(s){
   const pair = cureGap(s), ref = pair || !(on('hp') || on('hpMax')) ? null : hpRef(s);
   if (pair && family(s.path, s.pieces) !== 'fc') rows.push({id: 'cure4', label: t('statCure4'), get: f => f.cureIV, fmt: v => String(Math.round(v)), tip: t('statCure4Tip')});
   if (ref) rows.push({id: 'ref', label: t('statRef'), get: f => f.hp - ref.hp, fmt: v => (v > 0 ? '+' : '') + Math.round(v), tip: t('statRefTip', {f: shortPath(ref.path), h: ref.hp}),
-    floor: v => v <= 0 && v >= -HP_SPREAD});
+    floor: hpRefRule().rule === 'floor' ? v => v >= 0 : v => v <= 0 && v >= -HP_SPREAD});
   rows.push(...enfRows(s));
   if (pair) rows.push({id: 'gap', label: t('statGap'), get: f => pair.gap(f), fmt: v => String(Math.round(v)), tip: t('statGapTip', {m: shortPath(pair.mid), f: shortPath(pair.pre)})});
   const first = so.objs.map(k => rows.find(r => r.id === k)).filter(Boolean);

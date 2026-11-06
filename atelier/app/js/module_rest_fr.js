@@ -50,6 +50,7 @@ const MOD_REST_FR = {
     ['embrava', 'Embrava', 'Le pourcentage de haste magique compté.'], ['honor_march', 'Honor March', 'Le pourcentage de haste magique compté. Une estimation un peu basse exprès : elle dépend de l’équipement du Bard.'],
     ['victory_march', 'Victory March', 'Le pourcentage de haste magique compté.'], ['advancing_march', 'Advancing March', 'Le pourcentage de haste magique compté.'],
     ['unknown_march', 'March inconnue', 'Une March dont le chant n’a pas été vu : le pourcentage compté.'],
+    ['jobs', 'Auto DW par job', 'Les paliers de Dual Wield job par job : false les éteint sur ce job.'], ['jobs.*', 'Auto DW · {1}', 'Les paliers de Dual Wield sur ce job ; éteint, son set engaged décide seul.'],
   ],
   'RECAST_CONFIG.lua': [
     ['party_announce', 'Message au groupe quand un recast refuse', 'Un message /p quand une ability ou un sort est refusé parce qu’il recharge. Une entrée par nom (« Phantom Roll » couvre tous les rolls) ; le fichier donne les exemples.', 'map'],

@@ -547,6 +547,8 @@ declare function fightMaccTip(sheet: LegacyAny, enemy: LegacyAny, spell: string,
 declare function isBurstSet(path: string): boolean;
 declare function setMaxHp(x: LegacyAny, nakedHp: number): number;
 declare function hpRef(s: LegacyAny): LegacyAny;
+declare function hpRefLine(ref: {hp: number; path: string}): string;
+declare function hpRefView(): {title: string; tip: string; rules: Array<{v: string; label: string; pressed: boolean}>; sets: null | Array<{value: string; label: string; selected: boolean}>};
 declare function hpCycleRows(): LegacyAny[];
 declare const HP_SPREAD: number;
 declare function isLuopanCast(s: LegacyAny): boolean;

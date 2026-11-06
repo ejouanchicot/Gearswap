@@ -37,7 +37,7 @@ const MOD_FILE_FR = {
   'UI_CONFIG.lua': ['HUD et chat', 'Le panneau des touches et des modes à l’écran, et la forme des messages dans le chat.'],
   'DUALBOX_CONFIG.lua': ['Dual-box', 'Le lien entre tes deux persos : qui est le principal, qui est l’alt, ce qu’ils se disent.'],
   '{JOB}_ALT_CUSTOM.lua': ['Commandes d’alt ({JOB})', 'Tes ajouts aux commandes envoyées à ton alt quand il joue {JOB}, par-dessus celles générées.'],
-  'DW_CONFIG.lua': ['Dual Wield selon la haste', 'Les paliers de Dual Wield posés sur ton set engaged, et ce que chaque buff de haste compte.'],
+  'DW_CONFIG.lua': ['Auto DW', 'Les paliers de Dual Wield posés sur ton set engaged selon ta haste, job par job, et ce que chaque buff de haste compte.'],
   'ELEMENTAL_BELT_CONFIG.lua': ['Ceinture élémentaire', 'Hachirin-no-Obi ou Orpheus’s Sash, mise toute seule sur des dégâts élémentaires.'],
   'HP_PRIORITY_CONFIG.lua': ['Ordre qui protège tes HP', 'L’ordre dans lequel tes pièces sont mises, pour que tes HP max ne chutent pas pendant un swap.'],
   'WEAPON_CONFIG.lua': ['Armes', 'Comment une valeur de MainWeapon / SubWeapon est équipée.'],
@@ -183,8 +183,10 @@ const MOD_CATALOG = [
       'Stratagems: full recharge', 'Seconds for the whole pool to come back (SCH or /SCH). The charges shown are worked out from it; lower with the job point gift.', {unit: 's'}),
   ]},
   {id: 'dw', group: 'gear', use: ['Rien à lancer. //gs c dw montre la haste estimée et le palier utilisé.', 'Nothing to press. //gs c dw shows the estimated haste and the tier used.'], tip: ['Avec deux armes, GearSwap ne garde que le Dual Wield dont tu as besoin selon ta haste ; le reste devient de l’équipement de dégâts.', 'With two weapons, GearSwap keeps only the Dual Wield you need for your haste; the rest becomes damage gear.'], fr: 'Dual Wield selon ta haste', en: 'Dual Wield by your haste', items: [
-    MC('DW_CONFIG.lua', 'enabled', 'Dual Wield selon ta haste', 'Avec deux armes, engagé, GearSwap pose par-dessus ton set engaged les pièces Dual Wield du palier qui correspond à ta haste magique (sets.DW.NoHaste, Haste, HasteII, MaxHaste). Éteint : tes sets engaged décident seuls. Un job sans sets.DW n’est pas concerné.',
-      'Dual Wield by your haste', 'With two weapons, engaged, GearSwap lays over your engaged set the Dual Wield pieces of the tier your magic haste calls for (sets.DW.NoHaste, Haste, HasteII, MaxHaste). Off: your engaged sets decide alone. A job with no sets.DW is not concerned.'),
+    MC('DW_CONFIG.lua', 'jobs.{JOB}', 'Auto DW ({JOB})', 'Sur ce job, avec deux armes, engagé : GearSwap pose par-dessus ton set engaged les pièces Dual Wield du palier qui correspond à ta haste magique (sets.DW.NoHaste, Haste, HasteII, MaxHaste ; un palier vide prend celui du dessous). Éteint : ton set engaged décide seul sur ce job.',
+      'Auto DW ({JOB})', 'On this job, with two weapons, engaged: GearSwap lays over your engaged set the Dual Wield pieces of the tier your magic haste calls for (sets.DW.NoHaste, Haste, HasteII, MaxHaste; an empty tier takes the one below). Off: your engaged set decides alone on this job.'),
+    MC('DW_CONFIG.lua', 'enabled', 'Auto DW (tous les jobs)', 'Éteint : les paliers de Dual Wield ne se posent sur aucun job, quel que soit le réglage de chaque job.',
+      'Auto DW (every job)', 'Off: the Dual Wield tiers go on no job, whatever each job’s own setting says.'),
   ]},
   {id: 'belt', group: 'gear', use: ['Rien à lancer. //gs c belt montre les ceintures trouvées et ce que chacune ajouterait maintenant.', 'Nothing to press. //gs c belt shows the belts found and what each would add now.'], tip: ['Sur des dégâts élémentaires, GearSwap met tout seul Orpheus’s Sash ou Hachirin-no-Obi quand elle ajoute plus que la ceinture de ton set.', 'On elemental damage, GearSwap wears Orpheus’s Sash or Hachirin-no-Obi by itself when it adds more than your set’s belt.'], fr: 'Ceinture élémentaire', en: 'Elemental belt', items: [
     MC('ELEMENTAL_BELT_CONFIG.lua', 'enabled', 'Ceinture élémentaire automatique', 'Sur des dégâts élémentaires (nukes, Banish / Holy, ninjutsu, Blue Magic magique, WS élémentaires, Quick Draw), GearSwap met la ceinture qui ajoute le plus si tu l’as : Orpheus’s Sash près de la cible, Hachirin-no-Obi quand le jour ou la météo correspond.',

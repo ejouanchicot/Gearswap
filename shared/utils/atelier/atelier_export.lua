@@ -132,6 +132,11 @@ local function collect_modes()
             local values = {}
             if track._type == 'boolean' then values = {'off', 'on'}
             else for i = 1, track._count do values[#values + 1] = tostring(rawget(mode, i)) end end
+            -- a SubWeapon reduced to its shields for the subjob held: its whole list (offhand_filter.lua), the page
+            -- filters it for the subjob itself
+            local ok_f, OffhandFilter = pcall(require, 'shared/utils/equipment/offhand_filter')
+            local whole = ok_f and OffhandFilter.full_values(name)
+            if whole then values = {} for _, v in ipairs(whole) do values[#values + 1] = tostring(v) end end
             modes[#modes + 1] = {name = name, desc = track._description, values = values, current = tostring(mode.current)}
         end
     end

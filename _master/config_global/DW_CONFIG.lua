@@ -19,9 +19,9 @@
 ---   sets.DW = {}
 ---   sets.DW.NoHaste  = { left_ear = "Suppanomimi", waist = "Reiki Yotai", ... }
 ---   sets.DW.HasteII  = { waist = "Reiki Yotai" }
----   sets.DW.MaxHaste = {}
---- A tier left out uses the one below it (more Dual Wield: the safe side).
---- No sets.DW in a job file: nothing changes on that job.
+---   sets.DW.MaxHaste = {}      (empty: the HasteII pieces stay)
+--- A tier left out or empty uses the one below it (more Dual Wield: the safe
+--- side). No tier filled in a job file: nothing changes on that job.
 ---
 --- Settings below: enabled, and the % each buff counts for. They are
 --- estimates: Haste, Haste II and Geo-Haste at their written value, a March
@@ -29,6 +29,11 @@
 --- the safe side). Slow and Elegy on you are
 --- not counted (their strength cannot be known): while slowed, force more
 --- Dual Wield with //gs c dw none, then //gs c dw auto.
+---
+--- Auto DW job by job: in `jobs` below, false turns the tiers off on that job
+--- alone (its engaged sets decide alone there); true or a job left out: on.
+--- `enabled = false` turns them off on every job. MNK and PUP fight with hand
+--- to hand weapons, no off hand: not listed.
 ---
 --- In game:
 ---   //gs c dw                          estimated haste, tier, set used
@@ -43,7 +48,14 @@
 ---============================================================================
 
 return {
-    enabled = true,          -- false = never (your engaged sets decide alone)
+    enabled = true,          -- false = never, on every job (your engaged sets decide alone)
+
+    -- Auto DW on each job (false = off on that job)
+    jobs = {
+        BLM = true, BLU = true, BRD = true, BST = true, COR = true, DNC = true, DRG = true,
+        DRK = true, GEO = true, NIN = true, PLD = true, RDM = true, RNG = true, RUN = true,
+        SAM = true, SCH = true, SMN = true, THF = true, WAR = true, WHM = true,
+    },
 
     haste = 15,              -- Haste
     haste2 = 30,             -- Haste II, Erratic Flutter

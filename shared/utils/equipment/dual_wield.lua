@@ -10,9 +10,9 @@
 ---   sets.DW.Haste      15 % or more   (Haste, one March, Mighty Guard)
 ---   sets.DW.HasteII    30 % or more   (Haste II, Geo-Haste, two Marches)
 ---   sets.DW.MaxHaste   43.75 % (cap)  (Haste II + a March...)
---- A missing tier falls back to the one below (more Dual Wield: too much
---- only costs a little damage, too little slows every attack). No sets.DW
---- at all: nothing happens.
+--- A missing or empty tier falls back to the one below (more Dual Wield: too
+--- much only costs a little damage, too little slows every attack). No tier
+--- filled: nothing happens.
 ---
 --- Magic haste is estimated from the buffs up (read from the game) and the
 --- spells that gave them (the action packet: Haste or Haste II, which March):
@@ -22,6 +22,9 @@
 --- //gs c dw shows the estimate; //gs c dw none|haste|haste2|max forces a
 --- tier, //gs c dw auto goes back to the estimate. (Not "haste": that name
 --- is the alt command that casts Haste.)
+--- "Auto DW" job by job: DW_CONFIG's jobs = {BRD = false, ...} turns the tiers
+--- off on that job alone (a job left out is on); enabled = false turns them off
+--- on every job (SPEC notes/docs-perso/dual-wield-tous-jobs-2026-11-06).
 ---
 --- @file    shared/utils/equipment/dual_wield.lua
 --- @author  ejouanchicot
@@ -65,6 +68,9 @@ function DualWield.settings()
         local ok, loaded = pcall(dofile, path)
         for k, v in pairs(ok and type(loaded) == 'table' and loaded or {}) do
             if k == 'enabled' then settings.enabled = v == true
+            elseif k == 'jobs' and type(v) == 'table' then
+                settings.jobs = {}
+                for job, on in pairs(v) do settings.jobs[tostring(job):upper()] = on ~= false end
             elseif DEFAULTS[k] ~= nil then settings[k] = tonumber(v) or settings[k] end
         end
     end
@@ -137,7 +143,7 @@ local function dual_wielding()
     return data ~= nil and data.category == 'Weapon' and (data.skill or 0) > 0
 end
 
---- The tier's set, or the closest one below it (more Dual Wield).
+--- The tier's set, or the closest one below it with pieces (more Dual Wield).
 --- @param tier string
 --- @return table|nil set, string|nil name
 local function tier_set(tier)
@@ -146,16 +152,27 @@ local function tier_set(tier)
     local index = 1
     for i, name in ipairs(TIERS) do if name == tier then index = i end end
     for i = index, 1, -1 do
-        if type(dw[TIERS[i]]) == 'table' then return dw[TIERS[i]], TIERS[i] end
+        -- (an empty tier, as the job templates declare them, is one not filled yet: the one below it, the safe side)
+        if type(dw[TIERS[i]]) == 'table' and next(dw[TIERS[i]]) ~= nil then return dw[TIERS[i]], TIERS[i] end
     end
     return nil
+end
+
+--- Auto DW on for the job played: the character's switch, then the job's own
+--- (DW_CONFIG jobs; a job not listed is on).
+--- @return boolean
+function DualWield.on_for_job()
+    local s = DualWield.settings()
+    if not s.enabled then return false end
+    local job = player and player.main_job
+    return not (s.jobs and job and s.jobs[job] == false)
 end
 
 --- Lay the tier's Dual Wield pieces on the engaged set (after Mote and the job).
 --- @param status string Player status
 function DualWield.apply(status)
     if (status or (player and player.status)) ~= 'Engaged' then return end
-    if not DualWield.settings().enabled or not dual_wielding() then return end
+    if not DualWield.on_for_job() or not dual_wielding() then return end
     -- A COR roll holds the gear until it lands (roll_hold.lua): leave it be
     if require('shared/utils/core/gear_hold').active() then return end
     local set, name = tier_set((DualWield.tier()))
@@ -198,7 +215,11 @@ local function on_buff(id)
         if windower._dw_update_token ~= token then return end
         local ok, me = pcall(windower.ffxi.get_player)
         if not (ok and me and me.status == 1) then return end
-        if (DualWield.tier()) ~= windower._dw_last_tier then send_command('gs c update') end
+        -- (re-dress only for a tier that lays pieces, on a job with Auto DW on and two weapons held: with no tier
+        -- filled, every Haste or March gained or lost sent an update, which re-dresses mid-cast)
+        if not DualWield.on_for_job() or not dual_wielding() then return end
+        local _, name = tier_set((DualWield.tier()))
+        if name and name ~= windower._dw_last_tier then send_command('gs c update') end
     end, 0.3)
 end
 
@@ -234,7 +255,7 @@ function DualWield.command(args)
     local tier, forced = DualWield.tier()
     local _, used = tier_set(tier)
     local fields = {
-        {'DW tiers', DualWield.settings().enabled and 'ON' or 'OFF', DualWield.settings().enabled and 'good' or 'bad'},
+        {'Auto DW', DualWield.on_for_job() and 'ON' or ('OFF' .. (DualWield.settings().enabled and ' (this job: DW_CONFIG jobs)' or '')), DualWield.on_for_job() and 'good' or 'bad'},
         {'Magic haste', ('%.2f %% (%s)'):format(haste, #parts > 0 and table.concat(parts, ', ') or 'none')},
         {'Tier', tier .. (forced and ' (forced: //gs c dw auto to undo)' or ' (estimated)')},
         {'Set used', used and ('sets.DW.' .. used) or 'none (no sets.DW here)', used and 'good' or 'warn'},

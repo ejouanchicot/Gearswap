@@ -2325,3 +2325,9 @@
 .setsx.ui2 .detail.simple .simpleside .hbox.wbox .wtag.wico{padding:0;border:0;background:none;display:inline-grid}
 .detail.simple .wtag.wico .ico{width:32px;height:32px}
 .detail.simple .wtag.wico .ico img{width:100%;height:100%}
+/* The job's HP reference under the stats optimizer's minimums (stat_enh.js hpRefView, SPEC repere-hp-par-job-2026-11-06):
+   its name, its rule as three small buttons, the set it is */
+.ophpref{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 2px;font-size:12.5px}
+.ophpref .ophpk{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ophpref .ophpseg button{padding:3px 10px;font-size:12px}
+.ophpref .ophpsel{flex:1 1 160px;min-width:0;max-width:280px}
