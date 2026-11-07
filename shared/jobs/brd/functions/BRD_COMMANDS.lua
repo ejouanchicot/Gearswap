@@ -257,6 +257,14 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Instrument skill-up loop: //gs c skillup horn | harp | off | status
+    -- (logic/skillup.lua)
+    if command == 'skillup' then
+        require('shared/jobs/brd/functions/logic/skillup').handle(cmdParams[2])
+        eventArgs.handled = true
+        return
+    end
+
     -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
     -- ══════════════════════════════════════════════════════════════════════════

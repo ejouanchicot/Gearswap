@@ -259,5 +259,7 @@ end
 --- Cancels pending job-change operations and unbinds the job keys.
 --- @return void
 function file_unload()
+    -- the instrument skill-up loop stops with the job (logic/skillup.lua)
+    if _G.BRDSkillUp then pcall(_G.BRDSkillUp.cancel) end
     EntryKit.unload(BRDKeybinds)
 end

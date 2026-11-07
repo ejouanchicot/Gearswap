@@ -254,10 +254,10 @@ end
 ---   PUBLIC HANDLERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Singing: dispatch between dummy / debuff / normal song handling.
+--- The song's own handling: dummy, debuff or normal song.
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BRD_MIDCAST (see file header)
-function Router.handle_singing(spell, ctx)
+local function route_singing(spell, ctx)
     ensure_loaded()
 
     local forced = not is_dummy_song(spell.english) and forced_dummy(spell)
@@ -285,6 +285,20 @@ function Router.handle_singing(spell, ctx)
 
     -- Normal songs: full MidcastManager + instrument lock
     equip_normal_song(spell, ctx)
+end
+
+--- Singing: dispatch between dummy / debuff / normal song handling, then, for
+--- the skill-up loop's own song, its instrument over whatever the song took
+--- (logic/skillup.lua: //gs c skillup horn | harp).
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
+function Router.handle_singing(spell, ctx)
+    route_singing(spell, ctx)
+    local SkillUp = _G.BRDSkillUp
+    local instrument = SkillUp and SkillUp.instrument(spell.english)
+    -- (the ammo slot emptied with it: an ammo takes the instrument off, and the song sets carry one, Kaories'
+    -- Crepuscular Pebble in sets.midcast.BardSong, 2026-11-07)
+    if instrument then equip({range = instrument, ammo = empty}) end
 end
 
 --- Healing Magic (Cure) - subjob delegation to MidcastManager.
