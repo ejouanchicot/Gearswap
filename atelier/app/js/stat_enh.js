@@ -71,6 +71,8 @@ function spellObjectives(s){
   const p = setNames(s), hit = SPELL_OBJS.find(([re]) => re.test(p));
   return hit ? hit[1] : null;
 }
+// The jobs with no MP of their own (their subjob may give some)
+const NO_MP_JOBS = ['WAR', 'MNK', 'THF', 'BST', 'RNG', 'SAM', 'NIN', 'DRG', 'COR', 'PUP', 'DNC'];
 function statDefaultOf(s){
   const p = setNames(s), fam = family(s.path, s.pieces), tank = ['PLD', 'RUN'].includes(S.job);
   if (moveSet(s)) return ['move'];
@@ -104,6 +106,10 @@ function statDefaultOf(s){
   // a self Cure: a tank wants the most enmity from it (its HP healed x (1 + Enmity): opt_stat.js cureEnm), then the heal
   // itself; a healer the heal (its own Cure potency received in), then as little enmity as its Cure on the others
   if (/cur(e|a|aga)/i.test(p) && /self/i.test(p)) return tank ? ['cureEnm', 'cureSelf', 'pdtRed'] : ['cureSelf', 'enmityLow', 'pdtRed'];
+  // a set to draw as little as can be (sets.LessEnmity: the player, 2026-11-06), before the sets named for Enmity
+  if (/less ?enmity|enmity ?low|low ?enmity/i.test(p)) return ['enmityLow', 'pdtRed', 'mdtRed'];
+  // resting (/heal): what comes back while sitting, the Refresh first on a job with MP of its own, then the Regen
+  if (segs(s.path)[0] === 'resting') return NO_MP_JOBS.includes(S.job) ? ['regen', 'pdtRed', 'mdtRed'] : ['refresh', 'regen', 'pdtRed'];
   if (/enmity|flash|crusade|provoke|foil|sird|sentinel|rampart|vallation|valiance|pflug|swordplay|battuta|liement|gambit|rayke/i.test(p)) return ['enmity', 'def', 'hp'];
   // a Cure on the others, and the job's Healing Magic set (worn for a Cure with no set of its own): the HP it heals
   // (its potency was capped at 50 % on every healer's set, then the search added Enmity: Kaories' RDM, 2026-10-22);
@@ -186,7 +192,8 @@ function statFloorDefault(s, first){
   if (isCharmSet(s)) return {};
   // a Ready set : worn for the move's instant, no damage taken floor ; a physical one starts from the pet's Accuracy
   if (readyKind(s)) return readyKind(s) === 'phys' || readyKind(s) === 'multi' ? {petAccBase: PET_ENG.accBase} : {};
-  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) || songOf(s) ? {} : {pdt: -50, mdt: -29};
+  const tank = ['PLD', 'RUN'].includes(S.job), always = tank || gains || enhContext(s) || enfContext(s) || edContext(s) || darkContext(s) || healerCure(s) || songOf(s) ? {} : {pdt: -50, mdt: -21};
+  // (DT+MDT -21: Shell V's -29 counts under the same -50 cap, statlines.ts; -29 until 2026-11-06)
   if (first === 'fc') return Object.assign({fc: 80}, always);
   if (!tank) return Object.assign(always, sird, hpBand(s));
   const hp = hpBand(s);
@@ -235,9 +242,10 @@ function hpRefLine(ref){
 // The reference's menus, in the stats optimizer (statpage.ts): its rule, and the set it is
 function hpRefView(){
   const {rule, path} = hpRefRule(), d = data();
-  const sets = d ? d.sets.filter(x => !baseOnly(x) && statSet(x)).map(x => ({value: x.path, label: shortPath(x.path), selected: x.path === path})) : [];
+  // (a WAR's engaged and weaponskill sets too: one of them can be the reference, hpFloorWorn)
+  const sets = d ? d.sets.filter(x => !baseOnly(x) && (statSet(x) || (HP_REF_WORN[S.job] && refFamily(x, {path: ''})))).map(x => ({value: x.path, label: shortPath(x.path), selected: x.path === path})) : [];
   return {title: t('hrTitle'), tip: t('hrTip'), rules: [['none', 'hrNone'], ['ceil', 'hrCeil'], ['floor', 'hrFloor']].map(([v, k]) => ({v, label: t(k), pressed: rule === v})),
-    sets: rule === 'none' ? null : [{value: '', label: t('hrAuto'), selected: !path}, ...sets]};
+    sets: rule === 'none' ? null : [{value: '', label: t(HP_REF_WORN[S.job] ? 'hrAutoWorn' : 'hrAuto'), selected: !path}, ...sets]};
 }
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-hpref-rule]');
@@ -253,16 +261,50 @@ document.addEventListener('change', e => {
   S.hpRefBy = Object.assign({}, S.hpRefBy, {[k]: Object.assign({}, (S.hpRefBy || {})[k], {path: sel.value})});
   render();
 });
+// The sets the automatic reference is the lowest of: the classic Fast Cast sets; a WAR's engaged and weaponskill sets
+// as saved (its Fast Cast is for casting its trusts: the player, 2026-11-06), never the set searched itself nor one worn
+// on top of another (a town's, a movement's), only in town or only resting. Not its idle and job ability sets (the
+// player, 2026-11-07): those are the sets the band holds, and once in the reference each search dragged it 100 lower
+const HP_REF_WORN = {WAR: ['engaged', 'ws']};
+// A WAR's engaged and weaponskill sets held in the band too, once a set is chosen as the reference (the player,
+// 2026-11-07: every set within 100 HP of the lowest one searched freely, a weaponskill set). Not with the automatic
+// reference: it is the lowest of these very sets, so each search would pull it 100 lower. An engaged set may go
+// HP_ENG_MARGIN over the reference (the player, 2026-11-07: dropping 150 HP with a Hoxne Ring cost speed for nothing;
+// going from it to a weaponskill then cuts 250 at most). {hp, hpMax} or {}
+const HP_ENG_MARGIN = 150;
+function hpFloorWorn(s){
+  // (a job ability's set searched as an engaged one too: Jump, its round)
+  const fam = family(s.path, s.pieces);
+  if (!HP_REF_WORN[S.job] || !hpRefRule().path || !['idle', 'engaged', 'ws', 'ja'].includes(fam)) return {};
+  const band = hpBand(s);
+  return fam === 'engaged' && band.hpMax ? Object.assign({}, band, {hpMax: band.hpMax + HP_ENG_MARGIN}) : band;
+}
+function refFamily(x, s){
+  const fam = family(x.path, x.pieces), worn = HP_REF_WORN[S.job];
+  if (!worn) return fam === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path));
+  return x.path !== s.path && worn.includes(fam) && !noStatSearch(x) && !moveSet(x) && !/^sets\.(idle\.Town|Adoulin|Town|resting)\b/.test(x.path) && !jaOverlayBase(x);
+}
 function hpRef(s){
   const {rule, path} = hpRefRule();
-  if (rule === 'none' || family(s.path, s.pieces) === 'fc') return null;
-  // (during a run over every set, opt_sets.js, the reference as just found: the sets after it follow its new HP)
+  if (rule === 'none' || (!HP_REF_WORN[S.job] && family(s.path, s.pieces) === 'fc')) return null;
+  // the reference as the page shows it, its tried pieces in: a set searched alone and the same set in a run over every
+  // set (opt_sets.js, where the reference was just found) aim at the same band (before 2026-11-07 a set alone read the
+  // reference as saved, so the two found different sets)
   const d = data(), chosen = path && d ? d.sets.find(x => x.path === path) : null;
-  if (chosen) return chosen.path === s.path ? null : {hp: statFigures(chosen, !S._optChain).hp, path: chosen.path};
-  const list = d ? d.sets.filter(x => family(x.path, x.pieces) === 'fc' && !(/cure/i.test(x.path) && /self/i.test(x.path))) : [];
+  if (chosen) return chosen.path === s.path ? null : {hp: statFigures(chosen, false).hp, path: chosen.path};
+  const list = d ? d.sets.filter(x => refFamily(x, s)) : [];
   let low = null;
-  for (const x of list) { const hp = statFigures(x, !S._optChain).hp; if (!low || hp < low.hp) low = {hp, path: x.path}; }
+  for (const x of list) { const hp = refHp(x, d, false); if (!low || hp < low.hp) low = {hp, path: x.path}; }
   return low;
+}
+// A set's HP as worn: a job ability's set that leaves armour slots out (a WAR's Warrior's Charge: its few pieces) is
+// laid over the engaged set, what it goes on when used in a fight; any other set by itself
+const ARMOUR_SLOTS = ['head', 'neck', 'ear1', 'ear2', 'body', 'hands', 'ring1', 'ring2', 'back', 'waist', 'legs', 'feet'];
+function refHp(x, d, plain){
+  const eng = family(x.path, x.pieces) === 'ja' && ARMOUR_SLOTS.some(sl => !x.pieces[sl]) ? d.sets.find(y => y.path === 'sets.engaged') : null;
+  if (!eng) return statFigures(x, plain).hp;
+  const under = plain ? withoutTrial(() => withWeapons(eng).pieces) : withWeapons(eng).pieces;
+  return statFigures(Object.assign({}, x, {pieces: Object.assign({}, under, x.pieces)}), plain).hp;
 }
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none

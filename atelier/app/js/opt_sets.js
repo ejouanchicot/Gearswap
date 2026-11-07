@@ -48,7 +48,11 @@ function osOrder(list){
     const over = jaOverlayBase(x.s), dwOn = dwTierOf(x.s.path) && dwBaseSet(x.s), base = by.get(x.s.base) || (over && by.get(over.path)) || (dwOn && by.get(dwOn.path));
     if (base) add(base);
     out.push(x); };
-  list.filter(x => family(x.s.path, x.s.pieces) === 'fc').forEach(add);
+  // (a WAR: its weaponskill, engaged and Dual Wield sets first, the reference of its other sets being the lowest of them
+  // as just found: stat_enh.js HP_REF_WORN)
+  // (the reference chosen first of all: the others' band is its HP as just found)
+  list.filter(x => x.s.path === hpRefRule().path).forEach(add);
+  list.filter(x => HP_REF_WORN[S.job] ? x.kind !== 'stat' : family(x.s.path, x.s.pieces) === 'fc').forEach(add);
   list.forEach(add);
   return out;
 }
@@ -96,11 +100,39 @@ function optSetsClick(d){
 // The search under way in a run: optResult (optimizer.js) hands it its result, optStop its stop, optLaunch a failure
 let OS_DONE = null;
 function osSearchEnd(info){ const f = OS_DONE; OS_DONE = null; if (f) f(info); return !!f; }
-// One set: its own optimizer, waited for. A search that never started (a case the engine does not compute) says why
+// A set as it is when opened: the run opens it (setlist.ts follows it: its support profile, its subjob, WAR's by how it
+// holds its weapons, its engaged goal, an Aftermath Lv.3 set DPS, another the time to the weaponskill), its profile as
+// opening it gives (buffs_tier.js tierOfSet: a version its own, a weaponskill or engaged set Full, another the one last
+// picked by hand), so a set searched alone finds what the run found. Without it
+// every set was searched under the set shown (2026-11-06: LaphriaAFM3 shown, Laphria.Solo searched with the Full buffs
+// and DPS, Naegling /SAM)
+function osAsOpened(R, x){
+  const path = x.s.path;
+  setBuffTier(tierOfSet(path));
+  S.selPath[S.job] = path; S._found = null;
+  // twice: the subjob the set opens moves the page to that subjob's copy of the sets
+  const sub = (data() || {}).sub;
+  render();
+  if ((data() || {}).sub !== sub) render();
+  const s = (S._bypath || {})[path] || x.s;
+  S._curSet = s;
+  return s;
+}
+// Back to the set shown before the run, with its profile, subjob and goal as they were
+function osRestore(R){
+  const k = R.keep;
+  setBuffTier(k.tier);
+  if (k.sub) S.subs[S.char + '|' + S.job] = k.sub; else delete S.subs[S.char + '|' + S.job];
+  S.optOpts = Object.assign({}, S.optOpts, {engObj: k.engObj});
+  S.selPath[S.job] = k.sel; S._found = null;
+  S._tierPath = S._subPath = S._objPath = S.char + '|' + S.job + '|' + (k.sel || '');
+}
+// One set: its own optimizer, waited for, the set as when opened (osAsOpened). A search that never started (a case the
+// engine does not compute) says why
 async function osOne(R, x, i, todo){
   const done = new Promise(res => { OS_DONE = res; });
   S._optScratch = R.scratch; S.toast = '';
-  await OS_RUN[x.kind](x.s);
+  await OS_RUN[x.kind](osAsOpened(R, x));
   if (OS_DONE && !S._optBusy) { OS_DONE = null; return {error: S.toast || '?'}; }
   // the search window says which set of how many (atelier/src/screens/optimizer/OptRun.svelte)
   const run = S._optRun;
@@ -115,7 +147,8 @@ async function optSetsGo(){
   const todo = R.list.filter(x => R.on[x.s.path]);
   if (!todo.length) return;
   closeOverlay();
-  Object.assign(R, {running: true, by: {}, before: {}, todo, t0: performance.now()});
+  Object.assign(R, {running: true, by: {}, before: {}, todo, t0: performance.now(),
+    keep: {tier: buffTier(), sub: S.subs[S.char + '|' + S.job], engObj: (S.optOpts || {}).engObj, sel: S.selPath[S.job]}});
   const keep = {where: (S.optOpts || {}).where, fullSpeed: (S.optOpts || {}).fullSpeed};
   // your pieces only, at full speed (the player's choice, SPEC); each set's other settings are its own
   S.optOpts = Object.assign({}, S.optOpts, {where: 'mine', fullSpeed: true});
@@ -132,6 +165,7 @@ async function optSetsGo(){
       R.by[x.s.path] = osRecord(x, out);
     }
   } finally {
+    osRestore(R);
     S.optOpts = Object.assign({}, S.optOpts, keep);
     S._optChain = false; S._optScratch = false;
   }

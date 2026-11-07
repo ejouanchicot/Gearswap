@@ -2,8 +2,11 @@
 // (SPEC notes/docs-perso/engaged-par-mode-2026-11-06).
 // - A mode is read from the set's name, on every job: sets.engaged and .STP the time to the weaponskill, .Acc the share
 //   of the attacks that land then that time, .SB Subtle Blow (to its cap) then that time, a Kraken Club set (.PDTKC,
-//   NaeglingKC: weapons.js isKraken) the time with the club kept in the off hand. Each holds DT+PDT -50 and DT+MDT -29
-//   (the player's rule, 2026-11-06; Shell V does the rest). A .Group / .Solo / .Trust version is its mode's.
+//   NaeglingKC: weapons.js isKraken) the time with the club kept in the off hand. Each holds DT+PDT -50 and DT+MDT -21
+//   (Shell V's -29 does the rest: it counts under the same -50 cap, statlines.ts; -29 until 2026-11-06 took Shell's
+//   figure for the gear's). A .Group / .Solo / .Trust version is its mode's.
+//   WAR names its Subtle Blow mode .SubtleBlow, and orders it its own way: Subtle Blow, then DT, then the time, no DT
+//   floor held (ENG_JOB_MODE, opt_round.js "sb_dt").
 //   The goal and limits chosen on the optimizer's page for such a set are kept for that set (S.optOpts.engBy[path]):
 //   they come before the mode's (ws_page.js engOpts). Another engaged set keeps the page's shared settings.
 // - A Dual Wield tier (sets.DW.<Tier>, or a mode's own sets.DW.<Mode>.<Tier>: shared/utils/equipment/dual_wield.lua)
@@ -22,6 +25,9 @@ Object.assign(T.fr, {engObj_acc: 'Chance de toucher, puis temps jusqu’à la WS
   objTip_sb: 'Le Subtle Blow du set comme le jeu le compte : I et II plafonnés à 50 % chacun, 75 % ensemble (BG Wiki Subtle_Blow). À Subtle Blow égal, le temps réel jusqu’à la WS départage.',
   engDone_acc: 'Optimisé : chance de toucher {a} → {b}, {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.',
   engDone_sb: 'Optimisé : Subtle Blow {a} → {b}, {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m}.',
+  engObj_sb_dt: 'Subtle Blow au cap, puis DT, puis temps jusqu’à la WS', objD_sb_dt: 'le Subtle Blow (75 %), puis le DT, puis la vitesse',
+  objTip_sb_dt: 'D’abord le Subtle Blow du set comme le jeu le compte (I et II 50 % chacun, 75 % ensemble). À Subtle Blow égal, le plus de DT : DT+PDT jusqu’à -50 % et DT+MDT jusqu’à -21 % (Shell V fait le reste). À égalité, le temps réel jusqu’à la WS.',
+  engDone_sb_dt: 'Optimisé : Subtle Blow {a} → {b}, {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m}.',
   engHitLbl: 'Chance de toucher (round)', engModeNote: 'But de ce set par son nom ({m}) : gardé pour ce set seulement.', engModeReset: 'But du mode',
   dwNoBase: 'Pas de set engaged sous ce palier ({p}).', dwNoTwo: 'Le set {p} ne tient pas deux armes : pas de Dual Wield à chercher.',
   dwDone: 'Palier {t} sur {p} · Haste magique {h} % · /{sub}', osOnlyEng: 'Engaged seulement', osEngBtn: 'Optimiser tous les engaged',
@@ -32,6 +38,9 @@ Object.assign(T.en, {engObj_acc: 'Hit chance, then time to the weaponskill', eng
   objTip_sb: 'The set’s Subtle Blow as the game counts it: I and II capped at 50 % each, 75 % together (BG Wiki Subtle_Blow). At equal Subtle Blow, the real time to the weaponskill breaks the tie.',
   engDone_acc: 'Optimized: hit chance {a} → {b}, {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m} · Subtle Blow {sb}.',
   engDone_sb: 'Optimized: Subtle Blow {a} → {b}, {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m}.',
+  engObj_sb_dt: 'Subtle Blow to its cap, then DT, then time to the weaponskill', objD_sb_dt: 'Subtle Blow (75 %), then DT, then speed',
+  objTip_sb_dt: 'First the set’s Subtle Blow as the game counts it (I and II 50 % each, 75 % together). At equal Subtle Blow, the most DT: DT+PDT down to -50 % and DT+MDT down to -21 % (Shell V does the rest). Then the real time to the weaponskill.',
+  engDone_sb_dt: 'Optimized: Subtle Blow {a} → {b}, {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m}.',
   engHitLbl: 'Hit chance (round)', engModeNote: 'This set’s goal by its name ({m}): kept for this set only.', engModeReset: 'Mode’s goal',
   dwNoBase: 'No engaged set under this tier ({p}).', dwNoTwo: 'The set {p} does not hold two weapons: no Dual Wield to search.',
   dwDone: 'Tier {t} over {p} · magic haste {h} % · /{sub}', osOnlyEng: 'Engaged only', osEngBtn: 'Optimize all engaged',
@@ -39,7 +48,12 @@ Object.assign(T.en, {engObj_acc: 'Hit chance, then time to the weaponskill', eng
 
 /* ---- an engaged set's mode ---- */
 const ENG_MODE_GOAL = {base: 'tp_real', STP: 'tp_real', Acc: 'acc', SB: 'sb', KC: 'tp_real'};
-const ENG_MODE_FLOOR = {pdt: -50, mdt: -29};
+const ENG_MODE_FLOOR = {pdt: -50, mdt: -21};
+// the name a job gives its Subtle Blow mode (WAR's HybridMode SubtleBlow: war/keys/WAR_STATES.lua)
+const ENG_MODE_ALIAS = {SubtleBlow: 'SB'};
+// A job's own order for a mode: WAR's Subtle Blow first, then DT+PDT and DT+MDT, then the time to the weaponskill
+// (the player's choice, 2026-11-06), so no DT floor held before the Subtle Blow
+const ENG_JOB_MODE = {WAR: {SB: {engObj: 'sb_dt', pdt: 0, mdt: 0}}};
 // The mode of an engaged set by its name, or null (a set named otherwise: the page's shared settings):
 // {key: base|STP|Acc|SB|KC, name: the word in the path}
 function engModeOf(path){
@@ -50,13 +64,15 @@ function engModeOf(path){
   if (k.length !== 1) return null;
   const m = k[0];
   if (ENG_MODE_GOAL[m] && m !== 'base' && m !== 'KC') return {key: m, name: m};
+  if (ENG_MODE_ALIAS[m]) return {key: ENG_MODE_ALIAS[m], name: m};
   return /KC$/.test(m) ? {key: 'KC', name: m} : null;
 }
 // The settings a mode gives its set, then those kept for that set ({} for a set with no mode)
 function engModeOpts(s){
   const m = s && engModeOf(s.path);
   if (!m) return {};
-  return Object.assign({engObj: ENG_MODE_GOAL[m.key]}, ENG_MODE_FLOOR, (((S.optOpts || {}).engBy || {})[s.path]) || {});
+  return Object.assign({engObj: ENG_MODE_GOAL[m.key]}, ENG_MODE_FLOOR, (ENG_JOB_MODE[S.job] || {})[m.key] || {},
+    (((S.optOpts || {}).engBy || {})[s.path]) || {});
 }
 const ENG_KEPT = ['engObj', 'pdt', 'mdt', 'sb'];
 // A goal or limit changed on the optimizer's page of a set with a mode: kept for that set (events.js); false otherwise
@@ -75,7 +91,7 @@ function engModeReset(path){
   S.optOpts = Object.assign({}, S.optOpts, {engBy: by});
 }
 // How a goal's figure reads (the time objectives keep theirs: optimizer.js, opt_sets.js), or null
-const engObjFmt = obj => obj === 'acc' ? v => (+v).toFixed(2) + ' %' : obj === 'sb' ? v => String(Math.round(v)) : null;
+const engObjFmt = obj => obj === 'acc' ? v => (+v).toFixed(2) + ' %' : obj === 'sb' || obj === 'sb_dt' ? v => String(Math.round(v)) : null;
 // A round's hit chance, in % (opt_round.js hitShare), for the page's table
 const engHitPct = r => r && r.attacks && r.attacks.swings ? 100 * r.attacks.hits / r.attacks.swings : null;
 // A Kraken Club set's off hand stays the club, free weapons or not

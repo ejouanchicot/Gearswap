@@ -47,7 +47,7 @@ export interface OptPageView {
   noEngine: string | null;
   statWhat: StatWhatView | null;
   statResult: StatResultView | null;
-  what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; search: SearchView};
+  what: null | {top: NukeTop | {k: 'limits'; limits: LimitsView}; hpRef: null | {view: ReturnType<typeof hpRefView>; band: string}; title: string; helpBtnHtml: string; help: string; objs: Objective[]; params: Param[]; search: SearchView};
   result: null | {title: string; none: string | null; big: null | {label: string; value: string; diff: null | {text: string; up: boolean}; was: string; verdict: null | {cls: string; text: string}};
     visual: Visual | null; was: boolean; heads: string[]; rows: ResultRow[]; changes: ChangesView | null; trial: TrialRow | null; noTry: string; notes: string; calc: RoundCalc | null};
 }
@@ -69,7 +69,16 @@ function whatOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']> {
   const lim = (k: string, label: string) => limitTile('data-optopt', k, label, mine[k]);
   const top = kind === 'nuke' ? nukeTop(s)
     : {k: 'limits' as const, limits: limitsView(t('opLimits'), [lim('pdt', pdtLabel() + ' ≤'), lim('mdt', 'DT+MDT ≤'), lim('sb', 'Subtle Blow ≥')].concat(kind === 'ws' ? [lim('hit', t('optHitLbl'))] : []))};
-  return {top, title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), search: searchView(o, kind === 'ws')};
+  return {top, hpRef: hpRefOf(s, kind), title: t('opWhat'), helpBtnHtml: helpBtn('optpage'), help, objs, params: paramsOf(s, kind, cur), search: searchView(o, kind === 'ws')};
+}
+
+// The job's HP reference on an engaged or weaponskill set, when the job's reference is one of those (a WAR: stat_enh.js
+// HP_REF_WORN), with the band this set keeps (hpFloorWorn: an engaged set HP_ENG_MARGIN over the reference)
+function hpRefOf(s: LegacyAny, kind: string): NonNullable<OptPageView['what']>['hpRef'] {
+  if (!HP_REF_WORN[st().job] || !['ws', 'eng', 'jump'].includes(kind)) return null;
+  const {rule, path} = hpRefRule(), b = hpFloorWorn(s);
+  const band = rule === 'none' ? '' : b.hp ? t(b.hpMax ? 'hrBand' : 'hrBandFloor', {a: b.hp, b: b.hpMax}) : !path ? t('hrNeedSet') : path === s.path ? t('hrIsRef') : '';
+  return {view: hpRefView(), band};
 }
 
 // The block on a nuke set (nuke_layers.js): the situation, the belt and the job's layers in plain words, the slots

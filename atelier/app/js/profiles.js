@@ -64,7 +64,7 @@ function profSave(name){
 function profLoad(name){
   const p = profAll()[name];
   if (!p) return;
-  if (p._tier && p._tier !== buffTier()) setBuffTier(p._tier);
+  if (p._tier && p._tier !== buffTier()) pickTierByHand(p._tier);
   const b = buffState();
   // a profile of before held the party only: what it does not name stays
   if (p._tier !== undefined) for (const k of Object.keys(b)) if (!k.startsWith('_') && !(k in p)) delete b[k];

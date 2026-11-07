@@ -13,7 +13,7 @@
     if (!O) return;
     // An engaged set's attack round (the engine's average_attack_round, from 0 TP to the weaponskill at opts.wsAt, 1000
     // by default): {time: seconds to the weaponskill, dps, tp: TP a round, damage: a round's}; null for an unknown piece
-    var ROUND_OBJ = {tp_real: "Time to WS", tp_time: "Time to WS", dps: "DPS", tp_round: "TP return", acc: "Time to WS", sb: "Time to WS"};
+    var ROUND_OBJ = {tp_real: "Time to WS", tp_time: "Time to WS", dps: "DPS", tp_round: "TP return", acc: "Time to WS", sb: "Time to WS", sb_dt: "Time to WS"};
     // The hits landing in one round, as a distribution {hits: probability}: each hand swings once, plus a Quadruple
     // (3 more), else a Triple (2), else a Double Attack (1), each swing landing at the hand's hit rate
     // A hand's swings in one round, as a distribution {swings: chance}, in the game's order (BG Wiki Multi-Attack):
@@ -133,7 +133,7 @@
             var cy = O.cycle(Object.assign({}, opts.cycle, {pieces: {engaged: pieces, ws: opts.cycle.wsPieces}}));
             return cy ? {v: cy.dps, raw: cy.dps, def: pl.def, round: null, cycle: cy} : null;
         }
-        var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real", real = obj === "tp_real" || obj === "acc" || obj === "sb";
+        var obj = ROUND_OBJ[opts.objective] ? opts.objective : "tp_real", real = obj === "tp_real" || obj === "acc" || obj === "sb" || obj === "sb_dt";
         var r = roundOf(ctx, pl.player, Object.assign({}, opts, {real: real}));
         // speed only (damage has its DPS objective): the real time first, two sets as fast parted by the engine's average
         // time (the one that fills its rounds sooner keeps a margin)
@@ -142,6 +142,12 @@
         // a round's attacks that land (in %, to 0.01: two sets at the hit rate cap are equal, and the speed decides),
         // "sb" the Subtle Blow as the game counts it (O.defense: I and II 50 each, 75 together, BG Wiki Subtle_Blow); each
         // point of the goal weighs more than any time to the weaponskill
+        // "sb_dt" (WAR's Subtle Blow mode, eng_modes.js ENG_JOB_MODE): the Subtle Blow, then the DT the gear gives up to
+        // DT+PDT -50 and DT+MDT -21 (Shell V's -29 does the rest), then that speed; no DT floor held before the Subtle Blow
+        if (obj === "sb_dt") {
+            var dt = Math.min(50, Math.max(0, -(pl.def.pdt || 0))) + Math.min(21, Math.max(0, -(pl.def.mdt || 0)));
+            return {v: (pl.def.sb || 0) * 1e8 + dt * 1e4 + speed, raw: pl.def.sb || 0, def: pl.def, round: r};
+        }
         if (obj === "acc" || obj === "sb") {
             var goal = obj === "acc" ? hitShare(r.detail) : (pl.def.sb || 0);
             return {v: goal * 1e4 + speed, raw: goal, def: pl.def, round: r};

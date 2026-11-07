@@ -226,8 +226,11 @@
         // a party WAR's Warcry: its attack and the TP Bonus of its Savagery merits and Agoge Mask, worked out by
         // the page (the engine's own "Warcry" is a WAR's: 700 TP Bonus and +60 attack)
         if (c.partyWarcry != null) agg[0].party_warcry = {"Attack%": Math.trunc(99 / 4 + 4.75) / 256, "TP Bonus": c.partyWarcry};
-        // a WAR main's own Warcry: the engine counts 700 TP Bonus (Savagery 5/5 with Agoge Mask); the page's choice moves it
-        if (c.warcryTpDelta) agg[0].own_warcry = {"TP Bonus": c.warcryTpDelta};
+        // a WAR main's own Warcry: the TP Bonus of its Savagery merits and Agoge Mask, worked out by the page. Our engine
+        // gives Warcry none (calc/calc_abilities.js: no merit known); the engine before counted 700 (5/5 with the mask),
+        // taken off there. Before 2026-11-06 the page sent only the move from 700: our engine counted 0
+        var ownWc = (c.ownWarcryTp || 0) - (c.ownWarcryTp && FFXI.engine && FFXI.engine.name === "old" ? 700 : 0);
+        if (ownWc) agg[0].own_warcry = {"TP Bonus": ownWc};
         // a party SMN's Avatar's Favor at BG Wiki's top values (the page's partyStats; the engine's own are lower or higher)
         if (c.partyStats && Object.keys(c.partyStats).length) agg[0].party_favor = c.partyStats;
         // a Dual Wield tier's search (the page's dw_tiers.js): the magic haste of that tier in place of the buffs' (Haste,
@@ -241,7 +244,10 @@
             primeStage: c.primeStage, dmgMul: physMul(c), mode: c.mode || "ws", sbBuff: c.sbBuff || 0,
             physResBy: c.physResBy || null, banish: c.banish, tomahawk: c.tomahawk, fanDance: c.fanDance || null,
             spells: c.spells || null, spellType: c.spellType || "Elemental Magic", nuke: c.nuke || null,
-            layers: c.layers || null, belt: c.belt || null};
+            layers: c.layers || null, belt: c.belt || null,
+            // the HP without gear, a set's HP (defOf: its HP band and an engaged set's ties). Before 2026-11-07 not kept
+            // here: every set's HP in the search was its gear's alone
+            hpBase: c.hpBase != null ? c.hpBase : (typeof c.nakedHp === "number" ? c.nakedHp : 0)};
         // a Magic Burst set (O.nuke): the old engine reads the burst as an ability, ours as the spell's option (calc_bridge.js)
         if (out.mode === "nuke" && c.magicBurst) out.abilities = Object.assign({}, out.abilities, {"Magic Burst": true});
         return out;
@@ -409,12 +415,13 @@
         def.pdt = Math.round(((1 + Math.max(def.pdt, -50) / 100) * (1 - def.fan / 100) - 1) * 1000) / 10;
         return def;
     }
-    // How far a set is from the floors (0 when it meets them): opts.floor = {pdt: -50, mdt: -21, sb: 0, hit: 0},
-    // hit the weaponskill's hit rate in % (O.hit)
+    // How far a set is from the floors (0 when it meets them): opts.floor = {pdt: -50, mdt: -21, sb: 0, hit: 0, hp, hpMax},
+    // hit the weaponskill's hit rate in % (O.hit); hp / hpMax the HP band (the page's stat_enh.js hpFloorWorn), a point a HP
     function shortfall(def, floor, hit) {
         if (!floor) return 0;
         return Math.max(0, def.pdt - (floor.pdt == null ? 0 : floor.pdt)) + Math.max(0, def.mdt - (floor.mdt == null ? 0 : floor.mdt))
-            + Math.max(0, (floor.sb || 0) - def.sb) + (floor.hit && hit != null ? Math.max(0, floor.hit - hit) : 0);
+            + Math.max(0, (floor.sb || 0) - def.sb) + (floor.hit && hit != null ? Math.max(0, floor.hit - hit) : 0)
+            + (floor.hp && def.hp != null ? Math.max(0, floor.hp - def.hp) : 0) + (floor.hpMax && def.hp != null ? Math.max(0, def.hp - floor.hpMax) : 0);
     }
     // The hit rates (%) of a weaponskill, as FFXI.average_ws counts them (actions.js): [its first hit
     // (+100 accuracy), the hits after it and the extra hits of a double / triple attack], the main hand's

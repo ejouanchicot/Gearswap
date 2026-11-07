@@ -142,6 +142,8 @@ sets['Aurgelmir Orb +1'] = {
 --                      IDLE SETS                            --
 -- ============================================================--
 
+sets.resting = {}                             -- /heal
+
 --- Base Idle (Balanced TP gain + defensive stats)
 sets.idle = {
     ammo = 'Coiste Bodhar',

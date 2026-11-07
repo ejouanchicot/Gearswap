@@ -132,7 +132,8 @@ end
 local function job_precast_bardsong_2(spell)
     local instrument = InstrumentLockConfig.get_instrument(spell.english)
 
-    -- Equip instrument immediately
+    -- Equip instrument immediately (its ammo slot emptied after the precast set:
+    -- job_post_precast)
     equip({range = instrument})
 
     -- Set global flags to protect instrument during cast
@@ -268,6 +269,15 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
+    end
+
+    -- A song keeps its instrument: the game takes the instrument off when an
+    -- ammo goes on, and Honor March / Aria of Passion are then refused at the
+    -- cast's start. A Fast Cast set's ammo (Sapience Orb in sets.precast.FC,
+    -- inherited by FC.BardSong) did it: trace 2026-11-06, "interrupted" with no
+    -- action started. Here, after Mote laid the precast set over job_precast.
+    if spell.type == 'BardSong' then
+        equip({ammo = empty})
     end
 
     -- ══════════════════════════════════════════════════════════════════════════

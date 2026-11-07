@@ -198,8 +198,10 @@ function optContextInput(s){
       for (const [k, v] of Object.entries(eng)) partyStats[k] = (partyStats[k] || 0) + v;
       continue;
     }
-    // Haste Samba at the page's value (merits, a party DNC main or sub)
-    if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja); continue; }
+    // Haste Samba at the page's value (merits, a party DNC main or sub): a percent (5.1), the engine's JA Haste a
+    // fraction of 1 (calc/calc_abilities.js). Before 2026-11-06 the percent went as is: 5.1 read as 510 %, capped at
+    // 25 %, a /DNC's engaged round far too fast
+    if (base === 'Haste Samba') { partyStats['JA Haste'] = (partyStats['JA Haste'] || 0) + sambaHaste(ja) / 100; continue; }
     abilities[ja.as === 'sub' && base === 'Warcry' ? base + ' (sub)' : base] = true;
   }
   const skill = wsSkills()[ws] || '';
@@ -208,7 +210,7 @@ function optContextInput(s){
     rollOpts: [0, 1].map(i => ({job: rollJobOn(b, i), cc: b.rollCC != null && +b.rollCC === i})),
     // Fan Dance's cut of the physical damage taken, counted by the search in the DT + PDT it is asked for (atelier/opt.js defOf)
     fanDance: abilities['Fan Dance'] ? {merit: danceMerit('fan')} : null,
-    warcryTpDelta: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) - 700 : 0, partyStats, sbBuff: auspiceSb(b), ws,
+    ownWarcryTp: S.job === 'WAR' && abilities.Warcry ? warcryTp(b) : 0, partyStats, sbBuff: auspiceSb(b), ws,
     // your measured base attributes and merits, as data: a worker has no page to ask (atelier/opt.js withBase)
     base: measuredBase((S.job || '').toLowerCase()),
     // the HP without gear (merits and buffs in), for Lycurgos's TP Bonus (atelier/calc/calc_page.js lycurgosTpBonus)

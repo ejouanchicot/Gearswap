@@ -49,24 +49,50 @@ function tpPiecesLocal(list, pieces, eff){
 // The game is on another job (or closed): the rule as this job's export kept it (tp_rule: its TP pieces and each
 // held weapon's TP Bonus), answered in the shape of /tpbonus. No buff and no Fencer in it: the game alone works
 // those out, on that job (`offline` says so)
-function tpOffline(pieces, tp){
+function tpOffline(pieces, tp, s){
   const rule = (data() || {}).tp_rule;
   if (!rule || !Array.isArray(rule.piece_list)) return null;
   const tpOf = rule.weapon_tp || {};
   const held = [...new Set(['main', 'sub', 'range'].map(sl => pieces[sl] && !isEmpty(pieces[sl]) ? pieces[sl].name : '').filter(Boolean))];
+  // your own Warcry, ticked in the Buffs panel: its TP Bonus as the game's rule counts it (Savagery merits, 140 a level
+  // with Agoge Mask: WAR_TP_CONFIG.lua get_warcry_bonus, buffs.js warcryTp), counted here too (a WAR's weaponskill read
+  // while the game is on BRD showed 1650 + the pieces, without it); Fencer as the engine counts it (fencerTp). Other
+  // buffs (Hagakure...) stay the game's
+  const b = buffState(), mine = (jasOf().some(j => j.name === 'Warcry' && j.as === 'main') && jaOn(b, 'Warcry') ? warcryTp(b, false) : 0)
+    + (s ? fencerTp(s, pieces) : 0);
   const weapon = held.reduce((n, name) => n + (tpOf[name] || 0), 0);
   const names = tpWeaponNames().split('|').filter(Boolean);
-  const r = {offline: true, config: true, worn_aware: true, bonus: weapon, weapon_bonus: weapon, piece_list: rule.piece_list,
+  const r = {offline: true, config: true, worn_aware: true, bonus: weapon + mine, weapon_bonus: weapon, piece_list: rule.piece_list,
     weapon_tp: Object.fromEntries(names.map(n => [n, tpOf[n] || 0])), pieces: Object.fromEntries(rule.piece_list.map(p => [p.name, p.bonus])),
     total: rule.piece_list.reduce((n, p) => n + p.bonus, 0), thresholds: rule.thresholds || [2000, 3000]};
-  if (tp) r.gear = tpPiecesLocal(rule.piece_list, pieces, Math.min(3000, +tp + partyTp()) + weapon);
+  if (tp) r.gear = tpPiecesLocal(rule.piece_list, pieces, Math.min(3000, +tp + partyTp()) + weapon + mine);
   return r;
+}
+// Fencer's TP Bonus with these weapons, as our engine counts it (calc/calc_stats.js applyFencer: the trait's tier for the
+// job and level, the job point gifts of WAR and BST, a one-handed weapon alone in the hands, a shield allowed); 0 without
+// the engine. Kept per character, job and weapons
+let FENCER_MEMO = {};
+function fencerTp(s, pieces){
+  const g = typeof CALC !== 'undefined' ? CALC : null;
+  if (!g || !g.wielding || !g.FENCER || !engineReady()) return 0;
+  const key = [DATA_GEN, S.char, S.job, (data() || {}).sub, (pieces.main || {}).name, (pieces.sub || {}).name].join('|');
+  if (key in FENCER_MEMO) return FENCER_MEMO[key];
+  let v = 0;
+  try {
+    const ctx = FFXI.opt.context(optContextInput(s)), hands = optPieces({main: pieces.main, sub: pieces.sub});
+    const gs = FFXI.opt.gearset(ctx, hands);
+    if (gs && g.wielding(gs).oneHandedAlone) {
+      const st = FFXI.create_player(ctx.job, ctx.sub, ctx.ml, gs, ctx.buffs, ctx.abilities).stats || {}, rank = Math.min(st.Fencer || 0, g.FENCER.tpBonus.length);
+      v = rank ? g.FENCER.tpBonus[rank - 1] + (st['Fencer TP Bonus'] || 0) : 0;
+    }
+  } catch (e) { v = 0; }
+  return (FENCER_MEMO[key] = v);
 }
 // The game's answer for these weapons and buffs (and this TP, when given), asked once and kept
 function tpAsk(s, pieces, tp){
   const c = S.char, L = S._live[c] || {};
   if (family(s.path, s.pieces) !== 'ws') return null;
-  if (!liveOk(c) || L.job !== S.job) return tpOffline(pieces, tp);
+  if (!liveOk(c) || L.job !== S.job) return tpOffline(pieces, tp, s);
   const main = (pieces.main || {}).name || '', sub = (pieces.sub || {}).name || '', buffs = tpBuffs();
   // the ranged weapon's TP Bonus counts on any weaponskill (a COR's Anarchy +2: +1000 on Savage Blade)
   const range = pieces.range && !isEmpty(pieces.range) ? pieces.range.name : '';
@@ -191,7 +217,7 @@ function optSettingsHelp(hit){
 }
 /* ---- the engaged optimizer: the attack round (atelier/engine/actions.js average_attack_round) ---- */
 // (acc and sb: the goals of the Acc and SB modes, eng_modes.js; the time to the weaponskill decides after them)
-const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round', 'acc', 'sb'];
+const ENG_OBJS = ['tp_real', 'tp_time', 'dps', 'tp_round', 'acc', 'sb', 'sb_dt'];
 // A Jump (and High Jump, the same set): one attack round in its own set (BG Wiki: Double / Triple Attack and multi-hit
 // weapons count), so the optimizer reads the TP of a round (the defense floors are the engaged ones)
 const isJumpSet = path => /^sets\.precast\.JA(\.Jump|\["High Jump"\])$/.test(path || '');

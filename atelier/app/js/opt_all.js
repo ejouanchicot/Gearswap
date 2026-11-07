@@ -80,12 +80,12 @@ function oaSearch(input, seq, show){
     // a stop (optStop) hands the workers back to the pool: nothing comes back, so the wait ends itself
     const watch = setInterval(() => { if (seq !== OPT_SEQ) { clearInterval(watch); reject(new Error('stopped')); } }, 300);
     let workers;
-    const end = () => { clearInterval(watch); optPoolGive(workers); resolve(outs.reduce((a, b) => b.score > a.score ? b : a)); };
+    const end = () => { clearInterval(watch); optPoolGive(workers); resolve(optBestOut(outs, input.start)); };
     try {
       workers = optPoolRun(input, shares, {
         step: (i, p) => { if (seq === OPT_SEQ) optRunStep(i, p); },
         fail: msg => { clearInterval(watch); optPoolGive(workers || []); reject(new Error(msg)); },
-        done: (i, out) => { if (seq !== OPT_SEQ) return; outs.push(out); shares[i].forEach(optRunWalkDone); if (outs.length === shares.length) end(); }});
+        done: (i, out) => { if (seq !== OPT_SEQ) return; outs.push({i, out}); shares[i].forEach(optRunWalkDone); if (outs.length === shares.length) end(); }});
     } catch (e) { clearInterval(watch); return reject(e); }
   });
 }
@@ -160,7 +160,8 @@ async function oaOne(R, v, choices, opts, seq){
   const own = startOf(lockedBase(s, oaPlain(s)), lockedSlots(s));
   rec.start = rec.exists ? own : oaFinal(R, fb) || own;
   rec.ctx = oaAs(s, v.tier, () => optContextInput(s));
-  const res = rec.res = await oaSearch({ctx: rec.ctx, start: rec.start, choices: Object.assign({}, choices), prefilter: 0, opts: Object.assign({}, opts)}, seq,
+  // (a WAR's HP band, its own for each version: stat_enh.js hpFloorWorn)
+  const res = rec.res = await oaSearch({ctx: rec.ctx, start: rec.start, choices: Object.assign({}, choices), prefilter: 0, opts: Object.assign({}, opts, {floor: Object.assign({}, opts.floor, oaAs(s, v.tier, () => hpFloorWorn(s)))})}, seq,
     (starts, cores) => oaShow(R, v, s, opts, starts, cores));
   rec.opts = opts;
   rec.best = res.best.raw;

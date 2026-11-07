@@ -66,7 +66,10 @@ const enmityMaxSet = s => !!s && segs(s.path)[0] === 'EnmityMax' && ['PLD', 'RUN
 const CITY_MOVE = {Adoulin: {"Councilor's Garb": 25}};
 const cityMove = (p, s) => { const m = s && CITY_MOVE[segs(s.path)[0]]; return (m && p && m[p.name]) || 0; };
 // (a BST's sets.pet.engaged is one: the pet's stats, bst_pet.js; its Ready move sets are not)
-const statSet = s => !!s && !songInstrumentSet(s) && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
+// Sets with nothing to search: sets.naked; a WAR's ranged sets (it does not shoot: the player, 2026-11-06; Tomahawk is a
+// job ability, sets.precast.JA.Tomahawk keeps its own search)
+const noStatSearch = s => { const k = segs(s.path).join('.'); return k === 'naked' || (S.job === 'WAR' && /^(precast|midcast)\.RA$/.test(k)); };
+const statSet = s => !!s && !noStatSearch(s) && !songInstrumentSet(s) && (isPetSet(s) || !['ws', 'engaged', 'weapons', 'pet'].includes(family(s.path, s.pieces))) && !isJumpSet(s.path) && !sabOverlay(s);
 // What a set is for when nothing was chosen: the guide's profiles (idle DEF then Enmity then MDB; Enmity then DEF;
 // Phalanx then DEF; Fast Cast then HP)
 // A tank (PLD, RUN) wants Enmity on every action its set is worn for, after what the action itself needs (the

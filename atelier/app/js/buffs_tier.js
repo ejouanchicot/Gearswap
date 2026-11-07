@@ -76,14 +76,16 @@ function withTierBuffs(tier, fn){
   S._buffOverride = b;
   try { return fn(); } finally { S._buffOverride = keep; }
 }
-// The buffs follow the set opened (once, when it changes): a .Group, .Solo or .Trust version opens that profile, a weaponskill
-// or engaged set that has such versions opens Full; another set leaves the profile as it is
+// The buffs follow the set opened (once, when it changes): a .Group, .Solo or .Trust version opens that profile, any other
+// weaponskill or engaged set opens Full (what it is written for: push.js pushTarget), another set opens
+// the one last picked by hand (handTier). A run over every set opens each set the same way (opt_sets.js osAsOpened):
+// before 2026-11-07 a set kept the profile left by the set seen before (a .Trust version, then sets.idle.PDT searched with
+// the Trust buffs), so searched alone it could find another set than in that run
 function tierFollowsSet(path, bypath){
   const at = S.char + '|' + S.job + '|' + path;
   if (!path || at === S._tierPath) return;
   S._tierPath = at;
-  const v = (path.match(/\.(Group|Solo|Trust)$/) || [])[1];
-  const tier = v || (TIERED.test(path) && (bypath[path + '.Group'] || bypath[path + '.Solo'] || bypath[path + '.Trust']) ? 'Full' : null);
+  const tier = tierOfSet(path);
   if (tier && tier !== buffTier()) { setBuffTier(tier); save(); setTimeout(render, 0); }
 }
 // The subjob a job plays with each way of holding its weapons: a two-handed weapon, a weapon in each hand, one
@@ -119,6 +121,17 @@ function objFollowsSet(path, bypath){
   if ((S.optOpts || {}).engObj === 'cycle') return;
   const obj = isAfm3(path) ? 'dps' : 'tp_real';
   if ((S.optOpts || {}).engObj !== obj) { S.optOpts = Object.assign({}, S.optOpts, {engObj: obj}); save(); }
+}
+// The profile a set is opened with (tierFollowsSet, osAsOpened)
+function tierOfSet(path){
+  const v = (path.match(/\.(Group|Solo|Trust)$/) || [])[1];
+  return v || (TIERED.test(path) ? 'Full' : handTier());
+}
+// The profile last picked by hand (the profile bar, a saved profile loaded), Full before any
+const handTier = () => (S.tierHand || {})[S.char] || 'Full';
+function pickTierByHand(tier){
+  if (TIERS.includes(tier)) S.tierHand = Object.assign({}, S.tierHand, {[S.char]: tier});
+  setBuffTier(tier);
 }
 function setBuffTier(tier){
   if (!TIERS.includes(tier) || tier === buffTier()) return;

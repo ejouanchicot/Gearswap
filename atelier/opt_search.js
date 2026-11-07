@@ -84,6 +84,18 @@
             var r = O.value(ctx, trial, opts);
             if (r.v >= res.score - 1e-13) { res.pieces = trial; res.score = r.v; res.best = r; }
         });
+        // the two rings or earrings of the set, the other way round: put back as the set had them. Before 2026-11-07 a
+        // set searched alone from the result of a run over every set could swap them for nothing (NaeglingKC.Solo's
+        // earrings), and the two searches did not agree
+        var key = function (p) { return p && p.name ? p.name + "|" + (p.augs || []).join("|") : "—"; };
+        [["ring1", "ring2"], ["ear1", "ear2"]].forEach(function (pair) {
+            var a = pair[0], b = pair[1];
+            if (!start[a] || !start[b] || key(res.pieces[a]) === key(start[a])) return;
+            if (key(res.pieces[a]) !== key(start[b]) || key(res.pieces[b]) !== key(start[a])) return;
+            var trial = Object.assign({}, res.pieces); trial[a] = res.pieces[b]; trial[b] = res.pieces[a];
+            var r = O.value(ctx, trial, opts);
+            if (r.v >= res.score - 1e-13) { res.pieces = trial; res.score = r.v; res.best = r; }
+        });
     }
     // The walk only takes a move that gains, so two things it leaves (the player, 2026-10-25, Kaories' WHM: a dozen
     // enhancing sets with no back, Ambuscade capes not had yet; an Empyrean earring in the left ear): each done here

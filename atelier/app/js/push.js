@@ -131,9 +131,13 @@ async function pushGo(){
 // again. Without it a job the game had not loaded showed its old set again once the page was reloaded, its search
 // offered the pieces written again and the push said "nothing to change" (Tetsouo's BLM IntEnfeebles, 2026-10-22)
 function pushedKeep(s, plan){
+  // a push before on the same set, its export not come yet: its slots this one does not write stay kept (the page lost
+  // them: sets.engaged.Laphria's ear2 and waist, pushed at 16:49, gone with the push of 17:18, 2026-11-06)
+  const same = x => x.c === S.char && x.j === S.job && x.path === s.path && x.plan;
+  const slots = new Set(plan.map(e => e.slot)), before = (S.pushed || []).filter(same).flatMap(x => x.plan).filter(e => !slots.has(e.slot));
   S.pushed = (S.pushed || []).filter(x => !(x.c === S.char && x.j === S.job && x.path === s.path));
   S.pushed.push({c: S.char, j: S.job, path: s.path, at: stamp(),
-    plan: plan.map(e => ({slot: e.slot, kind: e.kind, piece: e.piece ? {name: e.piece.name, augs: e.piece.augs} : null}))});
+    plan: before.concat(plan.map(e => ({slot: e.slot, kind: e.kind, piece: e.piece ? {name: e.piece.name, augs: e.piece.augs} : null})))});
   pushedApply();
 }
 // A set just created, kept the same way: shown at once (the game's export of it comes a few seconds later, built a
@@ -172,7 +176,7 @@ function pushedApply(){
       // a set just created: the page's copy until the game's export has it (createdKeep)
       if (x.made) { if (!(d.sets || []).some(y => y.path === x.path)) { d.sets = (d.sets || []).concat([Object.assign(JSON.parse(JSON.stringify(x.made)), {_made: true})]); DATA_GEN++; } continue; }
       const s = (d.sets || []).find(y => y.path === x.path);
-      if (s) patchSet(s, x.plan);
+      if (s) patchSet(s, x.plan, d);
     }
     return old.length > 0;
   });
@@ -185,13 +189,28 @@ function dropSets(d, gone){
     ? Object.assign({}, x, {aliases: x.aliases.filter(a => !gone.includes(a))}) : x);
   if (d.sets.length !== before) DATA_GEN++;
 }
-// The page's copy of a set given the pieces a push wrote
-function patchSet(s, plan){
+// The page's copy of a set given the pieces a push wrote. An export's set holds every piece it wears, its base's
+// included: a line that went (inherit) takes the base's piece again, not nothing (a slot left without a piece read as
+// one to empty, and the next push wrote `empty` there: sets.engaged.Laphria back, legs, feet, 2026-11-06). The sets
+// built on it that do not write that slot themselves take its new piece too, as GearSwap does
+function patchSet(s, plan, d){
+  const sets = (d && d.sets) || [], byPath = p => sets.find(y => y.path === p), copy = p => JSON.parse(JSON.stringify(p));
+  const base = s.base ? byPath(s.base) : null;
   for (const e of plan) {
-    if (e.kind === 'inherit') delete s.pieces[e.slot];
+    const bp = base && base.pieces && base.pieces[e.slot];
+    if (e.kind === 'inherit') { if (bp) s.pieces[e.slot] = copy(bp); else delete s.pieces[e.slot]; }
     else s.pieces[e.slot] = e.kind === 'empty' ? {name: 'empty'} : {name: e.piece.name, augs: e.piece.augs};
     if (Array.isArray(s.own)) s.own = e.kind === 'inherit' ? s.own.filter(x => x !== e.slot) : [...new Set(s.own.concat([e.slot]))];
   }
+  // the pieces saved in test for the set (set_overrides.lua, s.was) left with the push (pushGo): an export older than
+  // the push still lists them, and kept the set "changed", its Push button there with nothing to push
+  delete s.was;
+  const slots = plan.map(e => e.slot), seen = new Set([s.path]);
+  const down = from => { for (const y of sets) if (y.base === from.path && !seen.has(y.path) && Array.isArray(y.own)) {
+    seen.add(y.path);
+    for (const slot of slots) if (!y.own.includes(slot)) { if (from.pieces[slot]) y.pieces[slot] = copy(from.pieces[slot]); else delete y.pieces[slot]; }
+    down(y); } };
+  down(s);
   DATA_GEN++;
 }
 /* ---- delete: a set and its versions taken out of the set file (set_push.lua, /delete) ---- */

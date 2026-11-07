@@ -1,6 +1,6 @@
 // Atelier check "engaged modes" (atelier/app/js/eng_modes.js; notes/docs-perso/engaged-par-mode-2026-11-06/SPEC.md):
 //   1. a mode read from the set's name on every job (base, STP, Acc, SB, a Kraken Club set; Solo / Group / Trust
-//      their mode's; any other name none), its goal and the DT+PDT -50 / DT+MDT -29 limits, a setting kept for a set
+//      their mode's; any other name none), its goal and the DT+PDT -50 / DT+MDT -21 limits, a setting kept for a set
 //      before the mode's;
 //   2. on Tetsouo's BRD, each mode's search (its own pieces): the mode's goal, the limits held, the Acc set's hit
 //      chance and the SB set's Subtle Blow never lower than before, the Kraken Club kept in the PDTKC set's off hand;
@@ -45,16 +45,16 @@ const TIERS = ['NoHaste', 'Haste', 'HasteII', 'MaxHaste'];
   names.out.forEach(([p, obj, pdt, mdt], i) => {
     const want = NAMES[i][1];
     if (obj !== want) fail(`${p} goal ${obj} (want ${want})`);
-    else if (want && (pdt !== -50 || mdt !== -29)) fail(`${p} limits ${pdt} / ${mdt}`);
-    else console.log(`ok   ${p} -> ${obj || 'no mode'}${want ? ' · -50 / -29' : ''}`);
+    else if (want && (pdt !== -50 || mdt !== -21)) fail(`${p} limits ${pdt} / ${mdt}`);
+    else console.log(`ok   ${p} -> ${obj || 'no mode'}${want ? ' · -50 / -21' : ''}`);
   });
-  if (names.kept.join() !== '-40,-29,sb' || names.other.join() !== '-50,-29') fail(`kept setting ${names.kept} / other set ${names.other}`);
+  if (names.kept.join() !== '-40,-21,sb' || names.other.join() !== '-50,-21') fail(`kept setting ${names.kept} / other set ${names.other}`);
   else console.log('ok   a limit typed for SB kept for SB alone');
 
   // one search, its result and its options (optimizer.js optResult)
-  const search = (fn, p) => page.evaluate(async (fn, p) => {
+  const search = (fn, p, job = 'BRD') => page.evaluate(async (fn, p, job) => {
     const wait = ms => new Promise(res => setTimeout(res, ms));
-    S.char = 'Tetsouo'; S.job = 'BRD'; S.section = 'sets'; render();
+    S.char = 'Tetsouo'; S.job = job; S.section = 'sets'; render();
     const s = (S._bypath || {})[p];
     if (!s) return {missing: true};
     S.optOpts = Object.assign({}, S.optOpts, {where: 'mine', fullSpeed: true}); S._optScratch = false; S.toast = '';
@@ -73,7 +73,7 @@ const TIERS = ['NoHaste', 'Haste', 'HasteII', 'MaxHaste'];
     const baseNames = base ? Object.fromEntries(Object.entries(base).map(([k, x]) => [k, x && x.name])) : null;
     return {obj: opts.engObj, floor: [opts.pdt, opts.mdt], start: {raw: got.start.raw, def: got.start.def, hit: pc(got.start.round)}, best: {raw: got.best.raw, def: got.best.def, miss: got.best.miss, hit: pc(got.best.round), round: rd(got.best.round)},
       sub: (got.pieces.sub || {}).name || null, trial, baseNames, dw: opts.dw ? {tier: opts.dw.tier, haste: opts.dw.haste, sub: opts.dw.sub} : null, toast};
-  }, fn, p);
+  }, fn, p, job);
 
   // 2. the BRD modes
   for (const [p, want] of MODES) {
@@ -82,7 +82,7 @@ const TIERS = ['NoHaste', 'Haste', 'HasteII', 'MaxHaste'];
     if (r.none) { fail(`${p} no result: ${r.toast}`); continue; }
     const d = r.best.def, tag = `${p} ${r.obj} ${fmt(r.start.raw)} -> ${fmt(r.best.raw)} · DT+PDT ${d.pdt} DT+MDT ${d.mdt} SB ${d.sb} · hit ${fmt(r.start.hit)} -> ${fmt(r.best.hit)} % · sub ${r.sub}`;
     if (r.obj !== want) { fail(`${tag}: goal (want ${want})`); continue; }
-    if (r.best.miss || d.pdt > -50 || d.mdt > -29) { fail(`${tag}: limits not held`); continue; }
+    if (r.best.miss || d.pdt > -50 || d.mdt > -21) { fail(`${tag}: limits not held`); continue; }
     if (want === 'acc' && r.best.raw < r.start.raw) { fail(`${tag}: hit chance lost`); continue; }
     if (want === 'sb' && r.best.raw < r.start.raw) { fail(`${tag}: Subtle Blow lost`); continue; }
     if (/KC$/.test(p) && r.sub !== 'Kraken Club') { fail(`${tag}: Kraken Club not kept`); continue; }
@@ -101,10 +101,35 @@ const TIERS = ['NoHaste', 'Haste', 'HasteII', 'MaxHaste'];
     const tag = `${p} ${r.obj} ${fmt(r.start.raw)} -> ${fmt(r.best.raw)} s · magic haste ${mh != null ? (100 * mh).toFixed(2) : '?'} % · DW ${rd.dw} · delay ${(100 * left).toFixed(1)} % (floor 20) · DT+PDT ${d.pdt} DT+MDT ${d.mdt} · /${r.dw.sub} · try ${JSON.stringify(r.trial)}`;
     const want = {NoHaste: 0, Haste: 0.15, HasteII: 0.30, MaxHaste: 448 / 1024}[tier];
     if (mh == null || Math.abs(mh - want) > 1e-9) { fail(`${tag}: magic haste not the tier's`); continue; }
-    if (r.best.miss || d.pdt > -50 || d.mdt > -29) { fail(`${tag}: limits not held`); continue; }
+    if (r.best.miss || d.pdt > -50 || d.mdt > -21) { fail(`${tag}: limits not held`); continue; }
     const same = Object.entries(r.trial).filter(([slot, n]) => n && r.baseNames[slot] === n);
     if (same.length) { fail(`${tag}: the try repeats the engaged set's ${same.map(x => x[0])}`); continue; }
     console.log(`ok   ${tag}`);
+  }
+  // 4. WAR's Subtle Blow mode (sets.engaged.SubtleBlow): Subtle Blow, then DT, then the time, no DT floor before it;
+  //    BRD's .SB keeps its goal and limits
+  const war = await page.evaluate(() => {
+    S.char = 'Tetsouo'; S.job = 'WAR'; render();
+    const w = engModeOpts({path: 'sets.engaged.SubtleBlow'}), g = engModeOpts({path: 'sets.engaged.SubtleBlow.Group'});
+    S.job = 'BRD'; render();
+    const b = engModeOpts({path: 'sets.engaged.SB'});
+    return [[w.engObj, w.pdt, w.mdt], [g.engObj], [b.engObj, b.pdt, b.mdt]];
+  });
+  if (war[0].join() !== 'sb_dt,0,0' || war[1].join() !== 'sb_dt' || war[2].join() !== 'sb,-50,-21') fail(`WAR SubtleBlow / BRD SB goals ${JSON.stringify(war)}`);
+  else console.log('ok   WAR sets.engaged.SubtleBlow -> sb_dt, no floor · BRD sets.engaged.SB -> sb -50 / -21');
+  {
+    const p = 'sets.engaged.SubtleBlow', r = await search('optimizeEngaged', p, 'WAR');
+    if (r.missing) fail(`WAR ${p} not found`);
+    else if (r.none) fail(`WAR ${p} no result: ${r.toast}`);
+    else {
+      const dt = d => Math.min(50, Math.max(0, -(d.pdt || 0))) + Math.min(21, Math.max(0, -(d.mdt || 0)));
+      const s0 = r.start.def, d = r.best.def;
+      const tag = `WAR ${p} ${r.obj} SB ${fmt(r.start.raw)} -> ${fmt(r.best.raw)} · DT ${fmt(dt(s0))} -> ${fmt(dt(d))} (DT+PDT ${d.pdt} DT+MDT ${d.mdt})`;
+      if (r.obj !== 'sb_dt') fail(`${tag}: goal`);
+      else if (r.best.raw < r.start.raw) fail(`${tag}: Subtle Blow lost`);
+      else if (r.best.raw === r.start.raw && dt(d) < dt(s0)) fail(`${tag}: DT lost at equal Subtle Blow`);
+      else console.log(`ok   ${tag}`);
+    }
   }
   if (errs.length) fail('page errors: ' + errs.slice(0, 3).join(' | '));
   await browser.close();

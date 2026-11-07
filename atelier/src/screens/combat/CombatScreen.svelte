@@ -16,7 +16,9 @@
   import {legacy} from '../../stores/legacy.svelte';
   import {combatView} from './combat';
   import {itemIcon, type FxCard} from './member';
-  import type {Item} from './panel';
+  import type {Item, Block} from './panel';
+  // a section's setting lines (Warcry's Savagery), drawn under its tiles
+  const extrasOf = (items: Item[]): Block[] => items.flatMap(it => it.k === 'extra' ? [{k: 'extra', ctl: it.ctl} as Block] : []);
   import Panel from './Panel.svelte';
   import Ctl from './Ctl.svelte';
   import Eff from './Eff.svelte';
@@ -71,7 +73,9 @@
               {/each}
             </div>
             {#if ed.rest}{#each ed.rest.left.concat(ed.rest.right) as bl, i (i)}
-              {#if bl.k === 'section' && bl.items.every(it => it.k !== 'extra')}<div class="kopt"><h4>{bl.title}</h4><div class="koptg">{#each bl.items as it, j (j)}{@render opt(it)}{/each}</div></div>
+              <!-- (a setting's line, Warcry's Savagery once Warcry is on, under the tiles: before 2026-11-07 it turned the section back into a list) -->
+              {#if bl.k === 'section' && bl.items.some(it => it.k !== 'extra')}{@const extras = extrasOf(bl.items)}<div class="kopt"><h4>{bl.title}</h4><div class="koptg">{#each bl.items.filter(it => it.k !== 'extra') as it, j (j)}{@render opt(it)}{/each}</div></div>
+                {#if extras.length}<div class="krest pbbody" class:pbyou={ed.tab.key === 'you'}><Panel view={{left: extras, right: []}} /></div>{/if}
               {:else}<div class="krest pbbody" class:pbyou={ed.tab.key === 'you'}><Panel view={{left: [bl], right: []}} /></div>{/if}
             {/each}{/if}
           </div>

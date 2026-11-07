@@ -206,7 +206,7 @@ document.addEventListener('click', e => {
     S._buffUndo = {key: buffKey(), state: JSON.parse(JSON.stringify(old)), what: b.textContent.trim()};
     for (const k of PERSONAL) if (old[k] !== undefined) fresh[k] = old[k];
     S.buffs[buffKey()] = fresh; render(); return; }
-  if (d.bufftier) { setBuffTier(d.bufftier); render(); return; }
+  if (d.bufftier) { pickTierByHand(d.bufftier); save(); render(); return; }
   if (d.ja) { const b0 = buffState(), role = jaRole(d.ja), ja = b0[role] = b0[role] || {}, off = b0.jaOff = b0.jaOff || {};
     if (jaOn(b0, d.ja)) { delete ja[d.ja]; off[d.ja] = 1; }
     // one the set's name decides (a DNC's dances, Climactic Flourish: buffs.js setNamed): only put back on, never ticked

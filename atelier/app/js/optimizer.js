@@ -16,6 +16,22 @@ function optWalks(input){
   const base = FFXI.opt.startsFor(input.choices, input.opts), n = OPT_CORES * (input.opts && input.opts.fast ? OPT_FAST_WALKS : 1);
   return base.concat([...Array(Math.max(0, n - base.length))].map((_, i) => 'mix' + (i + 1)));
 }
+// The best of the workers' results ([{i: share, out}]), whatever order they came back in: the higher score (the rank
+// before the Pet DT / Charm+ passes, opt_search.js runGen), at the same score the one that changes fewer pieces of the
+// set, then the first share. Before 2026-11-07 the first to come back won a tie, so a set searched alone and in a run
+// over every set (at full speed: other timings) could get two sets of the same value (sets.buff.Doom's rings swapped)
+function optBestOut(list, start){
+  const rk = o => o.rank != null ? o.rank : o.score;
+  const key = p => p && p.name ? p.name + '|' + (p.augs || []).join('|') : '';
+  const moved = o => Object.keys(Object.assign({}, start, o.pieces)).filter(k => key(o.pieces[k]) !== key(start[k])).length;
+  return list.reduce((a, b) => {
+    const d = rk(b.out) - rk(a.out), tol = 1e-12 * Math.max(Math.abs(rk(a.out)), 1);
+    if (d > tol) return b;
+    if (d < -tol) return a;
+    const ma = moved(a.out), mb = moved(b.out);
+    return mb < ma || (mb === ma && b.i < a.i) ? b : a;
+  }).out;
+}
 const walkLabel = w => /^mix\d+$/.test(w) ? t('orWalk_mix', {n: w.slice(3)}) : t('orWalk_' + w);
 // Stop a search: its workers are dropped
 // The search running: a new one or a stop moves it on, so what an older one sends is dropped
@@ -185,7 +201,7 @@ async function optimizeWs(s){
   const weapons = o.freeWeapons ? weaponPairs(base, ws) : gripPairs(s, base, ws);
   if (weapons) choices.weapons = weapons;
   const input = {ctx: optContextInput(s), start, choices, prefilter: o.where === 'all' ? 25 : 0,
-    opts: {fast: (o.search || 'fast') !== 'classic', tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}}};
+    opts: {fast: (o.search || 'fast') !== 'classic', tp: +(S.wsTp || 3000), tps: avgTps(o), tpRule: rule, objective: o.obj || 'damage', floor: Object.assign({pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0, hit: +o.hit || 0}, hpFloorWorn(s))}};
   optLaunch(s, k, input, o);
 }
 // The engaged optimizer: the set as it is (weapons kept), its objective, the defense floors; no TP piece rule
@@ -256,7 +272,7 @@ async function optimizeEngaged(s){
   const weapons = engKrakenOnly(s, o.freeWeapons ? weaponPairs(base) : gripPairs(s, base));
   if (weapons) choices.weapons = weapons;
   const input = {ctx: engContextInput(s), start: startOf(base, lockedSlots(s)), choices, prefilter: o.where === 'all' ? 25 : 0,
-    opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: {pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}}};
+    opts: {fast: (o.search || 'fast') !== 'classic', objective: o.engObj || 'tp_real', wsAt: +o.engAt || 1000, floor: Object.assign({pdt: +o.pdt || 0, mdt: +o.mdt || 0, sb: +o.sb || 0}, hpFloorWorn(s))}};
   // a BST's set worn while both fight: the pieces carry their Pet damage taken and the levels they give the pet, which
   // the search adds once the master's set is found, within 0.1 % of its figure (bst_pet.js, opt.js petDtPass)
   if (isPetBoth(s)) {
@@ -308,16 +324,15 @@ async function optLaunch(s, k, input, o){
     // left for another character or job meanwhile: the result is not laid on that one's sets
     if (at !== S.char + '|' + S.job) return optStop();
     optResult(s, k, out, out.gains, o); }, 500); };
-  // the end: once the main walks are done, the shuffled ones still going are not waited for (more cores never make it
-  // longer); the best of the walks that finished is kept. The fast search waits for every walk: they are quick, and
-  // the shuffled ones are the ones that find a set behind a step
-  const outs = [], left = new Set(input.opts.fast ? starts : starts.filter(x => !/^mix\d+$/.test(x)));
+  // the end: every walk waited for, the best kept (optBestOut). Before 2026-11-07 the classic search did not wait for
+  // the shuffled walks once the main ones were done: which had finished by then hung on the speed (a run over every set
+  // goes at full speed), so the same set searched twice could come out two ways
+  const outs = [], left = new Set(starts);
   let workers = null;
   const end = () => {
     // ranked on the score before the Pet DT / Charm+ passes (opt.js runGen `rank`), which lower it on purpose
-    const rk = o => o.rank != null ? o.rank : o.score;
-    const best = outs.reduce((a, b) => rk(b) > rk(a) ? b : a);
-    best.evals = outs.reduce((a, b) => a + b.evals, 0);
+    const best = optBestOut(outs, input.start);
+    best.evals = outs.reduce((a, b) => a + b.out.evals, 0);
     optPoolGive(workers);
     finish(best);
   };
@@ -327,7 +342,7 @@ async function optLaunch(s, k, input, o){
       fail: msg => fail(msg),
       done: (i, out) => {
         if (!mine()) return;
-        outs.push(out);
+        outs.push({i, out});
         shares[i].forEach(walk => { optRunWalkDone(walk); left.delete(walk); });
         if (!left.size || outs.length === shares.length) end();
       }});
@@ -346,7 +361,7 @@ function optRunOpen(s, o, starts, cores, floor){
   const objLabel = o.nuke ? t(isBurstSet(s.path) ? 'nukeObjMb' : 'nukeObj') : o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
   const floors = !floor ? [] : o.stat ? [['pdt', 'DT+PDT ≤'], ['mdt', 'DT+MDT ≤'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')], ['sird', t('statSird')], ['fc', t('statFc')],
     ['ecrit', t('statEcrit')], ['enmity', t('statEnm')], ['phalanx', t('statPhx')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`)
-    : [['pdt', pdtLabel() + ' ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥']].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
+    : [['pdt', pdtLabel() + ' ≤'], ['mdt', 'DT+MDT ≤'], ['sb', 'Subtle Blow ≥'], ['hp', t('statHpMin')], ['hpMax', t('statHpMax')]].filter(([k]) => +floor[k]).map(([k, l]) => `${l} ${floor[k]}`);
   // the window is the Svelte application's (atelier/src/screens/optimizer/OptRun.svelte): it reads this, told when it
   // changes (ATELIER_RUN.changed)
   const mog = mogOn();
