@@ -68,6 +68,6 @@
         <div class="orbigrow"><span class="orbig" id="orbig">{view.told}</span>{#if view.toldGain}<span class="orgainff {view.toldGain.up ? 'up' : ''}">{t('orVsYours', {g: view.toldGain.pct})}</span>{/if}{#if view.nChanged}<span class="orn">{t('orChanged', {n: view.nChanged})}</span>{/if}</div>
         {#if view.chart}{@render chartSvg(view.chart)}{:else}<div class="orchart wait"></div>{/if}</section>
     </div>
-    <div class="orbottom"><div class="orlog" bind:this={logEl}>{#each view.log as l, i (i)}<div class="l {l.k}">{#if l.k === 'gain'}{#each l.changes || [] as c, j (j)}{#if j}{' · '}{/if}{c.slot} ▸ <span class="it">{c.name}</span>{/each} : {l.from} → {l.to}{:else}{l.text}{/if}</div>{/each}</div>{#if view.mog}{@html view.sceneHtml}{/if}</div>
+    <div class="orbottom"><div class="orlog" bind:this={logEl}>{#each view.log as l, i (i)}<div class="l {l.k}">{#if l.k === 'gain'}{#each l.changes || [] as c, j (j)}{#if j}{' · '}{/if}{c.slot} ▸ <span class="it">{c.name}</span>{/each} : {#if l.tie}{l.to} · <span class="tie">{t('orLogTie')}</span>{:else}{l.from} → {l.to}{/if}{:else}{l.text}{/if}</div>{/each}</div>{#if view.mog}{@html view.sceneHtml}{/if}</div>
   </div><footer><span class="orst">{view.status}</span><span class="sp"></span><span class="orrate" id="orrate">{view.rate}</span>{#if view.mog}<button class="btn ghost" data-moglines>{view.mogBtn}</button>{/if}<button class="btn ghost" data-orhide>{t('orHide')}</button><button class="btn" data-optstop>{t('optStop')}</button></footer>{/if}</div>
 {/if}

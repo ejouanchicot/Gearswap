@@ -17,13 +17,13 @@ const OPT_FAST_WALKS = 4;
 Object.assign(T.fr, {orEquip: 'Équipement', orLastChange: 'Dernier changement :', orFloorsOk: 'Minimums tenus', orFloorsNo: 'Minimums pas encore tenus',
   orYourSet: 'ton set : {v}', orNoFloorZone: 'minimums pas tenus', orLower: 'plus bas = mieux', orHigher: 'plus haut = mieux', orVsYours: '{g} vs ton set',
   orLogStart: 'La recherche commence sur {n} cœur(s), avec tes armes.', orLogFloors: 'Minimums tenus : {v}.', orLogFirst: 'Premier set trouvé : {v}.',
-  orLogBeat: 'Meilleur que ton set : {v} !', orLogDone: 'Recherche finie : {n} sets essayés.', orLogMore: 'autre pièce',
+  orLogBeat: 'Meilleur que ton set : {v} !', orLogTie: 'mieux sur la suite de l’objectif', orLogDone: 'Recherche finie : {n} sets essayés.', orLogMore: 'autre pièce',
   orStFloors: 'La recherche cherche d’abord à tenir tes minimums…', orStFindNow: 'Elle trouve encore mieux…', orStFind: 'Elle trouve encore mieux : dernier gain il y a {s} s.',
   orStCheck: 'Plus rien depuis {s} s : elle vérifie qu’il n’y a pas mieux ailleurs…', orStDone: 'Recherche finie.', orStStart: 'La recherche démarre…'});
 Object.assign(T.en, {orEquip: 'Equipment', orLastChange: 'Last change:', orFloorsOk: 'Floors held', orFloorsNo: 'Floors not held yet',
   orYourSet: 'your set: {v}', orNoFloorZone: 'floors not held', orLower: 'lower is better', orHigher: 'higher is better', orVsYours: '{g} vs your set',
   orLogStart: 'The search starts on {n} core(s), with your weapons.', orLogFloors: 'Floors held: {v}.', orLogFirst: 'First set found: {v}.',
-  orLogBeat: 'Better than your set: {v}!', orLogDone: 'Search done: {n} sets tried.', orLogMore: 'other piece',
+  orLogBeat: 'Better than your set: {v}!', orLogTie: 'better on the rest of the goal', orLogDone: 'Search done: {n} sets tried.', orLogMore: 'other piece',
   orStFloors: 'The search first tries to hold your floors…', orStFindNow: 'Still finding better…', orStFind: 'Still finding better: last gain {s} s ago.',
   orStCheck: 'Nothing new for {s} s: it checks there is nothing better elsewhere…', orStDone: 'Search done.', orStStart: 'The search is starting…'});
 function optWalks(input){
@@ -332,12 +332,18 @@ async function optLaunch(s, k, input, o){
   input.pace = (S.optOpts || {}).fullSpeed ? {work: 50, rest: 0} : {work: 25, rest: 25};
   starts.forEach((x, i) => shares[i % n].push(x));
   optRunOpen(s, o, starts, n, input.opts.floor, input.start);
-  // the end: the best walk, shown done a moment before the result comes up
-  const finish = out => { optRunDone(); setTimeout(() => {
+  // the end: the best walk, shown done a moment before the result comes up, once the window has told every better set
+  // (optRunTellLeft: a search of a second or two ended before its first step was shown, and the window went straight
+  // to the result, 2026-11-07); in a run over every set (opt_sets.js) no window is read, nothing waited for
+  const finish = out => { optRunDone();
+    // (the clock stopped with the search: the window still drawn while it tells the last steps)
+    const tell = setInterval(() => { if (S._optRun) ATELIER_RUN.changed(); }, 100);
+    setTimeout(() => {
+    clearInterval(tell);
     if (!mine()) return;
     // left for another character or job meanwhile: the result is not laid on that one's sets
     if (at !== S.char + '|' + S.job) return optStop();
-    optResult(s, k, out, out.gains, o); }, 500); };
+    optResult(s, k, out, out.gains, o); }, 500 + (S._optChain ? 0 : optRunTellLeft(S._optRun) * 1000)); };
   // the end: every walk waited for, the best kept (optBestOut). Before 2026-11-07 the classic search did not wait for
   // the shuffled walks once the main ones were done: which had finished by then hung on the speed (a run over every set
   // goes at full speed), so the same set searched twice could come out two ways
@@ -410,9 +416,25 @@ function optRunBest(R){
   let best = null;
   for (const w of Object.values(R.walks)) {
     if (!w.best || w.stage === 'nofloor' || w.best.miss) continue;
-    if (!best || (R.low ? w.best.raw < best.raw : w.best.raw > best.raw)) best = w.best;
+    // (by the search's score when it gives one: a stats set's later objectives part two sets of the same first figure)
+    const better = best && w.best.v != null && best.v != null ? w.best.v > best.v : !best || (R.low ? w.best.raw < best.raw : w.best.raw > best.raw);
+    if (!best || better) best = w.best;
   }
   return best;
+}
+// The window tells the better sets one after the other, a step every OPT_TELL_STEP seconds (runview.ts toldOf): when
+// each one is shown, from when it was found
+const OPT_TELL_STEP = 0.5, OPT_TELL_MAX = 10;
+function optRunTellTimes(R){
+  const found = (R.pre || []).map(p => p[0]).concat(R.series.map(p => p[0]));
+  let at = -Infinity;
+  return found.map(f => (at = Math.max(f, at + OPT_TELL_STEP)));
+}
+// Seconds left before the window has told every step, OPT_TELL_MAX at most
+function optRunTellLeft(R){
+  if (!R) return 0;
+  const times = optRunTellTimes(R), now = (performance.now() - R.t0) / 1000;
+  return times.length ? Math.min(OPT_TELL_MAX, Math.max(0, times[times.length - 1] - now)) : 0;
 }
 // The walk whose set is the best so far (optRunBest's), null before one holds the floors
 function optRunBestWalk(R){
@@ -432,7 +454,7 @@ function optRunLog(R, last, v, moved){
   // (si: the curve's step the line goes with, the window showing both at the pace it tells them: runview.ts)
   const si = R.series.length - 1;
   if (!last) R.log.push({k: 'ok', si, text: t(R.hasFloor ? 'orLogFloors' : 'orLogFirst', {v: R.fmt(v)})});
-  else R.log.push({k: 'gain', si, changes: moved, from: R.fmt(last[1]), to: R.fmt(v)});
+  else R.log.push({k: 'gain', si, changes: moved, from: R.fmt(last[1]), to: R.fmt(v), tie: last[1] === v});
   if (!R.beat && R.start != null && better(v, R.start)) { R.beat = true; R.log.push({k: 'beat', si, text: t('orLogBeat', {v: R.fmt(v)})}); }
   if (R.log.length > 60) R.log.splice(1, R.log.length - 60);
 }
@@ -455,10 +477,12 @@ function optRunStep(i, p){
   R.feed.length = Math.min(R.feed.length, 40);
   const best = optRunBest(R);
   const last = R.series[R.series.length - 1];
-  if (best && (!last || last[1] !== best.raw)) {
+  // (a better score with the same figure counts too: a stats set at its DT cap still gains on MDT, HP... and the curve
+  // showed none of its pieces, 2026-11-07)
+  if (best && (!last || last[1] !== best.raw || (best.v != null && last[4] !== best.v))) {
     // the pieces that made the step: the last move of the walk now best, when it is the walk that just moved
     const lead = optRunBestWalk(R), moved = lead === p.walk && (p.moves || []).length ? p.moves[p.moves.length - 1].changes || [] : [];
-    R.series.push([now, best.raw, moved, Object.assign({}, (lead && R.walkSet[lead]) || R.startSet)]);
+    R.series.push([now, best.raw, moved, Object.assign({}, (lead && R.walkSet[lead]) || R.startSet), best.v]);
     optRunLog(R, last, best.raw, moved);
     R.lastAt = now;
   } else if (!best) {

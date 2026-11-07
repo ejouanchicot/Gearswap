@@ -5,22 +5,20 @@
 // optRunStep: S._optRun.series [s, value, pieces moved, set], pre, startSet, log).
 //
 // The search finds most of its better sets in its first second, a dozen at once: the window tells them one after the
-// other, a step every STEP_S seconds (the curve, its log line and the slot lit together), so each can be read; once
-// the search is done, everything at once.
+// other, a step every OPT_TELL_STEP seconds (optimizer.js optRunTellTimes: the curve, its log line and the slot lit
+// together), so each can be read; a quick search's result waits for the last one (optRunTellLeft).
 //
 // @file    atelier/src/screens/optimizer/runview.ts
 // @author  ejouanchicot
 
 /** The game's equipment menu, row by row */
 export const EQ_SLOTS = ['main', 'sub', 'range', 'ammo', 'head', 'neck', 'ear1', 'ear2', 'body', 'hands', 'ring1', 'ring2', 'back', 'waist', 'legs', 'feet'];
-/** Seconds between two steps told */
-const STEP_S = 0.5;
 
 export type Cell = {slot: string; label: string; name: string; html: string; hot: boolean};
 export type Jump = {x: number; y: number; src: string; title: string};
 export type Chart = {w: number; h: number; line: string; area: string; pre: string; preX: number; base: null | {y: number; label: string; x: number};
   yTicks: Array<{y: number; label: string}>; jumps: Jump[]; end: null | {x: number; y: number; label: string}; left: number; right: number; bottom: number; top: number};
-export type LogLine = {k: string; text?: string; changes?: Array<{slot: string; name: string}>; from?: string; to?: string};
+export type LogLine = {k: string; text?: string; changes?: Array<{slot: string; name: string}>; from?: string; to?: string; tie?: boolean};
 export type Told = {pre: number; steps: number; hot: boolean};
 
 const slotName = (slot: string): string => ((SLOT_NAMES as LegacyAny)[(S as LegacyAny).lang] || {})[slot] || slot;
@@ -33,12 +31,12 @@ export const runSeconds = (R: LegacyAny): number => (performance.now() - R.t0) /
 /** How far the window has told the search: the red steps (pre) and the better sets (steps) shown, and whether the
  *  last one shown just came (its slot lit) */
 export function toldOf(R: LegacyAny, now: number): Told {
-  const all: number[] = (R.pre || []).map((p: number[]) => p[0]).concat(R.series.map((p: number[]) => p[0]));
-  if (R.done) return {pre: (R.pre || []).length, steps: R.series.length, hot: false};
-  let at = -Infinity, n = 0, shownAt = 0;
-  for (const found of all) { at = Math.max(found, at + STEP_S); if (at > now) break; n++; shownAt = at; }
+  // the result shown: everything (the search window waited for the last step: optimizer.js optRunTellLeft)
+  if (R.result) return {pre: (R.pre || []).length, steps: R.series.length, hot: false};
+  let n = 0, shownAt = 0;
+  for (const at of optRunTellTimes(R)) { if (at > now) break; n++; shownAt = at; }
   const pre = Math.min(n, (R.pre || []).length);
-  return {pre, steps: n - pre, hot: n > 0 && now - shownAt < STEP_S * 2.5};
+  return {pre, steps: n - pre, hot: n > 0 && now - shownAt < OPT_TELL_STEP * 2.5};
 }
 
 /** The best set told so far as the game's equipment menu, the slot that just changed lit */
@@ -95,7 +93,7 @@ export function chartOf(R: LegacyAny, told: Told): Chart | null {
 /** The log as the game's chat, the oldest first, as far as told */
 export function logOf(R: LegacyAny, told: Told): LogLine[] {
   return (R.log || []).filter((l: LegacyAny) => l.si == null || l.si < told.steps).map((l: LegacyAny) => l.k === 'gain'
-    ? {k: 'gain', changes: (l.changes || []).map((c: LegacyAny) => ({slot: slotName(c.slot), name: c.to})), from: l.from, to: l.to}
+    ? {k: 'gain', changes: (l.changes || []).map((c: LegacyAny) => ({slot: slotName(c.slot), name: c.to})), from: l.from, to: l.to, tie: !!l.tie}
     : {k: l.k, text: l.text});
 }
 

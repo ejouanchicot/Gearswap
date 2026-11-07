@@ -70,6 +70,7 @@
 .orff .orlog .ok{color:#8cff8c}
 .orff .orlog .gain{color:#f0f0f0}
 .orff .orlog .it{color:#f6d77a}
+.orff .orlog .tie{color:#9aa6cc}
 .orff .orlog .beat{color:#ffb070;font-weight:bold}
 .orff .mogscene{border:2px solid #c3cbe8;border-radius:9px;background:radial-gradient(70% 55% at 50% 100%,rgba(255,216,106,.16),transparent 70%),rgba(6,10,30,.7)}
 .orff .mogscene .mogstage{zoom:.6}

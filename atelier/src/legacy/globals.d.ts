@@ -395,6 +395,8 @@ declare function noEngineText(): string;
 interface Window { ATELIER_RUN?: {open: (R: LegacyAny) => void; changed: () => void} }
 declare function optRunBest(R: LegacyAny): LegacyAny;
 declare function optRunBestWalk(R: LegacyAny): string | null;
+declare function optRunTellTimes(R: LegacyAny): number[];
+declare const OPT_TELL_STEP: number;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */
