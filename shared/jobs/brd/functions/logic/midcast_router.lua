@@ -287,18 +287,21 @@ local function route_singing(spell, ctx)
     equip_normal_song(spell, ctx)
 end
 
---- Singing: dispatch between dummy / debuff / normal song handling, then, for
---- the skill-up loop's own song, its instrument over whatever the song took
---- (logic/skillup.lua: //gs c skillup horn | harp).
+--- Singing: dispatch between dummy / debuff / normal song handling, then the
+--- ammo slot emptied for every song, and for the skill-up loop's songs its
+--- instrument over whatever the song took (logic/skillup.lua: //gs c skillup).
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_singing(spell, ctx)
     route_singing(spell, ctx)
+    -- Every song keeps its instrument: an ammo takes it off, and the song sets
+    -- carry one (Kaories' Crepuscular Pebble in sets.midcast.BardSong, 2026-11-07),
+    -- so the ammo slot is emptied over whatever the set put there, as the
+    -- precast does (BRD_PRECAST.lua)
+    equip({ammo = empty})
     local SkillUp = _G.BRDSkillUp
     local instrument = SkillUp and SkillUp.instrument(spell.english)
-    -- (the ammo slot emptied with it: an ammo takes the instrument off, and the song sets carry one, Kaories'
-    -- Crepuscular Pebble in sets.midcast.BardSong, 2026-11-07)
-    if instrument then equip({range = instrument, ammo = empty}) end
+    if instrument then equip({range = instrument}) end
 end
 
 --- Healing Magic (Cure) - subjob delegation to MidcastManager.
