@@ -76,7 +76,7 @@ function oaSearch(input, seq, show){
     input.pace = (S.optOpts || {}).fullSpeed ? {work: 50, rest: 0} : {work: 25, rest: 25};
     starts.forEach((x, i) => shares[i % n].push(x));
     // the search window of a single search (optimizer.js optRunOpen: the moogle, the walks, the moves), one version a time
-    if (show) show(starts, n);
+    if (show) { show(starts, n); if (S._optRun) S._optRun.startSet = optRunNames(input.start); }
     // a stop (optStop) hands the workers back to the pool: nothing comes back, so the wait ends itself
     const watch = setInterval(() => { if (seq !== OPT_SEQ) { clearInterval(watch); reject(new Error('stopped')); } }, 300);
     let workers;

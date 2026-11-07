@@ -394,6 +394,7 @@ declare function noEngineText(): string;
 /* ---- the search window (optimizer.js, moogle.js), loosely typed ---- */
 interface Window { ATELIER_RUN?: {open: (R: LegacyAny) => void; changed: () => void} }
 declare function optRunBest(R: LegacyAny): LegacyAny;
+declare function optRunBestWalk(R: LegacyAny): string | null;
 declare function walkLabel(w: string): string;
 declare function mogSceneHTML(): string;
 /* ---- the windows over the page (trial.js, stats.js, drawer.js, stat_opt.js), loosely typed ---- */

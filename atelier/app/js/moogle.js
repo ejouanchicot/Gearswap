@@ -1,6 +1,6 @@
 // GearSwap Atelier · moogle.js: the search window's scene. While the optimizer searches, a moogle rummages in a
-// chest and throws gear over its shoulders, instead of the lines of the search (still there: a button of the window
-// shows them), in a cloud of dust and with a word now and then.
+// chest and throws gear over its shoulders beside the log of the search (a button of the window hides it), in a cloud
+// of dust and with a word now and then.
 // Drawn only when animations are on (motion.js): with them off the window is the one of before.
 // The search done, the moogle faces us beside the result: it hops for joy for a better set, is puzzled by a set that
 // was already the best. Images: atelier/app/img/mog/ (small copies of the drawings in atelier/Img/).
@@ -16,8 +16,8 @@ const MOG_SMOKE = [1, 2, 3, 2, 3, 2];
 // What the moogle does, in a loop: [pose, how long (ms), what it throws meanwhile]
 const MOG_ACT = [['left', 460, 1], ['right', 460, 1], ['left', 380, 1], ['right', 380, 1], ['dive', 1050, 3], ['up', 520, 0], ['right', 420, 1], ['left', 420, 1], ['dive', 800, 2]];
 
-Object.assign(T.fr, {mogLines: 'Voir les calculs', mogBack: 'Voir le Mog', mogAlt: 'Un Mog fouille dans un coffre pendant la recherche', mogWinAlt: 'Le Mog fête le set trouvé', mogSameAlt: 'Le Mog est perplexe : ton set était déjà le meilleur'});
-Object.assign(T.en, {mogLines: 'Show the search', mogBack: 'Show the moogle', mogAlt: 'A moogle rummages in a chest while the search runs', mogWinAlt: 'The moogle cheers for the set found', mogSameAlt: 'The moogle is puzzled: your set was already the best'});
+Object.assign(T.fr, {mogLines: 'Cacher le Mog', mogBack: 'Voir le Mog', mogAlt: 'Un Mog fouille dans un coffre pendant la recherche', mogWinAlt: 'Le Mog fête le set trouvé', mogSameAlt: 'Le Mog est perplexe : ton set était déjà le meilleur'});
+Object.assign(T.en, {mogLines: 'Hide the moogle', mogBack: 'Show the moogle', mogAlt: 'A moogle rummages in a chest while the search runs', mogWinAlt: 'The moogle cheers for the set found', mogSameAlt: 'The moogle is puzzled: your set was already the best'});
 
 const mogOn = () => motionOn();
 const mogScene = () => document.querySelector('#overlay .optrun .mogscene');

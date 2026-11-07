@@ -12,6 +12,20 @@ const optCores = n => Math.min(n, OPT_CORES);
 // The fast search makes four a core: a walk costs it next to nothing, and an objective that moves by steps (the real
 // time to the weaponskill, whole rounds) is found by few walks (4 in 32 on Laphria, 2026-10-05), so more walks find it
 const OPT_FAST_WALKS = 4;
+// The search window's words (atelier/src/screens/optimizer/OptRun.svelte): its equipment, its curve, its log as the
+// game's chat, the line that says where the search is
+Object.assign(T.fr, {orEquip: 'Équipement', orLastChange: 'Dernier changement :', orFloorsOk: 'Minimums tenus', orFloorsNo: 'Minimums pas encore tenus',
+  orYourSet: 'ton set : {v}', orNoFloorZone: 'minimums pas tenus', orLower: 'plus bas = mieux', orHigher: 'plus haut = mieux', orVsYours: '{g} vs ton set',
+  orLogStart: 'La recherche commence sur {n} cœur(s), avec tes armes.', orLogFloors: 'Minimums tenus : {v}.', orLogFirst: 'Premier set trouvé : {v}.',
+  orLogBeat: 'Meilleur que ton set : {v} !', orLogDone: 'Recherche finie : {n} sets essayés.', orLogMore: 'autre pièce',
+  orStFloors: 'La recherche cherche d’abord à tenir tes minimums…', orStFindNow: 'Elle trouve encore mieux…', orStFind: 'Elle trouve encore mieux : dernier gain il y a {s} s.',
+  orStCheck: 'Plus rien depuis {s} s : elle vérifie qu’il n’y a pas mieux ailleurs…', orStDone: 'Recherche finie.', orStStart: 'La recherche démarre…'});
+Object.assign(T.en, {orEquip: 'Equipment', orLastChange: 'Last change:', orFloorsOk: 'Floors held', orFloorsNo: 'Floors not held yet',
+  orYourSet: 'your set: {v}', orNoFloorZone: 'floors not held', orLower: 'lower is better', orHigher: 'higher is better', orVsYours: '{g} vs your set',
+  orLogStart: 'The search starts on {n} core(s), with your weapons.', orLogFloors: 'Floors held: {v}.', orLogFirst: 'First set found: {v}.',
+  orLogBeat: 'Better than your set: {v}!', orLogDone: 'Search done: {n} sets tried.', orLogMore: 'other piece',
+  orStFloors: 'The search first tries to hold your floors…', orStFindNow: 'Still finding better…', orStFind: 'Still finding better: last gain {s} s ago.',
+  orStCheck: 'Nothing new for {s} s: it checks there is nothing better elsewhere…', orStDone: 'Search done.', orStStart: 'The search is starting…'});
 function optWalks(input){
   const base = FFXI.opt.startsFor(input.choices, input.opts), n = OPT_CORES * (input.opts && input.opts.fast ? OPT_FAST_WALKS : 1);
   return base.concat([...Array(Math.max(0, n - base.length))].map((_, i) => 'mix' + (i + 1)));
@@ -317,7 +331,7 @@ async function optLaunch(s, k, input, o){
   // smooth (25 ms of work, 25 of pause: about half a core a worker) or full speed (no pause: about twice as fast)
   input.pace = (S.optOpts || {}).fullSpeed ? {work: 50, rest: 0} : {work: 25, rest: 25};
   starts.forEach((x, i) => shares[i % n].push(x));
-  optRunOpen(s, o, starts, n, input.opts.floor);
+  optRunOpen(s, o, starts, n, input.opts.floor, input.start);
   // the end: the best walk, shown done a moment before the result comes up
   const finish = out => { optRunDone(); setTimeout(() => {
     if (!mine()) return;
@@ -355,7 +369,7 @@ async function optLaunch(s, k, input, o){
 /* ---- the search window: what each walk does, the best set found so far, the moves as they come ---- */
 // S._optRun: {t0, cores, walks: {walk: {stage, phase, round, evals, start, best, done}}, feed: [], series: [[s, value]],
 // fmt, low (a time: smaller is better), done}
-function optRunOpen(s, o, starts, cores, floor){
+function optRunOpen(s, o, starts, cores, floor, start){
   const eng = !!o.eng, obj = o.stat || (eng ? (o.engObj || 'tp_real') : (o.obj || 'damage')), time = eng && /^tp_(real|time)$/.test(obj);
   const fmt = o.stat ? statFmt(obj) : time ? v => v.toFixed(2) + ' s' : eng && engObjFmt(obj) ? engObjFmt(obj) : obj === 'tp_round' || obj === 'tp_return' ? v => String(Math.round(v)) : v => fmtDmg(v);
   const objLabel = o.nuke ? t(isBurstSet(s.path) ? 'nukeObjMb' : 'nukeObj') : o.stat ? t('statObj_' + obj) : eng ? t('engObj_' + obj) : t('optObj_' + obj, {tp: S.wsTp || 3000, a: o.tpFrom || 1000, b: o.tpTo || 3000});
@@ -366,7 +380,11 @@ function optRunOpen(s, o, starts, cores, floor){
   // changes (ATELIER_RUN.changed)
   const mog = mogOn();
   S._optRun = {t0: performance.now(), cores, fmt, objLabel, low: time || obj === 'hpLow', done: false, walks: Object.fromEntries(starts.map(w => [w, {evals: 0}])), feed: [], series: [],
-    path: s.path, chips: [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors], mog, sceneHtml: mog ? mogSceneHTML() : '', moves: 0};
+    path: s.path, chips: [objLabel, t('optWhere_' + ((S.optOpts || {}).where || 'mine')), ...floors], mog, sceneHtml: mog ? mogSceneHTML() : '', moves: 0,
+    // the window's equipment, curve and log (OptRun.svelte): each walk's set as its moves change it, the best value while
+    // no set holds the floors yet (pre), what the log says
+    startSet: optRunNames(start), walkSet: {}, pre: [], log: [{k: 'sys', text: t('orLogStart', {n: cores})}], lastAt: 0,
+    hasFloor: !!floor && Object.values(floor).some(v => +v)};
   searchPark().replaceChildren();
   ATELIER_RUN.open(S._optRun);
   mogStart();
@@ -396,6 +414,28 @@ function optRunBest(R){
   }
   return best;
 }
+// The walk whose set is the best so far (optRunBest's), null before one holds the floors
+function optRunBestWalk(R){
+  const best = optRunBest(R);
+  return best ? Object.keys(R.walks).find(k => R.walks[k].best === best) || null : null;
+}
+// A set's pieces by slot as names ({slot: name}), what the moves change ({slot, from, to} as names)
+function optRunNames(pieces){
+  const out = {};
+  for (const [slot, p] of Object.entries(pieces || {})) if (p && p.name && !isEmpty(p)) out[slot] = p.name;
+  return out;
+}
+// The log, as the game's chat: the first set that holds the floors, each better set with the pieces that made it, the
+// first one better than yours
+function optRunLog(R, last, v, moved){
+  const better = (a, b) => R.low ? a < b : a > b;
+  // (si: the curve's step the line goes with, the window showing both at the pace it tells them: runview.ts)
+  const si = R.series.length - 1;
+  if (!last) R.log.push({k: 'ok', si, text: t(R.hasFloor ? 'orLogFloors' : 'orLogFirst', {v: R.fmt(v)})});
+  else R.log.push({k: 'gain', si, changes: moved, from: R.fmt(last[1]), to: R.fmt(v)});
+  if (!R.beat && R.start != null && better(v, R.start)) { R.beat = true; R.log.push({k: 'beat', si, text: t('orLogBeat', {v: R.fmt(v)})}); }
+  if (R.log.length > 60) R.log.splice(1, R.log.length - 60);
+}
 // One worker's progress: its walk's state, the moves it kept, the curve of the best found
 function optRunStep(i, p){
   const R = S._optRun;
@@ -407,11 +447,26 @@ function optRunStep(i, p){
   R.byWorker[i] = p.evals;
   R.start = R.start == null ? p.startRaw : R.start;
   w.painted = true;
-  for (const m of p.moves || []) R.feed.unshift(Object.assign({walk: p.walk, at: (performance.now() - R.t0) / 1000, id: ++R.moves}, m));
+  const now = (performance.now() - R.t0) / 1000, set = R.walkSet[p.walk] = R.walkSet[p.walk] || Object.assign({}, R.startSet);
+  for (const m of p.moves || []) {
+    R.feed.unshift(Object.assign({walk: p.walk, at: now, id: ++R.moves}, m));
+    for (const c of m.changes || []) set[c.slot] = c.to;
+  }
   R.feed.length = Math.min(R.feed.length, 40);
   const best = optRunBest(R);
   const last = R.series[R.series.length - 1];
-  if (best && (!last || last[1] !== best.raw)) R.series.push([(performance.now() - R.t0) / 1000, best.raw]);
+  if (best && (!last || last[1] !== best.raw)) {
+    // the pieces that made the step: the last move of the walk now best, when it is the walk that just moved
+    const lead = optRunBestWalk(R), moved = lead === p.walk && (p.moves || []).length ? p.moves[p.moves.length - 1].changes || [] : [];
+    R.series.push([now, best.raw, moved, Object.assign({}, (lead && R.walkSet[lead]) || R.startSet)]);
+    optRunLog(R, last, best.raw, moved);
+    R.lastAt = now;
+  } else if (!best) {
+    // no set holds the floors yet: the best value so far, drawn apart (the curve's red start)
+    const any = Object.values(R.walks).filter(w => w.best && w.stage !== 'nofloor').map(w => w.best.raw);
+    const v = any.length ? (R.low ? Math.min(...any) : Math.max(...any)) : null, lp = R.pre[R.pre.length - 1];
+    if (v != null && (!lp || lp[1] !== v)) R.pre.push([now, v]);
+  }
   // the window may be closed (Hide): the compartment's line goes on
   S._optProgress = {round: p.round, evals: optRunEvals(R), ms: performance.now() - R.t0};
   ATELIER_RUN.changed();
@@ -475,6 +530,7 @@ function optRunDone(){
   const R = S._optRun;
   if (!R) return;
   R.done = true; clearInterval(OPT_RUN_CLOCK); optRunClock(); mogStop();
+  R.log.push({k: 'sys', text: t('orLogDone', {n: optRunEvals(R).toLocaleString()})});
   Object.keys(R.walks).forEach(optRunWalkDone);
   ATELIER_RUN.changed();
 }
