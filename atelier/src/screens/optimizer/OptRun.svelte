@@ -48,7 +48,7 @@
 </script>
 
 {#snippet chartSvg(c: Chart)}<svg class="orchart" viewBox="0 0 {c.w} {c.h}" preserveAspectRatio="xMidYMid meet">
-          <defs><linearGradient id="orgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd86a" stop-opacity=".22"/><stop offset="1" stop-color="#ffd86a" stop-opacity="0"/></linearGradient></defs>
+          <defs><linearGradient id="orgold" x1="0" y1="0" x2="0" y2="1"><stop class="gstop" offset="0" stop-opacity=".22"/><stop class="gstop" offset="1" stop-opacity="0"/></linearGradient></defs>
           {#each c.yTicks as y, i (i)}<line class="grid" x1={c.left} x2={c.w - c.right} y1={y.y} y2={y.y}/><text class="tick" x={c.left - 6} y={y.y + 4} text-anchor="end">{y.label}</text>{/each}
           {#if c.pre}<rect class="nofl" x={c.left} y={c.top} width={Math.max(0, c.preX - c.left)} height={c.h - c.top - c.bottom}/><text class="noflt" x={c.left + 4} y={c.h - c.bottom - 6}>{t('orNoFloorZone')}</text><path class="pre" d={c.pre}/>{/if}
           {#if c.base}<line class="base" x1={c.left} x2={c.w - c.right} y1={c.base.y} y2={c.base.y}/><text class="basel" x={c.base.x} y={c.base.y + 15} text-anchor="end">{c.base.label}</text>{/if}

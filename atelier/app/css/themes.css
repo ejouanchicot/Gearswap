@@ -275,3 +275,27 @@
 /* a phone: the bar on several lines, the character's job and subjob under its name */
 @media (max-width:700px){.app .topbar{flex-wrap:wrap}.app .topbar .hero,.app .topbar .hero .who{flex-wrap:wrap;min-width:0;max-width:100%}.app .topbar .hero .plates{flex-wrap:wrap;min-width:0;max-width:100%}
   .app .topbar .hero .topsel{max-width:150px}}
+
+/* ============================================================================ the game's window (every theme)
+   The colours of the game's windows and chat, as variables (notes/docs-perso/theme-ffxi-2026-11-07/SPEC.md): the
+   search window reads them (optrun.css), the other screens will. Every theme gets them from its own colours; Vana'diel
+   sets them to the game's own (the search window as first drawn, 2026-11-07). */
+:root{
+  --fx-frame:var(--line-strong); --fx-frame-in:var(--line); --fx-glow:transparent; --fx-line:var(--line);
+  --fx-win:linear-gradient(180deg,var(--panel-2),var(--panel)); --fx-pane:linear-gradient(180deg,var(--panel-2),var(--panel));
+  --fx-well:var(--well); --fx-ink:var(--ink); --fx-label:var(--muted); --fx-dim:var(--faint); --fx-value:var(--accent);
+  --fx-shadow:none; --fx-stroke:var(--panel);
+  --fx-btn:linear-gradient(180deg,var(--panel-2),var(--panel)); --fx-btn-hover:linear-gradient(180deg,var(--hover),var(--panel-2));
+  --fx-cell:linear-gradient(180deg,var(--panel-2),var(--well)); --fx-cell-edge:var(--line-strong); --fx-hot:var(--accent);
+  --fx-sys:var(--accent); --fx-item:var(--aug); --fx-gain:var(--r-healer); --fx-lack:var(--r-dd); --fx-lvl:var(--g-off);
+}
+:root:is([data-theme="dark"],[data-theme="grimoire"]){--fx-shadow:1px 1px 0 rgba(0,0,0,.75); --fx-stroke:#000}
+:root[data-theme="vanadiel"]{
+  --fx-frame:#c3cbe8; --fx-frame-in:#2c3a78; --fx-glow:rgba(120,150,255,.16); --fx-line:rgba(195,203,232,.3);
+  --fx-win:linear-gradient(180deg,rgba(44,62,128,.97),rgba(16,24,64,.98)); --fx-pane:linear-gradient(180deg,rgba(44,62,128,.6),rgba(16,24,64,.75));
+  --fx-well:rgba(6,10,30,.78); --fx-ink:#f4f4f4; --fx-label:#c9d2f2; --fx-dim:#9aa6cc; --fx-value:#fff6c8;
+  --fx-shadow:1px 1px 0 #000; --fx-stroke:#000;
+  --fx-btn:linear-gradient(180deg,#3a4f9c,#1b2860); --fx-btn-hover:linear-gradient(180deg,#4a62b8,#24347a);
+  --fx-cell:linear-gradient(180deg,#1a244e,#0d1433); --fx-cell-edge:#4a5a9a; --fx-hot:#ffd86a;
+  --fx-sys:#ffff9a; --fx-item:#f6d77a; --fx-gain:#8cff8c; --fx-lack:#ff9a9a; --fx-lvl:#ffb070;
+}

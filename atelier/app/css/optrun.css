@@ -1,80 +1,80 @@
 /* GearSwap Atelier · optrun.css: the search window drawn like the game's windows (atelier/src/screens/optimizer/
-   OptRun.svelte, runview.ts): a deep blue translucent window with a light frame, the equipment as the game's 4 x 4 menu,
-   the curve in gold, the log in the colours of the game's chat (system yellow, items gold, gains green, a level-up
-   orange). The same in every theme: it is the game's window. */
+   OptRun.svelte, runview.ts): a window with a thick light frame, the equipment as the game's 4 x 4 menu, the curve in
+   gold, the log in the colours of the game's chat (system, items, gains, a level-up). Its colours are the theme's
+   --fx-* (themes.css, "the game's window"): the game's own in Vana'diel, each other theme's in its own. */
 
-.dialog.optrun{width:min(1120px,calc(100% - 32px));height:min(820px,calc(100% - 48px));color:#f4f4f4;text-shadow:1px 1px 0 #000;
-  background:linear-gradient(180deg,rgba(44,62,128,.97),rgba(16,24,64,.98));border:2px solid #c3cbe8;border-radius:10px;
-  box-shadow:inset 0 0 0 1px #2c3a78,inset 0 0 22px rgba(120,150,255,.16),0 0 0 1px #0a1030,0 14px 48px rgba(0,0,0,.6)}
-.optrun > header{border-bottom:1px solid rgba(195,203,232,.35);background:none}
-.optrun > footer{border-top:1px solid rgba(195,203,232,.25);background:none}
-.optrun .kicker,.optrun .orlbl{color:#c9d2f2}
-.optrun .orhead h3{color:#fff}
-.optrun .orclock span{color:#fff6c8}
-.optrun.finished .orclock span{color:#8cff8c}
-.optrun .orclock small,.optrun .orrate,.optrun .muted{color:#aab4d8}
-.optrun .orchip{color:#d6dcf5;border-color:rgba(195,203,232,.35);background:rgba(10,16,48,.55)}
-.optrun .btn{font-family:inherit;color:#fff;text-shadow:1px 1px 0 #000;border:1px solid #c3cbe8;border-radius:6px;
-  background:linear-gradient(180deg,#3a4f9c,#1b2860);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
-.optrun .btn:hover{background:linear-gradient(180deg,#4a62b8,#24347a)}
-.optrun .btn:not(.ghost)::before{content:'\25B6  ';color:#ffd86a}
-.optrun .orgain,.optrun .orfig th{color:#d6dcf5}
-.optrun .orgain .up,.optrun .orfig .up{color:#8cff8c}
-.optrun .orfig .down{color:#ff9a9a}
-.optrun .orhero,.optrun .orres > div,.optrun .orchg li{background:rgba(6,10,30,.55);border-color:rgba(195,203,232,.3)}
-.optrun .orbig{color:#fff6c8}
-.optrun .orchg s{color:#9aa6cc}
-.optrun .orchg b{color:#f6d77a}
+.dialog.optrun{width:min(1120px,calc(100% - 32px));height:min(820px,calc(100% - 48px));color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 14px 48px rgba(0,0,0,.6)}
+.optrun > header{border-bottom:1px solid var(--fx-line);background:none}
+.optrun > footer{border-top:1px solid var(--fx-line);background:none}
+.optrun .kicker,.optrun .orlbl{color:var(--fx-label)}
+.optrun .orhead h3{color:var(--fx-ink)}
+.optrun .orclock span{color:var(--fx-value)}
+.optrun.finished .orclock span{color:var(--fx-gain)}
+.optrun .orclock small,.optrun .orrate,.optrun .muted{color:var(--fx-dim)}
+.optrun .orchip{color:var(--fx-label);border-color:var(--fx-line);background:var(--fx-well)}
+.optrun .btn{font-family:inherit;color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-frame);border-radius:6px;
+  background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.optrun .btn:hover{background:var(--fx-btn-hover)}
+.optrun .btn:not(.ghost)::before{content:'\25B6  ';color:var(--fx-hot)}
+.optrun .orgain,.optrun .orfig th{color:var(--fx-label)}
+.optrun .orgain .up,.optrun .orfig .up{color:var(--fx-gain)}
+.optrun .orfig .down{color:var(--fx-lack)}
+.optrun .orhero,.optrun .orres > div,.optrun .orchg li{background:var(--fx-well);border-color:var(--fx-line)}
+.optrun .orbig{color:var(--fx-value)}
+.optrun .orchg s{color:var(--fx-dim)}
+.optrun .orchg b{color:var(--fx-item)}
 
 /* ---- while it searches ---- */
 .optrun > .body.orff,.optrun > .body.orff.mog:not(.lines){display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px}
-.orff .orpane,.orff .orlog{border:2px solid #c3cbe8;border-radius:9px;background:linear-gradient(180deg,rgba(44,62,128,.6),rgba(16,24,64,.75));
-  box-shadow:inset 0 0 0 1px #2c3a78}
+.orff .orpane,.orff .orlog{border:2px solid var(--fx-frame);border-radius:9px;background:var(--fx-pane);box-shadow:inset 0 0 0 1px var(--fx-frame-in)}
 .orff .orrow{display:grid;grid-template-columns:262px minmax(0,1fr);gap:12px}
 .orff .orpane{padding:10px 12px;min-width:0}
-.orff .orpane h4{margin:0 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#c9d2f2;font-weight:600}
+.orff .orpane h4{margin:0 0 8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--fx-label);font-weight:600}
 .orff .oreqg{display:grid;grid-template-columns:repeat(4,54px);gap:5px}
-.orff .orcell{width:54px;height:54px;border-radius:5px;background:linear-gradient(180deg,#1a244e,#0d1433);border:1px solid #4a5a9a;
+.orff .orcell{width:54px;height:54px;border-radius:5px;background:var(--fx-cell);border:1px solid var(--fx-cell-edge);
   display:flex;align-items:center;justify-content:center;transition:box-shadow .4s,border-color .4s}
 .orff .orcell .ico,.orff .orcell img{width:40px;height:40px}
-.orff .orcell.hot{border-color:#ffd86a;box-shadow:0 0 10px 2px rgba(255,210,90,.75),inset 0 0 10px rgba(255,210,90,.35)}
-.orff .orlast{margin-top:9px;font-size:12px;color:#ffe9a0;line-height:1.35}
-.orff .orlast b{color:#fff;font-weight:600}
+.orff .orcell.hot{border-color:var(--fx-hot);box-shadow:0 0 10px 2px color-mix(in srgb,var(--fx-hot) 75%,transparent),inset 0 0 10px color-mix(in srgb,var(--fx-hot) 35%,transparent)}
+.orff .orlast{margin-top:9px;font-size:12px;color:var(--fx-sys);line-height:1.35}
+.orff .orlast b{color:var(--fx-ink);font-weight:600}
 .orff .orflo{margin-top:7px;font-size:12px}
-.orff .orflo.ok{color:#8cff8c}
-.orff .orflo.no{color:#ff9a9a}
+.orff .orflo.ok{color:var(--fx-gain)}
+.orff .orflo.no{color:var(--fx-lack)}
 .orff .orbigrow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.orff .orbig{font-size:32px;color:#fff6c8}
-.orff .orgainff{font-size:14px;color:#d6dcf5}
-.orff .orgainff.up{color:#8cff8c}
-.orff .orn{font-size:12px;color:#c9d2f2}
+.orff .orbig{font-size:32px;color:var(--fx-value)}
+.orff .orgainff{font-size:14px;color:var(--fx-label)}
+.orff .orgainff.up{color:var(--fx-gain)}
+.orff .orn{font-size:12px;color:var(--fx-label)}
 .orff .orchart{display:block;width:100%;height:auto;max-height:240px}
 .orff .orchart.wait{height:180px}
-.orff .orchart text{font-family:inherit;paint-order:stroke;stroke:#000;stroke-width:2px}
-.orff .orchart .tick{fill:#aab4d8;font-size:10px}
-.orff .orchart .grid{stroke:rgba(195,203,232,.12)}
-.orff .orchart .nofl{fill:rgba(255,90,90,.12)}
-.orff .orchart .noflt{fill:#ff9a9a;font-size:10px}
-.orff .orchart .pre{fill:none;stroke:#ff8a8a;stroke-width:2.5}
-.orff .orchart .base{stroke:#9fb0e0;stroke-dasharray:5 4}
-.orff .orchart .basel{fill:#c9d2f2;font-size:11px}
-.orff .orchart .gold{fill:none;stroke:#ffd86a;stroke-width:2.5;stroke-linejoin:round}
-.orff .orchart .dot{fill:#ffd86a;stroke:#fff6c8}
-.orff .orchart .endl{fill:#fff6c8;font-size:13px}
+.orff .orchart text{font-family:inherit;paint-order:stroke;stroke:var(--fx-stroke);stroke-width:2px}
+.orff .orchart .tick{fill:var(--fx-dim);font-size:10px}
+.orff .orchart .grid{stroke:var(--fx-line)}
+.orff .orchart .nofl{fill:color-mix(in srgb,var(--fx-lack) 14%,transparent)}
+.orff .orchart .noflt{fill:var(--fx-lack);font-size:10px}
+.orff .orchart .pre{fill:none;stroke:var(--fx-lack);stroke-width:2.5}
+.orff .orchart .base{stroke:var(--fx-label);stroke-dasharray:5 4}
+.orff .orchart .basel{fill:var(--fx-label);font-size:11px}
+.orff .orchart .gold{fill:none;stroke:var(--fx-hot);stroke-width:2.5;stroke-linejoin:round}
+.orff .orchart .gstop{stop-color:var(--fx-hot)}
+.orff .orchart .dot{fill:var(--fx-hot);stroke:var(--fx-value)}
+.orff .orchart .endl{fill:var(--fx-value);font-size:13px}
 .orff .orbottom{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-height:0}
 .orff.mog:not(.lines) .orbottom{grid-template-columns:minmax(0,1fr) 300px}
 .orff .orlog{min-height:0;overflow:auto;padding:8px 12px;font-family:Consolas,'Lucida Console',monospace;font-size:12.5px;line-height:1.55;
-  background:linear-gradient(180deg,rgba(6,10,30,.85),rgba(6,10,30,.72));overscroll-behavior:contain}
+  background:var(--fx-well);overscroll-behavior:contain}
 .orff .orlog .l{animation:orin .35s ease-out}
-.orff .orlog .sys{color:#ffff9a}
-.orff .orlog .ok{color:#8cff8c}
-.orff .orlog .gain{color:#f0f0f0}
-.orff .orlog .it{color:#f6d77a}
-.orff .orlog .tie{color:#9aa6cc}
-.orff .orlog .beat{color:#ffb070;font-weight:bold}
-.orff .mogscene{border:2px solid #c3cbe8;border-radius:9px;background:radial-gradient(70% 55% at 50% 100%,rgba(255,216,106,.16),transparent 70%),rgba(6,10,30,.7)}
+.orff .orlog .sys{color:var(--fx-sys)}
+.orff .orlog .ok{color:var(--fx-gain)}
+.orff .orlog .gain{color:var(--fx-ink)}
+.orff .orlog .it{color:var(--fx-item)}
+.orff .orlog .tie{color:var(--fx-dim)}
+.orff .orlog .beat{color:var(--fx-lvl);font-weight:bold}
+.orff .mogscene{border:2px solid var(--fx-frame);border-radius:9px;background:radial-gradient(70% 55% at 50% 100%,color-mix(in srgb,var(--fx-hot) 16%,transparent),transparent 70%),var(--fx-well)}
 .orff .mogscene .mogstage{zoom:.6}
-.optrun > footer .orst{color:#ffff9a;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.optrun > footer .orst{color:var(--fx-sys);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:760px){.orff .orrow,.orff.mog:not(.lines) .orbottom{grid-template-columns:1fr}}
 /* the result: the same curve, smaller, beside the value found */
 .optrun .orresc{min-width:0}
