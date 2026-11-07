@@ -16,11 +16,14 @@
 ---   another song keeps its own (Honor March its Marsyas, a dummy song Daurdabla).
 ---
 ---   The loop looks every POLL seconds. A song counts as sung when its recast
----   starts; the next one goes GAP seconds after that, once you are Idle and no
----   other action is under way (midaction): the first of the list, from the one
----   after the last sung, whose recast is ready. A song not learned is left out at
----   the start. A cast whose recast never starts (interrupted, moved, refused) is
----   a failure after PENDING_TIMEOUT seconds; MAX_FAILS in a row stop the loop. It
+---   starts; the next one goes GAP seconds after the last action ended (the last
+---   time midaction was seen: a song's recast can start before its cast is over,
+---   and a song sent right at its end was refused by the game, 2026-11-07), once
+---   you are Idle: the first of the list, from the one after the last sung, whose
+---   recast is ready. A song not learned is left out at the start. A song refused
+---   (no action started REFUSED_AFTER seconds after it was sent) is sent again
+---   after the gap; one started whose recast never comes (interrupted, moved) is a
+---   failure after PENDING_TIMEOUT seconds; MAX_FAILS in a row stop the loop. It
 ---   stops by itself when the job is not BRD, when you are dead or engaged. Each
 ---   step goes in the trace (//gs c trace, tag SKILLUP).
 ---
@@ -32,7 +35,7 @@
 ---
 ---   @file    shared/jobs/brd/functions/logic/skillup.lua
 ---   @author  ejouanchicot
----   @version 1.1
+---   @version 1.2
 ---   @date    Created: 2026-11-07
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -45,13 +48,14 @@ local DEFAULTS = {songs = {"Army's Paeon VI", "Army's Paeon V", "Army's Paeon IV
 local SKILL_OF = {horn = 'Wind Instrument', harp = 'String Instrument'}
 local POLL = 0.5
 local PENDING_TIMEOUT = 15
-local MAX_FAILS = 3
+local REFUSED_AFTER = 4
+local MAX_FAILS = 5
 
 -- counter: raised on every start and stop, so a scheduled poll of an older loop does nothing.
 -- songs: {name, recast_id} in turn; next: the index tried first; pending: the song sent, its recast not
 -- started yet (sent_at); done_at: when the last one was seen sung
 local STATE = {active = false, counter = 0, kind = nil, instrument = nil, songs = {}, by_name = {}, next = 1,
-    pending = nil, sent_at = nil, done_at = nil, gap = 3, sung = 0, fails = 0}
+    pending = nil, started = false, sent_at = nil, done_at = nil, last_busy = nil, gap = 3, sung = 0, fails = 0}
 
 --- The loop's instrument for one of its songs while it runs (midcast_router.lua), nil otherwise
 --- @param song string|nil The song being sung (spell.english); nil asks whether the loop runs
@@ -97,6 +101,10 @@ local function settle(recasts, now)
     if (recasts[p.recast_id] or 0) > 0 then
         STATE.sung, STATE.fails, STATE.pending, STATE.done_at = STATE.sung + 1, 0, nil, now
         trace('sung %s: %d', p.name, STATE.sung)
+    elseif not STATE.started and now - STATE.sent_at >= REFUSED_AFTER then
+        STATE.fails, STATE.pending, STATE.last_busy = STATE.fails + 1, nil, now
+        trace('%s refused (no action %ds after it was sent): fail %d', p.name, REFUSED_AFTER, STATE.fails)
+        if STATE.fails >= MAX_FAILS then halt(MAX_FAILS .. ' songs in a row did not go through'); return false end
     elseif now - STATE.sent_at > PENDING_TIMEOUT then
         STATE.fails, STATE.pending = STATE.fails + 1, nil
         trace('no recast for %s %ds after it was sent: fail %d', p.name, PENDING_TIMEOUT, STATE.fails)
@@ -122,15 +130,20 @@ local function poll(my_counter)
     local recasts = windower.ffxi.get_spell_recasts()
     if type(recasts) ~= 'table' then return halt('the song recasts cannot be read') end
     local now = os.time()
+    if busy() then
+        STATE.last_busy = now
+        if STATE.pending then STATE.started = true end
+    end
     if not settle(recasts, now) then return end
     -- (idle only: no song sent in a cutscene, mounted, resting; never over another action, whose gear the
     -- song's precast would replace; GAP after the last song, the game's own pause between two casts)
     local ready = not STATE.pending and player.status == 'Idle' and not busy()
+        and (not STATE.last_busy or now - STATE.last_busy >= STATE.gap)
         and (not STATE.done_at or now - STATE.done_at >= STATE.gap)
     local song, at = nil, nil
     if ready then song, at = next_song(recasts) end
     if song then
-        STATE.pending, STATE.sent_at, STATE.next = song, now, at % #STATE.songs + 1
+        STATE.pending, STATE.started, STATE.sent_at, STATE.next = song, false, now, at % #STATE.songs + 1
         trace('cast %s (%s)', song.name, STATE.instrument)
         send_command('input /ma "' .. song.name .. '" <me>')
     end
@@ -194,6 +207,7 @@ local function start(kind)
     STATE.by_name = {}
     for _, song in ipairs(songs) do STATE.by_name[song.name] = true end
     STATE.next, STATE.pending, STATE.sent_at, STATE.done_at, STATE.sung, STATE.fails = 1, nil, nil, nil, 0, 0
+    STATE.started, STATE.last_busy = false, nil
     local names = {}
     for _, song in ipairs(songs) do names[#names + 1] = song.name end
     MessageFormatter.show_success('[BRD] Skill-up ' .. SKILL_OF[kind] .. ' with ' .. STATE.instrument .. ': '
