@@ -4,9 +4,10 @@
 // @file    atelier/src/legacy/files.ts
 // @author  ejouanchicot
 
-/** The old page's styles (atelier/app/css/<name>.css), fit.css last: it keeps every box inside its frame */
+/** The old page's styles (atelier/app/css/<name>.css), fit.css near the end: it keeps every box inside its frame; the
+ *  set's card (card.css) after it, its own layout */
 export const LEGACY_STYLES: readonly string[] = ['base', 'sets', 'setlist', 'panels', 'combat', 'tabs', 'themes', 'motion',
-  'moogle', 'optrun', 'guide', 'cursor', 'tips', 'config', 'fit'];
+  'moogle', 'optrun', 'guide', 'cursor', 'tips', 'config', 'fit', 'card'];
 
 /** What the game writes for the page before its code: the targets, the list of the exports (atelier/index.js) and
  *  //gs c upgrade's call to the update screen (atelier/update_ask.js, shared/utils/core/release_info.lua) */

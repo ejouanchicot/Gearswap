@@ -196,7 +196,9 @@ export function setList(d: LegacyExport): SetList {
     // the card of a whole family (Idle, Engaged: the family's title names it already) with no set of its own (an
     // empty sets.idle): its versions side by side, each by its name alone (MDT, PDT, Regen), not "Idle · MDT"
     const flat = c.top.length === 1 && c.top[0] === c.fam && !c.variants.some((v: LegacyAny) => v.label === 'Base' && !hiddenBase(v.set));
-    const nameOf = (v: LegacyAny, k: number) => k === 0 && !flat ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers')
+    // (the Dual Wield's tiers, under their group's title: each by its tier alone)
+    const dw = c.top.join('.') === 'DW';
+    const nameOf = (v: LegacyAny, k: number) => dw && !q ? v.label : k === 0 && !flat ? niceName(c) + (v.label !== 'Base' ? ` · ${v.label}` : '') : enhTarget(v.set) === 'Others' ? t('enhBtnOthers')
       : c.fam === 'midcast' && listModeValue(v.label) ? `${v.label} · ${t('lpModeTag')}` : v.label;
     const code = (v: LegacyAny) => S0.listPaths ? v.set.path : null;
     // its names folded under it: a line to open them (a search opens them)
@@ -253,6 +255,16 @@ export function setList(d: LegacyExport): SetList {
     if (c.fam === 'midcast' && !q) { const types = (window.ATELIER_FAMILIES || {})[niceName(c)] || {};
       const rank = (v: LegacyAny, k: number) => k === 0 || v.label === 'Base' ? -1 : listModeValue(v.label) ? 0 : types[v.label] ? 1 : 2;
       emit(ranked.sort((x: [LegacyAny, number], y: [LegacyAny, number]) => rank(x[0], x[1]) - rank(y[0], y[1]) || x[1] - y[1])); crossUnder(i); continue; }
+    // the Dual Wield by Haste tier (sets.DW.*, listed with the engaged sets): one folding group, closed until opened
+    // (the tier shown opens it, a search lists the tiers open)
+    if (dw && !q) {
+      const key = job + '|dw', here = i === sel;
+      if (reveal && here) S0.wsList = Object.assign({}, S0.wsList, {[key]: true});
+      const open = !!(S0.wsList || {})[key];
+      out.push({k: 'wskill', key: 'dw', here, open, label: t('dwGroup'), count: c.variants.length});
+      if (open) emit(ranked);
+      crossUnder(i); continue;
+    }
     if (c.fam !== 'ws') { emit(ranked); crossUnder(i); continue; }
     // weaponskills: the common set, then one folding group a weapon (closed until opened, a search opens them)
     row(c.variants[0], 0);

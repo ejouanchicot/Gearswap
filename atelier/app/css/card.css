@@ -1,0 +1,192 @@
+/* ============================================================================================================
+   GearSwap Atelier · the set's card as a screen of the game (Card.svelte, the player 2026-11-08):
+   the title line with the versions as the window's tabs, a band under it (what the set is, its path), then three
+   blocks side by side: the gear as the game's equipment grid, an info panel with its tabs, the commands as the game's
+   menu with its cursor. Colours: the theme's --fx-* (themes.css), so every theme draws it. Read after fit.css: its
+   rules are the card's, the older ones (sets.css .settop, .dbody, .eqcol, .slotcol) no longer have anything to draw.
+   @file    atelier/app/css/card.css
+   @author  ejouanchicot
+   ============================================================================================================ */
+:root .app .setsx .detail.cv2{display:flex;flex-direction:column;container-type:inline-size;color:var(--fx-ink)}
+:root .app .setsx .detail.cv2 > header.cvhead{display:block;padding:0;gap:0;border:0;border-radius:0;background:none}
+
+/* ---- the title line: the name at the left, the versions as the window's tabs at the right ---- */
+.cv2 .cvtop{display:grid;gap:0;padding:12px 16px 0;border-bottom:1px solid var(--fx-line)}
+.cv2 .cvname{display:flex;align-items:center;gap:6px 14px;min-width:0;padding-bottom:9px}
+:root .app .cv2 .cvtop .settitle{display:block;flex:1 1 auto;min-width:0}
+:root .app .cv2 .cvtop .stname{display:flex;flex-direction:column;align-items:flex-start;gap:2px;white-space:nowrap;overflow:hidden}
+:root .app .cv2 .cvtop .stname .kicker{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fx-item);max-width:100%;overflow:hidden;text-overflow:ellipsis}
+:root .app .cv2 .cvtop .stname h2{margin:0;max-width:100%;font-size:22px;line-height:1.15;font-weight:700;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv2 .cvtop h2 em{font-style:normal;color:var(--fx-value)}
+:root .app .setsx .detail.cv2 .cvvers{display:block;min-width:0;margin:0}
+:root .app .setsx .detail.cv2 .cvvers .verseg{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
+:root .app .setsx .detail.cv2 .cvvers .verseg button{position:relative;height:auto;margin:0 0 -1px;padding:6px 13px 7px;font-size:12.5px;font-weight:700;color:var(--fx-label);text-shadow:var(--fx-shadow);
+  border:1px solid var(--fx-cell-edge);border-bottom:0;border-radius:6px 6px 0 0;background:var(--fx-btn);box-shadow:none}
+:root .app .setsx .detail.cv2 .cvvers .verseg button:hover{color:var(--fx-ink);background:var(--fx-btn-hover)}
+:root .app .setsx .detail.cv2 .cvvers .verseg button[aria-pressed="true"]{color:var(--fx-value);border-color:var(--fx-frame);background:var(--fx-win);box-shadow:inset 0 2px 0 var(--fx-hot)}
+
+/* ---- the band under it: what the set is (when it is worn, a weaponskill's facts), its path at the right ---- */
+.cv2 .cvwhen{display:flex;align-items:center;gap:6px 12px;min-height:32px;box-sizing:border-box;padding:6px 16px;font-size:12px;color:var(--fx-label);text-shadow:var(--fx-shadow);
+  border-bottom:1px solid var(--fx-line);background:color-mix(in srgb,var(--fx-well) 40%,transparent)}
+:root .app .cv2 .cvwhen .setwhen{flex:1 1 auto;min-width:0;margin:0;font-size:12px;color:var(--fx-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .app .cv2 .cvwhen .wsfacts{display:flex;flex:1 1 auto;min-width:0;gap:4px;margin:0;overflow:hidden}
+:root .app .cv2 .cvwhen .wsfacts span{flex:none;padding:1px 8px;border-radius:99px;border:1px solid var(--fx-cell-edge);background:var(--fx-well);font-size:11px;color:var(--fx-ink);white-space:nowrap}
+:root .app .cv2 .cvwhen .wspath{display:block;flex:0 1 auto;max-width:42%;margin-left:auto;font-size:10.5px;color:var(--fx-dim);text-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+/* a table of versions (a DNC weaponskill's), the subjob's warning, a weaponskill's settings, the trial: full width */
+.cv2 .cvgrid{padding:8px 16px;border-bottom:1px solid var(--fx-line)}
+:root .app .cv2 .cvhead > .subwarn{margin:10px 14px 0}
+:root .app .setsx .detail.cv2 .cvws{display:block;margin:0;padding:8px 16px 9px;border-bottom:1px solid var(--fx-line)}
+:root .app .setsx .detail.cv2 .cvws .wshead{margin:0;display:grid;gap:6px}
+:root .app .setsx .detail.cv2 .cvhead > .trybar{margin:10px 14px 0}
+
+/* ---- the three blocks ---- */
+.cv2 .cvbody{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:14px;align-items:start}
+.cv2 .cvgear{display:grid;gap:0;width:202px}
+
+/* the gear: the game's equipment grid, tight cells in a dark well, the icon filling its cell */
+:root .app .setsx .detail.cv2 .slots{--cell:44px;grid-template-columns:repeat(4,44px);gap:3px;padding:6px;border:1px solid var(--fx-cell-edge);border-radius:7px;
+  background:var(--fx-well);box-shadow:inset 0 1px 4px rgba(0,0,0,.4)}
+:root .app .setsx .detail.cv2 .slot{width:44px;height:44px;border-radius:4px}
+:root .app .setsx .detail.cv2 .slot .ico,:root .app .setsx .detail.cv2 .slot .ico img{width:40px;height:40px}
+:root .app .setsx .detail.cv2 .slot .elbl{font-size:9.5px}
+/* the game's equipment cells (a cell's own marks, a weapon's, a trial's, a lock's, keep their colours), gold under the
+   pointer */
+.cv2 .slot:where(:not(.tried):not(.empty)){background:var(--fx-cell)}
+.cv2 .slot:where(:not(.weap):not(.tried):not(.locked):not(.empty)){border-color:var(--fx-cell-edge)}
+.cv2 .slot.empty{background:color-mix(in srgb,var(--fx-well) 70%,transparent)}
+.cv2 .slot:hover{border-color:var(--fx-hot);box-shadow:0 0 0 1px var(--fx-hot),0 0 14px -3px var(--fx-hot)}
+/* under the grid, as wide as it: the optimizer (the card's one action, gold), the button that wears the set in game */
+:root .app .setsx .detail.cv2 .cvopt{display:block;width:100%;height:32px;margin:10px 0 0;padding:1px 10px 0;font-size:13px;font-weight:700;color:var(--accent-ink);text-shadow:none;
+  border:1px solid var(--accent-2);border-radius:6px;background:linear-gradient(180deg,var(--accent-2),var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 12px -4px var(--fx-hot)}
+:root .app .setsx .detail.cv2 .cvopt:hover{filter:brightness(1.08)}
+:root .app .setsx .detail.cv2 .cveq{display:block;width:100%;height:28px;margin:6px 0 0;padding:1px 10px 0;font-size:12px;font-weight:600;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  border:1px solid var(--fx-frame);border-radius:5px;background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .setsx .detail.cv2 .cveq:not([disabled]):hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+:root .app .setsx .detail.cv2 .cveq[disabled]{opacity:.5;cursor:default}
+
+/* the info panel: its tabs, its page, what the set inherits at its foot */
+.cv2 .cvinfo{display:flex;flex-direction:column;min-width:0;min-height:216px;border:1px solid var(--fx-cell-edge);border-radius:7px;background:var(--fx-pane);overflow:hidden}
+.cv2 .cvtabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--fx-line)}
+:root .app .cv2 .cvtabs button{height:auto;padding:7px 11px 6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fx-dim);text-shadow:var(--fx-shadow);
+  border:0;border-radius:0;background:none;box-shadow:none;cursor:pointer}
+:root .app .cv2 .cvtabs button:hover{color:var(--fx-ink)}
+:root .app .cv2 .cvtabs button[aria-selected="true"]{color:var(--fx-value);box-shadow:inset 0 -2px 0 var(--fx-hot)}
+.cv2 .cvpage{display:grid;gap:5px;align-content:start;flex:1 1 auto;min-width:0;max-height:340px;overflow:auto;padding:9px 12px 11px}
+.cv2 .cvsec{margin:4px 0 0;font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fx-item)}
+.cv2 .cvsec:first-child{margin-top:0}
+.cv2 .cvln{display:grid;grid-template-columns:12px auto minmax(0,1fr) auto;align-items:baseline;gap:7px;min-width:0}
+.cv2 .cvln i{font-style:normal;font-weight:900;font-size:11px;color:var(--fx-gain)}
+.cv2 .cvln.ko i,.cv2 .cvln.ko b{color:var(--fx-lack)}
+.cv2 .cvln b{min-width:52px;text-align:right;font-size:15px;font-weight:800;color:var(--fx-value);font-variant-numeric:tabular-nums;text-shadow:var(--fx-shadow);white-space:nowrap}
+.cv2 .cvln span{min-width:0;font-size:12.5px;color:var(--fx-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cv2 .cvln small{font-size:11px;color:var(--fx-dim);white-space:nowrap}
+:root .app .cv2 .cvpage .ui2wants{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--fx-label)}
+:root .app .cv2 .cvpage .famnote{height:auto;max-width:none;margin:4px 0 0;font-size:12px;line-height:1.45;display:block;-webkit-line-clamp:unset;overflow:visible}
+/* its weapons' menus, one a line */
+:root .app .setsx .cv2 .cv-weap .setctl{display:block;margin:0}
+:root .app .setsx .cv2 .cv-weap .setctl > .wpicks{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:0;min-height:0}
+:root .app .setsx .cv2 .cv-weap .wpick{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:8px}
+:root .app .setsx .cv2 .cv-weap .wpick select{max-width:100%}
+/* its code, in the panel's own well */
+:root .app .setsx .cv2 .cv-lua .setlua{padding:0;font-size:11.5px;line-height:1.55;border:0;background:none;box-shadow:none}
+/* the code's Copy button, at the right of the tabs' bar */
+:root .app .setsx .detail.cv2 .cvcopy{align-self:center;margin:0 8px 0 auto;height:24px;text-transform:none;letter-spacing:0;padding:1px 10px 0;font-size:11.5px;font-weight:600;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  border:1px solid var(--fx-frame);border-radius:5px;background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .setsx .detail.cv2 .cvcopy:hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+/* the legend */
+.cv2 .cv-legend .legend.mini{gap:6px 14px}
+.cv2 .cv-legend .eqhint{margin:6px 0 0;font-size:11.5px;color:var(--fx-label)}
+.cv2 .cvfoot{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:auto;padding:7px 12px;font-size:11.5px;color:var(--fx-label);text-shadow:var(--fx-shadow);border-top:1px solid var(--fx-line)}
+.cv2 .cvfoot b{color:var(--fx-item)}
+
+/* the set's actions at the right of its title line: undoing the optimizer's last run, deleting it */
+:root .app .setsx .detail.cv2 .cvacts{display:flex;flex:none;align-items:center;gap:6px;margin:0}
+:root .app .setsx .detail.cv2 .cvacts .btn{height:28px;padding:1px 10px 0;font-size:12px;font-weight:600;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  border:1px solid var(--fx-frame);border-radius:5px;background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .setsx .detail.cv2 .cvacts .btn:not([disabled]):hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+:root .app .setsx .detail.cv2 .cvacts .delset:not([disabled]):hover{border-color:var(--fx-lack);color:var(--fx-lack)}
+:root .app .setsx .detail.cv2 .cvacts .btn[disabled]{opacity:.5;cursor:default}
+
+/* ---- a narrow card: the gear and its commands over the panel ---- */
+@container (max-width:500px){.cv2 .cvbody{grid-template-columns:minmax(0,1fr)}}
+
+/* ---- its figures under it on a narrow window (panels.css lays .globals as a grid of 300 px columns): their title, what
+   they are worked out with and their tabs each as wide as the card ---- */
+.cv2 .globals-inline .globals > .panehead,.cv2 .globals-inline .globals > .figctx,.cv2 .globals-inline .globals > .ui2own{grid-column:1 / -1}
+
+/* ============================================================================================================
+   A piece's hover card (#tip, Tip.svelte) as the game's item window (the player, 2026-11-08): framed as the card, a
+   title band (the icon in its cell, the name in the items' gold, its slot, rank and bag under it, the Aug / Rare / Ex
+   badges white on their colour), the figures it is first read by on one line (DMG / Delay, DEF, HP, MP), the
+   attributes one light line, the other stats in small columns by role (the player's choice B), the effects a line each. Nothing in it
+   scrolls: it is never pointed at, so everything wraps inside it. Over every screen (the set's gear, the drawer, the
+   simulation).
+   ============================================================================================================ */
+:root body .tip{--ink:var(--fx-ink); --muted:var(--fx-label); --faint:var(--fx-dim); --line:color-mix(in srgb,var(--fx-line) 55%,transparent); --aug:var(--fx-item);
+  padding:0 0 11px;overflow:hidden;color:var(--fx-ink);text-shadow:var(--fx-shadow);border:2px solid var(--fx-frame);border-radius:10px;background:var(--fx-win),var(--bg);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 26px var(--fx-glow),0 26px 50px -12px rgba(0,0,0,.85)}
+:root body .tip.wide{width:min(420px,calc(100vw - 16px))}
+:root body .tip::before{left:16px;right:16px;top:0;height:1px;border-radius:0;background:linear-gradient(90deg,transparent,var(--fx-hot),transparent)}
+:root body .tip > *{margin-left:13px;margin-right:13px;min-width:0;overflow-wrap:anywhere}
+:root body .tip > :first-child:not(.th){margin-top:11px}
+/* the title band: the icon in its cell, the name and what it is, the badges at the right */
+:root body .tip .th{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:0 12px;align-items:center;margin:0;padding:11px 13px 10px;
+  border-bottom:1px solid var(--fx-line);background:linear-gradient(180deg,color-mix(in srgb,var(--fx-hot) 10%,transparent),transparent 85%)}
+:root body .tip .th > .ico{width:46px;height:46px;padding:2px;box-sizing:border-box;border:1px solid var(--fx-frame);border-radius:7px;background:var(--fx-well);
+  box-shadow:inset 0 1px 5px rgba(0,0,0,.5),0 0 12px -4px var(--fx-hot)}
+:root body .tip .th > .ico img{width:40px;height:40px}
+:root body .tip .thn{min-width:0}
+:root body .tip .thn b{display:block;font-size:16px;line-height:1.2;font-weight:700;color:var(--fx-item);letter-spacing:.01em;overflow-wrap:anywhere}
+:root body .tip .thn small{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:3px;font-size:11.5px;color:var(--fx-label)}
+:root body .tip .thn .thslot{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;color:var(--fx-ink)}
+:root body .tip .thn .rk{color:var(--fx-value);font-weight:700}
+:root body .tip .rx{align-self:start;gap:5px}
+:root body .tip .rx i{height:21px;line-height:19px;padding:0 9px;font-size:11px;font-weight:800;letter-spacing:.04em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);
+  border:1px solid color-mix(in srgb,var(--c) 85%,#fff);border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%),linear-gradient(180deg,color-mix(in srgb,var(--c) 60%,var(--d)),var(--d));
+  box-shadow:0 0 10px -2px var(--c),inset 0 -1px 2px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.5)}
+/* the figures it is first read by, on one light line under the band: each name small, its value beside it */
+:root body .tip .thero{display:flex;flex-wrap:wrap;gap:2px 18px;margin-top:9px;padding:0 2px 7px;border-bottom:1px solid var(--line)}
+:root body .tip .thero span{display:inline-flex;align-items:baseline;gap:6px;min-width:0}
+:root body .tip .thero small{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--fx-label)}
+:root body .tip .thero b{font-size:14px;line-height:1.2;font-weight:800;color:var(--fx-value);font-variant-numeric:tabular-nums}
+:root body .tip .thero .a{margin:0;font-size:10px}
+/* the attributes: one light line, each name small beside its value */
+:root body .tip .attrs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px 6px;margin-top:7px;padding:0 2px 7px;border:0;border-bottom:1px solid var(--line)}
+:root body .tip .attrs span{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+:root body .tip .attrs em{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:var(--fx-label)}
+:root body .tip .attrs b{margin:0;font-size:12px;font-weight:700;color:var(--fx-value);font-variant-numeric:tabular-nums}
+:root body .tip .attrs .a{margin:0 0 0 2px;font-size:9.5px}
+/* the other stats in small columns by role, each headed by its name gilt, a dot of its colour and a rule; a value the
+   total, the augment's part a small violet tag beside it */
+:root body .tip.wide{width:min(430px,calc(100vw - 16px))}
+:root body .tip .tcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px 16px;margin-top:10px}
+:root body .tip .tcol{min-width:0}
+:root body .tip .tcol h5{display:flex;align-items:center;gap:6px;margin:0 0 3px;font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fx-item)}
+:root body .tip .tcol h5::before{content:'';flex:none;width:7px;height:7px;border-radius:2px;background:var(--c);box-shadow:0 0 6px var(--c)}
+:root body .tip .tcol h5::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--fx-line),transparent)}
+:root body .tip .tr-def{--c:#6fa8dc}
+:root body .tip .tr-off{--c:#e0a050}
+:root body .tip .tr-mag{--c:#b98be0}
+:root body .tip .tr-oth{--c:#8fbf8f}
+:root body .tip .tr-pet{--c:#d98f8f}
+:root body .tip .r{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 0;border:0}
+:root body .tip .r span{min-width:0;font-size:12px;line-height:1.3;color:var(--fx-ink);overflow-wrap:anywhere}
+:root body .tip .r b{flex:none;white-space:nowrap;color:var(--fx-value);font-family:inherit;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
+:root body .tip .r sup.a{margin:0 0 0 4px;padding:0 4px;font-size:9px;font-weight:700;line-height:14px;vertical-align:1px;border-radius:3px;
+  color:var(--fx-ink);background:color-mix(in srgb,#8a5cc8 34%,transparent)}
+:root body .tip .a{font-style:normal;color:var(--fx-item);font-weight:700;font-size:10.5px}
+/* the effects and conditions, a line each */
+:root body .tip .tfx{margin-top:9px;font-size:12px;line-height:1.45;color:var(--fx-label)}
+:root body .tip .tfx + .tfx{margin-top:3px}
+:root body .tip .tfx i{font-style:normal;font-weight:700;color:var(--fx-item)}
+:root body .tip .tiphint{margin-top:10px;padding-top:7px;border-top:1px solid var(--fx-line);font-size:11px;color:var(--fx-dim)}
+:root body .tip .tiphint.max{margin-top:11px;padding:0;border:0;color:var(--fx-item);font-weight:600}
+:root body .tip .objtipn{color:var(--fx-item)}
+:root body .tip .objtipd{color:var(--fx-label)}
+
+/* ---- what must never overflow the card: an empty cell's slot name (two lines in its cell), the names a set is
+   shared under at the panel's foot ---- */
+:root .app .setsx .detail.cv2 .slot .elbl{font-size:8.5px;line-height:1.1;letter-spacing:0;white-space:normal;text-align:center;overflow-wrap:anywhere;padding:0 2px}
+.cv2 .cvfoot,.cv2 .cvfoot *{min-width:0;overflow-wrap:anywhere}

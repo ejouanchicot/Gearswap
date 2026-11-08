@@ -11,7 +11,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
-  const title = () => page.evaluate(() => { const t = document.querySelector('.settitle'); if (!t) return 'none';
+  const title = () => page.evaluate(() => { const t = document.querySelector('.detail .cvhead') || document.querySelector('.settitle'); if (!t) return 'none';
     return t.textContent.replace(/\s+/g, ' ') + ' | ' + [...t.querySelectorAll('[title]')].map(x => x.title.slice(0, 50)).join(' / ') + ' | btns ' + [...t.querySelectorAll('button')].map(b => Object.keys(b.dataset).join('+')).join(','); });
   for (const [c, j] of [['Tetsouo', 'WAR'], ['Tetsouo', 'RDM'], ['Kaories', 'GEO'], ['Tetsouo', 'BRD']]) {
     const n = await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render(); return S._cards.length; }, c, j); await wait(200);

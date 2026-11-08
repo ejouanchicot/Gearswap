@@ -15,6 +15,10 @@ Object.assign(T.fr, {
   macroHint: 'Le livre de macros et le lockstyle pris avec le sub affiché, puis ce que tes fichiers disent pour chaque sub.',
   ui2OldTip: 'Revenir à la page d’avant (tout dans la colonne de droite)', ui2NewTip: 'La page réorganisée : le set au centre, ses stats à droite, Combat et Mon perso dans leurs onglets',
   ui2CtxHead: 'Calculé avec', ui2CtxParty: 'Groupe', ui2CtxProf: 'Profil', ui2CtxFoe: 'Cible', ui2CtxNone: 'aucun', ui2CtxEdit: 'Buffs & cible', ui2SetTitle: 'Stats de ce set', ui2All: 'Toutes les stats (perso, attributs, plafonds)',
+  tipRoleDef: 'Défense', tipRoleOff: 'Attaque', tipRoleMag: 'Magie', tipRoleOther: 'Autres', tipFx: 'Effet :', tipCond: 'Parfois :',
+  dwGroup: 'Dual Wield · par Haste',
+  cvCopy: 'Copier', cvCopyTip: 'Copie le set tel qu’il s’écrit dans ton fichier, pour le coller ou l’envoyer à quelqu’un',
+  cvTabSet: 'Le set',
   ui2PersoWhy: 'Ce qui est propre à ton perso : tes stats mesurées en jeu, tes mérites et Job Points, ta liste PorterPacker.',
   ui2CombatTitle: 'Buffs & cible', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magie', ui2Job: 'Job', ui2Measured: 'Mesuré en jeu', ui2NotMeasured: 'pas encore (//gs c atelier)',
 });
@@ -25,6 +29,10 @@ Object.assign(T.en, {
   macroHint: 'The macro book and the lockstyle taken with the subjob shown, then what your files say for each subjob.',
   ui2OldTip: 'Back to the page as before (everything in the right column)', ui2NewTip: 'The redesigned page: the set in the middle, its stats on the right, Combat and My character in their tabs',
   ui2CtxHead: 'Worked out with', ui2CtxParty: 'Party', ui2CtxProf: 'Profile', ui2CtxFoe: 'Target', ui2CtxNone: 'none', ui2CtxEdit: 'Buffs & target', ui2SetTitle: 'This set’s stats', ui2All: 'Every stat (character, attributes, caps)',
+  tipRoleDef: 'Defense', tipRoleOff: 'Offense', tipRoleMag: 'Magic', tipRoleOther: 'Other', tipFx: 'Effect:', tipCond: 'Sometimes:',
+  dwGroup: 'Dual Wield · by Haste',
+  cvCopy: 'Copy', cvCopyTip: 'Copies the set as your file writes it, to paste it or send it to someone',
+  cvTabSet: 'The set',
   ui2PersoWhy: 'What belongs to your character: your stats measured in game, your merits and Job Points, your PorterPacker list.',
   ui2CombatTitle: 'Buffs & target', mtShort_mgCombat: 'Combat', mtShort_mgMagic: 'Magic', ui2Job: 'Job', ui2Measured: 'Measured in game', ui2NotMeasured: 'not yet (//gs c atelier)',
 });

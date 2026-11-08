@@ -409,7 +409,63 @@
 .figctx .fcc b{font-size:14px;color:var(--fx-value);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---- the subjob's warning under the set's title (Card.svelte) ---- */
-.settop > .subwarn{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:8px 0 0;padding:6px 10px;font-size:12.5px;
+.settop > .subwarn,.cvhead > .subwarn{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:8px 0 0;padding:6px 10px;font-size:12.5px;
   border:1px solid color-mix(in srgb,var(--fx-lack) 55%,transparent);border-radius:6px;background:color-mix(in srgb,var(--fx-lack) 10%,transparent);color:var(--fx-ink)}
-.settop > .subwarn .btn{flex:none;padding:2px 10px;font-size:12px}
+.settop > .subwarn .btn,.cvhead > .subwarn .btn{flex:none;padding:2px 10px;font-size:12px}
+
+/* ============================================================================ the Sets screen as the game's windows
+   (notes/docs-perso/theme-ffxi-2026-11-07/SPEC.md § 3-4, screen 2): the set's card and the figures' column framed as
+   the game's windows; their title band gilt; the set's buttons the game's plates (the one action, "Optimiser ce set",
+   gold); the versions the game's segment; the weapons and the code in the game's dark wells, the items' names in the
+   gold of the chat's items; the gear's cells the game's equipment cells; the figures' values in the game's pale
+   yellow, their headings gilt, the tab shown lit. The layout does not move. Colours: the theme's --fx-*. */
+:root .app .setsx .detail,:root .app .setsx .globalcol.box{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 28px -14px rgba(0,0,0,.6)}
+:root .app .setsx .panehead{background:var(--fx-pane);border-bottom:1px solid var(--fx-line)}
+:root .app .setsx .panehead h3{color:var(--fx-item)}
+:root .app .setsx .detail .stname h2{color:var(--fx-ink)}
+:root .app .setsx .detail .setwhen{color:var(--fx-label)}
+/* the weapons: a dark well, each weapon a plate in the items' gold */
+:root .app .setsx .detail .wline{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+:root .app .setsx .detail .wline:hover{border-color:var(--fx-frame)}
+:root .app .setsx .detail .wtag{color:var(--fx-item);border-color:var(--fx-cell-edge);background:var(--fx-cell)}
+:root .app .setsx .detail .wcaret{color:var(--fx-ink);border-color:var(--fx-frame);background:var(--fx-btn)}
+/* the code: a dark well, the items' names in the chat's gold */
+:root .app .setsx .setlua{background:var(--fx-well);border:1px solid var(--fx-cell-edge);border-radius:6px;box-shadow:inset 0 1px 3px rgba(0,0,0,.35);text-shadow:none}
+:root .app .setsx .setlua .lh{color:var(--fx-sys)}
+:root .app .setsx .setlua .lk{color:var(--fx-label)}
+:root .app .setsx .setlua .lv{color:var(--fx-item)}
+:root .app .setsx .ui2wants{color:var(--fx-label)}
+:root .app .setsx .ui2wants b{color:var(--fx-item)}
+/* the figures: the tab shown lit, the headings gilt, the values in the game's pale yellow */
+:root .app .setsx .figtabbar{background:var(--fx-pane);border-bottom:1px solid var(--fx-line)}
+:root .app .setsx .figtabbar button{color:var(--fx-label);text-shadow:var(--fx-shadow)}
+:root .app .setsx .figtabbar button:hover{color:var(--fx-ink)}
+:root .app .setsx .figtabbar button[aria-selected="true"]{color:var(--fx-value)}
+:root .app .setsx .figtabbar button[aria-selected="true"]::after{background:var(--fx-hot);box-shadow:0 0 8px var(--fx-hot)}
+:root .app .setsx .figsum .figlead{color:var(--fx-item)}
+:root .app .setsx .globals .statlist li > span{color:var(--fx-ink)}
+:root .app .setsx .globals .statlist li > b{color:var(--fx-value)}
+:root .app .setsx .globals .statlist li{border-bottom-color:color-mix(in srgb,var(--fx-line) 60%,transparent)}
+/* a weaponskill's head (WsHead.svelte): the weapon's menus the game's plates, the TP steps the game's small plates, the
+   one in force gold; the TP typed in a dark well */
+:root .app .setsx .detail .wshead .buffsel{color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-frame);border-radius:5px;background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .setsx .detail .wshead .buffsel:hover{border-color:var(--fx-hot)}
+:root .app .setsx .detail .wshead .buffsel option{background:var(--panel);color:var(--ink)}
+:root .app .setsx .detail .wshead [data-wstp]{color:var(--fx-label);text-shadow:var(--fx-shadow);border:1px solid var(--fx-cell-edge);background:var(--fx-btn)}
+:root .app .setsx .detail .wshead [data-wstp]:hover{color:var(--fx-ink);border-color:var(--fx-frame)}
+:root .app .setsx .detail .wshead [data-wstp][aria-pressed="true"]{color:var(--accent-ink);text-shadow:none;border-color:var(--accent-2);background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+:root .app .setsx .detail .wshead .tpin{color:var(--fx-ink);border:1px solid var(--fx-cell-edge);background:var(--fx-well)}
+:root .app .setsx .detail .wslbl{color:var(--fx-label)}
+:root .app .setsx .detail .tpres b,:root .app .setsx .detail .tpbtot{color:var(--fx-value)}
+/* the trial's box (TrialRow.svelte): a window of the game edged in the trial's blue (the gold is the set shown's), its
+   buttons the game's plates, "Pousser" gold when it can push, quiet when the game is not linked */
+:root .app .setsx .detail .trybar{border:2px solid color-mix(in srgb,var(--try) 70%,var(--fx-frame));border-left-width:2px;border-radius:8px;background:var(--fx-pane);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 18px color-mix(in srgb,var(--try) 22%,transparent)}
+:root .app .setsx .detail .trybar .tryline{color:var(--fx-ink)}
+:root .app .setsx .detail .trybar .dacts .btn{border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-frame);background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .setsx .detail .trybar .dacts .btn:not([disabled]):hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+:root .app .setsx .detail .trybar .dacts > .btn:not(.ghost):first-child:not([disabled]){color:var(--accent-ink);text-shadow:none;border-color:var(--accent-2);background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+:root .app .setsx .detail .trybar .dacts > .btn[disabled]{opacity:.5}
+:root .app .setsx .detail .trybar .dlinks .linkbtn{color:var(--fx-hot)}
 

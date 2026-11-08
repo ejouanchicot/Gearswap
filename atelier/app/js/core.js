@@ -261,6 +261,9 @@ function cardFamily(path, pieces){
   // the master's idle / engaged sets; the figures keep them 'pet' (the pet's stats optimizer: bst_pet.js)
   if (/^sets\.pet\.idle\b/.test(path)) return 'idle';
   if (/^sets\.pet\.engaged\b/.test(path)) return 'engaged';
+  // the Dual Wield laid over the engaged sets by Haste tier (sets.DW.NoHaste ... MaxHaste, a BRD's by mode too:
+  // sets.DW.Acc.Haste): listed with the engaged sets, one card whose versions are the tiers (the player, 2026-11-08)
+  if (/^sets\.DW\b/.test(path)) return 'engaged';
   return f;
 }
 // A Cure set named at the top (sets.Cure) that other sets are built on: never worn (GearSwap wears the sets.midcast

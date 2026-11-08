@@ -1,25 +1,35 @@
 // GearSwap Atelier · the hover card (#tip, App.svelte): a piece's card over a slot of a set, of the drawer, of the
-// simulation, or an optimizer's objective (its name and what it is). A piece's card: its icon, name, slot, weapon
-// figures, rank, bag and priority, its badges, then its stats (attributes in a row, the others one a line, the
-// augment's part apart), its effects and conditions. Shift held turns it to the piece at its best (what is left to
-// do, then that piece's card). The rules are the old page's tipHTML, pieceTip and maxTip (events.js); showTip
-// (events.js) still decides when it opens and places it beside the element hovered.
+// simulation, or an optimizer's objective (its name and what it is). A piece's card, as the game's item window (the
+// player's choice B, 2026-11-08): its icon, name, slot, rank, bag and priority, its badges; the figures it is first
+// read by (a weapon's damage and delay, DEF, HP, MP); its attributes on a line; its other stats in small columns by
+// what they do (defense, offense, magic, the rest, its pet's), each the total with the augment's part beside it;
+// its effects and conditions on a line each. Shift held turns it to the piece at its best (what is left to do, then that piece's card). The rules
+// are the old page's tipHTML, pieceTip and maxTip (events.js); showTip (events.js) still decides when it opens and
+// places it beside the element hovered.
 //
 // @file    atelier/src/screens/sets/tips.svelte.ts
 // @author  ejouanchicot
 import {flushSync} from 'svelte';
 
 export interface StatCell { label: string; aug: string; value: string; title: string }
+// the figures a piece is first read by, large in its card's band: a weapon's damage and delay, then DEF, HP, MP
+export interface HeroCell { label: string; aug: string; value: string }
+// a column of the card: the stats of one role (ROLES), its key a colour in card.css
+export interface StatRole { key: string; label: string; rows: StatCell[] }
 export type PieceCard =
   | {k: 'none'; iconHtml: string; label: string; none: string}
-  | {k: 'piece'; iconHtml: string; name: string; label: string; weapon: string; rank: null | {text: string}; where: string; badgesHtml: string;
-      known: boolean; attrs: StatCell[]; rows: StatCell[]; pet: StatCell[]; petTitle: string; free: string[]; cond: string[]; effects: string; condTitle: string; noDesc: string};
+  | {k: 'piece'; iconHtml: string; name: string; label: string; hero: HeroCell[]; rank: null | {text: string}; where: string; badgesHtml: string;
+      known: boolean; attrs: StatCell[]; roles: StatRole[]; free: string[]; cond: string[]; effects: string; condLabel: string; condTitle: string; noDesc: string};
 export type TipView =
   | {k: 'obj'; name: string; desc: string}
   | {k: 'piece'; max: string; card: PieceCard; hint: string};
 
 export const tipState = $state<{view: TipView | null}>({view: null});
 const S0 = (): LegacyAny => S;
+const HERO = ['def', 'hp', 'mp'];
+// the card's columns: which groups of stats.js STAT_GROUPS each gathers
+const ROLES: Array<[string, string, string[]]> = [['def', 'tipRoleDef', ['def', 'res']], ['off', 'tipRoleOff', ['off']], ['mag', 'tipRoleMag', ['mag']],
+  ['oth', 'tipRoleOther', ['skill', 'other']]];
 
 /** The card of one piece (a set's, the drawer's, the simulation's); none: an empty slot (pieceTip) */
 export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceCard {
@@ -29,7 +39,7 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
   // a piece the set names without augments read as your copy of it, as the set's figures are (stats.js setStats): its
   // augments shown, the ones only named included (Cab. Breeches +4: Enhances "Invincible" effect)
   const r = pieceStats(ownCopy(slot, p), slot), known = !!(r && r.known);
-  let attrs: StatCell[] = [], rows: StatCell[] = [], pet: StatCell[] = [];
+  let attrs: StatCell[] = [], roles: StatRole[] = [], hero: HeroCell[] = [];
   if (known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
     const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
@@ -37,16 +47,18 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
     const cell = (k: string): StatCell => { const lb = statLabel(k, r.stats[k]);
       return {label: lb, aug: r.aug[k] && r.aug[k].v ? '◆' + fmtStat(r.aug[k]) : '', value: fmtStat(r.stats[k]), title: statHelp(esc(lb), '')}; };
     attrs = order.filter(k => statGroup(k) === 'attr').map(cell);
-    rows = order.filter(k => statGroup(k) !== 'attr').map(cell);
-    // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), apart: Hija Earring has only those
-    pet = Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: '', value: fmtStat(r.pet[k]), title: ''}));
+    hero = HERO.filter(k => keys.includes(k)).map(cell).map(({label, aug, value}) => ({label, aug, value}));
+    roles = ROLES.map(([key, label, groups]) => ({key, label: t(label), rows: order.filter(k => groups.includes(statGroup(k)) && !HERO.includes(k)).map(cell)}));
+    // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), a column of their own: Hija Earring has only those
+    roles.push({key: 'pet', label: t('tipPet'), rows: Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: '', value: fmtStat(r.pet[k]), title: ''}))});
+    roles = roles.filter(x => x.rows.length);
   }
-  const weapon = r && r.weapon ? ' · ' + Object.entries(r.weapon).map(([k, n]) => `${k} ${n}`).join(' · ') : '';
   const rank = r && r.rank != null ? {text: (r.path ? `Path ${r.path} · ` : '') + t('rankShort', {r: r.rank}) + (r.rankAssumed ? ' · ' + t('rankAssumed') : '')} : null;
   // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
   const where = [p.bag ? t('tipBag', {b: p.bag}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
-  return {k: 'piece', iconHtml: icon(p.name), name: p.name, label, weapon, rank, where, badgesHtml: rareExHTML(p.name, r && Object.keys(r.aug).length),
-    known, attrs, rows, pet, petTitle: t('tipPet'), free: known ? r.free : [], cond: known ? r.cond : [], effects: t('effects'), condTitle: t('condTitle'), noDesc: t('noDesc')};
+  if (r && r.weapon) hero = Object.entries(r.weapon).map(([k, n]) => ({label: k, aug: '', value: String(n)})).concat(hero);
+  return {k: 'piece', iconHtml: icon(p.name), name: p.name, label, hero, rank, where, badgesHtml: rareExHTML(p.name, r && Object.keys(r.aug).length),
+    known, attrs, roles, free: known ? r.free : [], cond: known ? r.cond : [], effects: t('tipFx'), condLabel: t('tipCond'), condTitle: t('condTitle'), noDesc: t('noDesc')};
 }
 // the piece at its best: what is left to do, then its card (maxTip)
 function maxOf(up: LegacyAny, slot: string): TipView {

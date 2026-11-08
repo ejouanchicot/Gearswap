@@ -170,6 +170,8 @@ document.addEventListener('click', e => {
   if (d.wskill) { const k = S.job + '|' + d.wskill; S.wsList = Object.assign({}, S.wsList, {[k]: !(S.wsList || {})[k]}); render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
   // a tab of the set's figures (Figures.svelte): kept for the next set shown
+  // a tab of the set's info panel (Card.svelte): kept for the next set shown
+  if (d.cardtab) { S.boxOpen = Object.assign({}, S.boxOpen, {cardtab: d.cardtab}); render(); return; }
   if (d.figtab) { S.boxOpen = Object.assign({}, S.boxOpen, {figtab: d.figtab}); render(); return; }
   if (d.savagery != null) { const b = buffState(); b[d.wparty ? 'pSavagery' : 'savagery'] = +d.savagery; save(); render(); return; }
   if ('agoge' in d) { const b = buffState(), k = d.wparty ? 'pNoAgoge' : 'noAgoge'; if (b[k]) delete b[k]; else b[k] = true; save(); render(); return; }
@@ -314,7 +316,8 @@ function showTip(el){
   const tip = $('#tip');
   if (!ATELIER_TIP.show(el)) return;
   S._tipEl = el;
-  tip.classList.toggle('wide', tip.querySelectorAll('.r').length > 6);
+  // a piece with stats: the wide card, its stats in columns (nothing in it scrolls)
+  tip.classList.toggle('wide', !!tip.querySelector('.tcols, .attrs'));
   tip.hidden = false;
   const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
   const left = b.right + 8 + w < innerWidth ? b.right + 8 : Math.max(8, b.left - 8 - w);
@@ -329,8 +332,11 @@ for (const ev of ['keydown', 'keyup']) document.addEventListener(ev, e => {
 });
 const TIPPED = '.slot[data-slot], .choice [data-try], .slot[data-simp], .opobj[data-objtip]';
 // (not while a slot's menu is open: the card would cover it)
+// The pointer on anything without a card closes it: the mouseout below never comes when the element pointed at is
+// redrawn under the pointer (its mouseout goes to a node no longer in the page, which does not bubble to document)
 document.addEventListener('mouseover', e => { const el = e.target.closest(TIPPED), menu = $('#slotmenu');
-  if (el && !(menu && !menu.hidden) && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
+  if (!el) { if (!$('#tip').hidden) $('#tip').hidden = true; return; }
+  if (!(menu && !menu.hidden) && !(el === S._tipEl && !$('#tip').hidden)) showTip(el); });
 document.addEventListener('mouseout', e => { if (e.target.closest(TIPPED) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(TIPPED))) $('#tip').hidden = true; });
 document.addEventListener('focusin', e => { const el = e.target.closest('.slot[data-slot]'); if (el) showTip(el); });
 document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });

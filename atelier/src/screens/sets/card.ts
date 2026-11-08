@@ -51,6 +51,9 @@ export interface CardView {
   // the Simple view (sets_simple.js): the pieces' names beside the equipment, the code folded behind codeLabel, each
   // note on one line (its whole text in noteTip)
   simple: boolean; codeLabel: string; noteTip: string;
+  // the info panel beside the gear (SPEC card-v2): its tabs (the set, its weapons, its code, the legend), the one shown
+  // (S.boxOpen.cardtab, events.js data-cardtab)
+  tabs: Array<{key: string; label: string}>; tab: string;
 }
 // The set as GearSwap's file writes it: its head (built on another set or not), one line a slot of its own (the tried
 // pieces in, marked), its tail; a value too long for the line keeps its whole text in `full`
@@ -311,6 +314,8 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   // what the set is after, on one line in the Simple view (its whole text as the tooltip)
   const wants = chips ? '' : wantsLine(s), wantsHtml = chips ? '' : !simple ? ui2Wants(s) : wants ? `<p class="ui2wants small one" title="${esc(plainText(wants))}">${wants}</p>` : '';
   S0._globals = {s, view: figuresView(s)};
-  return {k: 'card', ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s),
+  const tabs = [{key: 'set', label: t('cvTabSet')}, ...(ctl && ctl.k === 'picks' ? [{key: 'weap', label: t('wLine')}] : []), {key: 'lua', label: 'Lua'}, {key: 'legend', label: t('legendBtn')}];
+  const tab = (tabs.find(x => x.key === (S0.boxOpen || {}).cardtab) || tabs[0]!).key;
+  return {k: 'card', tabs, tab, ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s),
     simple, codeLabel: t('ssCode'), noteTip: simple ? [notes.fam && !notes.fam.none ? plainText(notes.fam.textHtml) : '', notes.base].filter(Boolean).join(' · ') : ''};
 }

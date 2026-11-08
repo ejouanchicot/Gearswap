@@ -1,9 +1,7 @@
 <!--
-  GearSwap Atelier · the title of a set (card.ts TitleView), one shape whatever its content so nothing under it moves
-  from a set to the next: the name on a line (its family over it), what it is on the next (when it is worn, or a
-  weaponskill's facts), its path on the third; each line keeps its height and cuts what is too long (the whole text in
-  its tooltip); the actions at the right (the optimizer: data-optview; in its menu, the Simple / Detailed view:
-  data-setsview-set, sets_simple.js; deleting it: data-setdel, push.js).
+  GearSwap Atelier · the name of a set (card.ts TitleView), on the card's title line (Card.svelte): its family or a
+  weaponskill's weapon over it, then its name, its version and its tag. What it is (when it is worn, a weaponskill's
+  facts) and its path are the band under the title line (Card.svelte); its actions the card's commands.
 
   @file    atelier/src/screens/sets/TitleBox.svelte
   @author  ejouanchicot
@@ -14,4 +12,4 @@
   let {view}: {view: TitleView} = $props();
 </script>
 
-<div class="settitle"><div class="stmain"><div class="stname">{#if view.kicker}<span class="kicker">{view.kicker}</span>{/if}<h2>{view.name + (view.version || view.tag ? ' ' : '')}{#if view.version}<span class="wsver">{'· ' + view.version}</span>{/if}{#if view.version && view.tag}{' '}{/if}{#if view.tag}<span class="wsver">{'· ' + view.tag}</span>{/if}</h2></div><div class="stwhat" title={view.factsTip || undefined}>{#if view.when}<span class="muted small setwhen">{view.when}</span>{/if}{#if view.facts.length}<span class="wsfacts">{#each view.facts as f, i (i)}<span>{f}</span>{/each}</span>{/if}</div><code class="path wspath" title={view.pathTip}>{view.path}</code></div><span class="setacts">{#if view.opt}<button class="btn" data-optview title={view.opt.title}>{@html view.opt.labelHtml}</button>{/if}<details class="setmore"><summary title={(view.del || view.prev || view.view).title}>⋯</summary><div class="setmenu">{#if view.prev}<button class="linkbtn" data-tryprev title={view.prev.title}>{view.prev.label}</button>{/if}<button class="linkbtn" data-setsview-set={view.view.to} title={view.view.title}>{view.view.label}</button>{#if view.del}<button class="linkbtn delset" data-setdel disabled={view.del.off} title={view.del.title}>{@html view.del.labelHtml}</button>{/if}</div></details></span></div>
+<div class="settitle"><div class="stname">{#if view.kicker}<span class="kicker">{view.kicker}</span>{/if}<h2>{view.name}{#if view.version}<em class="wsver">{' · ' + view.version}</em>{/if}{#if view.tag}<em class="wsver">{' · ' + view.tag}</em>{/if}</h2></div></div>

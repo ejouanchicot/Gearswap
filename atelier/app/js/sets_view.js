@@ -296,6 +296,11 @@ function buildCards(d){
     index[key].variants.push({label: rest || 'Base', set: s});
   }
   for (const c of cards) c.variants.sort((a,b) => (a.label==='Base'?-1:b.label==='Base'?1:a.label.localeCompare(b.label)));
+  // the Dual Wield's versions in the order of the Haste tiers (NoHaste, Haste, HasteII, MaxHaste), each mode's together
+  const DW_TIERS = ['NoHaste', 'Haste', 'HasteII', 'MaxHaste'];
+  const dwKey = l => { const p = l.split(' · '), tier = DW_TIERS.indexOf(p[p.length - 1]); return [p.slice(0, -1).join(' · '), tier < 0 ? DW_TIERS.length : tier]; };
+  for (const c of cards.filter(c => c.top.join('.') === 'DW')) c.variants.sort((a, b) => { const x = dwKey(a.label), y = dwKey(b.label);
+    return a.label === 'Base' ? -1 : b.label === 'Base' ? 1 : x[0].localeCompare(y[0]) || x[1] - y[1]; });
   const order = ['idle','engaged','fc','ws','ja','cure','midcast','enmity','pet','special','xp','weapons','other'];
   const lead = c => c.top.length === 1 && c.top[0] === c.fam ? 0 : 1;
   cards.sort((a,b) => order.indexOf(a.fam)-order.indexOf(b.fam) || lead(a)-lead(b) || a.name.localeCompare(b.name));
@@ -305,7 +310,7 @@ function niceName(card){
   const n = card.name;
   // the game's and GearSwap's own words in every language (a category or a set is not translated: the player reads
   // "engaged" in the file and in every guide); only what the file abbreviates is written out
-  const map = {idle: 'Idle', engaged: 'Engaged', FC: 'Fast Cast', WS: 'Weaponskills', TreasureHunter: 'Treasure Hunter'};
+  const map = {idle: 'Idle', engaged: 'Engaged', FC: 'Fast Cast', WS: 'Weaponskills', TreasureHunter: 'Treasure Hunter', DW: 'Dual Wield'};
   return map[n] || n;
 }
 // A card matches the search when one of its variants has the text in its path, in a name it is shared under
