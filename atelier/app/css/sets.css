@@ -251,10 +251,6 @@
 .wskill[aria-expanded="true"]::before{content:'▾'}
 .wskill span:first-child{flex:1}
 .wskill:hover,.wskill.here{color:var(--accent)}
-/* open or close every category at once, under the search */
-.foldall{display:flex;gap:14px;padding:2px 12px 6px;font-size:11.5px}
-.foldall .linkbtn{color:var(--muted)}
-.foldall .linkbtn:hover{color:var(--accent)}
 .tptotal .tpover{color:var(--r-dd);font-weight:600}
 .tptotal b{color:var(--accent);font-size:14px}
 .cmptbl{width:100%;border-collapse:collapse;font-size:13px}
@@ -538,7 +534,7 @@
 .persogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px;align-items:start}
 .tabsec{margin:6px 0 0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .persotab .meritbar,.persotab .meritgrid{max-width:none;margin-left:0;margin-right:0}
-@media (min-width:1100px){.setsx.ui2{grid-template-columns:260px minmax(0,1fr) minmax(420px,0.9fr)}}
+@media (min-width:1100px){.setsx.ui2{grid-template-columns:320px minmax(0,1fr) minmax(420px,0.9fr)}}
 .setsx.ui2 .dbody{grid-template-columns:minmax(0,1fr)}
 .ui2wants{margin:8px 0 0;color:var(--muted)}
 /* the party builder (app/js/party_builder.js) */
@@ -807,7 +803,7 @@
 .mwrap{display:grid;gap:0}
 .meritlist.two{columns:300px;column-gap:48px}
 /* Combat and Mon perso with the sets on the left (sets_view.js renderJob): the column as wide as on the Sets tab */
-.tabx.setside{grid-template-columns:260px minmax(0,1fr)}
+.tabx.setside{grid-template-columns:320px minmax(0,1fr)}
 @media (max-width:900px){.tabx.setside{grid-template-columns:minmax(0,1fr)}}
 .pbfam select.buffsel + select.buffsel{flex:0 0 96px}
 /* Sets tab, new layout, in the style of Mon perso: the weapon menus as an aligned two-column form, the stats' families
@@ -2106,20 +2102,9 @@
 .setsx.ui2 .slotcol > .lgfold > summary{max-width:max-content}
 /* ---- "Tout optimiser" (opt_sets.js, OptSets.svelte), 2026-11-01 ---- */
 .optsetsbtn{display:block;width:calc(100% - 20px);margin:0 10px 8px;padding:6px 10px;font-size:12.5px;font-weight:700;border-radius:8px}
-.osdlg{width:min(980px,96vw)}
+.osdlg{width:min(1000px,96vw)}
+/* (its start window: optrun.css, "Tout optimiser") */
 .osdlg .osbody{display:grid;gap:12px;max-height:min(70vh,640px);overflow:auto}
-.osdlg .osshort{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.osdlg .osshort .btn{padding:4px 12px;font-size:12.5px;border-radius:999px}
-.osdlg .osscratch,.osdlg .osset,.osdlg .osfamhead{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);font-size:12.5px;text-align:left;padding:2px 4px;border-radius:5px;cursor:pointer}
-.osdlg .osscratch{margin-left:auto;color:var(--muted)}
-.osdlg :is(.osscratch,.osset,.osfamhead) i{display:inline-grid;place-items:center;width:15px;height:15px;flex:none;border:1px solid var(--line-strong);border-radius:4px;font-style:normal;font-size:10px;color:var(--accent-ink);background:var(--panel)}
-.osdlg :is(.osscratch,.osset,.osfamhead)[aria-pressed="true"] i{background:var(--accent);border-color:var(--accent)}
-.osdlg :is(.osscratch,.osset,.osfamhead):hover{background:var(--hover)}
-.osdlg .osset[aria-pressed="false"]{color:var(--muted)}
-.osdlg .osfams{columns:3 220px;column-gap:14px}
-.osdlg .osfam{break-inside:avoid;margin:0 0 10px;padding:8px 8px 6px;border:1px solid var(--line);border-radius:9px;background:var(--well)}
-.osdlg .osfamhead{width:100%;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.osdlg .osset{width:100%;overflow-wrap:anywhere}
 .osdlg .oswriting{margin:0;font-weight:700;color:var(--accent)}
 .osdlg .ostbl tr.osoff th,.osdlg .ostbl tr.osoff td{opacity:.65}
 .osdlg .ostbl tr.osnote td{padding-top:0}

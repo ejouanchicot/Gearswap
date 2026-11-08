@@ -9,22 +9,22 @@
 
 Object.assign(T.fr, {mcGrp_enhancing: 'Renfort', mcGrp_enfeebling: 'Affaiblissement', mcGrp_elemental: 'Élémentaire', mcGrp_dark: 'Ténèbres', mcGrp_cure: 'Soin', mcGrp_divine: 'Divine',
   mcGrp_song: 'Chants', mcGrp_blue: 'Magie bleue', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Géomancie', mcGrp_summoning: 'Invocation', mcGrp_enmity: 'Inimitié', mcGrp_other: 'Autres sorts',
-  lpFoldTip: 'Ouvre ou ferme toutes les catégories et leurs groupes en une fois', lpModeTag: 'mode', lpPinned: 'Épinglés', lpPin: 'Épingler en haut de la liste', lpUnpin: 'Retirer des épinglés', lpGroup: 'Ranger dans un groupe',
-  lpOpenAll: 'Tout déplier', lpCloseAll: 'Tout replier', lpPaths: 'Afficher les chemins', lpPathsTip: 'Le nom de chaque set dans ton fichier (sets.engaged.Laphria…)',
+  lpModeTag: 'mode', lpPinned: 'Épinglés', lpPin: 'Épingler en haut de la liste', lpUnpin: 'Retirer des épinglés', lpGroup: 'Ranger dans un groupe',
+  lpSearchPh: 'Chercher un set', cfgListDense: 'Liste des sets', cfgListDenseWhy: 'La hauteur des lignes de la liste des sets. Compacte : plus de sets à la vue.', cfgDenseComfy: 'Confortable', cfgDenseCompact: 'Compacte', lpVersTip: 'Les versions de ce set : ← → pour passer de l’une à l’autre', lpPaths: 'Afficher les chemins', lpPathsTip: 'Le nom de chaque set dans ton fichier (sets.engaged.Laphria…)',
   lpAll: 'Afficher les sets d’un autre sub', lpNewGroup: 'Nouveau groupe…', lpGroupName: 'Nom du groupe', lpRename: 'Renommer', lpDelete: 'Supprimer ce groupe (les sets restent)',
-  lpHide: 'Masquer cette catégorie', lpHidden: 'Catégories masquées', lpShow: 'réafficher', lpOut: 'Retirer de ce groupe', lpEmptyGroup: 'Vide : passe la souris sur un set et clique ▤ pour le ranger ici.',
+  lpHide: 'Masquer cette catégorie', lpHidden: 'Catégories masquées', lpShow: 'réafficher', lpOut: 'Retirer de ce groupe', lpEmptyGroup: 'Vide : passe la souris sur un set et clique ▤ pour le ranger ici, ou glisse-le sur ce groupe dans le menu.',
   lpMissing: 'Il manque au moins une pièce de ce set dans tes sacs', lpNoGroup: 'Aucun groupe encore.', lpSaveFile: 'Enregistrer dans tes fichiers', lpBrowserOnly: 'Rangement gardé dans ce navigateur seulement.',
   lpSaved: 'Rangement enregistré dans tes fichiers.', lpDeleteAsk: 'Supprimer le groupe « {n} » ? Ses sets restent dans la liste.', lpResize: 'Glisse pour régler la largeur de la liste',
-  lpSearchTip: 'Chercher un set ou un objet. ↑ ↓ pour passer d’un set à l’autre.', lpHistory: 'Historique', lpHistoryTip: 'Ce que la page a écrit dans tes fichiers, avec le retour en arrière'});
+  lpSearchTip: 'Chercher un set ou un objet (/ pour y aller). ↑ ↓ change de set, ← → de version, Tab de famille.', lpHistory: 'Historique', lpHistoryTip: 'Ce que la page a écrit dans tes fichiers, avec le retour en arrière'});
 Object.assign(T.en, {mcGrp_enhancing: 'Enhancing', mcGrp_enfeebling: 'Enfeebling', mcGrp_elemental: 'Elemental', mcGrp_dark: 'Dark', mcGrp_cure: 'Healing', mcGrp_divine: 'Divine',
   mcGrp_song: 'Songs', mcGrp_blue: 'Blue magic', mcGrp_ninjutsu: 'Ninjutsu', mcGrp_geomancy: 'Geomancy', mcGrp_summoning: 'Summoning', mcGrp_enmity: 'Enmity', mcGrp_other: 'Other spells',
-  lpFoldTip: 'Opens or closes every category and its groups at once', lpModeTag: 'mode', lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lpUnpin: 'Unpin', lpGroup: 'Put in a group',
-  lpOpenAll: 'Open all', lpCloseAll: 'Close all', lpPaths: 'Show the paths', lpPathsTip: 'Each set’s name in your file (sets.engaged.Laphria…)',
+  lpModeTag: 'mode', lpPinned: 'Pinned', lpPin: 'Pin to the top of the list', lpUnpin: 'Unpin', lpGroup: 'Put in a group',
+  lpSearchPh: 'Find a set', cfgListDense: 'List of sets', cfgListDenseWhy: 'The height of the rows of the list of sets. Compact: more sets in sight.', cfgDenseComfy: 'Comfortable', cfgDenseCompact: 'Compact', lpVersTip: 'This set’s versions: ← → to move between them', lpPaths: 'Show the paths', lpPathsTip: 'Each set’s name in your file (sets.engaged.Laphria…)',
   lpAll: 'Show another subjob’s sets', lpNewGroup: 'New group…', lpGroupName: 'Group name', lpRename: 'Rename', lpDelete: 'Delete this group (its sets stay)',
-  lpHide: 'Hide this category', lpHidden: 'Hidden categories', lpShow: 'show again', lpOut: 'Take out of this group', lpEmptyGroup: 'Empty: hover a set and click ▤ to put it here.',
+  lpHide: 'Hide this category', lpHidden: 'Hidden categories', lpShow: 'show again', lpOut: 'Take out of this group', lpEmptyGroup: 'Empty: hover a set and click ▤ to put it here, or drag it onto this group in the menu.',
   lpMissing: 'At least one piece of this set is not in your bags', lpNoGroup: 'No group yet.', lpSaveFile: 'Save to your files', lpBrowserOnly: 'Arrangement kept in this browser only.',
   lpSaved: 'Arrangement saved to your files.', lpDeleteAsk: 'Delete the group "{n}"? Its sets stay in the list.', lpResize: 'Drag to set the list’s width',
-  lpSearchTip: 'Find a set or an item. ↑ ↓ to move between sets.', lpHistory: 'History', lpHistoryTip: 'What the page wrote to your files, with the way back'});
+  lpSearchTip: 'Find a set or an item (/ to get there). ↑ ↓ change set, ← → version, Tab family.', lpHistory: 'History', lpHistoryTip: 'What the page wrote to your files, with the way back'});
 
 const LIST_FILE = 'list_layout.js', LIST_W = [220, 520];
 
@@ -137,31 +137,7 @@ function listGroupPicker(path){
 }
 const listNameInput = (what, value, hint) => `<input class="listname" data-listname="${esc(what)}" value="${esc(value)}" placeholder="${esc(hint)}" maxlength="32" autocomplete="off" spellcheck="false">`;
 
-/* ---- the sections of the player's own, over the page's categories ---- */
-// rowOf(path, group) draws one set's row (sets_view.js gives it: it knows the cards); a set no longer in the file
-// is left out, and stays in the arrangement in case it comes back
-function listOwnSections(rowOf, known, q){
-  const p = listPrefs();
-  let out = '';
-  const section = (key, label, n, here, acts) => { const open = !!q || S.famOpen[S.job + '|' + key] !== false;
-    return [`<div class="famrow own" data-owngrp="${esc(key)}" ${key.startsWith('g:') ? 'draggable="true"' : ''}><button class="fam own ${here ? 'here' : ''}" data-owntoggle="${esc(key)}" aria-expanded="${open}" title="${esc(t(key === 'pin' ? 'ttPinned' : 'ttGroup'))}"><span>${label}</span><span>${n}</span></button>${acts}</div>`, open]; };
-  const pins = p.pins.filter(x => known.has(x));
-  if (pins.length) { const [head, open] = section('pin', '★ ' + esc(t('lpPinned')), pins.length, false, '');
-    out += head + (open ? pins.map(x => rowOf(x, '')).join('') : ''); }
-  for (const g of p.groups) { const sets = g.sets.filter(x => known.has(x)), editing = S._listEdit === 'group:' + g.id;
-    const acts = `<span class="famacts"><button class="ract" data-listedit="group:${esc(g.id)}" title="${esc(t('lpRename'))}">✎</button><button class="ract" data-listdel="${esc(g.id)}" title="${esc(t('lpDelete'))}">🗑</button></span>`;
-    const [head, open] = section('g:' + g.id, editing ? '' : esc(g.name), sets.length, false, acts);
-    out += (editing ? `<div class="famrow own edit">${listNameInput('group:' + g.id, g.name, t('lpGroupName'))}</div>` : head) +
-      (open ? (sets.length ? sets.map(x => rowOf(x, g.id)).join('') : `<p class="grpempty">${esc(t('lpEmptyGroup'))}</p>`) : ''); }
-  if (S._listEdit === 'new') out += `<div class="famrow own edit">${listNameInput('new', '', t('lpGroupName'))}</div>`;
-  return out;
-}
-// a category of the page's: its header, with what to do with it when the pointer is on it
-function listFamHead(fam, n, here, open){
-  if (S._listEdit === 'fam:' + fam) return `<div class="famrow edit">${listNameInput('fam:' + fam, listFamLabel(fam), t('fam.' + fam))}</div>`;
-  return `<div class="famrow"><button class="fam ${here ? 'here' : ''}" data-famtoggle="${fam}" aria-expanded="${open}" title="${esc(t('ttFam', {w: t('famWhen.' + fam)}))}"><span>${esc(listFamLabel(fam))}</span><span>${n}</span></button>` +
-    `<span class="famacts"><button class="ract" data-listedit="fam:${fam}" title="${esc(t('lpRename'))}">✎</button><button class="ract" data-listhide="${fam}" title="${esc(t('lpHide'))}">⦸</button></span></div>`;
-}
+/* ---- the families' menu, the player's own sections in it, the family shown: setlist.ts (famTabs, ownRows) ---- */
 
 /* ---- the top of the list and its menu: drawn by atelier/src/screens/sets/ListHead.svelte (setlist.ts listHead) ---- */
 
@@ -185,8 +161,8 @@ document.addEventListener('click', e => {
   if (!b || !b.closest('.setlist, #top')) return;
   const p = listPrefs(), toggle = (list, x) => { const i = list.indexOf(x); if (i < 0) list.push(x); else list.splice(i, 1); };
   if ('listmenu' in d) { S._listMenu = !S._listMenu; render(); return; }
-  // a section of the player's own is open until closed (the page's categories are closed until opened)
-  if (d.owntoggle) { const k = S.job + '|' + d.owntoggle; S.famOpen[k] = S.famOpen[k] === false; render(); return; }
+  // a family of the menu, or a section of the player's own: the one shown under it (a search shows them all: cleared)
+  if (d.listfam) { S.listFam = Object.assign({}, S.listFam, {[S.job]: d.listfam}); S.q = ''; S._listEdit = null; render(); return; }
   if (d.listpin) { toggle(p.pins, d.listpin); return listChanged(); }
   if (d.listgrp) { S._listGrpFor = S._listGrpFor === d.listgrp ? null : d.listgrp; render(); return; }
   if (d.listin) { const [id, path] = [d.listin.slice(0, d.listin.indexOf('|')), d.listin.slice(d.listin.indexOf('|') + 1)], g = p.groups.find(x => x.id === id);
@@ -203,6 +179,11 @@ document.addEventListener('click', e => {
   // the menu's own lines close it once done (events.js does the work of the lines it already knew)
   if (b.closest('.listmenu') && !('listpaths' in d) && !('listall' in d)) { S._listMenu = false; setTimeout(render, 0); }
 });
+// the list's density, in Settings (settings.ts): Comfortable (the default) or Compact, more sets in sight
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-listdense-set]');
+  if (b) { S.listDense = b.dataset.listdenseSet === 'compact' ? 'compact' : 'comfy'; render(); }
+});
 document.addEventListener('keydown', e => {
   const el = e.target;
   if (!el || !el.dataset || !el.dataset.listname) return;
@@ -210,14 +191,14 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); S._listEdit = null; if (el.dataset.listname.startsWith('newfor:')) S._listGrpFor = null; render(); }
   else e.stopPropagation();
 }, true);
-// Dragging: a set (from anywhere in the list) dropped on "Pinned" or on a group goes into it, dropped on a set of
-// one of those takes the place before it (that is how they are put in order); from a group to another, it moves.
-// A group dragged on another group takes the place before it.
+// Dragging: a set (from anywhere in the list) dropped on "Pinned" or on a group in the families' menu goes into it,
+// dropped on a set of one of those takes the place before it (that is how they are put in order); from a group to
+// another, it moves. A group dragged on another group of the menu takes the place before it.
 let LIST_DRAG = null;
-const listDropAt = e => e.target.closest && e.target.closest('.setlist .setrow.own, .setlist .famrow.own');
+const listDropAt = e => e.target.closest && e.target.closest('.setlist .setrow.own, .setlist [data-owngrp]');
 const listDropMark = el => { for (const x of document.querySelectorAll('.setlist .dropat')) if (x !== el) x.classList.remove('dropat'); if (el) el.classList.add('dropat'); };
 document.addEventListener('dragstart', e => {
-  const r = e.target.closest && e.target.closest('.setlist [data-rowpath], .setlist .famrow.own[draggable]');
+  const r = e.target.closest && e.target.closest('.setlist [data-rowpath], .setlist [data-owngrp][draggable]');
   if (!r) return;
   LIST_DRAG = r.dataset.rowpath ? {path: r.dataset.rowpath, from: r.dataset.rowgroup == null ? null : r.dataset.rowgroup || 'pin'} : {group: r.dataset.owngrp.slice(2)};
   e.dataTransfer.effectAllowed = 'move';
@@ -238,7 +219,7 @@ document.addEventListener('drop', e => {
     if (!moved || !to || to === d.group) return render();
     p.groups = p.groups.filter(g => g !== moved); p.groups.splice(p.groups.findIndex(g => g.id === to), 0, moved);
     listPrefs().groups = p.groups; return listChanged(); }
-  // where it lands: a section's header (at its end) or one of its sets (before it)
+  // where it lands: a section's entry in the menu (at its end) or one of its sets (before it)
   const key = at.dataset.owngrp ? (at.dataset.owngrp === 'pin' ? 'pin' : at.dataset.owngrp.slice(2)) : (at.dataset.rowgroup || 'pin'), list = listOf(key);
   if (!list) return render();
   if (d.from && d.from !== key && d.from !== 'pin') { const src = listOf(d.from); if (src) src.splice(src.indexOf(d.path), 1); }

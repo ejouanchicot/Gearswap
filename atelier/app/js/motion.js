@@ -68,10 +68,11 @@ function motionRows(){
 /* ---- the game's hand ---- */
 // One hand a list, put where it was then sent to the chosen row: the list is new at each redraw of the old page, the
 // hand's place is not. A list the Svelte application keeps between redraws keeps its hand: that one moves (a new one
-// each time piled hands up, darker at each redraw)
+// each time piled hands up, darker at each redraw). Not the list of sets: the ▶ of the game's menus marks its set
+// open, in a gutter of its own (setlist.css)
 function motionHands(on){
   const tops = [];
-  document.querySelectorAll('#view .setlist .scroll').forEach((box, i) => {
+  document.querySelectorAll('#view .setlist:not(.ofsets) .scroll').forEach((box, i) => {
     const row = box.querySelector('.setrow[aria-current="true"]'), kept = box.querySelector(':scope > .hand');
     if (!row) { if (kept) kept.remove(); return; }
     const hand = kept || document.createElement('i'), b = row.querySelector('b') || row;

@@ -17,16 +17,26 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const has = await page.evaluate(() => !!document.querySelector('[data-optsets]'));
   out.push('button: ' + (has ? await page.evaluate(() => document.querySelector('[data-optsets]').textContent) : 'none'));
   if (has) {
-    const head = () => page.evaluate(() => { const d = document.querySelector('.osdlg'); return d ? d.querySelector('h3').textContent : 'closed'; });
-    const fams = () => page.evaluate(() => [...document.querySelectorAll('.osdlg .osfam')].map(f => f.querySelector('.osfamhead').textContent + ' ' + f.querySelectorAll('.osset[aria-pressed=true]').length + '/' + f.querySelectorAll('.osset').length).join(' · '));
+    const head = () => page.evaluate(() => { const d = document.querySelector('.osdlg'); return d ? d.querySelector('h3').textContent + ((d.querySelector('.osfoot') || {}).textContent ? ' | ' + d.querySelector('.osfoot').textContent : '') + ' | shortcut ' + ((d.querySelector('.osseg [aria-pressed=true]') || {}).textContent || '-') : 'closed'; });
+    const fams = () => page.evaluate(() => [...document.querySelectorAll('.osdlg .osfamrow')].map(f => (f.getAttribute('aria-current') === 'true' ? '▶' : '') + f.querySelector('b').textContent + ' ' + f.querySelector('small').textContent + ' ' + f.querySelector('.osck').className.replace('osck ', '')).join(' · '));
+    const sets = () => page.evaluate(() => (document.querySelector('.ossets h4 span') || {}).textContent + ': ' + [...document.querySelectorAll('.osdlg .osrow')].map(r => r.querySelector('b').textContent + '[' + [...r.querySelectorAll('.osvers button')].map(b => b.textContent + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')).join(',') + ']').join(' '));
     await page.click('[data-optsets]'); await wait(400);
     out.push('open: ' + await head() + ' | ' + await fams());
+    out.push('sets shown: ' + await sets());
+    await page.evaluate(() => document.querySelectorAll('.osdlg [data-osfamopen]')[1].click()); await wait(200);
+    out.push('another family: ' + await fams() + ' | ' + await sets());
+    await page.evaluate(() => [...document.querySelectorAll('.osdlg .osvers button')].pop().click()); await wait(200);
+    out.push('a version unticked: ' + await head() + ' | ' + await sets());
+    await page.evaluate(() => document.querySelector('.osdlg [data-osrow]').click()); await wait(200);
+    out.push('a set unticked: ' + await head() + ' | ' + await sets());
+    await page.evaluate(() => document.querySelector('.osdlg [data-osfamall="on"]').click()); await wait(200);
+    out.push('all of the family: ' + await head() + ' | ' + await fams());
     out.push('order, first ten: ' + await page.evaluate(() => S._optSets.list.slice(0, 10).map(x => shortPath(x.s.path) + ':' + x.kind).join(', ')));
     for (const k of ['stat', 'none', 'all']) { await page.click(`[data-osonly="${k}"]`); await wait(200); out.push(`shortcut ${k}: ` + await head()); }
-    await page.evaluate(() => document.querySelector('.osdlg .osfamhead').click()); await wait(200);
+    await page.evaluate(() => document.querySelector('.osdlg [data-osfam]').click()); await wait(200);
     out.push('first family untick: ' + await head() + ' | ' + await fams());
     await page.click('[data-osscratch]'); await wait(200);
-    out.push('from scratch: ' + await head() + ' pressed ' + await page.evaluate(() => document.querySelector('[data-osscratch]').getAttribute('aria-pressed')));
+    out.push('from scratch: ' + await head() + ' pressed ' + await page.evaluate(() => document.querySelector('[data-osscratch]').getAttribute('aria-checked')));
     await page.click('[data-osscratch]'); await wait(200);
     // two stats sets, run to the end
     const pick = n => page.evaluate(n => { const R = S._optSets; let k = 0; R.list.forEach(x => { R.on[x.s.path] = x.kind === 'stat' && k++ < n; }); osPaint(); }, n);

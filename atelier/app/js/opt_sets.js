@@ -3,25 +3,31 @@
 // (notes/docs-perso/tout-optimiser-2026-11-01/SPEC.md). The window: atelier/src/screens/dialogs/optsets.ts.
 // (loaded in the order of atelier/src/legacy/files.ts)
 Object.assign(T.fr, {osBtn: 'Tout optimiser', osBtnTip: 'Optimise tous les sets de ce job l’un après l’autre, chacun avec ses objectifs et ses seuils, puis te montre ce qui change avant d’écrire quoi que ce soit.',
-  osTitle: 'Tout optimiser', osPick: '{n} set(s) coché(s) · environ {d}', osOnlyStat: 'Sets de stats seulement', osAll: 'Tout', osNone: 'Rien',
-  osScratch: 'Repartir de zéro (plus long, parfois meilleur)', osMine: 'Dans tes pièces seulement : un set écrit doit être portable tel quel.',
-  osGo: 'Lancer ({n})', osStep: 'Set {i} / {n}', osSkip: 'non calculé : {e}', osSame: 'rien de mieux', osMiss: 'seuils non tenus',
+  osTitle: 'Tout optimiser', osAll: 'Tout', osNone: 'Rien',
+  osMine: 'Dans tes pièces seulement : un set écrit doit être portable tel quel.',
+  osStep: 'Set {i} / {n}', osSkip: 'non calculé : {e}', osSame: 'rien de mieux', osMiss: 'seuils non tenus',
   osSumTitle: 'Tout optimiser · résultat', osSum: '{u} set(s) à écrire sur {n} · {s}', osStopped: 'arrêté au set {i} / {n}',
   osHeadSet: 'Set', osHeadObj: 'Objectif', osHeadVs: 'Avant → après', osHeadGain: 'Gain', osHeadN: 'Pièces',
   osWrite: 'Pousser dans GearSwap ({n})', osWriting: 'Écriture {i} / {n} : {p}', osUndo: 'Tout annuler',
   osNoLive: 'Le jeu n’est pas connecté : les résultats restent à l’essai sur chaque set, à pousser plus tard.',
   osDone: '{n} set(s) écrit(s).', osDoneErr: '{n} set(s) écrit(s), {x} en échec : {l}', osVersion: 'version de profil, à pousser depuis le set',
-  osUndone: 'Tous les sets remis comme avant la course.', osSec: '{n} s', osMin: '{n} min'});
+  osUndone: 'Tous les sets remis comme avant la course.', osSec: '{n} s', osMin: '{n} min',
+  osHead: '{j} · {n} sets', osAbout: 'environ', osChoose: 'Choisir', osOnlyStatShort: 'Sets de stats', osOnlyEngShort: 'Engaged',
+  osScratchShort: 'Repartir de zéro', osScratchWhy: '(plus long, parfois meilleur)', osFamAll: 'Tout cocher', osFamNone: 'Rien', osLaunch: 'Lancer',
+  osFoot: '{n} set(s) coché(s) · environ {d}', osBaseOf: '{n} (base)', osRowTip: 'Coche ou décoche toutes ses versions', osVerTip: 'Cette version : cochée, elle est optimisée'});
 Object.assign(T.en, {osBtn: 'Optimize all', osBtnTip: 'Optimizes every set of this job one after the other, each with its own goals and limits, then shows what changes before anything is written.',
-  osTitle: 'Optimize all', osPick: '{n} set(s) ticked · about {d}', osOnlyStat: 'Stats sets only', osAll: 'All', osNone: 'None',
-  osScratch: 'Start from scratch (longer, sometimes better)', osMine: 'Your pieces only: a set written must be wearable as it is.',
-  osGo: 'Start ({n})', osStep: 'Set {i} / {n}', osSkip: 'not computed: {e}', osSame: 'nothing better', osMiss: 'limits not held',
+  osTitle: 'Optimize all', osAll: 'All', osNone: 'None',
+  osMine: 'Your pieces only: a set written must be wearable as it is.',
+  osStep: 'Set {i} / {n}', osSkip: 'not computed: {e}', osSame: 'nothing better', osMiss: 'limits not held',
   osSumTitle: 'Optimize all · result', osSum: '{u} set(s) to write out of {n} · {s}', osStopped: 'stopped at set {i} / {n}',
   osHeadSet: 'Set', osHeadObj: 'Goal', osHeadVs: 'Before → after', osHeadGain: 'Gain', osHeadN: 'Pieces',
   osWrite: 'Push to GearSwap ({n})', osWriting: 'Writing {i} / {n}: {p}', osUndo: 'Undo all',
   osNoLive: 'The game is not linked: the results stay on trial on each set, to push later.',
   osDone: '{n} set(s) written.', osDoneErr: '{n} set(s) written, {x} failed: {l}', osVersion: 'a profile version, to push from the set',
-  osUndone: 'Every set put back as it was before the run.', osSec: '{n} s', osMin: '{n} min'});
+  osUndone: 'Every set put back as it was before the run.', osSec: '{n} s', osMin: '{n} min',
+  osHead: '{j} · {n} sets', osAbout: 'about', osChoose: 'Choose', osOnlyStatShort: 'Stats sets', osOnlyEngShort: 'Engaged',
+  osScratchShort: 'Start from scratch', osScratchWhy: '(longer, sometimes better)', osFamAll: 'Tick all', osFamNone: 'None', osLaunch: 'Start',
+  osFoot: '{n} set(s) ticked · about {d}', osBaseOf: '{n} (base)', osRowTip: 'Ticks or unticks all its versions', osVerTip: 'This version: ticked, it is optimized'});
 
 // The optimizer a set gets, as its card picks it (atelier/src/screens/sets/card.ts optable / statOnly): its kind, or
 // null when it has none (weapon sets, a job ability no piece can boost, a weaponskill the engine does not know)
@@ -56,15 +62,21 @@ function osOrder(list){
   list.forEach(add);
   return out;
 }
-// The sets of the job shown, in the list's order and family (S._cards), each with its kind
+// The sets of the job shown, in the list's order and family (S._cards), each with its kind and its line in the start
+// window: the set it is a version of for a party (Group, Solo, Trust: sets_view.js tierLabel), else its own, named as
+// the list of sets names it (Laphria, Armor Break, Warcry; a family's own set "Engaged (base)"), never by its path
 function osSets(){
   const out = [];
   for (const card of S._cards || []) for (const v of card.variants || []) {
     const kind = osKind(v.set);
-    if (kind) out.push({s: v.set, kind, fam: card.fam});
+    if (!kind) continue;
+    const head = card.variants.find(o => o !== v && tierLabel(v.label, o.label)), h = head || v;
+    out.push({s: v.set, kind, fam: card.fam, row: h.set.path, ver: head ? tierLabel(v.label, head.label) : 'Full', name: osName(card, h)});
   }
   return out;
 }
+const osName = (card, v) => v.label !== 'Base' ? v.label
+  : niceName(card) === listFamLabel(card.fam) || (card.top.length === 1 && card.top[0] === card.fam) ? t('osBaseOf', {n: niceName(card)}) : niceName(card);
 // "Engaged only": each engaged mode (its set itself, not its Solo / Group / Trust versions, which follow the support)
 // and the Dual Wield tiers (eng_modes.js engModeOf, dwTierOf)
 const osEngaged = x => x.kind === 'dw' || (x.kind === 'eng' && !!engModeOf(x.s.path) && !/\.(Group|Solo|Trust)$/.test(x.s.path));
@@ -74,8 +86,11 @@ const osDur = n => n < 90 ? t('osSec', {n: Math.round(n)}) : t('osMin', {n: Math
 // preset 'eng': the engaged sets with a mode by their name and the Dual Wield tiers ticked, the others not
 function optSetsOpen(preset){
   if (!engineReady() || S._optBusy) return;
-  const list = osOrder(osSets());
-  S._optSets = {at: S.char + '|' + S.job, list, on: Object.fromEntries(list.map(x => [x.s.path, preset === 'eng' ? osEngaged(x) : true])), scratch: false};
+  const sets = osSets(), list = osOrder(sets);
+  // the families in the list's order (the run's order puts Fast Cast first), the first one shown
+  const fams = [...new Set(sets.map(x => x.fam))];
+  S._optSets = {at: S.char + '|' + S.job, list, fams, open: preset === 'eng' && fams.includes('engaged') ? 'engaged' : fams[0],
+    on: Object.fromEntries(list.map(x => [x.s.path, preset === 'eng' ? osEngaged(x) : true])), scratch: false};
   osPaint();
 }
 function osPaint(){
@@ -85,12 +100,17 @@ function osPaint(){
   if ($('#overlay .osdlg')) ATELIER_DIALOG.update(spec); else ATELIER_DIALOG.show(spec);
 }
 const osEstimate = R => R.list.filter(x => R.on[x.s.path]).reduce((n, x) => n + OS_TIMES[x.kind] * (R.scratch ? 2 : 1), 0);
-// The start window's clicks: a set, a family, the shortcuts, starting from scratch
+// The start window's clicks: a version, a set (all its versions), a family (its tick; shown on the right), all or none of
+// the family shown, the shortcuts, starting from scratch
 function optSetsClick(d){
   const R = S._optSets;
   if (!R || R.running) return;
+  const tick = list => { const on = !list.every(x => R.on[x.s.path]); list.forEach(x => { R.on[x.s.path] = on; }); };
   if (d.osset != null) R.on[d.osset] = !R.on[d.osset];
-  if (d.osfam != null) { const fam = R.list.filter(x => x.fam === d.osfam), on = !fam.every(x => R.on[x.s.path]); fam.forEach(x => { R.on[x.s.path] = on; }); }
+  if (d.osrow != null) tick(R.list.filter(x => x.row === d.osrow));
+  if (d.osfamopen != null) R.open = d.osfamopen;
+  if (d.osfamall != null) R.list.filter(x => x.fam === R.open).forEach(x => { R.on[x.s.path] = d.osfamall === 'on'; });
+  if (d.osfam != null) tick(R.list.filter(x => x.fam === d.osfam));
   if (d.osonly != null) R.list.forEach(x => { R.on[x.s.path] = d.osonly === 'all' || (d.osonly === 'stat' && x.kind === 'stat') || (d.osonly === 'eng' && osEngaged(x)); });
   if ('osscratch' in d) R.scratch = !R.scratch;
   osPaint();

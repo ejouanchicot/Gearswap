@@ -79,3 +79,62 @@
 /* the result: the same curve, smaller, beside the value found */
 .optrun .orresc{min-width:0}
 .optrun .orresc .orchart{max-height:140px}
+
+/* ============================================================================ "Tout optimiser", its start window
+   (OptSets.svelte; notes/docs-perso/theme-ffxi-2026-11-07/SPEC.md § 10): the head with the time in large on the right,
+   the bar "Choose", the families on the left (a tick each, the ▶ on the one shown), its sets on the right (a tick, the
+   game name, the versions in whole words, gilt when ticked), the foot with the count and ▶ Start */
+.osstart > .oshead{display:flex;align-items:baseline;gap:14px;padding:14px 18px 12px}
+.osstart .oshead .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--fx-label)}
+.osstart .oshead h3{margin:0;font-size:20px;font-weight:700;color:var(--fx-ink)}
+.osstart .ostime{margin-left:auto;font-size:13px;color:var(--fx-label);white-space:nowrap}
+.osstart .ostime b{font-size:18px;color:var(--fx-value)}
+.osbar{flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--fx-line);background:color-mix(in srgb,var(--fx-well) 45%,transparent)}
+.osbar > small{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fx-dim)}
+.osseg{display:flex;border:1px solid var(--fx-frame);border-radius:5px;overflow:hidden}
+.osseg button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;color:var(--fx-label);text-shadow:var(--fx-shadow);border:0;border-left:1px solid var(--fx-cell-edge);border-radius:0;background:var(--fx-btn);cursor:pointer}
+.osseg button:first-child{border-left:0}
+.osseg button:hover{background:var(--fx-btn-hover);color:var(--fx-ink)}
+.osseg button[aria-pressed="true"]{color:var(--accent-ink);text-shadow:none;font-weight:700;background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+.osswitch{margin-left:auto;display:flex;align-items:center;gap:8px;border:0;background:none;padding:2px 0;font:inherit;font-size:12.5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);cursor:pointer}
+.osswitch i{flex:none;position:relative;width:30px;height:16px;border-radius:9px;border:1px solid var(--fx-cell-edge);background:var(--fx-well);transition:background-color .15s}
+.osswitch i::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--fx-dim);transition:transform .15s,background-color .15s}
+.osswitch[aria-checked="true"] i{background:color-mix(in srgb,var(--fx-hot) 35%,var(--fx-well));border-color:var(--fx-hot)}
+.osswitch[aria-checked="true"] i::after{transform:translateX(14px);background:var(--fx-hot)}
+.osswitch em{font-style:normal;color:var(--fx-dim)}
+.dialog.osdlg > .osmain{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0;padding:0;overflow:hidden}
+.osfams{padding:10px 0;border-right:1px solid var(--fx-line);background:color-mix(in srgb,var(--fx-well) 40%,transparent);overflow:auto}
+.osfamrow{position:relative;display:flex;align-items:center;gap:9px;padding:0 14px 0 26px}
+.osfamrow:hover{background:color-mix(in srgb,var(--hover) 55%,transparent)}
+.osfamrow[aria-current="true"]{background:linear-gradient(90deg,color-mix(in srgb,var(--fx-hot) 24%,transparent),color-mix(in srgb,var(--fx-hot) 5%,transparent))}
+.osfamrow[aria-current="true"]::before{content:'\25B6';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:9px;line-height:1;color:var(--fx-hot)}
+.osfamname{flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:34px;border:0;background:none;padding:0;font:inherit;color:var(--fx-ink);text-shadow:var(--fx-shadow);text-align:left;cursor:pointer}
+.osfamname b{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osfamrow[aria-current="true"] .osfamname b{color:var(--fx-value)}
+.osfamname small{flex:none;font-size:11.5px;color:var(--fx-dim);font-variant-numeric:tabular-nums}
+/* a tick: on (gilt, ✓), off (empty), in part (a dash) */
+.osck{flex:none;display:grid;place-items:center;width:15px;height:15px;padding:0;border-radius:3px;border:1px solid var(--fx-frame);background:var(--fx-well);cursor:pointer;font-style:normal;font-size:11px;line-height:1;color:var(--accent-ink);text-shadow:none}
+.osck.on{background:linear-gradient(180deg,var(--accent-2),var(--accent));border-color:var(--accent-2)}
+.osck.on::after{content:'\2713'}
+.osck.part{border-color:var(--fx-hot)}
+.osck.part::after{content:'';width:7px;height:2px;background:var(--fx-hot)}
+.ossets{overflow:auto;padding:6px 0 10px}
+.ossets h4{position:sticky;top:-6px;z-index:1;display:flex;align-items:center;gap:12px;margin:0;padding:8px 18px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fx-item);
+  background:var(--fx-win);border-bottom:1px solid var(--fx-line)}
+.ossets h4 span{flex:1}
+.ossets h4 .linkbtn{font-size:11.5px;letter-spacing:0;text-transform:none;color:var(--fx-label)}
+.ossets h4 .linkbtn:hover{color:var(--fx-hot)}
+.osrow{display:flex;align-items:center;gap:10px;min-height:34px;padding:0 18px;border-bottom:1px solid color-mix(in srgb,var(--fx-line) 35%,transparent)}
+.osrow:hover{background:color-mix(in srgb,var(--hover) 45%,transparent)}
+.osrowname{flex:none;width:220px;display:flex;align-items:center;gap:10px;min-height:32px;border:0;background:none;padding:0;font:inherit;color:var(--fx-ink);text-shadow:var(--fx-shadow);text-align:left;cursor:pointer}
+.osrowname b{min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osvers{display:flex;flex-wrap:wrap;gap:5px}
+.osvers button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;border:1px solid var(--fx-cell-edge);color:var(--fx-dim);background:var(--fx-well);text-shadow:none;cursor:pointer}
+.osvers button:hover{border-color:var(--fx-frame);color:var(--fx-ink)}
+.osvers button[aria-pressed="true"]{color:var(--accent-ink);font-weight:700;border-color:var(--accent-2);background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+.osstart > footer{display:flex;align-items:center;gap:12px}
+.osfoot{font-size:12.5px;color:var(--fx-label)}
+/* ▶ Start: the window's one gilt button */
+.osstart .btn.osgo{color:var(--accent-ink);text-shadow:none;border-color:var(--accent-2);background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+.osstart .btn.osgo:hover{filter:brightness(1.06)}
+.osstart .btn.osgo::before{color:var(--accent-ink)}

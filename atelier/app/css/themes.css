@@ -87,7 +87,7 @@
   --radius:6px; --radius-s:4px;
 }
 :root[data-theme="vanadiel"] body{background:radial-gradient(1300px 520px at 18% -140px,#1B3A6B,transparent 70%),radial-gradient(900px 420px at 100% -160px,#14306A,transparent 70%),var(--bg)}
-:root[data-theme="vanadiel"] :is(.setlist,.detail,.box,.panel,.tblwrap,.keybar,.placeholder,.choice,.sections,.pbcard,.pbparty,.cfg section){
+:root[data-theme="vanadiel"] :is(.setlist:not(.ofsets),.detail,.box,.panel,.tblwrap,.keybar,.placeholder,.choice,.sections,.pbcard,.pbparty,.cfg section){
   background:linear-gradient(180deg,rgba(26,56,110,.92),rgba(11,26,58,.94));border-color:var(--line-strong)}
 :root[data-theme="vanadiel"] .topbar{border-bottom:1px solid var(--line-strong)}
 /* the game's hand: the row chosen in a list, the tab shown */

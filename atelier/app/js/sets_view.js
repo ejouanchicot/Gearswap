@@ -83,7 +83,6 @@ function familyNote(s){
   return '';
 }
 // The note's room is kept on every variant of a card that has one: switching variants moves nothing
-const famOpen = (fam, q) => !!q || !!S.famOpen[S.job + '|' + fam];
 // A version of a set for a party: the label of a variant against its set's ("Laphria · Group" against "Laphria",
 // "Trust" against the family's own set, "Base"); null for anything else
 const TIER_LABELS = ['Group', 'Solo', 'Trust'];

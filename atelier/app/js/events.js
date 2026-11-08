@@ -76,7 +76,7 @@ document.addEventListener('click', e => {
   // "Tout optimiser" (opt_sets.js): open, its start window's ticks, start, the summary's ticks, write, undo
   // (data-optsets="eng": the engaged sets and their Dual Wield tiers only, eng_modes.js)
   if ('optsets' in d) { optSetsOpen(d.optsets || ''); return; }
-  if (d.osset != null || d.osfam != null || d.osonly != null || 'osscratch' in d) { optSetsClick(d); return; }
+  if (d.osset != null || d.osrow != null || d.osfam != null || d.osfamopen != null || d.osfamall != null || d.osonly != null || 'osscratch' in d) { optSetsClick(d); return; }
   if ('osgo' in d) { optSetsGo(); return; }
   if (d.ossel) { optSetsTick(d.ossel); return; }
   if ('oswrite' in d) { optSetsWrite(); return; }
@@ -165,19 +165,9 @@ document.addEventListener('click', e => {
   if (d.simbuff) { const st = simState(); st.buffs = toggleBuff(st.buffs || [], d.simbuff); simRun(); return; }
   if ('wstp' in d) { S.wsTp = d.wstp ? +d.wstp : null; render(); return; }
   if ('macroalt' in d) { S.macroAlt[S.char + '|' + S.job] = d.macroalt; render(); return; }
-  // every category at once, with the groups inside them (the weapons of the weaponskills, the spells by kind of
-  // magic) and the sections of the player (pinned sets, groups: open unless closed)
-  if (d.famall) { const open = d.famall === '1';
-    for (const f of S._fams || []) S.famOpen[S.job + '|' + f] = open;
-    for (const k of ['pin', ...listPrefs().groups.map(g => 'g:' + g.id)]) S.famOpen[S.job + '|' + k] = open;
-    const subs = Object.assign({}, S.wsList);
-    for (const k of Object.keys(subs)) if (k.startsWith(S.job + '|')) subs[k] = false;
-    S.wsList = subs; S._openAllSub = open;
-    render(); return; }
   // the names a set is shared under, folded under it in the set list (sets_view.js)
   if (d.aliasfold) { const k = S.job + '|' + d.aliasfold; S._aliasOpen = Object.assign({}, S._aliasOpen, {[k]: !(S._aliasOpen || {})[k]}); render(); return; }
   if (d.wskill) { const k = S.job + '|' + d.wskill; S.wsList = Object.assign({}, S.wsList, {[k]: !(S.wsList || {})[k]}); render(); return; }
-  if (d.famtoggle) { const k = S.job + '|' + d.famtoggle; S.famOpen[k] = !S.famOpen[k]; render(); return; }
   if (d.fold) { S.boxOpen[d.fold] = !S.boxOpen[d.fold]; render(); return; }
   // a tab of the set's figures (Figures.svelte): kept for the next set shown
   if (d.figtab) { S.boxOpen = Object.assign({}, S.boxOpen, {figtab: d.figtab}); render(); return; }
@@ -346,18 +336,35 @@ document.addEventListener('focusin', e => { const el = e.target.closest('.slot[d
 document.addEventListener('focusout', e => { if (e.target.closest('.slot[data-slot]')) $('#tip').hidden = true; });
 document.addEventListener('scroll', e => { $('#tip').hidden = true; if (!(e.target.closest && e.target.closest('#slotmenu'))) closeSlotMenu(); }, true);
 
+// The list of sets from the keyboard, as a gamepad (notes/docs-perso/theme-ffxi-2026-11-07/SPEC.md § 9): ↑ ↓ the set
+// (from a family just shown, ↓ or ↑ goes to its first one), ← → the version of the set open (setlist.ts S._vers), Tab
+// and Shift+Tab the family shown (S._famKeys), / the search. Tab only while the focus is nowhere or in the list: it
+// still walks the rest of the page. True when the key was the list's
+function listKey(e){
+  const ci = S.sel[S.job], cv = S._cards && S._cards[ci] ? Math.min(S.variant[S.job+'|'+ci] ?? 0, S._cards[ci].variants.length - 1) : -1;
+  const go = ([a, b]) => { S.sel[S.job] = a; S.variant[S.job+'|'+a] = b; render(); const cur = $('.setlist .setrow[aria-current="true"]'); if (cur) cur.scrollIntoView({block:'nearest'}); };
+  const step = (list, k) => { const at = list.findIndex(([a, b]) => a === ci && b === cv); return at < 0 ? 0 : at + k; };
+  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && S._rows && S._rows.length) {
+    const i = step(S._rows, e.key==='ArrowDown' ? 1 : -1);
+    if (i >= 0 && i < S._rows.length) go(S._rows[i]); return true;
+  }
+  if ((e.key==='ArrowRight' || e.key==='ArrowLeft') && e.target.id !== 'setq' && S._vers && S._vers.length > 1) {
+    const n = S._vers.length, i = (step(S._vers, e.key==='ArrowRight' ? 1 : -1) + n) % n;
+    go(S._vers[i]); return true;
+  }
+  if (e.key==='Tab' && !e.ctrlKey && !e.altKey && S._famKeys && S._famKeys.length && (document.activeElement === document.body || (e.target.closest && e.target.closest('.ofsets') && e.target.id !== 'setq'))) {
+    const keys = S._famKeys, at = keys.indexOf((S.listFam || {})[S.job]), n = keys.length;
+    S.listFam = Object.assign({}, S.listFam, {[S.job]: keys[((at < 0 ? 0 : at) + (e.shiftKey ? -1 : 1) + n) % n]}); S.q = ''; render(); return true;
+  }
+  if (e.key==='/' && e.target.id !== 'setq') { const q = $('#setq'); if (q) { q.focus(); q.select(); return true; } }
+  return false;
+}
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('span[role="button"]')) { e.preventDefault(); e.stopPropagation(); e.target.click(); return; }
   if (e.key==='Escape' && $('#slotmenu') && !$('#slotmenu').hidden) { closeSlotMenu(); return; }
   if (e.key==='Escape') { if (!$('#overlay').hidden && S._tgtPick) { S._tgtPick = false; closeOverlay(); render(); } else if (!$('#overlay').hidden) closeOverlay(); else if (e.target.id==='setq' && S.q) { S.q = ''; render(); } return; }
   const field = /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.id !== 'setq';
-  if ((e.key==='ArrowDown' || e.key==='ArrowUp') && !field && S.job && S.section==='sets' && $('#overlay').hidden && S._rows && S._rows.length) {
-    const ci = S.sel[S.job], cv = Math.min(S.variant[S.job+'|'+ci] ?? 0, S._cards[ci].variants.length - 1);
-    const i = S._rows.findIndex(([a, b]) => a === ci && b === cv) + (e.key==='ArrowDown' ? 1 : -1);
-    if (i < 0 || i >= S._rows.length) return;
-    e.preventDefault(); const [a, b] = S._rows[i]; S.sel[S.job] = a; S.variant[S.job+'|'+a] = b; render();
-    const cur = $('.setrow[aria-current="true"]'); if (cur) cur.scrollIntoView({block:'nearest'});
-  }
+  if (!field && S.job && S.section==='sets' && $('#overlay').hidden && listKey(e)) e.preventDefault();
 });
 // The exports read into the page, at its start and again after "Reload from files": atelier/index.js first (it lists
 // them), then every export, each asked with a new address (a browser keeps an older copy of a script otherwise)

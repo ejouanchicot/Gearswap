@@ -30,7 +30,7 @@ Object.assign(T.fr, {engObj_acc: 'Chance de toucher, puis temps jusqu’à la WS
   engDone_sb_dt: 'Optimisé : Subtle Blow {a} → {b}, {n} pièce(s) changée(s) dans ton essai · DT+PDT {p} · DT+MDT {m}.',
   engHitLbl: 'Chance de toucher (round)', engModeNote: 'But de ce set par son nom ({m}) : gardé pour ce set seulement.', engModeReset: 'But du mode',
   dwNoBase: 'Pas de set engaged sous ce palier ({p}).', dwNoTwo: 'Le set {p} ne tient pas deux armes : pas de Dual Wield à chercher.',
-  dwDone: 'Palier {t} sur {p} · Haste magique {h} % · /{sub}', osOnlyEng: 'Engaged seulement', osEngBtn: 'Optimiser tous les engaged',
+  dwDone: 'Palier {t} sur {p} · Haste magique {h} % · /{sub}', osEngBtn: 'Optimiser tous les engaged',
   osEngTip: 'Chaque mode engaged avec son but, puis ses paliers Dual Wield, sans rien écrire avant que tu coches.'});
 Object.assign(T.en, {engObj_acc: 'Hit chance, then time to the weaponskill', engObj_sb: 'Subtle Blow to its cap, then time to the weaponskill',
   objD_acc: 'the most hits landing, then speed', objD_sb: 'Subtle Blow as high as it goes (75 %), then speed',
@@ -43,7 +43,7 @@ Object.assign(T.en, {engObj_acc: 'Hit chance, then time to the weaponskill', eng
   engDone_sb_dt: 'Optimized: Subtle Blow {a} → {b}, {n} piece(s) changed in your draft · DT+PDT {p} · DT+MDT {m}.',
   engHitLbl: 'Hit chance (round)', engModeNote: 'This set’s goal by its name ({m}): kept for this set only.', engModeReset: 'Mode’s goal',
   dwNoBase: 'No engaged set under this tier ({p}).', dwNoTwo: 'The set {p} does not hold two weapons: no Dual Wield to search.',
-  dwDone: 'Tier {t} over {p} · magic haste {h} % · /{sub}', osOnlyEng: 'Engaged only', osEngBtn: 'Optimize all engaged',
+  dwDone: 'Tier {t} over {p} · magic haste {h} % · /{sub}', osEngBtn: 'Optimize all engaged',
   osEngTip: 'Each engaged mode with its goal, then its Dual Wield tiers, nothing written before you tick.'});
 
 /* ---- an engaged set's mode ---- */

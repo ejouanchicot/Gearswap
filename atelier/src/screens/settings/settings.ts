@@ -1,5 +1,5 @@
 // GearSwap Atelier · the page's Settings (the gear of the top bar): the theme (a card each, its small preview), the
-// language, the motion, the sets page's view (Detailed or Simple: sets_simple.js, data-setsview-set), the moogle assistant, the calculation engine (where it comes from, and what it did not compute
+// language, the motion, the sets page's view (Detailed or Simple: sets_simple.js, data-setsview-set), the list of sets' density (data-listdense-set), the moogle assistant, the calculation engine (where it comes from, and what it did not compute
 // since the page was opened).
 // The rules are the old page's renderConfig (config_page.js), motionConfigHTML (motion.js) and guideConfigHTML
 // (guide.js), which keep the themes, the texts and the clicks (data-theme-set, data-lang, data-motion-set,
@@ -14,6 +14,8 @@ export interface SettingsView {
   lang: {title: string; why: string; fr: boolean; en: boolean};
   motion: {title: string; why: string; on: boolean; onLabel: string; offLabel: string};
   setsView: {title: string; why: string; simple: boolean; fullLabel: string; simpleLabel: string};
+  // the list of sets' density (list_prefs.js data-listdense-set)
+  dense: {title: string; why: string; compact: boolean; comfyLabel: string; compactLabel: string};
   guide: {title: string; why: string; modes: Array<{v: string; on: boolean; label: string}>; reset: string};
   engine: {title: string; why: string; fell: string};
 }
@@ -37,6 +39,7 @@ export function settingsView(): SettingsView | null {
     lang: {title: t('cfgLang'), why: t('cfgLangWhy'), fr: (S as LegacyAny).lang === 'fr', en: (S as LegacyAny).lang === 'en'},
     motion: {title: t('cfgMotion'), why: t('cfgMotionWhy'), on: (S as LegacyAny).motion !== false, onLabel: t('cfgMotionOn'), offLabel: t('cfgMotionOff')},
     setsView: {title: t('cfgSetsView'), why: t('cfgSetsViewWhy'), simple: setsSimple(), fullLabel: t('cfgSetsFull'), simpleLabel: t('cfgSetsSimple')},
+    dense: {title: t('cfgListDense'), why: t('cfgListDenseWhy'), compact: (S as LegacyAny).listDense === 'compact', comfyLabel: t('cfgDenseComfy'), compactLabel: t('cfgDenseCompact')},
     guide: {title: t('cfgGuide'), why: t('cfgGuideWhy'), modes: ['full', 'ask', 'off'].map(v => ({v, on: mode === v, label: t('gMode_' + v)})), reset: t('gReset')},
     engine: engineView()};
 }
