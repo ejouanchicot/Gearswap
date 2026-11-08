@@ -340,6 +340,10 @@
 @media (max-width:900px){.app .topbar{margin:8px 14px 0}}
 /* (the job's menu kept whole on a smaller screen: "WAR · Warrior · ML39" and its arrow, 160 px cut it) */
 @media (max-width:1450px){.app .topbar .hero .jobsel{max-width:190px}}
+/* the menus' pictogram (TopBar.svelte MENU_ICON) before their name; under 1200 px the icon alone (the name in its tip):
+   the three names took 290 px and the bar went on two lines at 1024 px */
+.app .topbar .tmbtn > .tmico{width:18px;height:18px;flex:none;display:block;color:var(--fx-hot);filter:drop-shadow(0 1px 0 rgba(0,0,0,.7))}
+@media (max-width:1200px){.app .topbar .tmbtn .tmlbl{display:none}.app .topbar .tmbtn{padding:2px 6px 0 8px;gap:4px}.app .topbar .tgrp.tfact{padding:0 8px}}
 .app .topbar .hero .topsel{border:1px solid var(--fx-frame);border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .app .topbar .hero .topsel.jobsel{border-left:3px solid var(--role,var(--fx-hot));color:var(--fx-value)}

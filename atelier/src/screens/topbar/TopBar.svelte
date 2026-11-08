@@ -17,6 +17,16 @@
   const bar = $derived(legacy.version > 0 ? topBarModel() : null);
   // a command's data-* attribute, read by the old page's click handlers (events.js, packages.js)
   const attrs = (c: Command): Record<string, string> => c.attr ? {[c.attr]: ''} : {};
+  // each menu's pictogram, line drawings made for 16 px (the game's icons were too busy at that size, the player
+  // 2026-11-08): Files a sheet with a folded corner; GearSwap two gears and two arrows that swap them; Page a window.
+  // With its name on a wide screen, alone under 1200 px (themes.css), the name then in its tip
+  const svg = (body: string) => `<svg class="tmico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+  const gear = (x: number, y: number) => `<circle cx="${x}" cy="${y}" r="3.3" stroke-width="2.6" stroke-dasharray="1.55 1.05"/><circle cx="${x}" cy="${y}" r="1.2" stroke-width="1.4"/>`;
+  const MENU_ICON: Record<string, string> = {
+    files: svg('<path d="M6 2.8h8.2l4.8 4.8v13.6H6z"/><path d="M14 2.8v5h5"/><path d="M9 12.5h7M9 16.5h5"/>'),
+    live: svg(gear(7.2, 7.2) + gear(16.8, 16.8) + '<path d="M13.2 4.6a7.2 7.2 0 0 1 6.2 6.2"/><path d="M19.4 10.8l1.4-2.4M19.4 10.8l-2.6-.8"/>'
+      + '<path d="M10.8 19.4a7.2 7.2 0 0 1-6.2-6.2"/><path d="M4.6 13.2l-1.4 2.4M4.6 13.2l2.6.8"/>'),
+    page: svg('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8.5h18"/><path d="M6 6.3h.01M8.5 6.3h.01M11 6.3h.01" stroke-width="2.2"/>')};
   // the three menus (Files, GearSwap, Page): one open at a time, closed by a pick or a click elsewhere
   let open = $state('');
   const toggle = (k: string) => { open = open === k ? '' : k; };
@@ -31,9 +41,9 @@
 {#snippet command(c: Command)}
   <button class="live act" class:mid={c.mid} class:busy={c.busy} {...attrs(c)} disabled={c.disabled} title={c.title}>{c.icon}<span class="lbl"> {c.label}</span></button>
 {/snippet}
-{#snippet menu(k: string, label: string, alert: boolean, items: Command[], head: import('svelte').Snippet | null, note = '')}
+{#snippet menu(k: string, label: string, alert: boolean, items: Command[], head: import('svelte').Snippet | null, note = '', icon = '')}
   <div class="tmenu" class:open={open === k}>
-    <button class="tmbtn" class:alert aria-expanded={open === k} onclick={() => toggle(k)}>{#if head}{@render head()}{/if}{label}<i>▾</i></button>
+    <button class="tmbtn" class:alert aria-expanded={open === k} aria-label={label} title={label} onclick={() => toggle(k)}>{#if head}{@render head()}{/if}{#if icon}{@html icon}{/if}<span class="tmlbl">{label}</span><i>▾</i></button>
     {#if open === k}<div class="tmpanel" onclick={() => { open = ''; }} role="presentation">{#if note}<span class="tmnote">{note}</span>{/if}{#each items as c (c.attr || c.label)}<button class="tmi" class:busy={c.busy} {...attrs(c)} disabled={c.disabled} title={c.title}><span class="tmic">{c.icon}</span>{c.label}</button>{/each}</div>{/if}
   </div>
 {/snippet}
@@ -71,12 +81,12 @@
     {/each}
   {/if}
   <span class="sp"></span>
-  {#if bar.files.list.length}{@render menu('files', bar.files.label, bar.files.list.some(c => c.mid), bar.files.list, null)}{/if}
+  {#if bar.files.list.length}{@render menu('files', bar.files.label, bar.files.list.some(c => c.mid), bar.files.list, null, '', MENU_ICON.files)}{/if}
   {#if bar.live}
     {@const l = bar.live}
     {#if l.lamp}<button class="live on" data-livejump disabled={l.lamp.disabled} title={l.lamp.title}><i class="led"></i>{l.lamp.text}</button>{/if}
     {#snippet lamp()}<i class="tmled" class:on={!!(l.state && l.state.linked)} title={l.state ? l.state.title : ''}></i>{/snippet}
-    {@render menu('live', l.label, false, l.list, lamp, l.state ? l.state.text : '')}
+    {@render menu('live', l.label, false, l.list, lamp, l.state ? l.state.text : '', MENU_ICON.live)}
   {/if}
-  {@render menu('page', bar.page.label, bar.page.list.some(c => c.mid), bar.page.list, null)}
+  {@render menu('page', bar.page.label, bar.page.list.some(c => c.mid), bar.page.list, null, '', MENU_ICON.page)}
 {/if}
