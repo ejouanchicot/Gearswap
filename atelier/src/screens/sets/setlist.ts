@@ -33,7 +33,9 @@ export interface SetListView {
   title: FamTitle | null;
   entries: ListEntry[];
   empty: null | {html: string};
-  hidden: null | {title: string; text: string; button: string};
+  // the sets hidden for the subjob shown: how many, each by its family and name (a click opens it, shown again), and
+  // the button that shows or hides them all
+  hidden: null | {title: string; text: string; button: string; sets: Array<{label: string; fam: string; pick: string}>};
   // "Tout optimiser" (opt_sets.js) at the column's foot, always in sight, once the engine is there
   optAll: null | {label: string; tip: string};
   dense: boolean;
@@ -215,8 +217,10 @@ export function setList(d: LegacyExport): SetList {
       if (q && k > 0 && !cardMatch({variants: [v]}, q)) return;
       if (hiddenBase(v.set)) return;
       rows.push([i, k]);
+      // (a set hidden for the subjob, shown again: said on its plate)
+      const other = usable[i] ? '' : `<small class="rowother" title="${esc(t('accTip', {m: job, s: (data() || {}).sub || '?'}))}">${esc(t('accOther'))}</small>`;
       out.push({k: 'row', cls: `setrow ${k === 0 || flat ? 'base' : 'var'} ${usable[i] ? '' : 'nouse'}`, current: i === sel && k === vi(i), path: v.set.path, group: null, pick: i, vpick: k,
-        title: t('ttRow', {p: v.set.path}), name: nameOf(v, k), vers: null, tried: false, marksHtml: listMarks(v.set) + listRowActs(v.set.path), code: code(v), pickerHtml: listGroupPicker(v.set.path)});
+        title: t('ttRow', {p: v.set.path}), name: nameOf(v, k), vers: null, tried: false, marksHtml: other + listMarks(v.set) + listRowActs(v.set.path), code: code(v), pickerHtml: listGroupPicker(v.set.path)});
       aliasFold(v, k);
     };
     // a set and its versions for a party (Group, Solo, Trust) are ONE row, the set's name alone; the row of the set
@@ -277,7 +281,9 @@ export function setList(d: LegacyExport): SetList {
   if (!q && (shown === 'pin' || shown.startsWith('g:'))) out.push(...ownRows(shown, where, known, cards, sel, vi));
   const empty = vis.length ? null : {html: esc(t('noMatch'))};
   const who = job + '/' + ((data() || {}).sub || '?');
-  const hide = hidden && !q ? {title: t('accTip', {m: job, s: (data() || {}).sub || '?'}), text: t('accHidden', {n: hidden, j: who}), button: t(S0._listAll ? 'accHide' : 'accShow')} : null;
+  const hide = hidden && !q ? {title: t('accTip', {m: job, s: (data() || {}).sub || '?'}), text: t('accHidden', {n: hidden, j: who}), button: t(S0._listAll ? 'accHide' : 'accShow'),
+    sets: cards.flatMap((c: LegacyAny, i: number) => usable[i] ? [] : c.variants.map((v: LegacyAny, k: number) => ({fam: listFamLabel(c.fam), pick: i + '|' + k,
+      label: niceName(c) + (v.label !== 'Base' ? ' · ' + v.label : '')})))} : null;
   return {view: {head: listHead(), fams: famTabs(counts, known, q ? '' : shown, selFam), newGroupHtml: S0._listEdit === 'new' ? listNameInput('new', '', t('lpGroupName')) : '',
     title: q ? null : famTitle(shown), entries: empty ? [] : out, empty, hidden: hide,
     optAll: engineReady() ? {label: t('osBtn'), tip: t('osBtnTip')} : null, dense: S0.listDense === 'compact',

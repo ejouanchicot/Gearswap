@@ -7,9 +7,9 @@
 // What cannot be told stays shown: a set whose name is the player's own (sets.midcast.PhalanxPotency), an ability
 // of a job without a database, the weaponskill sets (what a job can use depends on the weapon in hand).
 
-Object.assign(T.fr, {accHidden: '{n} set(s) masqué(s) : pas pour {j}', accShow: 'Les montrer', accHide: 'Les masquer',
+Object.assign(T.fr, {accHidden: '{n} set(s) masqué(s) : pas pour {j}', accShow: 'Les montrer tous', accHide: 'Les masquer', accOther: 'autre sub',
   accTip: 'Des sets écrits pour une ability ou un sort que ni {m} ni le sub {s} n’ont (un autre sub les utilise). Ils restent dans ton fichier.'});
-Object.assign(T.en, {accHidden: '{n} set(s) hidden: not for {j}', accShow: 'Show them', accHide: 'Hide them',
+Object.assign(T.en, {accHidden: '{n} set(s) hidden: not for {j}', accShow: 'Show them all', accHide: 'Hide them', accOther: 'other sub',
   accTip: 'Sets written for an ability or a spell that neither {m} nor the subjob {s} has (another subjob uses them). They stay in your file.'});
 
 // The kinds of abilities a set can be written for as a whole (sets.precast.Waltz, sets.precast.Step...): the

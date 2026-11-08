@@ -161,6 +161,9 @@ document.addEventListener('click', e => {
   if (!b || !b.closest('.setlist, #top')) return;
   const p = listPrefs(), toggle = (list, x) => { const i = list.indexOf(x); if (i < 0) list.push(x); else list.splice(i, 1); };
   if ('listmenu' in d) { S._listMenu = !S._listMenu; render(); return; }
+  // a set hidden for the subjob, named under the list: the hidden sets shown again, that one opened in its family
+  if (d.hiddenpick) { const [i, k] = d.hiddenpick.split('|').map(Number); S._listAll = true; S.q = ''; S.sel[S.job] = i; S.variant[S.job + '|' + i] = k; S._found = null;
+    S.selPath[S.job] = S._cards[i].variants[k].set.path; render(); return; }
   // a family of the menu, or a section of the player's own: the one shown under it (a search shows them all: cleared)
   if (d.listfam) { S.listFam = Object.assign({}, S.listFam, {[S.job]: d.listfam}); S.q = ''; S._listEdit = null; render(); return; }
   if (d.listpin) { toggle(p.pins, d.listpin); return listChanged(); }
