@@ -278,6 +278,14 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     -- action started. Here, after Mote laid the precast set over job_precast.
     if spell.type == 'BardSong' then
         equip({ammo = empty})
+        -- Honor March / Aria of Passion: their instrument again, over the
+        -- precast set's range. job_precast put it on, then Mote laid the Fast
+        -- Cast set over it: Kaories' sets.precast.FC has range = 'Loughnashade',
+        -- so Honor March went out with Loughnashade and was refused four times
+        -- (trace 2026-11-08 02:46, "interrupted").
+        if _G.casting_locked_song and _G.locked_song_name == spell.english and _G.locked_instrument then
+            equip({range = _G.locked_instrument})
+        end
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
