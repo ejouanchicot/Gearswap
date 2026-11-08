@@ -1,5 +1,5 @@
-// GearSwap Atelier · the Sets screen: the line over it (the situation, the profiles, a subjob's warning), the list of
-// the job's sets on the left (setlist.ts), the set shown, the figures of the set beside it.
+// GearSwap Atelier · the Sets screen: what its figures are worked out with (the party, the profile, the target) and a
+// subjob's warning, the list of the job's sets on the left (setlist.ts), the set shown, the figures of the set beside it.
 // The rules are the old page's renderSets (sets_view.js). Still the old page's HTML: the set's card's parts (card.ts); the column of its figures is figures.ts.
 // A field ending in Html is one of the old page's texts it wrote unescaped.
 //
@@ -8,10 +8,13 @@
 import {setList, type SetListView} from './setlist';
 import {cardView, type CardOrPage} from './card';
 import {figuresView, type FiguresView} from './figures';
-import {situations, picker, type Situation, type Picker} from '../profiles/profiles';
 
 export interface SubWarn { text: string; sub: string; fix: string }
-export interface CtxBar { title: string; label: string; sits: Situation[]; picker: Picker; enemy: string; edit: {title: string; label: string}; warn: SubWarn | null }
+// what every figure is worked out with, recalled at the head of the figures' column (Figures.svelte), a framed window
+// of three cells (the player's choice A, 2026-11-08: a thin line was not seen): the party, the profile loaded (else
+// "none", the cells keep their place), the target; a way to Buffs & target. The subjob's warning goes under the set's
+// title (Card.svelte)
+export interface CtxBar { title: string; head: string; cells: Array<{icon: string; label: string; value: string}>; edit: {title: string; label: string}; warn: SubWarn | null }
 export interface SetsView { ctx: CtxBar; listW: number | null; list: SetListView; card: CardOrPage | null; figures: FiguresView | null }
 
 const st = (): LegacyAny => S;
@@ -32,9 +35,13 @@ export function setsView(): SetsView | null {
   if (!d) return null;
   const {view, cards, sel, bypath, vis, q} = setList(d);
   // in the old page's order: the list, then the line over it, the set, its figures
-  // the line over the sets: the situation and the profile the figures are worked out with, the target (ui2CtxBar)
+  // what the figures are worked out with (the line "Calculé avec" over the sets until 2026-11-08: its party was the set's
+  // version again, its profile and target the Buffs & target tab's; the player chose a reminder in the figures' head)
   const warn = subWarn(), b = buffState();
-  const ctx: CtxBar = {title: t('ttCtx'), label: t('ui2Ctx'), sits: situations(false), picker: picker(true), enemy: enemyKey(b.enemy),
+  const ctx: CtxBar = {title: t('ttCtx'), head: t('ui2CtxHead'), cells: [
+    {icon: playerIcon('gi:crossed-swords'), label: t('ui2CtxParty'), value: buffTier()},
+    {icon: playerIcon('gi:tied-scroll'), label: t('ui2CtxProf'), value: profActive() || t('ui2CtxNone')},
+    {icon: playerIcon('gi:bullseye'), label: t('ui2CtxFoe'), value: enemyKey(b.enemy)}],
     edit: {title: t('ttCtxEdit'), label: t('ui2CtxEdit')}, warn};
   const card = vis.length ? cardView(cards[sel], sel, bypath, q) : null;
   let figures: FiguresView | null = null;

@@ -64,9 +64,6 @@
 .prsits.compact .prsit b{font-size:12.5px;color:var(--muted)}
 .prsits.compact .prsit[aria-pressed="true"]{background:var(--accent)}
 .prsits.compact .prsit[aria-pressed="true"] b{color:var(--accent-ink)}
-.ctxbar .prpickbtn{min-width:150px;max-width:230px;padding:3px 10px;font-size:12.5px}
-.ctxbar .prupd{padding:2px 9px}
-.ctxbar{position:relative;z-index:5}
 @media (max-width:900px){.prrow{grid-template-columns:minmax(0,1fr)}.prsits{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* what the buffs change for the set opened: one line a situation, a click goes to it */
 .pbimpset{margin:0 0 8px;font-size:12.5px;color:var(--muted)}

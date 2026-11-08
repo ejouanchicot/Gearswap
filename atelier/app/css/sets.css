@@ -509,7 +509,6 @@
 .opallbtn{margin:4px 0 8px}
 
 /* ---- the new layout, a trial (app/js/layout2.js) ---- */
-.ctxbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--line);background:var(--panel-2);font-size:13px}
 .ui2toggle{margin-left:auto;align-self:center;padding:0 12px;font-size:12px}
 .ui2title{margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .ui2all{margin-top:8px}
@@ -934,11 +933,6 @@
 .settitle .wspath{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 .settitle .setacts{flex:none;margin-left:0}
 /* the line of the page's context holds the subjob warning: one line, always the same height */
-.ctxbar{flex-wrap:nowrap;min-height:34px}
-.ctxbar .subwarn{margin:0 0 0 auto;padding:2px 6px 2px 10px;min-width:0;flex-wrap:nowrap;white-space:nowrap}
-.ctxbar .subwarn > span{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.ctxbar .subwarn .btn{flex:none;padding:2px 10px;font-size:12px}
-.ctxbar{height:36px}
 /* the set's head: the versions' line and the weapons' lines keep their room, then the trial bar at the bottom of a
    head of fixed height (sizes read on every set of WAR, PLD and BLM, 2026-10-11); a head with more than that grows */
 .setsx.ui2 .setctl{align-content:start}
@@ -1908,7 +1902,6 @@
   .inner:has(.pane.split .setsx.ui2){display:grid;grid-template-columns:max-content minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:12px;padding-bottom:12px}
   .inner:has(.pane.split .setsx.ui2) > .sections{grid-row:1;grid-column:1;margin:2px 0 0;align-self:start}
   .inner:has(.pane.split .setsx.ui2) .pane.split{display:contents}
-  .inner:has(.pane.split .setsx.ui2) .pane.split > .ctxbar{grid-row:1;grid-column:2;align-self:stretch;height:auto;border:1px solid var(--line);border-radius:var(--radius)}
   .inner:has(.pane.split .setsx.ui2) .pane.split > .setsx.ui2{grid-row:2;grid-column:1 / -1;margin-top:12px;min-height:0;height:100%}
 }
 /* the set's count and the legend under the equipment, in its column: no empty band under the grid */

@@ -37,11 +37,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await step('delete Odyssey 2', () => { S._profOpen = 'full'; render(); [...document.querySelectorAll('.prpanel .prrow2')].find(r => r.querySelector('b') && r.querySelector('b').textContent === 'Odyssey 2').querySelector('[data-profdel]').click(); }, () => 'profiles ' + Object.keys(profAll()).join(','));
   await step('click outside closes', () => document.querySelector('.kfightcard .kband b').click(), () => 'open ' + S._profOpen);
   await step('situation Solo (big)', () => document.querySelector('.kfightcard [data-bufftier="Solo"]').click(), () => 'tier ' + buffTier() + ', pressed ' + document.querySelector('.kfightcard [data-bufftier][aria-pressed="true"]').textContent.trim());
-  await step('Sets line', () => { S.section = 'sets'; render(); }, () => 'ctxbar ' + !!document.querySelector('.ctxbar') + ', sits ' + document.querySelectorAll('.ctxbar .prsit').length + ', pressed ' + document.querySelector('.ctxbar .prsit[aria-pressed="true"] b').textContent + ', picker ' + document.querySelector('.ctxbar .prpickbtn span').textContent);
-  await step('compact situation Full', () => document.querySelector('.ctxbar [data-bufftier="Full"]').click(), () => 'tier ' + buffTier());
-  await step('compact picker', () => document.querySelector('.ctxbar [data-profopen]').click(), () => 'open ' + S._profOpen + ', panel rows ' + ROWS());
-  await step('compact load', () => document.querySelector('.ctxbar .prpanel [data-profload]').click(), () => 'active ' + profActive() + ', closed ' + !document.querySelector('.ctxbar .prpanel'));
-  await step('Modifier link', () => document.querySelector('.ctxbar [data-section="combat"]').click(), () => 'section ' + S.section);
+  // the Sets screen recalls what the figures are worked out with at the head of its figures (the line "Calculé avec"
+  // with its own situation and picker is gone, 2026-11-08): the party, the profile loaded, the target, the way to Buffs & cible
+  await step('Sets reminder', () => { S.section = 'sets'; render(); }, () => 'old line ' + !!document.querySelector('.ctxbar') + ', reminder ' + (document.querySelector('.globalcol .figctx') || {}).textContent);
+  await step('Changer link', () => document.querySelector('.globalcol .figctx [data-section="combat"]').click(), () => 'section ' + S.section);
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();
 })();

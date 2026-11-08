@@ -15,8 +15,6 @@
 .hero .topsel{max-width:100%}
 
 /* ---- the bar over the sets: the profile's four buttons keep their width, the bar wraps on a narrow window ---- */
-.ctxbar .prsits.compact{flex:none}
-@media (max-width:760px){.ctxbar{flex-wrap:wrap;height:auto}}
 
 /* ---- the set's title: the kind and the name share the line, each ending in "…" when it lacks room ---- */
 .stname .kicker{flex:0 1 auto;min-width:3em;overflow:hidden;text-overflow:ellipsis}

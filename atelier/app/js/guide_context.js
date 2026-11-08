@@ -115,7 +115,7 @@ const GC_RULES = {
     () => { const n = Object.keys((S.meritEdits || {})[meritKey()] || {}).length; return n ? {text: t('gcPersoEdits', {n})} : null; }],
   sim: [() => gcLive() ? null : {text: t('gcSimOff'), warn: true}],
   opt: [
-    () => ({text: t('gcOptWith', {t: buffTier(), e: enemyKey(buffState().enemy)}), sel: '.ctxbar, .oppage .opwhere'}),
+    () => ({text: t('gcOptWith', {t: buffTier(), e: enemyKey(buffState().enemy)}), sel: '.figctx, .oppage .opwhere'}),
     () => { const c = gcSet(), n = c ? lockedSlots(c.s).length : 0; return n ? {text: t('gcOptLocks', {n})} : null; },
     () => { const n = Object.keys(excludedOf() || {}).length; return n ? {text: t('gcOptExcl', {n})} : null; },
     () => { const e = window.FFXI && FFXI.engine; return e && e.name === 'old' ? {text: t('gcOld')} : null; },
