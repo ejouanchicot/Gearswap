@@ -3,7 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   //gs c skillup horn | harp | off | status
 ---
----   Sings buff songs on yourself one after the other with one instrument held,
+---   Sings songs one after the other with one instrument held (buff songs on yourself by default; a debuff
+---   song on the monster you target, with target = '<t>', the player's choice for Kaories 2026-11-08),
 ---   so its skill (Wind Instrument for a horn, String Instrument for a harp)
 ---   goes up, until //gs c skillup off. The player's way (2026-11-07): any buff
 ---   song on yourself; Army's Paeon VI, V, IV, III, II in turn, the next one as
@@ -31,7 +32,8 @@
 ---   their cap, so the player stops the loop.
 ---
 ---   Settings (<Character>/brd/combat/BRD_SONG_CONFIG.lua, shared/utils/core/job_config.lua; all optional):
----     skillup = {songs = {"Army's Paeon VI", "Army's Paeon V"}, horn = 'Loughnashade', harp = 'Daurdabla', gap = 3}
+---     skillup = {songs = {"Army's Paeon VI", "Army's Paeon V"}, horn = 'Loughnashade', harp = 'Daurdabla', gap = 3,
+---                target = '<me>'}   -- '<t>': the target you chose (Battlefield Elegy, Carnage Elegy on a monster)
 ---
 ---   @file    shared/jobs/brd/functions/logic/skillup.lua
 ---   @author  ejouanchicot
@@ -44,7 +46,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local SkillUp = {}
 
 local DEFAULTS = {songs = {"Army's Paeon VI", "Army's Paeon V", "Army's Paeon IV", "Army's Paeon III", "Army's Paeon II"},
-    horn = 'Loughnashade', harp = 'Daurdabla', gap = 3}
+    horn = 'Loughnashade', harp = 'Daurdabla', gap = 3, target = '<me>'}
 local SKILL_OF = {horn = 'Wind Instrument', harp = 'String Instrument'}
 local POLL = 0.5
 local PENDING_TIMEOUT = 15
@@ -54,7 +56,7 @@ local MAX_FAILS = 5
 -- counter: raised on every start and stop, so a scheduled poll of an older loop does nothing.
 -- songs: {name, recast_id} in turn; next: the index tried first; pending: the song sent, its recast not
 -- started yet (sent_at); done_at: when the last one was seen sung
-local STATE = {active = false, counter = 0, kind = nil, instrument = nil, songs = {}, by_name = {}, next = 1,
+local STATE = {active = false, counter = 0, kind = nil, instrument = nil, target = '<me>', songs = {}, by_name = {}, next = 1,
     pending = nil, started = false, sent_at = nil, done_at = nil, last_busy = nil, gap = 3, sung = 0, fails = 0}
 
 --- The loop's instrument for one of its songs while it runs (midcast_router.lua), nil otherwise
@@ -144,8 +146,8 @@ local function poll(my_counter)
     if ready then song, at = next_song(recasts) end
     if song then
         STATE.pending, STATE.started, STATE.sent_at, STATE.next = song, false, now, at % #STATE.songs + 1
-        trace('cast %s (%s)', song.name, STATE.instrument)
-        send_command('input /ma "' .. song.name .. '" <me>')
+        trace('cast %s (%s) on %s', song.name, STATE.instrument, STATE.target)
+        send_command('input /ma "' .. song.name .. '" ' .. STATE.target)
     end
     coroutine.schedule(function() poll(my_counter) end, POLL)
 end
@@ -204,6 +206,8 @@ local function start(kind)
     STATE.active = true
     STATE.counter = STATE.counter + 1
     STATE.kind, STATE.instrument, STATE.songs, STATE.gap = kind, cfg[kind], songs, tonumber(cfg.gap) or 3
+    -- (a target token only: <me>, <t>, <bt>, <stnpc>...; anything else falls back to yourself)
+    STATE.target = type(cfg.target) == 'string' and cfg.target:match('^<%a+>$') or '<me>'
     STATE.by_name = {}
     for _, song in ipairs(songs) do STATE.by_name[song.name] = true end
     STATE.next, STATE.pending, STATE.sent_at, STATE.done_at, STATE.sung, STATE.fails = 1, nil, nil, nil, 0, 0
@@ -211,7 +215,7 @@ local function start(kind)
     local names = {}
     for _, song in ipairs(songs) do names[#names + 1] = song.name end
     MessageFormatter.show_success('[BRD] Skill-up ' .. SKILL_OF[kind] .. ' with ' .. STATE.instrument .. ': '
-        .. table.concat(names, ', ') .. ' on you, in turn. //gs c skillup off to stop.')
+        .. table.concat(names, ', ') .. (STATE.target == '<me>' and ' on you' or ' on ' .. STATE.target) .. ', in turn. //gs c skillup off to stop.')
     trace('start %s with %s: %s', kind, STATE.instrument, table.concat(names, ', '))
     local my_counter = STATE.counter
     poll(my_counter)
