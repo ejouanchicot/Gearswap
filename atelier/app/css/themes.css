@@ -299,3 +299,76 @@
   --fx-cell:linear-gradient(180deg,#1a244e,#0d1433); --fx-cell-edge:#4a5a9a; --fx-hot:#ffd86a;
   --fx-sys:#ffff9a; --fx-item:#f6d77a; --fx-gain:#8cff8c; --fx-lack:#ff9a9a; --fx-lvl:#ffb070;
 }
+
+/* ============================================================================ the top bar as the game's window
+   (notes/docs-perso/theme-ffxi-2026-11-07/SPEC.md § 3-4, screen 1): the bar a window with the game's frame along its
+   foot; the job and subjob menus, the menus' buttons as the game's plates; the export's facts as the game's cells, their
+   value in the pale yellow of the game's figures; the menus that open as the game's windows; the tabs under it in the
+   same frame, the one shown lit. The colours are the theme's --fx-* (above): the game's own in Vana'diel. */
+/* a window apart (the player, 2026-11-08): framed on its four sides, on the same 20 px edges as the page under it;
+   everything in it centred on one line, at one height (--ctl): it was laid on its foot (align-items:flex-end) with
+   controls of 30, 32 and 38 px, their middles 27 to 32 px down */
+:root .app .topbar{--ctl:32px;margin:10px 20px 0;padding:0 14px;min-height:52px;box-sizing:border-box;align-items:center;background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;
+  text-shadow:var(--fx-shadow);box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 28px -12px rgba(0,0,0,.65)}
+.app .topbar::after{display:none}
+.app .topbar > *,.app .topbar .hero,.app .topbar .hero .who,.app .topbar .hero .plates{align-self:center;align-items:center}
+.app .topbar .hero .topsel,.app .topbar .tcharbtn,.app .topbar .tmbtn{height:var(--ctl);box-sizing:border-box}
+.app .topbar .hero .topsel{padding-top:0;padding-bottom:0}
+.app .topbar .tgrp.tfact{height:var(--ctl);box-sizing:border-box;padding-top:0;padding-bottom:0;align-items:center;justify-content:center}
+.app .topbar .tgrp.tfact > span{height:auto;min-height:0}
+.app .topbar .tsep{align-self:center;height:22px;margin:0}
+/* the text in the middle of its control, as drawn (measured on the pixels, 2026-11-08): Inter's capitals sit 1 px
+   high in their line, Cinzel's figures 2 px; the letter spacing leaves its room after the last letter */
+.app .topbar .tmbtn{padding:2px 10px 0 13px}
+.app .topbar .tcharbtn{padding:2px 7px 0 10px}
+:root .app .sections button{padding-top:7px;padding-bottom:5px}
+/* the job and subjob menus: their own arrow, as far from the edge as the text is from the other one (the browser's
+   arrow sat against the edge: the text looked 4 px off) */
+.app .topbar .hero .topsel{-webkit-appearance:none;appearance:none;padding:2px 24px 0 10px;
+  background:linear-gradient(45deg,transparent 50%,currentColor 50%) calc(100% - 15px) 55%/4px 4px no-repeat,
+    linear-gradient(135deg,currentColor 50%,transparent 50%) calc(100% - 11px) 55%/4px 4px no-repeat,var(--fx-btn)}
+.app .topbar .hero .topsel:hover{background:linear-gradient(45deg,transparent 50%,currentColor 50%) calc(100% - 15px) 55%/4px 4px no-repeat,
+    linear-gradient(135deg,currentColor 50%,transparent 50%) calc(100% - 11px) 55%/4px 4px no-repeat,var(--fx-btn-hover)}
+.app .topbar .hero .topsel.jobsel{padding-left:9px}
+/* the export's facts are not buttons (nothing happens on a click): a readout, no plate, its name over its value, a
+   hairline between two */
+.app .topbar .tgrp.tfact{flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 10px;
+  background:none;border:0;border-radius:0;box-shadow:none;cursor:default}
+.app .topbar .tgrp.tfact + .tgrp.tfact{border-left:1px solid var(--fx-line)}
+.app .topbar .tgrp.tfact > small{display:block;font-size:8.5px;font-weight:700;letter-spacing:.12em;line-height:1;text-transform:uppercase;color:var(--fx-label)}
+.app .topbar .tgrp.tfact .readout{display:block;height:auto;padding:0;min-width:0;line-height:1;font-size:13.5px;border:0;background:none;box-shadow:none}
+@media (max-width:900px){.app .topbar{margin:8px 14px 0}}
+/* (the job's menu kept whole on a smaller screen: "WAR · Warrior · ML39" and its arrow, 160 px cut it) */
+@media (max-width:1450px){.app .topbar .hero .jobsel{max-width:190px}}
+.app .topbar .hero .topsel{border:1px solid var(--fx-frame);border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.app .topbar .hero .topsel.jobsel{border-left:3px solid var(--role,var(--fx-hot));color:var(--fx-value)}
+.app .topbar .hero .topsel:hover{border-color:var(--fx-hot)}
+.app .topbar .hero .pick::before{color:var(--fx-label)}
+.app .topbar .tcharbtn{text-shadow:var(--fx-shadow)}
+.app .topbar .tcharbtn:hover,.app .topbar .tchar.open .tcharbtn{border-color:var(--fx-hot);color:var(--fx-value)}
+.app .topbar .tsep{background:var(--fx-line)}
+.app .topbar .tgrp.tfact > small{color:var(--fx-label)}
+.app .topbar .tgrp.tfact .readout{color:var(--fx-value);text-shadow:var(--fx-shadow)}
+.app .topbar .tmbtn{background:var(--fx-btn);border:1px solid var(--fx-frame);border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.app .topbar .tmbtn i{color:var(--fx-label)}
+.app .topbar .tmbtn:hover,.app .topbar .tmenu.open .tmbtn{background:var(--fx-btn-hover);border-color:var(--fx-hot);color:var(--fx-value)}
+.app .topbar .tmbtn.alert{border-color:var(--fx-hot);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 10px -3px var(--fx-hot)}
+.app .topbar .tmled.on{background:var(--fx-gain);box-shadow:0 0 6px var(--fx-gain)}
+.app .topbar .tmpanel{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:8px;
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 14px 34px -10px rgba(0,0,0,.7)}
+.app .topbar .tmi{color:var(--fx-ink);text-shadow:var(--fx-shadow);border-radius:4px}
+.app .topbar .tmi:hover:not([disabled]){background:linear-gradient(90deg,color-mix(in srgb,var(--fx-hot) 24%,transparent),color-mix(in srgb,var(--fx-hot) 5%,transparent));color:var(--fx-value)}
+.app .topbar .tmi.cur,.app .topbar .tmi .tmic{color:var(--fx-hot)}
+.app .topbar .tmnote{color:var(--fx-sys)}
+:root .app .sections{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:8px;
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 18px var(--fx-glow)}
+:root .app .sections button{color:var(--fx-label);text-shadow:var(--fx-shadow)}
+:root .app .sections button:hover{color:var(--fx-ink);background:color-mix(in srgb,var(--hover) 60%,transparent)}
+:root .app .sections button[aria-selected="true"]{color:var(--fx-value);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--fx-hot) 26%,transparent),color-mix(in srgb,var(--fx-hot) 7%,transparent));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fx-hot) 60%,transparent)}
+:root .app .sections .count{color:var(--fx-label);background:var(--fx-well);text-shadow:none}
+:root .app .sections button[aria-selected="true"] .count{color:var(--accent-ink);background:var(--fx-hot)}
+
