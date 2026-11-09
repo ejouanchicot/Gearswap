@@ -65,7 +65,9 @@ const TIERS3 = ['Group', 'Solo', 'Trust'];
 
 export interface TitleActs { opt: null | {title: string; labelHtml: string}; del: null | {off: boolean; title: string; labelHtml: string}; prev: null | {label: string; title: string};
   // the Simple / Detailed view switch, in the set's menu (sets_simple.js data-setsview-set)
-  view: {to: string; label: string; title: string} }
+  view: {to: string; label: string; title: string};
+  // emptying the set, as a trial (trial.js clearSet, events.js data-setclear): off when it has no piece of its own
+  clear: {off: boolean; label: string; title: string} }
 export interface TitleView extends TitleActs { kicker: string; name: string; version: string; tag: string; when: string; facts: string[]; factsTip: string; path: string; pathTip: string }
 
 // Undoing the optimizer's last run (events.js data-tryprev: the trial it found replaced by the one before it), in the
@@ -226,7 +228,8 @@ function setLuaOf(s: LegacyAny): SetLua {
     if (p.bag) f.push(`bag = ${q(p.bag)}`);
     if (p.priority != null) f.push(`priority = ${p.priority}`);
     return f.length > 1 ? `{${f.join(', ')}}` : q(p.name); };
-  const slots = SLOTS.filter((slot: string) => slot in tr || (s.base ? own.has(slot) : !!s.pieces[slot]));
+  // (a slot the set is emptied of on trial, trial.js clearSet: its line goes)
+  const slots = SLOTS.filter((slot: string) => !(tr[slot] && tr[slot].cleared) && (slot in tr || (s.base ? own.has(slot) : !!s.pieces[slot])));
   const lines = slots.map((slot: string) => { const p = slot in tr ? (tr[slot] || {name: 'empty'}) : s.pieces[slot], v = valueOf(p);
     return {slot, value: v, full: `${slot} = ${v}`, tried: slot in tr}; });
   const base = s.base ? shortPath(s.base) : '';
@@ -289,7 +292,8 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   const opt = optable && optPageOpen(s) ? optPageView(s, statOnly ? null : wsName) : null;
   // its actions on the title line: the optimizer, then deleting it
   const acts: TitleActs = {opt: optable && engineReady() ? {title: t('ttOptOpen'), labelHtml: t('optOpenBtn')} : null, del: (ws && !wsOfSet(s)) || locked ? null : delOf(s), prev: prevOf(s),
-    view: {to: simple ? 'full' : 'simple', label: t(simple ? 'ssToFull' : 'ssToSimple'), title: t('ssViewTip')}};
+    view: {to: simple ? 'full' : 'simple', label: t(simple ? 'ssToFull' : 'ssToSimple'), title: t('ssViewTip')},
+    clear: {off: ![...own].some(x => s.pieces[x]), label: t('clearBtn'), title: t('clearTip')}};
   // a job ability's set on sets.precast.JA that no piece of the game can boost: nothing to optimize here, the gear it
   // wears is sets.precast.JA's (stat_opt.js jaOverlayBase, jaBoostable)
   if (acts.opt && jaOverlayBase(s) && !jaBoostable(s)) {

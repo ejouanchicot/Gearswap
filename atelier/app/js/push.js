@@ -49,6 +49,8 @@ function pushPlan(s){
   return SLOTS.filter(slot => slot in tr || slot in was || (over && isEmpty(s.pieces[slot]))).map(slot => {
     const target = slot in tr ? tr[slot] : (isEmpty(s.pieces[slot]) ? null : s.pieces[slot]);
     const bp = base && base.pieces[slot], bEmpty = !bp || isEmpty(bp);
+    // a slot the set was emptied of ("Vider le set": trial.js clearSet): its line goes
+    if (target && target.cleared) return {slot, kind: 'inherit'};
     // a set laid on top of another (overlaySet): a slot emptied in it loses its line instead (pushes of 2026-10-16,
     // Saboteur: all slots empty but hands; 2026-10-31, sets.MoveSpeed with the legs only: 12 slots empty)
     if (!target || isEmpty(target)) return {slot, kind: (base && bEmpty) || over ? 'inherit' : 'empty'};

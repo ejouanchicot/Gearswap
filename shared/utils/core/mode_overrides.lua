@@ -99,15 +99,21 @@ local function add_values(mode, name, values)
 end
 
 --- Take values out of a list mode (a weapon the player took out of a cycle in the Atelier). The current value goes
---- to the first left when it is taken out; the last value is never taken out (a mode holds one at least).
+--- to the first left when it is taken out; the last value is never taken out (a mode holds one at least), unless the
+--- same file adds values to the mode: then the cycle is those (every weapon of the states file swapped for others:
+--- Kaories BRD's SubWeapon, 2026-11-08, whose four values out were refused, so six were cycled).
+--- @param adds table|nil The values the same scope adds to this mode ('+Mode'), laid after
 --- @return boolean true when laid
-local function remove_values(mode, name, values)
+local function remove_values(mode, name, values, adds)
     if rawget(mode, '_track')._type ~= 'list' then return false end
     keep_base(mode, name)
     local out, list = {}, {}
     for _, v in ipairs(values) do if type(v) == 'string' then out[v] = true end end
     for _, v in ipairs(mode) do if not out[v] then list[#list + 1] = v end end
-    if #list == 0 then return false end
+    if #list == 0 then
+        for _, v in ipairs(type(adds) == 'table' and adds or {}) do if type(v) == 'string' then list[#list + 1] = v end end
+        if #list == 0 then return false end
+    end
     removed_values[name] = values
     if #list == #mode then return true end
     return relist(mode, list)
@@ -143,7 +149,7 @@ local function lay(st, values, silent_missing, bad, kind)
             -- another pass's entry
         elseif sign then
             local lay_fn = sign == '+' and add_values or sign == '-' and remove_values or order_values
-            local laid = mode and type(value) == 'table' and lay_fn(mode, base, value)
+            local laid = mode and type(value) == 'table' and lay_fn(mode, base, value, values['+' .. base])
             if not laid and not (silent_missing and not mode) then bad[#bad + 1] = name end
         elseif mode and type(value) == 'string' then
             local before = tostring(mode.current)

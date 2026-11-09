@@ -1,7 +1,7 @@
 <!--
   GearSwap Atelier · the card of the set shown (card.ts), laid out as a screen of the game (the player, 2026-11-08):
-  - the title line: the set's name, at its right undoing the optimizer's last run (while there is one) and deleting
-    the set; its versions as the window's tabs under it; under it one band, what it is
+  - the title line: the set's name, at its right emptying the set (a trial), undoing the optimizer's last run (while
+    there is one) and deleting the set; its versions as the window's tabs under it; under it one band, what it is
     (when it is worn, a weaponskill's facts) and its path; a weaponskill's settings (its weapon, its TP) full width;
   - then two blocks side by side: at the left the gear as the game's equipment grid (tight cells, the icon filling its
     cell), under it the optimizer's button and the one that wears it in game; at the right an info panel with its tabs (the set: its goals,
@@ -58,7 +58,7 @@
 
 <article class="detail cv2" class:simple={view.simple}><div class="boxh panehead"><h3>{view.pane}</h3></div>
   <header class="cvhead">
-    <div class="cvtop"><div class="cvname"><TitleBox view={title} />{#if title.prev || title.del}<span class="setacts cvacts">{#if title.prev}<button class="btn ghost" data-tryprev title={title.prev.title}>{title.prev.label}</button>{/if}{#if title.del}<button class="btn ghost delset" data-setdel disabled={title.del.off} title={title.del.title}>{@html title.del.labelHtml}</button>{/if}</span>{/if}</div>{#if view.versions.k === 'row'}<div class="setvers cvvers"><div class="verseg" role="group" aria-label={view.versions.label}>{#each view.versions.buttons as b, i (i)}{@render ver(b)}{/each}</div></div>{/if}</div>
+    <div class="cvtop"><div class="cvname"><TitleBox view={title} /><span class="setacts cvacts"><button class="btn ghost clearset" data-setclear disabled={title.clear.off} title={title.clear.title}>{title.clear.label}</button>{#if title.prev}<button class="btn ghost" data-tryprev title={title.prev.title}>{title.prev.label}</button>{/if}{#if title.del}<button class="btn ghost delset" data-setdel disabled={title.del.off} title={title.del.title}>{@html title.del.labelHtml}</button>{/if}</span></div>{#if view.versions.k === 'row'}<div class="setvers cvvers"><div class="verseg" role="group" aria-label={view.versions.label}>{#each view.versions.buttons as b, i (i)}{@render ver(b)}{/each}</div></div>{/if}</div>
     <div class="cvwhen" title={title.factsTip || title.when || undefined}>{#if title.when}<span class="setwhen">{title.when}</span>{/if}{#if title.facts.length}<span class="wsfacts">{#each title.facts as f, i (i)}<span>{f}</span>{/each}</span>{/if}<code class="path wspath" title={title.pathTip}>{title.path}</code></div>
     {#if view.versions.k === 'grid'}<div class="setvers grid cvgrid"><span class="kicker">{view.versions.label}</span><div class="vergrid" role="group" style="--n:{view.versions.cols.length}"><span></span>{#each view.versions.cols as c (c)}<span class="vh">{c}</span>{/each}{#each view.versions.rows as r, i (i)}<span class="vr">{r.label}</span>{#each r.cells as b, j (j)}{#if b}{@render ver(b)}{:else}<i class="vnone">—</i>{/if}{/each}{/each}</div></div>{/if}
     {#if ctx && ctx.warn}<p class="kwarn subwarn"><span>{ctx.warn.text}</span> <button class="btn" data-subfix={ctx.warn.sub}>{ctx.warn.fix}</button></p>{/if}

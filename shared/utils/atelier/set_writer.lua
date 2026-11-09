@@ -272,7 +272,8 @@ local function line_end(text, i)
     return text:find('\n', i, true) or #text + 1
 end
 
-local function only_blank(s) return s:match('^[ \t]*$') ~= nil end
+-- (a file with Windows line ends: the \r before the \n is blank too, or taking a line out left its indent behind)
+local function only_blank(s) return s:match('^[ \t\r]*$') ~= nil end
 
 --- The indent and key padding new lines of a definition take: its entries' own,
 --- else the definition's indent plus 4 spaces, keys padded when the file pads them.

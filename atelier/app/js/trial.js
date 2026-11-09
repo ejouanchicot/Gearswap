@@ -20,6 +20,19 @@ function setTrial(s, slot, piece){
   if (piece === undefined) delete tr[slot]; else tr[slot] = piece;
   if (!Object.keys(tr).length) delete S.trial[k];
 }
+// Emptying a whole set ("Vider le set", the card's title line: data-setclear), as a trial the player sees and pushes:
+// each slot of its own goes. On a set built on another (set_combine) the slot takes its base's piece again (the push
+// drops the line: pushPlan's samePiece); a slot the base leaves empty, or a set with no base, gets a piece marked
+// `cleared`: nothing in it, and the push drops its line too instead of writing `empty` (GearSwap's `empty` strips the
+// slot in game; a set with no line for a slot leaves it as it is)
+const CLEARED = () => ({name: 'empty', cleared: true});
+function clearSet(s){
+  const base = s.base && S._bypath ? S._bypath[s.base] : null, own = new Set(s.own || Object.keys(s.pieces || {}));
+  for (const slot of SLOTS.filter(x => own.has(x) && s.pieces[x])) {
+    const bp = base && base.pieces[slot];
+    setTrial(s, slot, bp && !isEmpty(bp) ? bp : CLEARED());
+  }
+}
 // The same set without the tried pieces (what the differences compare to)
 function withoutTrial(fn){ S._noTrial = true; try { return fn(); } finally { S._noTrial = false; } }
 // The trial's bar (drawn by atelier/src/screens/sets/trial.ts) keeps its place when nothing is tried (a line that says
@@ -33,7 +46,7 @@ function trialLua(s){
   const q = v => '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
   const tr = S.trial[trialKey(s)] || {}, pieces = Object.assign({}, s.pieces);
   const hands = family(s.path, s.pieces) !== 'weapons' && !handsOwn(s);
-  for (const [slot, p] of Object.entries(tr)) if (!(hands && (slot === 'main' || slot === 'sub'))) pieces[slot] = p || {name: 'empty'};
+  for (const [slot, p] of Object.entries(tr)) if (!(hands && (slot === 'main' || slot === 'sub'))) { if (p && p.cleared) delete pieces[slot]; else pieces[slot] = p || {name: 'empty'}; }
   const lua = p => { if (isEmpty(p)) return 'empty';
     const f = [`name = ${q(p.name)}`];
     if (p.augs && p.augs.length) f.push(`augments = { ${p.augs.map(q).join(', ')} }`);

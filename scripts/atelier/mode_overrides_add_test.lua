@@ -116,6 +116,25 @@ ModeOverrides.read = function() return {RDM = {['-MainWeapon'] = {'Colada'}, ['+
 ModeOverrides.apply('RDM')
 check('out, in, then ordered', list(state.MainWeapon), 'Daybreak,Naegling,Maxentius')
 check('the states file values kept for the export', table.concat(ModeOverrides.base_values().MainWeapon, ','), 'Naegling,Colada,Maxentius')
+-- 10. every value of the states file taken out, others added in the same file: the cycle is the ones added (Kaories
+-- BRD's SubWeapon, 2026-11-08: the four out were refused as emptying the mode, so the six were cycled)
+state = {SubWeapon = M{['description'] = 'Sub Weapon', 'Kraken', 'Demersal', 'Genmei', 'Centovente'}}
+state.SubWeapon:set('Genmei')
+errors = {}
+ModeOverrides.read = function() return {BRD = {['+SubWeapon'] = {'Demers. Degen +1', 'Genmei Shield'}, ['-SubWeapon'] = {'Kraken', 'Centovente', 'Genmei', 'Demersal'},
+  SubWeapon = 'Demers. Degen +1'}} end
+ModeOverrides.apply('BRD')
+check('all out, the added ones in', list(state.SubWeapon), 'Demers. Degen +1,Genmei Shield')
+check('the start value on one of them', state.SubWeapon.current, 'Demers. Degen +1')
+check('nothing refused', #errors, 0)
+check('its description kept', state.SubWeapon.description, 'Sub Weapon')
+-- 11. still never empty when nothing is added
+state = {SubWeapon = M{'Kraken', 'Genmei'}}
+errors = {}
+ModeOverrides.read = function() return {BRD = {['-SubWeapon'] = {'Kraken', 'Genmei'}}} end
+ModeOverrides.apply('BRD')
+check('all out, nothing added: kept', list(state.SubWeapon), 'Kraken,Genmei')
+check('all out, nothing added: named', #errors, 1)
 
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

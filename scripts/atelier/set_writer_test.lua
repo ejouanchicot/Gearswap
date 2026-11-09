@@ -91,5 +91,16 @@ out = SetWriter.create(FILE, mdt, 'Solo', {head = "'X'"})
 ok, err = compiles(out)
 check('create after a one-line set_combine compiles', ok, err)
 
+-- a file with Windows line ends: taking every line out leaves no line of blanks behind (Kaories brd_sets.lua,
+-- sets.SingleWield emptied 2026-11-08: 13 indents were left, each on its line)
+local CRLF = 'sets.SingleWield = {\r\n    head = \'A\',\r\n    body = \'B\',\r\n}\r\n'
+local sw = SetWriter.find(CRLF, 'sets.SingleWield')
+out = SetWriter.edit(CRLF, sw, {head = false, body = false})
+check('CRLF: every line out leaves the table empty', out == 'sets.SingleWield = {\r\n}\r\n', ('%q'):format(out))
+out = SetWriter.edit(CRLF, sw, {head = false, sub = "'Genmei Shield'"})
+ok, err = compiles(out)
+check('CRLF: a line out and one in compiles', ok, err)
+check('CRLF: the new line is in, the old one out', out:find("sub = 'Genmei Shield'", 1, true) ~= nil and not out:find("'A'", 1, true), ('%q'):format(out))
+
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

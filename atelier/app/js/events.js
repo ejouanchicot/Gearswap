@@ -115,6 +115,8 @@ document.addEventListener('click', e => {
     delete S.trial[k]; if (dr) { delete dr.prev; delete dr.info; } render(); return; }
   if ('trysave' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S._toastSet = s.path; saveSet(s); return; }
   if ('setrevert' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S._toastSet = s.path; revertSet(s); return; }
+  // emptying the set shown, as a trial (trial.js clearSet)
+  if ('setclear' in d) { clearSet(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); render(); return; }
   if ('trylua' in d) { openLua(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   if ('copylua' in d) { copyLua(b); return; }
   if ('folderpick' in d && S._folder) { S._folder.pick(); return; }

@@ -231,6 +231,10 @@ const namedForWeapon = p => { const m = /^sets\.(\w+)$/.exec(p) || /^sets\["([^"
   return !!it && (it.slots || []).some(s => ['main', 'sub', 'range', 'ammo'].includes(s)); };
 function family(path, pieces){
   const p = path;
+  // the off hand taken when a weapon's cannot be dual wielded (shared/utils/equipment/weapon_resolver.lua reads its
+  // sub only): a weapon set whatever it holds, so a piece chosen in its hands is its own, tried and pushed (an older
+  // file's SingleWield full of armour sent the shield to the page's forced off hand instead: Kaories BRD, 2026-11-08)
+  if (p === 'sets.SingleWield') return 'weapons';
   const slots = Object.keys(pieces||{});
   if (/^sets(\.\w+|\["[^"]+"\])$/.test(p) && slots.length && slots.every(s => ['main','sub','range','ammo'].includes(s)) && !/^sets\.(idle|engaged|MoveSpeed)/.test(p)) return 'weapons';
   if (!slots.length && namedForWeapon(p)) return 'weapons';
