@@ -312,7 +312,22 @@ function withVec(p, slot, s){
   if (city > (q.st.move || 0)) q.st = Object.assign({}, q.st, {move: city});
   if (ja && boostsAbility(p, slot, ja)) q.st = Object.assign({}, q.st, {ja: 1});
   if (slot === 'sub') { const it = itemOf(p.name); if (it && it.Type === 'Shield') q.shield = true; }
+  // a piece the search builds (atelier/opt_ambu.js): what each augment it can take adds, laid by the search on the
+  // bare piece's stats. An Ambuscade cape (its materials: FFXI.opt.AMBU_AUGS), a Skirmish piece (its stones)
+  if (p.ambu && window.FFXI && FFXI.opt && FFXI.opt.AMBU_AUGS) q.stAugs = augVecs(p, slot, q.st, FFXI.opt.AMBU_AUGS);
+  const skir = p.skirmish && window.FFXI && FFXI.SKIRMISH_SETS && FFXI.SKIRMISH_SETS[FFXI.SKIRMISH_BY_NAME[p.name]];
+  if (skir) q.stAugs = augVecs(p, slot, q.st, skir.augs);
   return q;
+}
+// What each augment adds to a piece's stats: lists = {material or stone: [augment as the game writes it]}, the result
+// in the same order (the search adds the ones it picks to the bare piece's: atelier/opt_ambu.js withStats)
+function augVecs(p, slot, bare, lists){
+  const out = {};
+  for (const m of Object.keys(lists)) out[m] = (lists[m] || []).map(a => {
+    const v = statVec({name: p.name, augs: [a]}, slot), d = {};
+    for (const k of new Set([...Object.keys(v), ...Object.keys(bare || {})])) if ((v[k] || 0) !== ((bare || {})[k] || 0)) d[k] = (v[k] || 0) - ((bare || {})[k] || 0);
+    return d; });
+  return out;
 }
 function withVecs(pieces, s){
   const out = {};

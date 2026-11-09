@@ -1,0 +1,3582 @@
+{
+  "_meta": {
+    "source": "BG-Wiki, Category:Alluvion Skirmish Armor (copie texte fournie par l'utilisateur, nov. 2026)",
+    "zone": "Yorcia Weald (U) — Alluvion Skirmish",
+    "obtention": [
+      "Drop direct en fin de Skirmish",
+      "??? près de l'Augural Conveyor, Yorcia Weald (I-10), contre des Mellidopt Wings (coffres)",
+      "Treasure pool d'un boss floor en fin de Skirmish"
+    ],
+    "augmentation": {
+      "npc": "Divainy-Gamainy (Arcane Glyptics)",
+      "cout": "50 Obsidian Fragments par tentative ; la stone est consommée dans tous les cas",
+      "regle": "Une pièce peut porter 3 augments à la fois : un par type de stone (Snow, Leaf, Dusk). Réaugmenter avec un type ne remplace que l'augment de ce type. Le joueur choisit de garder l'ancien ou le nouveau résultat.",
+      "sources_stones": [
+        "Coffres en fin de Skirmish",
+        "Acuex rose pendant la Skirmish",
+        "Boss floor",
+        "A.M.A.N. Troves"
+      ]
+    },
+    "stone_types": {
+      "Snow": "défense/précision/attaque",
+      "Leaf": "traits et effets (STP, DA, FC, Haste...)",
+      "Dusk": "attributs et dégâts"
+    },
+    "stone_subtypes": {
+      "slit": "augments mêlée",
+      "tip": "augments distance",
+      "dim": "augments magie",
+      "orb": "augments pet"
+    },
+    "stone_qualities": {
+      "list": [
+        "NQ",
+        "+1",
+        "+2"
+      ],
+      "regle": "Une qualité plus basse PEUT donner le même résultat qu'une plus haute, mais une qualité plus haute a plus de chances de donner des valeurs élevées.",
+      "limite_des_donnees": "La source ne donne PAS la valeur max atteignable par qualité. Les plages listées sont globales, toutes qualités confondues."
+    },
+    "snow_plus2_exclusions": {
+      "Snowslit +2": [
+        "Evasion",
+        "Magic Evasion"
+      ],
+      "Snowtip +2": [
+        "Defense",
+        "Magic Evasion"
+      ],
+      "Snowdim +2": [
+        "Defense",
+        "Evasion"
+      ]
+    },
+    "snow_biais": {
+      "Snowslit": "Defense fréquent",
+      "Snowtip": "Evasion fréquent",
+      "Snowdim": "Magic Evasion fréquent"
+    },
+    "bad_rolls": "Un sous-type peut rarement donner un augment d'une autre catégorie. Ces résultats ne sont PAS listés dans les données.",
+    "schema_augment": {
+      "stat": "nom de la stat",
+      "min/max": "valeurs absolues ; la plage va de min à max",
+      "sign": "'+' ou '-' (ex. Enmity -1~5 => sign '-', max 5 = meilleur roll -5)",
+      "unit": "'%' ou 'flat'",
+      "display": "notation d'origine",
+      "column_inferred": "true si la source avait une cellule partagée entre plusieurs colonnes ; l'attribution au sous-type a été déduite (chaque sous-type a toujours 6 stats en Leaf/Dusk, 4 en Snow, 7 pour Snoworb, ce qui rend la déduction cohérente sur tous les sets)",
+      "note": "avertissement sur une valeur suspecte"
+    },
+    "base_stats_schema": "Clés = nom de stat ; suffixe ' %' si pourcentage. DEF = défense de l'objet."
+  },
+  "sets": {
+    "Yorium": {
+      "item_level": 119,
+      "jobs": [
+        "WAR",
+        "PLD",
+        "DRK"
+      ],
+      "pieces": [
+        {
+          "name": "Yorium Barbuta",
+          "slot": "Head",
+          "base_stats": {
+            "DEF": 113,
+            "HP": 41,
+            "MP": 23,
+            "STR": 24,
+            "DEX": 16,
+            "VIT": 24,
+            "AGI": 16,
+            "INT": 14,
+            "MND": 14,
+            "CHR": 14,
+            "Accuracy": 10,
+            "Evasion": 33,
+            "Magic Evasion": 47,
+            "Magic Def. Bonus": 2,
+            "Haste %": 7,
+            "Store TP": 4
+          },
+          "base_stats_raw": "DEF:113 HP+41 MP+23 STR+24 DEX+16 VIT+24 AGI+16 INT+14 MND+14 CHR+14 Accuracy+10 Evasion+33 Magic Evasion+47 \"Magic Def. Bonus\"+2 Haste+7% \"Store TP\"+4"
+        },
+        {
+          "name": "Yorium Cuirass",
+          "slot": "Body",
+          "base_stats": {
+            "DEF": 142,
+            "HP": 113,
+            "MP": 85,
+            "STR": 30,
+            "DEX": 17,
+            "VIT": 29,
+            "AGI": 16,
+            "INT": 16,
+            "MND": 16,
+            "CHR": 16,
+            "Evasion": 41,
+            "Magic Evasion": 48,
+            "Magic Def. Bonus": 4,
+            "Haste %": 3,
+            "Double Attack %": 2
+          },
+          "base_stats_raw": "DEF:142 HP+113 MP+85 STR+30 DEX+17 VIT+29 AGI+16 INT+16 MND+16 CHR+16 Evasion+41 Magic Evasion+48 \"Magic Def. Bonus\"+4 Haste+3% \"Double Attack\"+2%"
+        },
+        {
+          "name": "Yorium Gauntlets",
+          "slot": "Hands",
+          "base_stats": {
+            "DEF": 99,
+            "HP": 29,
+            "STR": 8,
+            "DEX": 25,
+            "VIT": 31,
+            "AGI": -4,
+            "INT": 4,
+            "MND": 21,
+            "CHR": 15,
+            "Evasion": 22,
+            "Magic Evasion": 36,
+            "Magic Def. Bonus": 1,
+            "Haste %": 4,
+            "Enmity": 4,
+            "Physical Damage Taken %": -2
+          },
+          "base_stats_raw": "DEF:99 HP+29 STR+8 DEX+25 VIT+31 AGI-4 INT+4 MND+21 CHR+15 Evasion+22 Magic Evasion+36 \"Magic Def. Bonus\"+1 Haste+4% Enmity+4 Physical Damage Taken -2%"
+        },
+        {
+          "name": "Yorium Cuisses",
+          "slot": "Legs",
+          "base_stats": {
+            "DEF": 122,
+            "HP": 52,
+            "STR": 33,
+            "VIT": 21,
+            "AGI": 14,
+            "INT": 23,
+            "MND": 10,
+            "CHR": 8,
+            "Accuracy": 7,
+            "Attack": 7,
+            "Evasion": 22,
+            "Magic Evasion": 64,
+            "Magic Def. Bonus": 3,
+            "Haste %": 5,
+            "Store TP": 4
+          },
+          "base_stats_raw": "DEF:122 HP+52 STR+33 VIT+21 AGI+14 INT+23 MND+10 CHR+8 Accuracy+7 Attack+7 Evasion+22 Magic Evasion+64 \"Magic Def. Bonus\"+3 Haste+5% \"Store TP\"+4"
+        },
+        {
+          "name": "Yorium Sabatons",
+          "slot": "Feet",
+          "base_stats": {
+            "DEF": 82,
+            "HP": 18,
+            "STR": 15,
+            "DEX": 9,
+            "VIT": 16,
+            "AGI": 26,
+            "MND": 7,
+            "CHR": 23,
+            "Evasion": 49,
+            "Magic Accuracy": 10,
+            "Magic Evasion": 64,
+            "Magic Def. Bonus": 2,
+            "Haste %": 3,
+            "Enmity": 5
+          },
+          "base_stats_raw": "DEF:82 HP+18 STR+15 DEX+9 VIT+16 AGI+26 MND+7 CHR+23 Evasion+49 Magic Accuracy+10 Magic Evasion+64 \"Magic Def. Bonus\"+2 Haste+3% Enmity+5"
+        }
+      ],
+      "augments": {
+        "Snow": {
+          "slit": [
+            {
+              "stat": "Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Accuracy and Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Defense",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Ranged Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Attack",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Accuracy and Ranged Attack",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Attack Bonus",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Accuracy and Magic Attack Bonus",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Accuracy and Pet: Ranged Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Attack and Pet: Ranged Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Attack Bonus",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Defense",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ]
+        },
+        "Leaf": {
+          "slit": [
+            {
+              "stat": "Store TP",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Double Attack",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Cure Potency Received",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Weapon Skill Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5",
+              "column_inferred": true
+            },
+            {
+              "stat": "Subtle Blow",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Haste",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            },
+            {
+              "stat": "Regen",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~2"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Fast Cast",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Cure Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Cure Spellcasting Time",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~5%"
+            },
+            {
+              "stat": "Spell Interruption Rate",
+              "min": 1,
+              "max": 10,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~10%"
+            },
+            {
+              "stat": "Drain and Aspir Potency",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Occult Acumen",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Regen",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Pet: Subtle Blow",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~4%"
+            },
+            {
+              "stat": "Pet: Double Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Enmity",
+              "min": 1,
+              "max": 8,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~8"
+            },
+            {
+              "stat": "Pet: Store TP",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            }
+          ]
+        },
+        "Dusk": {
+          "slit": [
+            {
+              "stat": "STR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "VIT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and VIT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Physical Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            },
+            {
+              "stat": "Damage Taken",
+              "min": 1,
+              "max": 3,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~3%"
+            },
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%",
+              "column_inferred": true
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%",
+              "column_inferred": true
+            },
+            {
+              "stat": "DEX",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "AGI",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and DEX",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Skillchain Damage",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Breath Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "INT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "INT and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and INT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Magic Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            },
+            {
+              "stat": "Phalanx Received",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "orb": [
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "CHR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MND and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Pet: Haste",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            }
+          ]
+        }
+      }
+    },
+    "Acro": {
+      "item_level": 119,
+      "jobs": [
+        "WAR",
+        "PLD",
+        "DRK",
+        "BST",
+        "SAM",
+        "DRG"
+      ],
+      "pieces": [
+        {
+          "name": "Acro Helm",
+          "slot": "Head",
+          "base_stats": {
+            "DEF": 101,
+            "HP": 38,
+            "MP": 23,
+            "STR": 22,
+            "DEX": 18,
+            "VIT": 18,
+            "AGI": 16,
+            "INT": 15,
+            "MND": 15,
+            "CHR": 15,
+            "Attack": 15,
+            "Evasion": 33,
+            "Magic Evasion": 43,
+            "Magic Def. Bonus": 2,
+            "Haste %": 7,
+            "Store TP": 3
+          },
+          "base_stats_raw": "DEF:101 HP+38 MP+23 STR+22 DEX+18 VIT+18 AGI+16 INT+15 MND+15 CHR+15 Attack+15 Evasion+33 Magic Evasion+43 \"Magic Def. Bonus\"+2 Haste+7% \"Store TP\"+3"
+        },
+        {
+          "name": "Acro Surcoat",
+          "slot": "Body",
+          "base_stats": {
+            "DEF": 130,
+            "HP": 61,
+            "MP": 44,
+            "STR": 25,
+            "DEX": 20,
+            "VIT": 24,
+            "AGI": 19,
+            "INT": 19,
+            "MND": 19,
+            "CHR": 19,
+            "Accuracy": 10,
+            "Attack": 10,
+            "Evasion": 41,
+            "Magic Evasion": 53,
+            "Magic Def. Bonus": 4,
+            "Haste %": 3,
+            "Double Attack %": 2
+          },
+          "base_stats_raw": "DEF:130 HP+61 MP+44 STR+25 DEX+20 VIT+24 AGI+19 INT+19 MND+19 CHR+19 Accuracy+10 Attack+10 Evasion+41 Magic Evasion+53 \"Magic Def. Bonus\"+4 Haste+3% \"Double Attack\"+2%"
+        },
+        {
+          "name": "Acro Gauntlets",
+          "slot": "Hands",
+          "base_stats": {
+            "DEF": 85,
+            "HP": 57,
+            "STR": 4,
+            "DEX": 31,
+            "VIT": 28,
+            "AGI": 5,
+            "INT": 8,
+            "MND": 24,
+            "CHR": 18,
+            "Attack": 7,
+            "Evasion": 22,
+            "Magic Evasion": 26,
+            "Magic Def. Bonus": 1,
+            "Haste %": 4,
+            "Store TP": 4
+          },
+          "base_stats_raw": "DEF:85 HP+57 STR+4 DEX+31 VIT+28 AGI+5 INT+8 MND+24 CHR+18 Attack+7 Evasion+22 Magic Evasion+26 \"Magic Def. Bonus\"+1 Haste+4% \"Store TP\"+4"
+        },
+        {
+          "name": "Acro Breeches",
+          "slot": "Legs",
+          "base_stats": {
+            "DEF": 110,
+            "HP": 50,
+            "STR": 33,
+            "VIT": 19,
+            "AGI": 13,
+            "INT": 24,
+            "MND": 14,
+            "CHR": 10,
+            "Accuracy": 10,
+            "Evasion": 22,
+            "Magic Evasion": 75,
+            "Magic Def. Bonus": 3,
+            "Haste %": 5,
+            "Store TP": 4
+          },
+          "base_stats_raw": "DEF:110 HP+50 STR+33 VIT+19 AGI+13 INT+24 MND+14 CHR+10 Accuracy+10 Evasion+22 Magic Evasion+75 \"Magic Def. Bonus\"+3 Haste+5% \"Store TP\"+4"
+        },
+        {
+          "name": "Acro Leggings",
+          "slot": "Feet",
+          "base_stats": {
+            "DEF": 72,
+            "HP": 18,
+            "STR": 15,
+            "DEX": 15,
+            "VIT": 13,
+            "AGI": 30,
+            "MND": 8,
+            "CHR": 24,
+            "Accuracy": 7,
+            "Evasion": 52,
+            "Magic Evasion": 75,
+            "Magic Def. Bonus": 2,
+            "Haste %": 3,
+            "Double Attack %": 2
+          },
+          "base_stats_raw": "DEF:72 HP+18 STR+15 DEX+15 VIT+13 AGI+30 MND+8 CHR+24 Accuracy+7 Evasion+52 Magic Evasion+75 \"Magic Def. Bonus\"+2 Haste+3% \"Double Attack\"+2%"
+        }
+      ],
+      "augments": {
+        "Snow": {
+          "slit": [
+            {
+              "stat": "Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Accuracy and Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Defense",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Ranged Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Ranged Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Ranged Accuracy and Ranged Attack",
+              "min": 1,
+              "max": 15,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~15"
+            },
+            {
+              "stat": "Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Attack Bonus",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Accuracy and Magic Attack Bonus",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Accuracy and Pet: Ranged Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Attack and Pet: Ranged Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Attack Bonus",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Defense",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ]
+        },
+        "Leaf": {
+          "slit": [
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Store TP",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Double Attack",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Cure Potency Received",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Weapon Skill Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5",
+              "column_inferred": true
+            },
+            {
+              "stat": "Subtle Blow",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Haste",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            },
+            {
+              "stat": "Recycle",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~8%"
+            },
+            {
+              "stat": "Rapid Shot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5",
+              "column_inferred": true
+            },
+            {
+              "stat": "Fast Cast",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Conserve MP",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Cure Spellcasting Time",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~5%"
+            },
+            {
+              "stat": "Spell Interruption Rate",
+              "min": 1,
+              "max": 10,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~10%"
+            },
+            {
+              "stat": "Drain and Aspir Potency",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Regen",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Pet: Store TP",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Breath",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Double Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~4%"
+            },
+            {
+              "stat": "Call Beast Ability Delay",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5"
+            }
+          ]
+        },
+        "Dusk": {
+          "slit": [
+            {
+              "stat": "STR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "VIT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and VIT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Critical Hit Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "HP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "DEX",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "AGI",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and DEX",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and AGI",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Snapshot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Skillchain Damage",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "INT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "INT and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and INT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Magic Critical Hit Damage",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            },
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "orb": [
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "CHR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MND and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Pet: Haste",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            }
+          ]
+        }
+      }
+    },
+    "Taeon": {
+      "item_level": 119,
+      "jobs": [
+        "MNK",
+        "RDM",
+        "THF",
+        "BST",
+        "RNG",
+        "NIN",
+        "DRG",
+        "BLU",
+        "COR",
+        "PUP",
+        "DNC",
+        "RUN"
+      ],
+      "pieces": [
+        {
+          "name": "Taeon Chapeau",
+          "slot": "Head",
+          "base_stats": {
+            "DEF": 100,
+            "HP": 36,
+            "MP": 23,
+            "STR": 16,
+            "DEX": 23,
+            "VIT": 16,
+            "AGI": 23,
+            "INT": 16,
+            "MND": 16,
+            "CHR": 17,
+            "Accuracy": 10,
+            "Ranged Accuracy": 10,
+            "Evasion": 44,
+            "Magic Evasion": 53,
+            "Magic Def. Bonus": 2,
+            "Haste %": 8,
+            "Critical Hit Rate %": 2
+          },
+          "base_stats_raw": "DEF:100 HP+36 MP+23 STR+16 DEX+23 VIT+16 AGI+23 INT+16 MND+16 CHR+17 Accuracy+10 Ranged Accuracy+10 Evasion+44 Magic Evasion+53 \"Magic Def. Bonus\"+2 Haste+8% Critical Hit Rate +2%"
+        },
+        {
+          "name": "Taeon Tabard",
+          "slot": "Body",
+          "base_stats": {
+            "DEF": 128,
+            "HP": 59,
+            "MP": 44,
+            "STR": 22,
+            "DEX": 29,
+            "VIT": 22,
+            "AGI": 28,
+            "INT": 21,
+            "MND": 21,
+            "CHR": 21,
+            "Attack": 10,
+            "Ranged Attack": 10,
+            "Evasion": 49,
+            "Magic Evasion": 64,
+            "Magic Def. Bonus": 6,
+            "Haste %": 4,
+            "Fast Cast %": 4
+          },
+          "base_stats_raw": "DEF:128 HP+59 MP+44 STR+22 DEX+29 VIT+22 AGI+28 INT+21 MND+21 CHR+21 Attack+10 Ranged Attack+10 Evasion+49 Magic Evasion+64 \"Magic Def. Bonus\"+6 Haste+4% \"Fast Cast\"+4%"
+        },
+        {
+          "name": "Taeon Gloves",
+          "slot": "Hands",
+          "base_stats": {
+            "DEF": 85,
+            "HP": 25,
+            "STR": 9,
+            "DEX": 35,
+            "VIT": 30,
+            "AGI": 3,
+            "INT": 10,
+            "MND": 28,
+            "CHR": 15,
+            "Evasion": 24,
+            "Magic Accuracy": 7,
+            "Magic Atk. Bonus": 7,
+            "Magic Evasion": 37,
+            "Magic Def. Bonus": 2,
+            "Haste %": 5,
+            "Enmity": -5
+          },
+          "base_stats_raw": "DEF:85 HP+25 STR+9 DEX+35 VIT+30 AGI+3 INT+10 MND+28 CHR+15 Evasion+24 Magic Accuracy+7 \"Magic Atk. Bonus\"+7 Magic Evasion+37 \"Magic Def. Bonus\"+2 Haste+5% Enmity-5"
+        },
+        {
+          "name": "Taeon Tights",
+          "slot": "Legs",
+          "base_stats": {
+            "DEF": 112,
+            "HP": 47,
+            "STR": 27,
+            "VIT": 14,
+            "AGI": 18,
+            "INT": 28,
+            "MND": 15,
+            "CHR": 9,
+            "Accuracy": 7,
+            "Ranged Accuracy": 7,
+            "Evasion": 53,
+            "Magic Evasion": 69,
+            "Magic Def. Bonus": 5,
+            "Haste %": 6,
+            "Triple Attack %": 2
+          },
+          "base_stats_raw": "DEF:112 HP+47 STR+27 VIT+14 AGI+18 INT+28 MND+15 CHR+9 Accuracy+7 Ranged Accuracy+7 Evasion+53 Magic Evasion+69 \"Magic Def. Bonus\"+5 Haste+6% \"Triple Attack\"+2%"
+        },
+        {
+          "name": "Taeon Boots",
+          "slot": "Feet",
+          "base_stats": {
+            "DEF": 70,
+            "HP": 13,
+            "STR": 10,
+            "DEX": 22,
+            "VIT": 10,
+            "AGI": 37,
+            "MND": 10,
+            "CHR": 28,
+            "Accuracy": 7,
+            "Ranged Accuracy": 7,
+            "Evasion": 72,
+            "Magic Accuracy": 7,
+            "Magic Evasion": 69,
+            "Magic Def. Bonus": 5,
+            "Haste %": 4,
+            "Dual Wield": 4,
+            "Conserve MP": 6
+          },
+          "base_stats_raw": "DEF:70 HP+13 STR+10 DEX+22 VIT+10 AGI+37 MND+10 CHR+28 Accuracy+7 Ranged Accuracy+7 Evasion+72 Magic Accuracy+7 Magic Evasion+69 \"Magic Def. Bonus\"+5 Haste+4% \"Dual Wield\"+4 \"Conserve MP\"+6"
+        }
+      ],
+      "augments": {
+        "Snow": {
+          "slit": [
+            {
+              "stat": "Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Accuracy and Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Defense",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Ranged Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Ranged Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Ranged Accuracy and Ranged Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Magic Attack Bonus",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Magic Accuracy and Magic Attack Bonus",
+              "min": 1,
+              "max": 15,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~15"
+            },
+            {
+              "stat": "Magic Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Accuracy and Pet: Ranged Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Attack and Pet: Ranged Attack",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Attack Bonus",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Defense",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Pet: Magic Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ]
+        },
+        "Leaf": {
+          "slit": [
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Weapon Skill Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Triple Attack",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~2%"
+            },
+            {
+              "stat": "Cure Potency Received",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Counter",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Dual Wield",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Subtle Blow",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Haste",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            },
+            {
+              "stat": "Critical Hit Rate",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Recycle",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~8%"
+            },
+            {
+              "stat": "Snapshot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Fast Cast",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Conserve MP",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Cure Spellcasting Time",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~5%"
+            },
+            {
+              "stat": "Spell Interruption Rate",
+              "min": 1,
+              "max": 10,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~10%"
+            },
+            {
+              "stat": "Cure Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Regen",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Pet: Subtle Blow",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Breath",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Double Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~4%"
+            },
+            {
+              "stat": "Repair Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            }
+          ]
+        },
+        "Dusk": {
+          "slit": [
+            {
+              "stat": "STR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "VIT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and VIT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Critical Hit Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "HP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "DEX",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "AGI",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and DEX",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and AGI",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Snapshot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Skillchain Damage",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "INT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "INT and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Magic Critical Hit Damage",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Phalanx Received",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Regen Potency",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "orb": [
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "CHR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MND and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Pet: Haste",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            }
+          ]
+        }
+      }
+    },
+    "Telchine": {
+      "item_level": 119,
+      "jobs": [
+        "WHM",
+        "BLM",
+        "RDM",
+        "BRD",
+        "SMN",
+        "BLU",
+        "SCH",
+        "GEO"
+      ],
+      "pieces": [
+        {
+          "name": "Telchine Cap",
+          "slot": "Head",
+          "base_stats": {
+            "DEF": 93,
+            "HP": 36,
+            "MP": 32,
+            "STR": 19,
+            "DEX": 19,
+            "VIT": 19,
+            "AGI": 19,
+            "INT": 24,
+            "MND": 22,
+            "CHR": 24,
+            "Evasion": 36,
+            "Magic Accuracy": 10,
+            "Magic Evasion": 75,
+            "Magic Def. Bonus": 5,
+            "Haste %": 6,
+            "Conserve MP": 4
+          },
+          "base_stats_raw": "DEF:93 HP+36 MP+32 STR+19 DEX+19 VIT+19 AGI+19 INT+24 MND+22 CHR+24 Evasion+36 Magic Accuracy+10 Magic Evasion+75 \"Magic Def. Bonus\"+5 Haste+6% \"Conserve MP\"+4"
+        },
+        {
+          "name": "Telchine Chasuble",
+          "slot": "Body",
+          "base_stats": {
+            "DEF": 125,
+            "HP": 54,
+            "MP": 59,
+            "STR": 20,
+            "DEX": 20,
+            "VIT": 20,
+            "AGI": 20,
+            "INT": 28,
+            "MND": 31,
+            "CHR": 28,
+            "Evasion": 41,
+            "Magic Evasion": 80,
+            "Magic Def. Bonus": 6,
+            "Enhancing Magic Skill": 12,
+            "Haste %": 3,
+            "Regen effect duration": 12
+          },
+          "base_stats_raw": "DEF:125 HP+54 MP+59 STR+20 DEX+20 VIT+20 AGI+20 INT+28 MND+31 CHR+28 Evasion+41 Magic Evasion+80 \"Magic Def. Bonus\"+6 Enhancing Magic Skill +12 Haste+3% \"Regen\" effect duration +12"
+        },
+        {
+          "name": "Telchine Gloves",
+          "slot": "Hands",
+          "base_stats": {
+            "DEF": 82,
+            "HP": 52,
+            "MP": 44,
+            "STR": 4,
+            "DEX": 26,
+            "VIT": 23,
+            "AGI": 3,
+            "INT": 17,
+            "MND": 33,
+            "CHR": 17,
+            "Evasion": 22,
+            "Magic Evasion": 37,
+            "Magic Def. Bonus": 3,
+            "Haste %": 3,
+            "Cure Potency %": 10
+          },
+          "base_stats_raw": "DEF:82 HP+52 MP+44 STR+4 DEX+26 VIT+23 AGI+3 INT+17 MND+33 CHR+17 Evasion+22 Magic Evasion+37 \"Magic Def. Bonus\"+3 Haste+3% \"Cure\" Potency +10%"
+        },
+        {
+          "name": "Telchine Braconi",
+          "slot": "Legs",
+          "base_stats": {
+            "DEF": 107,
+            "HP": 43,
+            "MP": 29,
+            "STR": 27,
+            "VIT": 10,
+            "AGI": 15,
+            "INT": 32,
+            "MND": 26,
+            "CHR": 17,
+            "Evasion": 27,
+            "Magic Atk. Bonus": 15,
+            "Magic Evasion": 107,
+            "Magic Def. Bonus": 6,
+            "Haste %": 5,
+            "Double Attack %": 3
+          },
+          "base_stats_raw": "DEF:107 HP+43 MP+29 STR+27 VIT+10 AGI+15 INT+32 MND+26 CHR+17 Evasion+27 \"Magic Atk. Bonus\"+15 Magic Evasion+107 \"Magic Def. Bonus\"+6 Haste+5% \"Double Attack\"+3%"
+        },
+        {
+          "name": "Telchine Pigaches",
+          "slot": "Feet",
+          "base_stats": {
+            "DEF": 65,
+            "HP": 13,
+            "MP": 44,
+            "STR": 8,
+            "DEX": 9,
+            "VIT": 8,
+            "AGI": 31,
+            "INT": 17,
+            "MND": 19,
+            "CHR": 32,
+            "Evasion": 55,
+            "Magic Evasion": 107,
+            "Magic Def. Bonus": 5,
+            "Haste %": 3,
+            "Enmity": -4,
+            "Song Spellcasting Time %": -6
+          },
+          "base_stats_raw": "DEF:65 HP+13 MP+44 STR+8 DEX+9 VIT+8 AGI+31 INT+17 MND+19 CHR+32 Evasion+55 Magic Evasion+107 \"Magic Def. Bonus\"+5 Haste+3% Enmity-4 Song Spellcasting Time -6%"
+        }
+      ],
+      "augments": {
+        "Snow": {
+          "slit": [
+            {
+              "stat": "Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Accuracy and Attack",
+              "min": 1,
+              "max": 15,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~15"
+            },
+            {
+              "stat": "Defense",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Ranged Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Attack",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Accuracy and Ranged Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Magic Attack Bonus",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Magic Accuracy and Magic Attack Bonus",
+              "min": 1,
+              "max": 15,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~15"
+            },
+            {
+              "stat": "Magic Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Accuracy and Pet: Ranged Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Attack and Pet: Ranged Attack",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Attack Bonus",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Defense",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Pet: Magic Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ]
+        },
+        "Leaf": {
+          "slit": [
+            {
+              "stat": "Store TP",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Double Attack",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Cure Potency Received",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Weapon Skill Accuracy",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%",
+              "column_inferred": true
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Subtle Blow",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~6"
+            },
+            {
+              "stat": "Haste",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5"
+            },
+            {
+              "stat": "Regen",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~2"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Cure Potency",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~8%"
+            },
+            {
+              "stat": "Fast Cast",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Conserve MP",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Cure Spellcasting Time",
+              "min": 1,
+              "max": 7,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~7%"
+            },
+            {
+              "stat": "Song Spellcasting Time",
+              "min": 1,
+              "max": 7,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~7%"
+            },
+            {
+              "stat": "Spell Interruption Rate",
+              "min": 1,
+              "max": 10,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~10%"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Regen",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Pet: Subtle Blow",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Breath",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Double Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Avatar Perpetuation Cost",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~4"
+            },
+            {
+              "stat": "Elemental Siphon",
+              "min": 1,
+              "max": 35,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~35"
+            }
+          ]
+        },
+        "Dusk": {
+          "slit": [
+            {
+              "stat": "STR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "VIT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and VIT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "HP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "DEX",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "AGI",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and DEX",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and AGI",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Snapshot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Skillchain Damage",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "INT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "INT and MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "note": "Valeur suspecte : tous les autres sets ont +1~7 pour les stats doubles. Possible erreur du wiki."
+            },
+            {
+              "stat": "Regen Potency",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Enhancing Magic Duration",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            },
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "orb": [
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "CHR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MND and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Pet: Haste",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Pet: Damage Taken",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%"
+            }
+          ]
+        }
+      }
+    },
+    "Helios": {
+      "item_level": 119,
+      "jobs": [
+        "WHM",
+        "BLM",
+        "RDM",
+        "SMN",
+        "BLU",
+        "SCH",
+        "GEO"
+      ],
+      "pieces": [
+        {
+          "name": "Helios Band",
+          "slot": "Head",
+          "base_stats": {
+            "DEF": 95,
+            "HP": 36,
+            "MP": 32,
+            "STR": 17,
+            "DEX": 17,
+            "VIT": 17,
+            "AGI": 17,
+            "INT": 21,
+            "MND": 22,
+            "CHR": 22,
+            "Evasion": 36,
+            "Magic Accuracy": 7,
+            "Magic Atk. Bonus": 7,
+            "Magic Evasion": 75,
+            "Magic Def. Bonus": 5,
+            "Haste %": 6,
+            "Conserve MP": 4
+          },
+          "base_stats_raw": "DEF:95 HP+36 MP+32 STR+17 DEX+17 VIT+17 AGI+17 INT+21 MND+22 CHR+22 Evasion+36 Magic Accuracy+7 \"Magic Atk. Bonus\"+7 Magic Evasion+75 \"Magic Def. Bonus\"+5 Haste+6% \"Conserve MP\"+4"
+        },
+        {
+          "name": "Helios Jacket",
+          "slot": "Body",
+          "base_stats": {
+            "DEF": 125,
+            "HP": 54,
+            "MP": 89,
+            "STR": 19,
+            "DEX": 19,
+            "VIT": 19,
+            "AGI": 19,
+            "INT": 31,
+            "MND": 27,
+            "CHR": 27,
+            "Accuracy": 10,
+            "Evasion": 41,
+            "Magic Accuracy": 10,
+            "Magic Evasion": 80,
+            "Magic Def. Bonus": 6,
+            "Haste %": 3,
+            "Fast Cast %": 3
+          },
+          "base_stats_raw": "DEF:125 HP+54 MP+89 STR+19 DEX+19 VIT+19 AGI+19 INT+31 MND+27 CHR+27 Accuracy+10 Evasion+41 Magic Accuracy+10 Magic Evasion+80 \"Magic Def. Bonus\"+6 Haste+3% \"Fast Cast\"+3%"
+        },
+        {
+          "name": "Helios Gloves",
+          "slot": "Hands",
+          "base_stats": {
+            "DEF": 80,
+            "HP": 22,
+            "MP": 44,
+            "STR": 3,
+            "DEX": 25,
+            "VIT": 22,
+            "AGI": 2,
+            "INT": 17,
+            "MND": 30,
+            "CHR": 16,
+            "Evasion": 22,
+            "Magic Atk. Bonus": 10,
+            "Magic Evasion": 37,
+            "Magic Def. Bonus": 3,
+            "Haste %": 3,
+            "Enmity": -5
+          },
+          "base_stats_raw": "DEF:80 HP+22 MP+44 STR+3 DEX+25 VIT+22 AGI+2 INT+17 MND+30 CHR+16 Evasion+22 \"Magic Atk. Bonus\"+10 Magic Evasion+37 \"Magic Def. Bonus\"+3 Haste+3% Enmity-5"
+        },
+        {
+          "name": "Helios Spats",
+          "slot": "Legs",
+          "base_stats": {
+            "DEF": 100,
+            "HP": 43,
+            "MP": 69,
+            "STR": 23,
+            "VIT": 10,
+            "AGI": 15,
+            "INT": 32,
+            "MND": 22,
+            "CHR": 17,
+            "Evasion": 27,
+            "Magic Evasion": 107,
+            "Magic Def. Bonus": 6,
+            "Haste %": 5,
+            "Avatar: Magic Accuracy": 15,
+            "Blood Pact damage": 6
+          },
+          "base_stats_raw": "DEF:100 HP+43 MP+69 STR+23 VIT+10 AGI+15 INT+32 MND+22 CHR+17 Evasion+27 Magic Evasion+107 \"Magic Def. Bonus\"+6 Haste+5% Avatar: Magic Accuracy+15 \"Blood Pact\" damage +6"
+        },
+        {
+          "name": "Helios Boots",
+          "slot": "Feet",
+          "base_stats": {
+            "DEF": 60,
+            "HP": 13,
+            "MP": 14,
+            "STR": 8,
+            "DEX": 9,
+            "VIT": 8,
+            "AGI": 31,
+            "INT": 16,
+            "MND": 17,
+            "CHR": 32,
+            "Evasion": 55,
+            "Magic Accuracy": 7,
+            "Magic Atk. Bonus": 7,
+            "Magic Evasion": 107,
+            "Magic Def. Bonus": 5,
+            "Haste %": 3,
+            "Enmity": -4
+          },
+          "base_stats_raw": "DEF:60 HP+13 MP+14 STR+8 DEX+9 VIT+8 AGI+31 INT+16 MND+17 CHR+32 Evasion+55 Magic Accuracy+7 \"Magic Atk. Bonus\"+7 Magic Evasion+107 \"Magic Def. Bonus\"+5 Haste+3% Enmity-4"
+        }
+      ],
+      "augments": {
+        "Snow": {
+          "slit": [
+            {
+              "stat": "Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Attack",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Accuracy and Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Defense",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Ranged Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Attack",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Ranged Accuracy and Ranged Attack",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Evasion",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Accuracy",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Magic Attack Bonus",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            },
+            {
+              "stat": "Magic Accuracy and Magic Attack Bonus",
+              "min": 1,
+              "max": 20,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~20"
+            },
+            {
+              "stat": "Magic Evasion",
+              "min": 1,
+              "max": 25,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~25"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Accuracy and Pet: Ranged Accuracy",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Attack and Pet: Ranged Attack",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Magic Accuracy",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Magic Attack Bonus",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Defense",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Evasion",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            },
+            {
+              "stat": "Pet: Magic Evasion",
+              "min": 1,
+              "max": 30,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~30"
+            }
+          ]
+        },
+        "Leaf": {
+          "slit": [
+            {
+              "stat": "Store TP",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Double Attack",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~2%"
+            },
+            {
+              "stat": "Cure Potency Received",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~7%"
+            },
+            {
+              "stat": "Weapon Skill Accuracy",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%",
+              "column_inferred": true
+            }
+          ],
+          "tip": [
+            {
+              "stat": "Waltz Potency",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Enemy Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~4%",
+              "column_inferred": true
+            },
+            {
+              "stat": "Subtle Blow",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Haste",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~2%"
+            },
+            {
+              "stat": "Enmity",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5"
+            },
+            {
+              "stat": "Regen",
+              "min": 1,
+              "max": 2,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~2"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "Magic Critical Hit Rate",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~8%"
+            },
+            {
+              "stat": "Fast Cast",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Conserve MP",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~5"
+            },
+            {
+              "stat": "Drain and Aspir Potency",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "note": "Sans % dans la source, contrairement aux autres sets (+1~7%). Unité à vérifier."
+            },
+            {
+              "stat": "Spell Interruption Rate",
+              "min": 1,
+              "max": 10,
+              "sign": "-",
+              "unit": "%",
+              "display": "-1~10%"
+            },
+            {
+              "stat": "Occult Acumen",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            }
+          ],
+          "orb": [
+            {
+              "stat": "Pet: Regen",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~3"
+            },
+            {
+              "stat": "Pet: Critical Hit Rate",
+              "min": 1,
+              "max": 4,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~4%"
+            },
+            {
+              "stat": "Pet: Double Attack",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~8%"
+            },
+            {
+              "stat": "Avatar Perpetuation Cost",
+              "min": 1,
+              "max": 4,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~4"
+            },
+            {
+              "stat": "Blood Pact Ability Delay",
+              "min": 1,
+              "max": 5,
+              "sign": "-",
+              "unit": "flat",
+              "display": "-1~5"
+            },
+            {
+              "stat": "Blood Boon",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            }
+          ]
+        },
+        "Dusk": {
+          "slit": [
+            {
+              "stat": "STR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "VIT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and VIT",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Weapon Skill Damage",
+              "min": 1,
+              "max": 3,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~3%"
+            },
+            {
+              "stat": "HP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            }
+          ],
+          "tip": [
+            {
+              "stat": "DEX",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "AGI",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "STR and DEX",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "STR and AGI",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Snapshot",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            },
+            {
+              "stat": "Skillchain Damage",
+              "min": 1,
+              "max": 5,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~5%"
+            }
+          ],
+          "dim": [
+            {
+              "stat": "INT",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "INT and MND",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Magic Critical Hit Damage",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "Magic Burst Damage",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MP",
+              "min": 1,
+              "max": 50,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~50"
+            },
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            }
+          ],
+          "orb": [
+            {
+              "stat": "MND",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10",
+              "column_inferred": true
+            },
+            {
+              "stat": "CHR",
+              "min": 1,
+              "max": 10,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~10"
+            },
+            {
+              "stat": "MND and CHR",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Blood Pact Damage",
+              "min": 1,
+              "max": 7,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~7"
+            },
+            {
+              "stat": "Summoning Magic Skill",
+              "min": 1,
+              "max": 8,
+              "sign": "+",
+              "unit": "flat",
+              "display": "+1~8"
+            },
+            {
+              "stat": "Pet: Haste",
+              "min": 1,
+              "max": 6,
+              "sign": "+",
+              "unit": "%",
+              "display": "+1~6%"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

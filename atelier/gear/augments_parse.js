@@ -187,6 +187,10 @@
         'Burst Affinity Recast': ['"Burst Affinity" recast time'],
         'Mana Wall': ['"Mana Wall"'],
         'Blood Pact Double Status': ['Chance of doubling "Blood Pact" status'],
+        // the Skirmish armour's (skirmish.js): extdata.lua's labels, read so a copy's line is never left unread
+        'Blood Pact Delay': ['"Blood Pact" ability delay'],
+        'Call Beast Delay': ['"Call Beast" ability delay'],
+        'Breath': ['Breath'],
         'Ammo Damage%': ['Additional ammo damage'],
         'Ammo Accuracy': ['Additional ammo accuracy'],
         'Crit TP': ['TP gained when landing critical hits', 'TP gained when landing crit. hits'],

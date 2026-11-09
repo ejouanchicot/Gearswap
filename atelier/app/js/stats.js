@@ -63,6 +63,9 @@ const STAT_ALIAS = {
   'slow':'slow','annuls damage taken':'x:annuls damage taken','physical damage converted to mp':'x:physical damage converted to mp','m.accuracy':'macc','m.acc.':'macc',
   // a weaponskill's own accuracy (Fallen's Cuirass, Karieyh Ring): never the general one
   'weapon skill accuracy':'x:weapon skill accuracy','weapon skill acc.':'x:weapon skill accuracy',
+  // the augment's English ("Occ. inc. resist. to stat. ailments": an Ambuscade cape's resin) is the gear's "Resistance to
+  // all status ailments": one Japanese for both, 全状態異常のレジスト (Windower res/augments.lua 50, res/item_descriptions.lua)
+  'occ.inc.resist.to stat.ailments':'x:resistance to all status ailments',
   'triple atk.':'ta','quadruple atk.':'qa','magic burst dmg.':'mbd','magic burst dmg':'mbd',
   'enha.mag.skill':'skill:enhancing magic skill','enfb.mag.skill':'skill:enfeebling magic skill',
   'def':'def','magic dmg.taken':'mdt','magic attack bonus':'mab','mag.def.bonus':'mdb','magic defense':'mdb',
@@ -353,7 +356,14 @@ function upgradeOf(p){
     const augs = p.augs && p.augs.length ? p.augs : ['Path: ' + r.path];
     return {piece: {name: p.name, augs, rank: e.max_rank}, from: r.rank, to: e.max_rank};
   }
-  return capeMax(p);
+  return capeMax(p) || skirmishMax(p);
+}
+// A Skirmish piece you hold with each of its augments at its max (atelier/gear/skirmish.js), the stones it has no
+// augment of named
+function skirmishMax(p){
+  const m = window.FFXI && FFXI.skirmish_max && FFXI.skirmish_max(p.name, p.augs);
+  if (!m || (!m.changed && !m.missing.length)) return null;
+  return {piece: {name: p.name, augs: m.augs, capeMax: true}, missing: m.missing.map(s => t('stone' + s)), skirmish: true};
 }
 function addAugment(a, r){
   a = unsigned(a, r.aug);

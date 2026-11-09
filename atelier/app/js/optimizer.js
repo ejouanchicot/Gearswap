@@ -166,11 +166,14 @@ function gameChoices(slot, have, tpNames){
     // a path piece you hold: its other paths stay in the search, as a copy to get
     const held = names.has(it.name) && e && e.paths ? heldPaths(it.name, e, have) : null;
     const ambu = slot === 'back' && FFXI.AMBU_CAPE_BY_NAME && FFXI.AMBU_CAPE_BY_NAME[it.name];
-    if ((names.has(it.name) && !held && !ambu) || tpNames.has(it.name) || seen.has(it.name) || ruledOut(it.name)) continue;
+    // a Skirmish piece (atelier/gear/skirmish.js) is built the same way, an augment of each stone at its max
+    const skir = !ambu && FFXI.SKIRMISH_BY_NAME && FFXI.SKIRMISH_BY_NAME[it.name];
+    if ((names.has(it.name) && !held && !ambu && !skir) || tpNames.has(it.name) || seen.has(it.name) || ruledOut(it.name)) continue;
     seen.add(it.name);
     // an Ambuscade cape bare is worth nothing: the search builds it at each material's maximum (opt.js ambuGen)
     // (one you hold too: the builds are other copies to make, yours stay as they are)
     if (ambu) { out.push({name: it.name, ambu: true, missing: true}); continue; }
+    if (skir) { out.push({name: it.name, skirmish: true, missing: true}); continue; }
     // engineFill: what the description gives that the engine's catalogue lacks, as for your own pieces (without it
     // a piece the catalogue reads nothing of counted for nothing: Hoxne Ampulla's Double Attack)
     // a rank piece at the rank asked for its family (opt_page.js rankWanted), none when not unlocked
