@@ -99,7 +99,8 @@ function snapshot(root){
     console.log(`plan ${FROM} -> ${TO}: +${pl.add.length} ~${pl.update.length} -${pl.remove.length}, edited ${pl.changed.length}, kept ${pl.kept.length}`);
     check('dropped files removed', pl.remove.length === dropped.length, pl.remove.length + ' vs ' + dropped.length);
     check('the edited file is reported', !edited || pl.changed.includes(edited), edited);
-    check('CRLF copies of unchanged files are not downloaded', pl.update.every(p => oldTree[p] !== newTree[p] || p === edited));
+    // (VERSION is this test's own, written older above: downloaded whenever the range does not change it)
+    check('CRLF copies of unchanged files are not downloaded', pl.update.every(p => oldTree[p] !== newTree[p] || p === edited || p === 'VERSION'));
 
     // a wrong hash: nothing written
     const some = pl.add.concat(pl.update);
