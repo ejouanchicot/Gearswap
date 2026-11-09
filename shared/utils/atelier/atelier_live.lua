@@ -286,6 +286,9 @@ local function route(req, live)
         -- before it asks, or each tick would start the export again
         bags_seen(live)
         if os.time() - (live.bag_at or 0) < BAGS_CALM then return '503 Service Unavailable', '{"error":"building"}' end
+        -- this load's export failed a moment ago (out of memory): neither started again nor built here in one go before
+        -- its pause is over (atelier_export.lua FAIL_PAUSE); the page asks again at its next tick, which costs nothing
+        if Export.failed_recently() then return '503 Service Unavailable', '{"error":"failed"}' end
         Export.export_spread(not Export.enabled())
         state, body = Export.spread_result()
         if state == 'building' then return '503 Service Unavailable', '{"error":"building"}' end

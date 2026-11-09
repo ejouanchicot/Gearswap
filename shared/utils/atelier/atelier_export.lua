@@ -497,6 +497,33 @@ function AtelierExport.spread_result()
     return 'ready', last.body
 end
 
+-- Seconds a failed spread export waits before the page's /export may start one again. With the page open it was
+-- started again at each of its ticks, every 2 s: Kaories, out of memory 2026-11-09 19:43, failed 87 times, her
+-- GearSwap grew to 375 MB and the game crashed at 19:48
+local FAIL_PAUSE = 60
+
+--- True when a spread export of this load failed less than FAIL_PAUSE seconds ago (atelier_live.lua /export
+--- neither starts one nor builds one in one go meanwhile).
+--- @return boolean
+function AtelierExport.failed_recently()
+    local f = windower._atelier_export_failed
+    return type(f) == 'table' and f.gen == windower._load_gen and os.time() - f.at < FAIL_PAUSE
+end
+
+--- A spread export failed: noted for the pause, and said in the chat once per load.
+--- @param gen number The load it belonged to
+--- @param err any The error
+local function note_failure(gen, err)
+    local before = windower._atelier_export_failed
+    windower._atelier_export_failed = {gen = gen, at = os.time()}
+    pcall(function() require('shared/utils/debug/trace_log').log('EXPORT', 'failed: %s', tostring(err)) end)
+    if type(before) == 'table' and before.gen == gen then return end
+    pcall(function()
+        require('shared/utils/messages/message_formatter').show_error(
+            ('Atelier: export failed (%s), tried again in %d s'):format(tostring(err):sub(1, 80), FAIL_PAUSE))
+    end)
+end
+
 --- Export the current job a little a frame: the same stages, the same file as export(), without the freeze
 --- of doing them in one go (0.8 s measured on DNC, 2026-10-13). For the export that follows every load, which
 --- nobody waits for, and for the page's live link once the bags moved (atelier_live.lua /export). A newer load
@@ -545,7 +572,7 @@ function AtelierExport.export_spread(no_file)
         if ok and more then return coroutine.schedule(step, SPREAD_WAIT) end
         if not ok then
             mark.failed = true
-            pcall(function() require('shared/utils/debug/trace_log').log('EXPORT', 'failed: %s', tostring(more)) end)
+            note_failure(gen, more)
         end
     end
     step()
