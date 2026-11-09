@@ -96,20 +96,24 @@ const bvRank = c => { const i = BV_CATS.indexOf(c); return i < 0 ? 99 : i; };
 const bvShort = n => n === 'Wardrobe' ? 'W1' : n.replace(/^Wardrobe (\d)$/, 'W$1').replace(/^Mog /, '').replace(/^Porter Moogle$/, 'Porter').replace(/^Inventory$/, 'Inv.');
 /* ---- who uses what ---- */
 // For every item name (lower case): the jobs whose sets wear it, with how many of their sets ({JOB: n}), and the
-// settings files that name it (a refill list, the TP Bonus pieces, the cure items). From every export of the
-// character: a job never exported is not counted, and the page says which jobs were read.
+// settings files that name it (a refill list, the TP Bonus pieces, the cure items). From the latest export of each job
+// of the character: a job never exported is not counted, and the page says which jobs were read.
 let BV_USE = null;
 function bvUsage(){
   const key = DATA_GEN + '|' + S.char;
   if (BV_USE && BV_USE.key === key) return BV_USE;
   const by = {}, jobs = [], at = n => by[n.toLowerCase()] = by[n.toLowerCase()] || {jobs: {}, files: new Set()};
   for (const [job, subs] of Object.entries(DATA[S.char] || {})) {
-    const paths = {};                                    // a set counted once, whatever the subjob it was exported with
-    for (const x of Object.values(subs)) for (const s of x.sets || []) for (const p of Object.values(s.pieces || {})) if (p && p.name && p.name !== 'empty') (paths[p.name.toLowerCase()] = paths[p.name.toLowerCase()] || new Set()).add(s.path);
+    // the job's sets file is the same whatever the subjob: its latest export only. The exports of its other subjobs
+    // are older versions of the same sets: a piece since taken out stayed counted (Tetsouo's WAR /DRG and /RUN exports
+    // of 2026-11-07 put 13 pieces his sets no longer wear in WAR's bags: 161 slots for 148, 2026-11-09)
+    const byDate = Object.values(subs).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    const paths = {}, latest = byDate.find(x => (x.sets || []).length);
+    for (const s of (latest && latest.sets) || []) for (const p of Object.values(s.pieces || {})) if (p && p.name && p.name !== 'empty') (paths[p.name.toLowerCase()] = paths[p.name.toLowerCase()] || new Set()).add(s.path);
     if (Object.keys(paths).length) jobs.push(job);
     for (const [n, set] of Object.entries(paths)) at(n).jobs[job] = set.size;
     // the names its settings files hold (lists and tables of lines)
-    const x = Object.values(subs).sort((a, b) => (b.at || '').localeCompare(a.at || ''))[0];
+    const x = byDate[0];
     for (const f of (x && x.configs) || []) { let fields = []; try { fields = Object.values(modParsed(f).byPath); } catch (e) {}
       for (const fld of fields) if (fld.kind === 'list' || fld.kind === 'rows') for (const v of mrNames(fld.value)) if (typeof v === 'string' && v.length > 2) at(v).files.add(f.file.split('/').pop()); }
   }

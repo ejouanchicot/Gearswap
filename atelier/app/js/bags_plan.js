@@ -111,9 +111,13 @@ function bpCat(B, r){
   if (mine === 'craft') return 'mats';
   const hint = () => { for (const w of r.where) { const bag = B.bags.find(b => b.name === w.bag), h = bag && bvRoles(B, bag).map(x => BP_HINT[x]).find(Boolean); if (h) return h; } return ''; };
   if (bvIsGear(r)) {
-    // what sits only in a crafting bag is crafting gear, whatever set wears it (the craft and fishing sets)
+    // what sits only in a crafting bag stays there: the crafting and fishing gear, and the ammo a set uses that is kept
+    // there on purpose (a BST's broths and jugs, a SAM's Fly Lure). Not armour a set wears: a piece the optimizer put
+    // in the sets is gear wherever it lay before (Tetsouo's Hoxne Earring, in 114 sets of 5 jobs, held in his crafting
+    // Wardrobe 7 by this rule: neither //gs c wo nor the tidy-up ever took it out, 2026-11-09)
     const home = r.where.filter(w => w.bag !== 'Porter Moogle').map(w => B.bags.find(b => b.name === w.bag)).filter(Boolean);
-    if (home.length && home.every(b => bvRoles(B, b).includes('craft'))) return 'craft';
+    const worn = r.info.cat === 'Armor' && Object.keys(r.use.jobs).length > 0;
+    if (!worn && home.length && home.every(b => bvRoles(B, b).includes('craft'))) return 'craft';
     if (Object.keys(r.use.jobs).length) return 'gear';
     if (bpLock()[r.id]) return 'lock';
     if (bpEnch(r)) return 'tools';                    // worn by no set, but put on to be used: kept within reach                // worn by no set, but by a lockstyle: kept for its look
