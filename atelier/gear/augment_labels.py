@@ -66,6 +66,22 @@ LABELS = {
     'Blood Pact Recast Time II': [('Blood Pact ab. del. II ', 0)],
     # the Updraft Mantle's "Breath": the wyvern's, extdata's only Breath bonus (0x079)
     'Breath': [('Pet: Breath', 0)],
+    # the Oseem pieces' (oseem_build.py): the source's other spellings of a stat, then its own stats
+    '"Drain" and "Aspir" Potency': [('"Drain" and "Aspir" potency ', 0)], 'Blood Pact damage': [('Blood Pact Dmg.', 0)],
+    'Critical hit damage': [('Crit. hit damage ', P)], 'Critical hit rate': [('Crit.hit rate', 0)],
+    'Cure spellcasting time': [('"Cure" spellcasting time ', P)], 'Physical damage taken': [('Phys. dmg. taken ', P)],
+    'Spell Interruption Rate Down': [('Spell interruption rate down ', P)], 'Skillchain Bonus': [('Sklchn.dmg.', P)],
+    'Magic Burst Bonus': [('Magic burst dmg.', P)], 'Repair': [('"Repair" potency ', P)],
+    'Pet: Accuracy & Ranged Accuracy': [('Pet: Accuracy', 0), ('Pet: Rng. Acc.', 0)],
+    'Pet: Attack & Ranged Attack': [('Pet: Attack', 0), ('Pet: Rng.Atk.', 0)],
+    'Pet: Magic Accuracy and Pet: Magic Attack Bonus': [('Pet: Mag. Acc.', 0), ('Pet: "Mag.Atk.Bns."', 0)],
+    'Pet: STR': [('Pet: STR', 0)], 'Pet: DEX': [('Pet: DEX', 0)], 'Pet: VIT': [('Pet: VIT', 0)], 'Pet: AGI': [('Pet: AGI', 0)],
+    'Pet: INT': [('Pet: INT', 0)], 'Pet: MND': [('Pet: MND', 0)], 'Pet: CHR': [('Pet: CHR', 0)],
+    'Pet: Physical Damage Taken': [('Pet: Phys. dmg. taken ', P)],
+    'Additional effect: Stun': [('Add.eff.:Stun', 0)], 'Chance of Successful Block': [('Chance of successful block ', 0)],
+    'Magic Damage': [('Magic Damage ', 0)], 'DMG': [('DMG:', 0)], 'Refresh': [('"Refresh"', 0)],
+    'Resist Paralyze': [('"Resist Paralyze"', 0)], 'Resist Silence': [('"Resist Silence"', 0)],
+    'Quadruple Attack': [('Quadruple Attack ', 0)], 'Treasure Hunter': [('"Treasure Hunter"', 0)],
 }
 
 

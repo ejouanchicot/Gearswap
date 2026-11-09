@@ -195,6 +195,8 @@
         'Blood Pact Delay II': ['Blood Pact ab. del. II'],
         'Phantom Roll Delay': ['"Phantom Roll" ability delay'],
         'Meditate Duration': ['Meditate eff. dur.'],
+        // the Oseem weapons' (oseem.js): Kanaria's
+        'Add. Effect Stun': ['Add.eff.:Stun'],
         'Ammo Damage%': ['Additional ammo damage'],
         'Ammo Accuracy': ['Additional ammo accuracy'],
         'Crit TP': ['TP gained when landing critical hits', 'TP gained when landing crit. hits'],

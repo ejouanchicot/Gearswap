@@ -4,7 +4,8 @@
 //   O.ambuGen   the Ambuscade capes of the game (the page's app/js/optimizer.js gameChoices: {name, ambu: true}) built
 //               at each material's maximum, a material at a time; the Skirmish armour ({name, skirmish: true}) with an
 //               augment of each stone at its max, a stone at a time; the Reive capes ({name, reive: true}) the same way,
-//               each of the four augments a group of its own
+//               each of the four augments a group of its own; the Oseem pieces ({name, oseem: true}) a path at a time,
+//               each slot a group
 //   O.primeId   a prime weapon a set names only, at the stage the page chose
 //
 // @file    atelier/opt_ambu.js
@@ -53,7 +54,7 @@
     O.AMBU_AUGS = AMBU_AUGS;
     var AMBU_ORDER = ["thread", "dust", "dye", "sap", "resin"], AMBU_DT = ["Phys. dmg. taken-10%", "Damage taken-5%"];
     O.ambuGen = function* (ctx, start, choices, opts) {
-        var built = function (p) { return p && (p.ambu || p.skirmish || p.reive); };
+        var built = function (p) { return p && (p.ambu || p.skirmish || p.reive || p.oseem); };
         var slots = Object.keys(choices).filter(function (s) { return Array.isArray(choices[s]) && choices[s].some(built); });
         if (!slots.length) return choices;
         var loose = Object.assign({}, opts, {floor: null}), res = Object.assign({}, choices);
@@ -62,7 +63,8 @@
             for (var i = 0; i < list.length; i++) {
                 var p = list[i];
                 out = out.concat(p && p.ambu && slots[k] === "back" ? yield* ambuBuilds(ctx, start, p, loose, opts)
-                    : p && (p.skirmish || p.reive) ? yield* skirmishBuilds(ctx, start, slots[k], p, loose, opts) : [p]);
+                    : p && (p.skirmish || p.reive) ? yield* skirmishBuilds(ctx, start, slots[k], p, loose, opts)
+                    : p && p.oseem ? yield* oseemBuilds(ctx, start, slots[k], p, loose, opts) : [p]);
             }
             res[slots[k]] = out;
         }
@@ -102,14 +104,33 @@
         var set = FFXI.SKIRMISH_SETS && FFXI.SKIRMISH_SETS[FFXI.SKIRMISH_BY_NAME[tpl.name]];
         return set ? {groups: FFXI.SKIRMISH_STONES, augs: set.augs} : null;
     }
-    function* skirmishBuilds(ctx, start, slot, tpl, loose, opts) {
-        var set = groupsOf(tpl);
+    // An Oseem piece's path ({groups, augs, excl}, atelier/gear/oseem.js): a slot 1 augment rules out the slot 4 / 5
+    // one of the same stat it would bring past 40 (Accuracy+30 and Accuracy+15), which is left out of the piece
+    function allowed(set, sel) {
+        if (!set.excl || !set.excl.length) return sel;
+        var out = Object.assign({}, sel), has = function (a) { return Object.keys(out).filter(function (g) { return out[g] === a; })[0]; };
+        set.excl.forEach(function (x) { var g = has(x[1]); if (g && has(x[0])) out[g] = null; });
+        return out;
+    }
+    // The groups of sel holding an augment that rules `a` out
+    function blockers(set, sel, a) {
+        var out = [];
+        set.excl.forEach(function (x) {
+            if (x[1] !== a) return;
+            Object.keys(sel).forEach(function (g) { if (sel[g] === x[0] && out.indexOf(g) === -1) out.push(g); });
+        });
+        return out;
+    }
+    // given: the groups to build with (an Oseem piece's path), else the piece's own (groupsOf)
+    function* skirmishBuilds(ctx, start, slot, tpl, loose, opts, given) {
+        var set = given || groupsOf(tpl);
         if (!set) return [];
         var stones = set.groups, own = (opts.base || start)[slot], pick = {}, best = {};
         var mine = own && own.name === tpl.name ? own.augs || [] : [];
         // an augment that changes nothing for the objective takes the one the set's own copy carries, not the list's first
         var order = function (x, y) { var d = y.v - x.v; return Math.abs(d) > Math.abs(x.v) * 1e-9 + 1e-12 ? d : (mine.indexOf(y.a) !== -1) - (mine.indexOf(x.a) !== -1); };
         var pieceOf = function (sel) {
+            sel = allowed(set, sel);
             return withStats({name: tpl.name, augs: stones.map(function (m) { return sel[m]; }).filter(Boolean), missing: true}, tpl, sel, set.augs);
         };
         for (var round = 0; round < 2; round++) for (var m = 0; m < stones.length; m++) {
@@ -118,8 +139,12 @@
             var stone = stones[m], list = [null].concat(set.augs[stone] || []), rated = [];
             for (var j = 0; j < list.length; j++) {
                 var sel = Object.assign({}, pick); sel[stone] = list[j];
+                // an augment another slot's rules out (an Oseem Dark Matter WSD beside the special WSD) is weighed with
+                // that slot emptied, else it would never be tried against the slot's other choices
+                var clear = list[j] && allowed(set, sel)[stone] !== list[j] ? blockers(set, sel, list[j]) : [];
+                clear.forEach(function (g) { sel[g] = null; });
                 var at = Object.assign({}, start); at[slot] = pieceOf(sel);
-                rated.push({a: list[j], v: O.value(ctx, at, loose).v});
+                rated.push({a: list[j], v: O.value(ctx, at, loose).v, clear: clear});
                 if (opts.prog) opts.prog.evals++;
                 yield;
             }
@@ -128,7 +153,10 @@
             // the second kept is the best of another value (a tie is the same piece for the search)
             var alt = rated.filter(function (x) { return Math.abs(x.v - rated[0].v) > Math.abs(rated[0].v) * 1e-9 + 1e-12; })[0];
             pick[stone] = rated[0].a; best[stone] = [rated[0].a].concat(alt ? [alt.a] : []);
+            rated[0].clear.forEach(function (g) { pick[g] = null; });
         }
+        // an Oseem path's damage taken stays a choice of its special slot (set.dt), as AMBU_DT for the capes
+        if (set.dt && set.dt.length && best.special) best.special = best.special.concat(set.dt.filter(function (a) { return best.special.indexOf(a) === -1; }));
         var builds = [{}];
         stones.forEach(function (stone) {
             if (!best[stone]) return;
@@ -137,6 +165,32 @@
             builds = next;
         });
         return builds.map(function (b) { return withPet(pieceOf(b), tpl); });
+    }
+    // An Oseem piece (atelier/gear/oseem.js): each of its paths built as a Skirmish piece (its slots the groups, the
+    // stats each augment adds the page's for that path: tpl.stAugs[path]), then the six best builds of all its paths
+    // kept, and the two best with the set's floors (PDT...) counted, which the builds are made without; a build
+    // already made by another path is not weighed twice
+    function* oseemBuilds(ctx, start, slot, tpl, loose, opts) {
+        var o = FFXI.OSEEM_BY_NAME && FFXI.OSEEM_BY_NAME[tpl.name];
+        if (!o) return [];
+        var rated = [], seen = {};
+        for (var path in o.paths) {
+            var t = Object.assign({}, tpl, {stAugs: tpl.stAugs && tpl.stAugs[path]});
+            var builds = yield* skirmishBuilds(ctx, start, slot, t, loose, opts, o.paths[path]);
+            for (var i = 0; i < builds.length; i++) {
+                var key = builds[i].augs.join("|");
+                if (seen[key]) continue;
+                seen[key] = true;
+                var at = Object.assign({}, start); at[slot] = builds[i];
+                rated.push({b: builds[i], v: O.value(ctx, at, loose).v, f: O.value(ctx, at, opts).v});
+                if (opts.prog) opts.prog.evals += 2;
+                yield;
+            }
+        }
+        var top = rated.slice().sort(function (x, y) { return y.v - x.v; }).slice(0, 6);
+        rated.sort(function (x, y) { return y.f - x.f; });
+        for (var k = 0, n = 0; k < rated.length && n < 2; k++) if (top.indexOf(rated[k]) === -1) { top.push(rated[k]); n++; }
+        return top.map(function (x) { return x.b; });
     }
     function* ambuBuilds(ctx, start, tpl, loose, opts) {
         // the cape of the set itself (searched from scratch, the walks start bare)
