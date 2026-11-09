@@ -46,9 +46,13 @@ function bvBags(){
   const px = latestExport(S.char, 'porter'), cat = typeof catalog === 'function' && catalog(), key = DATA_GEN + '|' + S.char + '|' + !!cat;
   if (BV_BAGS && BV_BAGS.key === key) return BV_BAGS.B;
   // A wardrobe the character has not unlocked (the game sends it with its size, enabled false) takes nothing: an empty
-  // one is left out, one that still holds things is shown full, so no plan or move ever sends anything there
-  const bags = x.bags.bags.filter(b => b.enabled !== false || b.items.length)
-    .map(b => b.enabled === false ? Object.assign({}, b, {max: b.items.length, count: b.items.length, locked: true}) : b);
+  // one is left out, one that still holds things is shown full, so no plan or move ever sends anything there. Not a
+  // Mog House bag (place 'house'): the game says it closed whenever the character is out of the Mog House, which is
+  // most exports. It keeps its size (Kaories' Storage and Mog Locker, 80 each, were shown full at 66/66 and 54/54,
+  // and the plan sent nothing there, 2026-11-09); //gs c bags moves there in the Mog House only
+  const closed = b => b.enabled === false && b.place !== 'house';
+  const bags = x.bags.bags.filter(b => !closed(b) || b.items.length)
+    .map(b => closed(b) ? Object.assign({}, b, {max: b.items.length, count: b.items.length, locked: true}) : b);
   const B = {at: x.bags.at, run: x.bags.run, bags, items: Object.assign({}, x.bags.items)};
   // the Storage Slips: a kind of their own in the list (the game files them as Maze, the Maze Mongers' kind)
   for (const [id, it] of Object.entries(B.items)) if (it && /^Storage Slip/.test(it.name)) B.items[id] = Object.assign({}, it, {cat: 'Slips'});
