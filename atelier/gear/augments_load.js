@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const FILES = ['augments_ranked.js', 'capes.js', 'skirmish.js', 'augments_parse.js'];
+const FILES = ['augments_ranked.js', 'capes.js', 'skirmish.js', 'reive.js', 'augments_parse.js'];
 
 function load() {
     const ctx = vm.createContext({ console, Math, JSON });

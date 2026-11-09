@@ -3,7 +3,8 @@
 // state, so it also runs in the search's workers.
 //   O.ambuGen   the Ambuscade capes of the game (the page's app/js/optimizer.js gameChoices: {name, ambu: true}) built
 //               at each material's maximum, a material at a time; the Skirmish armour ({name, skirmish: true}) with an
-//               augment of each stone at its max, a stone at a time
+//               augment of each stone at its max, a stone at a time; the Reive capes ({name, reive: true}) the same way,
+//               each of the four augments a group of its own
 //   O.primeId   a prime weapon a set names only, at the stage the page chose
 //
 // @file    atelier/opt_ambu.js
@@ -52,7 +53,7 @@
     O.AMBU_AUGS = AMBU_AUGS;
     var AMBU_ORDER = ["thread", "dust", "dye", "sap", "resin"], AMBU_DT = ["Phys. dmg. taken-10%", "Damage taken-5%"];
     O.ambuGen = function* (ctx, start, choices, opts) {
-        var built = function (p) { return p && (p.ambu || p.skirmish); };
+        var built = function (p) { return p && (p.ambu || p.skirmish || p.reive); };
         var slots = Object.keys(choices).filter(function (s) { return Array.isArray(choices[s]) && choices[s].some(built); });
         if (!slots.length) return choices;
         var loose = Object.assign({}, opts, {floor: null}), res = Object.assign({}, choices);
@@ -61,7 +62,7 @@
             for (var i = 0; i < list.length; i++) {
                 var p = list[i];
                 out = out.concat(p && p.ambu && slots[k] === "back" ? yield* ambuBuilds(ctx, start, p, loose, opts)
-                    : p && p.skirmish ? yield* skirmishBuilds(ctx, start, slots[k], p, loose, opts) : [p]);
+                    : p && (p.skirmish || p.reive) ? yield* skirmishBuilds(ctx, start, slots[k], p, loose, opts) : [p]);
             }
             res[slots[k]] = out;
         }
@@ -93,11 +94,18 @@
     // A Skirmish piece of the game (atelier/gear/skirmish.js): one augment of each stone (Snow, Leaf, Dusk) at its
     // max, whatever the stone's quality. A stone at a time, each of its augments tried with the others at their best so
     // far (two rounds, as the capes), then the best two of each stone crossed: eight builds at most, left to the
-    // search's prefilter like any piece. A tie goes to the augment the set's own copy carries, then to none
-    function* skirmishBuilds(ctx, start, slot, tpl, loose, opts) {
+    // search's prefilter like any piece. A tie goes to the augment the set's own copy carries, then to none.
+    // A Reive cape (atelier/gear/reive.js) is built the same way, each of its four augments a "stone" of one augment:
+    // at its max, or left out when it changes nothing (sixteen builds at most)
+    function groupsOf(tpl) {
+        if (tpl.reive) return FFXI.REIVE_BY_NAME && FFXI.REIVE_BY_NAME[tpl.name] || null;
         var set = FFXI.SKIRMISH_SETS && FFXI.SKIRMISH_SETS[FFXI.SKIRMISH_BY_NAME[tpl.name]];
+        return set ? {groups: FFXI.SKIRMISH_STONES, augs: set.augs} : null;
+    }
+    function* skirmishBuilds(ctx, start, slot, tpl, loose, opts) {
+        var set = groupsOf(tpl);
         if (!set) return [];
-        var stones = FFXI.SKIRMISH_STONES, own = (opts.base || start)[slot], pick = {}, best = {};
+        var stones = set.groups, own = (opts.base || start)[slot], pick = {}, best = {};
         var mine = own && own.name === tpl.name ? own.augs || [] : [];
         // an augment that changes nothing for the objective takes the one the set's own copy carries, not the list's first
         var order = function (x, y) { var d = y.v - x.v; return Math.abs(d) > Math.abs(x.v) * 1e-9 + 1e-12 ? d : (mine.indexOf(y.a) !== -1) - (mine.indexOf(x.a) !== -1); };

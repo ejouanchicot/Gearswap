@@ -191,6 +191,10 @@
         'Blood Pact Delay': ['"Blood Pact" ability delay'],
         'Call Beast Delay': ['"Call Beast" ability delay'],
         'Breath': ['Breath'],
+        // the Reive capes' (reive.js)
+        'Blood Pact Delay II': ['Blood Pact ab. del. II'],
+        'Phantom Roll Delay': ['"Phantom Roll" ability delay'],
+        'Meditate Duration': ['Meditate eff. dur.'],
         'Ammo Damage%': ['Additional ammo damage'],
         'Ammo Accuracy': ['Additional ammo accuracy'],
         'Crit TP': ['TP gained when landing critical hits', 'TP gained when landing crit. hits'],

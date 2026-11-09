@@ -63,7 +63,7 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
 // the piece at its best: what is left to do, then its card (maxTip)
 function maxOf(up: LegacyAny, slot: string): TipView {
   const todo = up.to ? (up.from != null ? t('upRank', {f: up.from, t: up.to}) : t('upRankUnknown', {t: up.to}))
-    : t(up.skirmish ? 'upSkirmish' : 'upCape') + (up.missing && up.missing.length ? ' · ' + t('upMissing', {m: up.missing.join(', ')}) : '');
+    : t(up.skirmish ? 'upSkirmish' : up.reive ? 'upReive' : 'upCape') + (up.missing && up.missing.length ? ' · ' + t('upMissing', {m: up.missing.join(', ')}) : '');
   return {k: 'piece', max: todo, card: pieceCard(up.piece, slot), hint: ''};
 }
 

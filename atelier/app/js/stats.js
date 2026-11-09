@@ -356,7 +356,7 @@ function upgradeOf(p){
     const augs = p.augs && p.augs.length ? p.augs : ['Path: ' + r.path];
     return {piece: {name: p.name, augs, rank: e.max_rank}, from: r.rank, to: e.max_rank};
   }
-  return capeMax(p) || skirmishMax(p);
+  return capeMax(p) || skirmishMax(p) || reiveMax(p);
 }
 // A Skirmish piece you hold with each of its augments at its max (atelier/gear/skirmish.js), the stones it has no
 // augment of named
@@ -364,6 +364,12 @@ function skirmishMax(p){
   const m = window.FFXI && FFXI.skirmish_max && FFXI.skirmish_max(p.name, p.augs);
   if (!m || (!m.changed && !m.missing.length)) return null;
   return {piece: {name: p.name, augs: m.augs, capeMax: true}, missing: m.missing.map(s => t('stone' + s)), skirmish: true};
+}
+// A Reive cape you hold with each of its augments at its max (atelier/gear/reive.js), the ones it lacks named at their max
+function reiveMax(p){
+  const m = window.FFXI && FFXI.reive_max && FFXI.reive_max(p.name, p.augs);
+  if (!m || (!m.changed && !m.missing.length)) return null;
+  return {piece: {name: p.name, augs: m.augs, capeMax: true}, missing: m.missing, reive: true};
 }
 function addAugment(a, r){
   a = unsigned(a, r.aug);

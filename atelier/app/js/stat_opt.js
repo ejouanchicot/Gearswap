@@ -313,10 +313,13 @@ function withVec(p, slot, s){
   if (ja && boostsAbility(p, slot, ja)) q.st = Object.assign({}, q.st, {ja: 1});
   if (slot === 'sub') { const it = itemOf(p.name); if (it && it.Type === 'Shield') q.shield = true; }
   // a piece the search builds (atelier/opt_ambu.js): what each augment it can take adds, laid by the search on the
-  // bare piece's stats. An Ambuscade cape (its materials: FFXI.opt.AMBU_AUGS), a Skirmish piece (its stones)
+  // bare piece's stats. An Ambuscade cape (its materials: FFXI.opt.AMBU_AUGS), a Skirmish piece (its stones), a Reive
+  // cape (its four augments)
   if (p.ambu && window.FFXI && FFXI.opt && FFXI.opt.AMBU_AUGS) q.stAugs = augVecs(p, slot, q.st, FFXI.opt.AMBU_AUGS);
   const skir = p.skirmish && window.FFXI && FFXI.SKIRMISH_SETS && FFXI.SKIRMISH_SETS[FFXI.SKIRMISH_BY_NAME[p.name]];
   if (skir) q.stAugs = augVecs(p, slot, q.st, skir.augs);
+  const reive = p.reive && window.FFXI && FFXI.REIVE_BY_NAME && FFXI.REIVE_BY_NAME[p.name];
+  if (reive) q.stAugs = augVecs(p, slot, q.st, reive.augs);
   return q;
 }
 // What each augment adds to a piece's stats: lists = {material or stone: [augment as the game writes it]}, the result

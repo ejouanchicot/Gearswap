@@ -10,8 +10,8 @@
     });
 
     // An augment's label with its value taken out ('Enh. Mag. eff. dur. +8' -> 'Enh. Mag. eff. dur. #'): the same
-    // augment at another value has the same shape
-    var shape = function (a) { return String(a).replace(/[+-]\s?\d+/g, '#').replace(/\s+/g, ' ').trim(); };
+    // augment at another value has the same shape. Also the Reive capes' (reive.js)
+    var shape = FFXI.augShape = function (a) { return String(a).replace(/[+-]\s?\d+/g, '#').replace(/\s+/g, ' ').trim(); };
 
     // The stone an augment of this set comes from and its max, or null (a bad roll of another category, which the
     // source does not list)
