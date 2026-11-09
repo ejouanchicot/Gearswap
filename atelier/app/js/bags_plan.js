@@ -55,6 +55,8 @@ const BP_ROLES = {gear: ['job', 'gear', 'spare'], lock: ['spare'], tools: ['spar
 // The category a bag's role suggests for what sits in it today
 const BP_HINT = {craft: 'craft', unused: 'unused', archive: 'unused', usable: 'usable', mats: 'mats', currency: 'currency', keys: 'keys', furnish: 'furnish', slips: 'furnish'};
 const BP_GEAR_ONLY = ['gear', 'lock', 'tools', 'craft'];
+// The categories filed by hand that a set wearing the piece overrides (bpCat)
+const BP_STALE = ['unused', 'mule'];
 // A piece that is put on to be activated (a teleport ring, a Retrace staff): its description names an enchantment
 const bpEnch = r => { const c = typeof catalog === 'function' && catalog(), row = c && c.row[r.info.name]; return !!row && /Enchantment/i.test(String(row[6] || '')); };
 const bpTags = () => (S.bagTags || {})[S.char] || {};
@@ -101,7 +103,10 @@ function bpLock(){
 function bpCat(B, r){
   // the player's choice; a category of equipment given to what is no equipment cannot hold (a wardrobe takes
   // equipment only): crafting gear said of a material is a crafting material, the others are left to the page
-  const mine = bpTags()[r.id];
+  // A piece a set wears is never "not used" or "for a mule", whatever was filed by hand before a set took it: that
+  // choice stays in the file and comes back when no set wears it any more (Kaories' Esper Stone +1, filed "not
+  // used" in the Mog Locker, then worn by her RDM and WHM sets: the tidy-up never took it out, 2026-11-09)
+  const tag = bpTags()[r.id], mine = tag && !(BP_STALE.includes(tag) && bvIsGear(r) && Object.keys(r.use.jobs).length) ? tag : '';
   if (mine && (bvIsGear(r) || !BP_GEAR_ONLY.includes(mine))) return mine;
   if (mine === 'craft') return 'mats';
   const hint = () => { for (const w of r.where) { const bag = B.bags.find(b => b.name === w.bag), h = bag && bvRoles(B, bag).map(x => BP_HINT[x]).find(Boolean); if (h) return h; } return ''; };

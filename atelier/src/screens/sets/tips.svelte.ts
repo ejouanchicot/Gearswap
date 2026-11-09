@@ -49,15 +49,17 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
     attrs = order.filter(k => statGroup(k) === 'attr').map(cell);
     hero = HERO.filter(k => keys.includes(k)).map(cell).map(({label, aug, value}) => ({label, aug, value}));
     roles = ROLES.map(([key, label, groups]) => ({key, label: t(label), rows: order.filter(k => groups.includes(statGroup(k)) && !HERO.includes(k)).map(cell)}));
-    // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), a column of their own: Hija Earring has only those
-    roles.push({key: 'pet', label: t('tipPet'), rows: Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: '', value: fmtStat(r.pet[k]), title: ''}))});
+    // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), a column of their own: Hija Earring has only those;
+    // the augments' part marked as the piece's own stats are (r.petAug)
+    const pa = r.petAug || {};
+    roles.push({key: 'pet', label: t('tipPet'), rows: Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: pa[k] && pa[k].v ? '◆' + fmtStat(pa[k]) : '', value: fmtStat(r.pet[k]), title: ''}))});
     roles = roles.filter(x => x.rows.length);
   }
   const rank = r && r.rank != null ? {text: (r.path ? `Path ${r.path} · ` : '') + t('rankShort', {r: r.rank}) + (r.rankAssumed ? ' · ' + t('rankAssumed') : '')} : null;
   // where GearSwap takes it from (bag = 'wardrobe 3') and its order in a swap (priority)
   const where = [p.bag ? t('tipBag', {b: p.bag}) : '', p.priority != null ? t('tipPriority', {n: p.priority}) : ''].filter(Boolean).join(' · ');
   if (r && r.weapon) hero = Object.entries(r.weapon).map(([k, n]) => ({label: k, aug: '', value: String(n)})).concat(hero);
-  return {k: 'piece', iconHtml: icon(p.name), name: p.name, label, hero, rank, where, badgesHtml: rareExHTML(p.name, r && Object.keys(r.aug).length),
+  return {k: 'piece', iconHtml: icon(p.name), name: p.name, label, hero, rank, where, badgesHtml: rareExHTML(p.name, r && Object.keys(r.aug).length + Object.keys(r.petAug || {}).length),
     known, attrs, roles, free: known ? r.free : [], cond: known ? r.cond : [], effects: t('tipFx'), condLabel: t('tipCond'), condTitle: t('condTitle'), noDesc: t('noDesc')};
 }
 // the piece at its best: what is left to do, then its card (maxTip)

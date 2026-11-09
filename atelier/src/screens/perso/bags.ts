@@ -135,7 +135,8 @@ function bagItemOf(B: LegacyAny, r: LegacyAny, sel: string): BagItem {
   const tip = [r.info.name + (r.n > 1 ? ' ×' + r.n : ''), r.augs ? r.augs.join(' · ') : '',
     r.where.map((w: LegacyAny) => w.bag + (w.slip ? ' (' + w.slip + ')' : '') + (w.n > 1 ? ' ×' + w.n : '')).join(', '), bvUseTip(r)].filter(Boolean).join('\n');
   const why = r.bad.map((x: LegacyAny) => x.bag + ' : ' + t(x.why)).join('\n') + (r.bad.length ? '\n' + t('bvGoes', {d: bpDest(B, r)}) : '');
-  const cat = bpCat(B, r), mine = !!bpTags()[r.id], lock = bpLock()[r.id];
+  // "your choice" only while it is the category used (a set wearing a piece filed "not used" overrides it: bpCat)
+  const cat = bpCat(B, r), mine = bpTags()[r.id] === cat, lock = bpLock()[r.id];
   return {id: String(r.id), split: r.where.length > 1, bad: r.bad.length > 0, picked: ((S._bagPick || new Set()) as Set<string>).has(String(r.id)), unk: cat === 'unknown',
     title: tip + '\n' + t('bpCatTip', {c: bpCatName(cat), m: mine ? t('bpByYou') : ''}) + (cat === 'npc' && bpNpc(r.info.name) ? '\n' + t('bpNpcAt', {n: bpNpc(r.info.name)}) : '')
       + (lock ? '\n' + t('bpLockOf', {l: lock.join(', ')}) : '') + (why ? '\n⚠ ' + why : ''),
