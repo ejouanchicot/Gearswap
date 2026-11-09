@@ -27,6 +27,9 @@ function btUnits(B, rows){
 function btWhy(B, u){
   const roles = bvRoles(B, u.from);
   if (u.from.id === 0) return 'bvW_inv';
+  // a piece of the job loaded only goes on from a wardrobe: one in a bag the other jobs' gear overflows to (a Sack)
+  // comes back, whatever that bag holds
+  if (u.cat === 'gear' && u.r.use.jobs[S.job] && !bvEquips(u.from.name) && roles.includes('gear')) return 'bvW_far';
   if (roles.includes('free')) return '';
   if (u.cat === 'gear' ? roles.includes('job') || roles.includes('gear') : BP_ROLES[u.cat].some(x => roles.includes(x))) return '';
   if (u.cat === 'gear' && roles.includes('spare')) return 'bvW_spare';
@@ -37,7 +40,16 @@ function btWhy(B, u){
 function btHomes(B, u, why){
   const order = btSlip(u.r.info.name) ? ['slips', 'furnish'] : u.cat !== 'gear' ? BP_ROLES[u.cat] : why === 'bvW_spare' ? ['gear'] : u.r.use.jobs[S.job] ? ['job', 'gear', 'spare'] : ['gear', 'spare', 'job'];
   // (a wardrobe takes equipment only)
-  return order.flatMap(role => B.bags.filter(b => b.max && b.id > 0 && bvRoles(B, b).includes(role))).filter(b => b.name !== u.from.name && (bvIsGear(u.r) || !/^Wardrobe/.test(b.name)));
+  const homes = order.flatMap(role => B.bags.filter(b => b.max && b.id > 0 && bvRoles(B, b).includes(role))).filter(b => b.name !== u.from.name && (bvIsGear(u.r) || !/^Wardrobe/.test(b.name)));
+  if (u.cat !== 'gear') return homes;
+  // gear: the bags it cannot be put on from (a Sack the wardrobe organizer overflows to) come last, after every
+  // wardrobe but the job loaded's (which //gs c wo empties of the other jobs' gear); the reserve's surplus and the job
+  // loaded's own pieces never go there
+  const far = homes.filter(b => !bvEquips(b.name));
+  if (why === 'bvW_spare') return homes.filter(b => bvEquips(b.name));
+  if (u.r.use.jobs[S.job]) return homes.filter(b => bvEquips(b.name));
+  const job = b => bvRoles(B, b).includes('job') && !bvRoles(B, b).some(x => x === 'gear' || x === 'spare');
+  return homes.filter(b => bvEquips(b.name) && !job(b)).concat(far, homes.filter(b => bvEquips(b.name) && job(b)));
 }
 // The sum: {moves: [{id, name, from, to, fromName, toName, cat}], noRoom: [{name, cat, bag}], bad: {row key: [{bag, why, to}]}}.
 // What empties a bag is placed first, the surplus of the reserve last; a bag's room is counted as the moves go, and

@@ -110,6 +110,10 @@ function bvUsage(){
     const byDate = Object.values(subs).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
     const paths = {}, latest = byDate.find(x => (x.sets || []).length);
     for (const s of (latest && latest.sets) || []) for (const p of Object.values(s.pieces || {})) if (p && p.name && p.name !== 'empty') (paths[p.name.toLowerCase()] = paths[p.name.toLowerCase()] || new Set()).add(s.path);
+    // and the pieces its states cycle (a BRD's MainInstrument: Gjallarhorn, Daurdabla, Marsyas; a MainWeapon), which no
+    // set names: before, a BRD's instruments were "not used" and the tidy-up would have sent them to the Mog House.
+    // A value that is no item ('Refresh', 'DT') matches no row of the bags
+    for (const m of (latest && latest.modes) || []) for (const v of (m && m.values) || []) if (typeof v === 'string' && v.length > 2) (paths[v.toLowerCase()] = paths[v.toLowerCase()] || new Set()).add('state:' + m.name);
     if (Object.keys(paths).length) jobs.push(job);
     for (const [n, set] of Object.entries(paths)) at(n).jobs[job] = set.size;
     // the names its settings files hold (lists and tables of lines)
@@ -132,20 +136,29 @@ const bvUseTip = r => { const u = r.use, jobs = Object.entries(u.jobs).sort((a, 
 const BV_ROLES = ['free', 'job', 'gear', 'spare', 'unused', 'craft', 'usable', 'mats', 'currency', 'keys', 'furnish', 'slips', 'archive'];
 const bvEquips = n => n === 'Inventory' || /^Wardrobe/.test(n);
 const bvBagOf = n => { const m = /^w(?:ardrobe)? ?(\d)?$/i.exec(String(n).trim()); return m ? 'Wardrobe' + (m[1] && m[1] !== '1' ? ' ' + m[1] : '') : ''; };
+// A list of the character's wardrobe organizer config (WARDROBE_CONFIG.lua: USED, UNUSED, NEVER_TOUCH), as bag names
+function bvWoList(k){
+  const x = latestExport(S.char, 'configs'), f = x && x.configs.find(c => c.file.endsWith('/WARDROBE_CONFIG.lua'));
+  let p = {}; try { p = f ? modParsed(f).byPath : {}; } catch (e) {}
+  return ((p[k] && p[k].kind === 'list' && p[k].value) || []).map(n => bvBagOf(n) || BV_WO_BAGS[String(n).trim().toLowerCase()] || '');
+}
+const BV_WO_BAGS = {satchel: 'Mog Satchel', sack: 'Mog Sack', case: 'Mog Case'};
 function bvRoleGuess(B, bag){
   if (bag.place === 'porter') return 'archive';
   if (/^Wardrobe/.test(bag.name)) {
-    const x = latestExport(S.char, 'configs'), f = x && x.configs.find(c => c.file.endsWith('/WARDROBE_CONFIG.lua'));
-    let p = {}; try { p = f ? modParsed(f).byPath : {}; } catch (e) {}
-    const list = k => ((p[k] && p[k].kind === 'list' && p[k].value) || []).map(bvBagOf);
-    if (list('NEVER_TOUCH').includes(bag.name)) return 'craft';
-    if (list('USED').includes(bag.name)) return 'job';
+    if (bvWoList('NEVER_TOUCH').includes(bag.name)) return 'craft';
+    if (bvWoList('USED').includes(bag.name)) return 'job';
     // the first bag of UNUSED is the reserve, the others hold the gear of the jobs not loaded
-    const un = list('UNUSED'); return un[0] === bag.name ? 'spare' : 'gear';
+    const un = bvWoList('UNUSED'); return un[0] === bag.name ? 'spare' : 'gear';
   }
   // the other bags start with a usual layout, every category with a home (the player changes any of them):
-  // what is carried sorted by kind, the Mog House for what is kept
-  return BV_ROLE_START[bag.name] || 'free';
+  // what is carried sorted by kind, the Mog House for what is kept. A Satchel, Sack or Case the wardrobe organizer
+  // fills when the wardrobes are full (in UNUSED: a character with four wardrobes, Kaories) holds the other jobs' gear
+  // too, else the tidy-up took out what //gs c wo put there, and found no room for it (bags_target.js btHomes: the
+  // last choice, after every wardrobe)
+  const start = BV_ROLE_START[bag.name] || 'free';
+  if (start !== 'free' && bvWoList('UNUSED').includes(bag.name)) return start.split('+').slice(0, BV_MAX_ROLES - 1).concat('gear').join('+');
+  return start;
 }
 const BV_ROLE_START = {'Mog Case': 'usable', 'Mog Satchel': 'mats+slips', 'Mog Sack': 'mats', 'Mog Safe': 'currency+furnish', 'Mog Safe 2': 'currency+keys', 'Storage': 'unused', 'Mog Locker': 'unused'};
 const bvRole = (B, bag) => ((S.bagRoles || {})[S.char] || {})[bag.name] || bvRoleGuess(B, bag);
