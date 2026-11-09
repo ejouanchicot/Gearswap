@@ -122,6 +122,9 @@ const MOD_REST_FR = {
     ['SCOPE', 'Jobs rangés', 'Plus de jobs que de wardrobes : le rangement travaille sur le job chargé. Relance //gs c wo après un changement de job.'],
     ['ALL_WARDROBES', 'Wardrobes parcourus', 'Tous les sacs que le rangement (//gs c wo) regarde.'],
     ['KEEP', 'Pièces gardées dans les premiers wardrobes', 'En plus de ce que tes sets nomment. Les anneaux de warp n’en ont pas besoin : ils marchent depuis n’importe quel wardrobe.'],
+    ['NEVER_MOVE', 'Objets jamais déplacés', 'Laissés là où ils sont, où que ce soit : //gs c wo ne les prend ni ne les range (une ammo que le refill garde dans l’inventaire).'],
+    ['PLACE', 'Objet toujours dans tel sac', 'Un objet, son sac ; une liste de sacs : un exemplaire dans chacun.'],
+    ['JOBS', 'Wardrobes d’un job', 'Le gear de ce job toujours dans ces sacs.'], ['TYPES', 'Wardrobes d’un type de gear', 'Armes, ammo, armure, accessoires : le gear utilisé de ce type dans ces sacs.'],
   ],
   'HP_PRIORITY_CONFIG.lua': [],
   'FIGHTS_CONFIG.lua': [
@@ -253,6 +256,13 @@ const MOD_REST_FR = {
     ['SONG_REFINE.tiers', 'Tier de remplacement', 'Pour chaque chant, celui qui le remplace.'], ['SONG_REFINE.tiers.*', '{1}', 'Le chant qui le remplace.'], ['SONG_REFINE.tiers.*.*', '{2}', ''],
     ['DEBUFF_SONGS', 'Chant de chaque commande de debuff', '//gs c lullaby, lullaby2, elegy, requiem.'], ['DEBUFF_SONGS.*', '//gs c {1}', 'Le chant lancé.'],
     ['REFRESH_BELOW', 'Ne rien rechanter s’il reste plus de', 'En secondes : //gs c songs n’envoie rien tant que tous les chants du pack sont les tiens avec plus de temps que ça. 0 : toujours chanter.'],
+    ['skillup', 'Skill-up d’instrument', '//gs c skillup horn ou harp : des chants l’un après l’autre, l’instrument en main, jusqu’à //gs c skillup off.'],
+    ['skillup.songs', 'Chants de la boucle', 'Chantés à tour de rôle, avec le cor comme avec la harpe.'],
+    ['skillup.horn_songs', 'Chants avec le cor', 'À la place de la liste commune, pour //gs c skillup horn.'],
+    ['skillup.harp_songs', 'Chants avec la harpe', 'À la place de la liste commune, pour //gs c skillup harp.'],
+    ['skillup.target', 'Cible', '« <me> » : toi (chants de buff) ; « <t> » : le monstre que tu as ciblé (Elegy, Threnody).'],
+    ['skillup.horn', 'Cor tenu', 'L’instrument à vent de la boucle.'], ['skillup.harp', 'Harpe tenue', 'L’instrument à cordes de la boucle.'],
+    ['skillup.gap', 'Pause entre deux chants', 'En secondes, après la fin du chant précédent.'],
   ],
 };
 

@@ -34,6 +34,8 @@
 ---   Settings (<Character>/brd/combat/BRD_SONG_CONFIG.lua, shared/utils/core/job_config.lua; all optional):
 ---     skillup = {songs = {"Army's Paeon VI", "Army's Paeon V"}, horn = 'Loughnashade', harp = 'Daurdabla', gap = 3,
 ---                target = '<me>'}   -- '<t>': the target you chose (Battlefield Elegy, Carnage Elegy on a monster)
+---     horn_songs / harp_songs: that instrument's own songs, in place of songs (Kaories: the Elegies with the horn,
+---     the Threnodies with the harp, 2026-11-09)
 ---
 ---   @file    shared/jobs/brd/functions/logic/skillup.lua
 ---   @author  ejouanchicot
@@ -196,7 +198,10 @@ local function start(kind)
         MessageFormatter.show_error('[BRD] Skill-up: only as a BRD, not engaged')
         return
     end
-    local songs, left = songs_of(cfg.songs)
+    -- the instrument's own list (harp_songs, horn_songs), else the common one
+    local list = cfg[kind .. '_songs']
+    if type(list) ~= 'table' or #list == 0 then list = cfg.songs end
+    local songs, left = songs_of(list)
     if #left > 0 then MessageFormatter.show_warning('[BRD] Skill-up: left out (unknown or not learned): ' .. table.concat(left, ', ')) end
     if #songs == 0 then
         MessageFormatter.show_error('[BRD] Skill-up: no song to sing')
