@@ -31,6 +31,14 @@ const HERO = ['def', 'hp', 'mp'];
 const ROLES: Array<[string, string, string[]]> = [['def', 'tipRoleDef', ['def', 'res']], ['off', 'tipRoleOff', ['off']], ['mag', 'tipRoleMag', ['mag']],
   ['oth', 'tipRoleOther', ['skill', 'other']]];
 
+// A stat's figures: the total, and the augment's part beside it (the base is what remains). A stat the augments give
+// whole (War. Beads +2's STR +15, no STR of its own) is said once, as an augment: '◆+15' with no total beside it
+function valueOf(total: LegacyAny, aug: LegacyAny): {value: string; aug: string} {
+  if (!aug || !aug.v) return {value: fmtStat(total), aug: ''};
+  if (aug.v === total.v && aug.unit === total.unit) return {value: '', aug: '◆' + fmtStat(total)};
+  return {value: fmtStat(total), aug: '◆' + fmtStat(aug)};
+}
+
 /** The card of one piece (a set's, the drawer's, the simulation's); none: an empty slot (pieceTip) */
 export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceCard {
   const label = (SLOT_NAMES[S0().lang] as Record<string, string>)[slot]!;
@@ -43,16 +51,15 @@ export function pieceCard(p: LegacyAny, slot: string, emptied?: boolean): PieceC
   if (known) {
     const keys = Object.keys(r.stats).filter(k => r.stats[k].v);
     const order = STAT_GROUPS.flatMap(([g]) => keys.filter(k => statGroup(k) === g).sort(statOrder));
-    // the augment's part in front of the total: the base is what remains
     const cell = (k: string): StatCell => { const lb = statLabel(k, r.stats[k]);
-      return {label: lb, aug: r.aug[k] && r.aug[k].v ? '◆' + fmtStat(r.aug[k]) : '', value: fmtStat(r.stats[k]), title: statHelp(esc(lb), '')}; };
+      return Object.assign(valueOf(r.stats[k], r.aug[k]), {label: lb, title: statHelp(esc(lb), '')}); };
     attrs = order.filter(k => statGroup(k) === 'attr').map(cell);
     hero = HERO.filter(k => keys.includes(k)).map(cell).map(({label, aug, value}) => ({label, aug, value}));
     roles = ROLES.map(([key, label, groups]) => ({key, label: t(label), rows: order.filter(k => groups.includes(statGroup(k)) && !HERO.includes(k)).map(cell)}));
     // the pet's stats (its "Pet:" lines and augments: stats.js r.pet), a column of their own: Hija Earring has only those;
     // the augments' part marked as the piece's own stats are (r.petAug)
     const pa = r.petAug || {};
-    roles.push({key: 'pet', label: t('tipPet'), rows: Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => ({label: statLabel(k, r.pet[k]), aug: pa[k] && pa[k].v ? '◆' + fmtStat(pa[k]) : '', value: fmtStat(r.pet[k]), title: ''}))});
+    roles.push({key: 'pet', label: t('tipPet'), rows: Object.keys(r.pet || {}).filter(k => r.pet[k].v).sort(statOrder).map(k => Object.assign(valueOf(r.pet[k], pa[k]), {label: statLabel(k, r.pet[k]), title: ''}))});
     roles = roles.filter(x => x.rows.length);
   }
   const rank = r && r.rank != null ? {text: (r.path ? `Path ${r.path} · ` : '') + t('rankShort', {r: r.rank}) + (r.rankAssumed ? ' · ' + t('rankAssumed') : '')} : null;

@@ -153,11 +153,14 @@
 :root body .tip .thero b{font-size:14px;line-height:1.2;font-weight:800;color:var(--fx-value);font-variant-numeric:tabular-nums}
 :root body .tip .thero .a{margin:0;font-size:10px}
 /* the attributes: one light line, each name small beside its value */
-:root body .tip .attrs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px 6px;margin-top:7px;padding:0 2px 7px;border:0;border-bottom:1px solid var(--line)}
+:root body .tip .attrs{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:7px;padding:0 2px 7px;border:0;border-bottom:1px solid var(--line)}
 :root body .tip .attrs span{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
 :root body .tip .attrs em{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:var(--fx-label)}
 :root body .tip .attrs b{margin:0;font-size:12px;font-weight:700;color:var(--fx-value);font-variant-numeric:tabular-nums}
 :root body .tip .attrs .a{margin:0 0 0 2px;font-size:9.5px}
+/* a stat the augments give whole, said once as an augment: as large as a value beside it */
+:root body .tip .attrs .a.only{margin:0;font-size:12px}
+:root body .tip .thero .a.only{font-size:14px}
 /* the other stats in small columns by role, each headed by its name gilt, a dot of its colour and a rule; a value the
    total, the augment's part a small violet tag beside it */
 :root body .tip.wide{width:min(430px,calc(100vw - 16px))}
