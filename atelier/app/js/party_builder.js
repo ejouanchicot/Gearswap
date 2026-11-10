@@ -164,11 +164,11 @@ function pbDlgFocus(){
 // redraw would be felt while the game redraws the page every two seconds)
 Object.assign(T.fr, {pbFight: 'Le combat', pbFightHint: 'un profil garde ta PT, ses buffs et le mob', pbProfile: 'Profil', pbGroup: 'Groupe de buffs',
   pbVs: 'Contre', pbFoeMore: 'Sa fiche ▾', pbFoeLess: 'Replier ▴', pbPtTitle: 'Ta PT',
-  pbSlotHint: 'clique un emplacement pour choisir', pbHeldIn: 'déjà en {s}', pbCurrent: 'actuel', pbDefense: 'Défense et soins', pbMagicRolls: 'Magie', pbPetRolls: 'Familier', pbLuck: 'chance {l} · malchance {u}', pbAtXI: 'au XI', pbResultTitle: 'Ce que ça te donne', pbResultHint: 'par effet, et qui le donne',
+  pbSlotHint: 'clique un emplacement pour choisir', pbHeldIn: 'déjà en {s}', pbCurrent: 'actuel', pbDefense: 'Défense et soins', pbMagicRolls: 'Magie', pbPetRolls: 'Familier', pbLuck: 'chance {l} · malchance {u}', pbAtXI: 'au XI', pbResultTitle: 'Ce que ça te donne', pbResultHint: 'par effet, et qui le donne', pbColEffect: 'Effet', pbColWho: 'Qui le donne', pbColValue: 'Valeur',
   pbTileHaste: 'Haste magie', pbTileHasteTip: 'Haste magie reçue : {v} % (le jeu s’arrête à 43,75 %)', pbTileHit: 'Tu le touches'});
 Object.assign(T.en, {pbFight: 'The fight', pbFightHint: 'a profile keeps your party, its buffs and the monster', pbProfile: 'Profile', pbGroup: 'Group of buffs',
   pbVs: 'Against', pbFoeMore: 'Its card ▾', pbFoeLess: 'Fold ▴', pbPtTitle: 'Your party',
-  pbSlotHint: 'click a slot to choose', pbHeldIn: 'in {s} already', pbCurrent: 'current', pbDefense: 'Defense and healing', pbMagicRolls: 'Magic', pbPetRolls: 'Pet', pbLuck: 'lucky {l} · unlucky {u}', pbAtXI: 'at XI', pbResultTitle: 'What it gives you', pbResultHint: 'by effect, and who gives it',
+  pbSlotHint: 'click a slot to choose', pbHeldIn: 'in {s} already', pbCurrent: 'current', pbDefense: 'Defense and healing', pbMagicRolls: 'Magic', pbPetRolls: 'Pet', pbLuck: 'lucky {l} · unlucky {u}', pbAtXI: 'at XI', pbResultTitle: 'What it gives you', pbResultHint: 'by effect, and who gives it', pbColEffect: 'Effect', pbColWho: 'Who gives it', pbColValue: 'Value',
   pbTileHaste: 'Magic Haste', pbTileHasteTip: 'Magic Haste received: {v} % (the game stops at 43.75 %)', pbTileHit: 'You hit it'});
 Object.assign(T.fr, {pbImpact: 'Ce que ça change pour ton set', pbImpWs: 'dégâts moyens à {tp} TP', pbImpEng: 'temps jusqu’à la WS · DPS',
   pbImpNone: 'Ouvre un set Engaged ou de weaponskill dans la liste : je te dirai ce qu’il vaut dans chaque situation.', pbImpNoEng: 'Le moteur n’est pas encore chargé.',

@@ -469,3 +469,203 @@
 :root .app .setsx .detail .trybar .dacts > .btn[disabled]{opacity:.5}
 :root .app .setsx .detail .trybar .dlinks .linkbtn{color:var(--fx-hot)}
 
+
+/* ============================================================================ Buffs & target as the game's windows,
+   as the Sets screen above (2026-11-10): the fight's card, the party, the member opened and "Ce que ça te donne"
+   framed as the set's card; their title bands the Sets panes' (the gilt bar with its glow, panels.css .boxh::before) */
+:root .app .kfight :is(.kmain,.kab,.kcols) > .kcard{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 28px -14px rgba(0,0,0,.6)}
+:root .app .kfight :is(.kmain,.kab,.kcols) > .kcard > .kband{--c:var(--accent);position:relative;padding:10px 16px 9px 18px;border-left:0;border-bottom:1px solid var(--fx-line);background:var(--fx-pane)}
+:root .app .kfight :is(.kmain,.kab,.kcols) > .kcard > .kband::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 10px var(--c)}
+:root .app .kfight :is(.kmain,.kab,.kcols) > .kcard > .kband b{color:var(--fx-item)}
+/* inside them, the left list's look (setlist.css): the buttons the game's plates (the one action gold), the profile's
+   picker, the target's line and the menus dark wells, the party, the slots and the options raised tiles (the families'
+   tiles), the one picked edged in gold; the headings gilt, the figures in the game's pale yellow. The layout does not
+   move. */
+:root .app .kfight{--kt:linear-gradient(180deg,color-mix(in srgb,var(--fx-cell-edge) 28%,transparent),color-mix(in srgb,var(--fx-well) 80%,transparent));
+  --kt-edge:inset 0 0 0 1px color-mix(in srgb,var(--fx-cell-edge) 80%,transparent),inset 0 1px 0 rgba(255,255,255,.08);
+  --kt-hot:inset 0 0 0 1px var(--fx-hot),0 0 14px -4px color-mix(in srgb,var(--fx-hot) 70%,transparent);color:var(--fx-ink);text-shadow:var(--fx-shadow)}
+/* the buttons: plates; the band's ones (Buffs typiques, Tout retirer) and "Déplier" */
+:root .app .kfight .btn.ghost,:root .app .kfight .pbohint{border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-frame);background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root .app .kfight .btn.ghost:hover,:root .app .kfight .kother summary:hover .pbohint{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+:root .app .kfight .btn:not(.ghost){border-radius:5px;text-shadow:none}
+:root .app .kfight .linkbtn{color:var(--fx-hot)}
+/* the labels and headings */
+:root .app .kfight .klbl{color:var(--fx-label)}
+:root .app .kfight .kopt > h4,:root .app .kfight .kfxh,:root .app .kfight .pbimpact > h4,:root .app .kfight .foeonk{color:var(--fx-item);letter-spacing:.14em}
+/* the profile's picker and the menus: dark wells */
+:root .app .kfight .prpickbtn,:root .app .kfight .kop select{color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-cell-edge);border-radius:5px;background-color:var(--fx-well);box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+:root .app .kfight .prpickbtn:hover,:root .app .kfight .kop select:hover{border-color:var(--fx-frame)}
+:root .app .kfight .kop select.set{color:var(--fx-item);border-color:color-mix(in srgb,var(--fx-hot) 60%,var(--fx-cell-edge))}
+/* the group of buffs: the game's segment in a well, the one in force gold */
+:root .app .kfight .prsits.compact{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+:root .app .kfight .prsits.compact .prsit{border-right-color:var(--fx-line)}
+:root .app .kfight .prsits.compact .prsit b{color:var(--fx-label)}
+:root .app .kfight .prsits.compact .prsit:hover b{color:var(--fx-ink)}
+:root .app .kfight .prsits.compact .prsit[aria-pressed="true"]{background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+:root .app .kfight .prsits.compact .prsit[aria-pressed="true"] b{color:var(--accent-ink);text-shadow:none}
+/* the target's line: a well, its figures pale yellow */
+:root .app .kfight .kfoeline{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+:root .app .kfight .kfoename b{color:var(--fx-item)}
+:root .app .kfight .kfoeg b{color:var(--fx-value)}
+:root .app .kfight .kfoehit{border-color:var(--fx-cell-edge)}
+/* the other debuffs: a raised tile */
+:root .app .kfight .kother{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .kfight .kother .pbot b{color:var(--fx-item)}
+/* the party: a raised tile a member, the one opened edged in gold */
+:root .app .kfight .kpm{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .kfight .kpm:hover{box-shadow:inset 0 0 0 1px var(--fx-frame),inset 0 1px 0 rgba(255,255,255,.12)}
+:root .app .kfight .kpm.on{background:linear-gradient(180deg,color-mix(in srgb,var(--fx-hot) 16%,transparent),color-mix(in srgb,var(--fx-well) 80%,transparent));box-shadow:var(--kt-hot)}
+/* the member's slots and options: raised tiles, a slot holding a buff edged in gold */
+:root .app .kfight .ksl{border:0;border-radius:8px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .kfight .ksl:hover{box-shadow:inset 0 0 0 1px var(--fx-frame),inset 0 1px 0 rgba(255,255,255,.12)}
+:root .app .kfight .ksl.set{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fx-hot) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.08)}
+:root .app .kfight .ksl:not(.set){box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fx-cell-edge) 80%,transparent);background:color-mix(in srgb,var(--fx-well) 55%,transparent)}
+:root .app .kfight .kslb small{color:var(--fx-label)}
+:root .app .kfight .kslb b{color:var(--fx-item)}
+:root .app .kfight .kop{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .kfight .kopl{color:var(--fx-ink)}
+/* what it gives: the figures' list of the Sets screen (label, figure pale yellow, a thin line between) */
+:root .app .kfight .kfr{border-bottom-color:color-mix(in srgb,var(--fx-line) 60%,transparent)}
+:root .app .kfight .kfrl{color:var(--fx-ink)}
+:root .app .kfight .kfr > b{color:var(--fx-value)}
+/* what it changes for the set: a well, a raised tile a group, the one in force edged in gold */
+:root .app .kfight .pbimpact{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+:root .app .kfight .pbimprow{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .kfight .pbimprow:hover{box-shadow:inset 0 0 0 1px var(--fx-frame),inset 0 1px 0 rgba(255,255,255,.12)}
+:root .app .kfight .pbimprow[aria-pressed="true"]{background:linear-gradient(180deg,color-mix(in srgb,var(--fx-hot) 16%,transparent),color-mix(in srgb,var(--fx-well) 80%,transparent));box-shadow:var(--kt-hot)}
+:root .app .kfight .pbimprow[aria-pressed="true"] b{color:var(--fx-hot)}
+:root .app .kfight .pbimpv{color:var(--fx-value)}
+:root .app .kfight .kfrh{color:var(--fx-dim);border-bottom-color:var(--fx-line)}
+
+/* ============================================================================ every other screen's windows as the
+   Sets screen's (2026-11-10, SPEC § 4 step 3, the common components): the top-level blocks of Home, My character,
+   Bags, Settings, Packages, Simulate, the three columns of Configuration and the windows framed as the set's card;
+   their title band the Sets panes' (the pane's gradient, a thin line under it, the gilt or group bar of panels.css
+   .boxh::before). A block inside another keeps its own look: two frames one in the other weigh. */
+:root .app #view .box:not(.box .box):not(.setsx .box),:root .app #view .placeholder,:root .app .cfgx > :is(.cfg-nav,.cfg-list,.cfg-det,.cfg-foot),
+:root #overlay .dialog,:root .drawer{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 28px -14px rgba(0,0,0,.6)}
+:root .drawer{border-radius:10px 0 0 10px;border-right:0}
+:root .app #view .box:not(.box .box):not(.setsx .box) > .boxh{padding:10px 16px 9px 18px;background:var(--fx-pane);border-bottom:1px solid var(--fx-line)}
+:root .app .cfgx .kband.cfg-band{--c:var(--accent);position:relative;padding:10px 16px 9px 18px;border-left:0;border-bottom:1px solid var(--fx-line);background:var(--fx-pane)}
+:root .app .cfgx .kband.cfg-band::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 10px var(--c)}
+:root .app .cfgx .kband.cfg-band b{color:var(--fx-item)}
+:root .app .cfgx > .cfg-det{box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 28px -14px rgba(0,0,0,.6)}
+
+/* ---- inside every screen and window, the vocabulary of the Sets screen's list (setlist.css), low in priority
+   (:where) so that a screen's own rules above stay: the secondary buttons the game's plates, the fields and menus dark
+   wells, the raised tile (--kt) and its gold edge for the one picked (--kt-hot) ---- */
+:root{--kt:linear-gradient(180deg,color-mix(in srgb,var(--fx-cell-edge) 28%,transparent),color-mix(in srgb,var(--fx-well) 80%,transparent));
+  --kt-edge:inset 0 0 0 1px color-mix(in srgb,var(--fx-cell-edge) 80%,transparent),inset 0 1px 0 rgba(255,255,255,.08);
+  --kt-hover:inset 0 0 0 1px var(--fx-frame),inset 0 1px 0 rgba(255,255,255,.12);
+  --kt-hot:inset 0 0 0 1px var(--fx-hot),0 0 14px -4px color-mix(in srgb,var(--fx-hot) 70%,transparent);
+  --kt-sel:linear-gradient(180deg,color-mix(in srgb,var(--fx-hot) 16%,transparent),color-mix(in srgb,var(--fx-well) 80%,transparent));
+  --well-in:inset 0 1px 3px rgba(0,0,0,.35)}
+:root :where(.app #view,#overlay) .btn.ghost{border-radius:5px;color:var(--fx-ink);text-shadow:var(--fx-shadow);border:1px solid var(--fx-frame);background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+:root :where(.app #view,#overlay) .btn.ghost:not([disabled]):hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}
+:root :where(.app #view,#overlay) :is(input[type="text"],input[type="search"],input[type="number"],input:not([type]),select,textarea):not(:where(.sbox *, .famtitle *)){
+  color:var(--fx-ink);border:1px solid var(--fx-cell-edge);border-radius:5px;background-color:var(--fx-well);box-shadow:var(--well-in)}
+:root :where(.app #view,#overlay) :is(input,select,textarea):not(:where(.sbox *, .famtitle *)):focus{border-color:var(--fx-hot);box-shadow:0 0 0 2px color-mix(in srgb,var(--fx-hot) 25%,transparent)}
+
+/* ---- My character (PersoScreen.svelte): the figures pale yellow under their labels, the gauges dark wells,
+   PorterPacker's counts raised tiles and its lists wells, the merits' tabs the game's plates (the one shown lit in its
+   group's colour, its panel framed below it) ---- */
+:root .app .persotab .statlist li > span{color:var(--fx-ink)}
+:root .app .persotab .statlist li:not(.full) > b{color:var(--fx-value)}
+:root .app .persotab .statlist li{border-bottom-color:color-mix(in srgb,var(--fx-line) 60%,transparent)}
+:root .app .persotab .statlist li.capli .gauge{background:var(--fx-well);border-color:var(--fx-cell-edge)}
+:root .app .persotab .porterfig .pf{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .persotab .porterlist{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in)}
+:root .app .persotab .pchips span{border-color:var(--fx-cell-edge);background:var(--kt);color:var(--fx-label)}
+:root .app .persotab .tabsec{color:var(--fx-item);font-size:11.5px;font-weight:800;letter-spacing:.14em}
+:root .app .persotab .tabsec .tabsecm{color:var(--fx-dim);letter-spacing:0;text-transform:none}
+:root .app .persotab .mtab{border:1px solid var(--fx-frame);border-bottom:0;background:var(--fx-btn);text-shadow:var(--fx-shadow);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+:root .app .persotab .mtab:hover{background:var(--fx-btn-hover)}
+:root .app .persotab .mtab small{color:var(--fx-dim)}
+:root .app .persotab .mtab[aria-selected="true"]{background:var(--fx-pane);border-color:var(--c);box-shadow:inset 0 3px 0 var(--c),0 0 14px -6px var(--c)}
+:root .app .persotab .mpanel{border:2px solid var(--c);border-top-width:1px;border-radius:0 0 10px 10px;background:var(--fx-win);box-shadow:inset 0 0 22px var(--fx-glow)}
+:root .app .persotab .meritlist span{color:var(--fx-ink)}
+:root .app .persotab .meritlist i{color:var(--fx-dim)}
+
+/* ---- Bags (Bags.svelte) and the lists of jobs on the left (Configuration): the left column framed as the set
+   list (.ofsets), its groups of bags wells and each bag a raised tile (the one shown edged in gold); the plan's
+   status a well, its counts plates; the filters' choices raised tiles (the one in force gold); the items' tags the
+   wells' edge ---- */
+:root .app .setlist.joblist{background:var(--fx-win);border:2px solid var(--fx-frame);border-radius:10px;text-shadow:var(--fx-shadow);
+  box-shadow:inset 0 0 0 1px var(--fx-frame-in),inset 0 0 22px var(--fx-glow),0 10px 30px -14px rgba(0,0,0,.6)}
+:root .app .bagside .bvgroup{border:1px solid var(--fx-cell-edge);border-radius:6px;background:color-mix(in srgb,var(--fx-well) 60%,transparent);box-shadow:var(--well-in)}
+:root .app .bagside .bvtile{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .bagside .bvtile:hover{box-shadow:var(--kt-hover)}
+:root .app .bagside .bvtile[aria-pressed="true"]{background:var(--kt-sel);box-shadow:var(--kt-hot)}
+:root .app .bagside .bvtile .bvrole{color:var(--fx-dim)}
+:root .app .bagside .bvtile .bvnum{color:var(--fx-value)}
+:root .app .bagsview .bpstatus{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in)}
+:root .app .bagsview .bpchip{border:0;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .bagsview .bpchip:hover{box-shadow:var(--kt-hover)}
+:root .app .bagsview .bpchip.warn{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fx-lvl) 60%,transparent)}
+:root .app .bagsview .modsw{border:1px solid var(--fx-frame);background:var(--fx-btn);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+:root :where(.app #view,#overlay) .modseg:not(.cfg-c .modseg) button:not([aria-pressed="true"]){border:0;background:var(--kt);box-shadow:var(--kt-edge);color:var(--fx-label);text-shadow:var(--fx-shadow)}
+:root :where(.app #view,#overlay) .modseg:not(.cfg-c .modseg) button:not([aria-pressed="true"]):hover{box-shadow:var(--kt-hover);color:var(--fx-ink)}
+:root :where(.app #view,#overlay) .modseg button[aria-pressed="true"]{color:var(--accent-ink);text-shadow:none;background:linear-gradient(180deg,var(--accent-2),var(--accent));box-shadow:0 0 0 1px var(--accent-2),0 0 12px -3px color-mix(in srgb,var(--fx-hot) 60%,transparent)}
+:root .app .cfg-c .modseg{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in)}
+:root .app .bagsview .bvitem{border-bottom-color:color-mix(in srgb,var(--fx-line) 60%,transparent)}
+:root .app .bagsview .bvitem .ico{border-color:var(--fx-cell-edge);background:var(--fx-cell)}
+:root .app .bagsview .bvitem .bvw i{border-color:var(--fx-cell-edge);background:var(--fx-well)}
+:root .app .bagsview .bvcat{color:var(--fx-item);letter-spacing:.14em}
+
+/* ---- Configuration (ProFrame.svelte, Keys, Modules, Macro): its menu a column of entries, the one open a raised
+   tile edged in gold (the families' tile); its headings gilt; the groups of options and the boxes wells, a line
+   between the options; the options' and the macro books' icons the gear's cells; the macro books raised tiles, the
+   one in use edged in gold ---- */
+:root .app .cfgx .cfg-nl{color:var(--fx-item)}
+:root .app .cfgx .cfg-ni{border-radius:6px;color:var(--fx-label);text-shadow:var(--fx-shadow)}
+:root .app .cfgx .cfg-ni:hover{background:var(--kt);box-shadow:var(--kt-hover);color:var(--fx-ink)}
+:root .app .cfgx .cfg-ni.on{background:var(--kt-sel);box-shadow:var(--kt-hot);color:var(--fx-ink)}
+:root .app .cfgx .cfg-ni.on::before{display:none}
+:root .app .cfgx .cfg-ni small{color:var(--fx-dim)}
+:root .app .cfgx .cfg-grp,:root .app .cfgx .cfg-box{border:1px solid var(--fx-cell-edge);border-radius:6px;background:color-mix(in srgb,var(--fx-well) 70%,transparent);box-shadow:var(--well-in)}
+:root .app .cfgx .cfg-grp > .cfg-r + .cfg-r{border-top-color:color-mix(in srgb,var(--fx-line) 70%,transparent)}
+:root .app .cfgx .cfg-ri{border-color:var(--fx-cell-edge);background:var(--fx-cell)}
+:root .app .cfgx .cfg-sec{color:var(--fx-item)}
+:root .app .cfgx .cfg-sec::after{background:var(--fx-line)}
+:root .app .cfgx .mhero{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in)}
+:root .app .cfgx .mtile{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app .cfgx .mtile.on,:root .app .cfgx .mtile.cur{background:var(--kt-sel);box-shadow:var(--kt-hot)}
+:root .app .cfgx .cfg-det dl dt,:root .app .cfgx .cfg-kv dt{color:var(--fx-label)}
+
+/* ---- Settings, Packages, Home (SettingsScreen, PackagesScreen, HomeScreen): each choice the game's segment in a
+   well, the one in force gold (Buffs & target's group of buffs); a theme's card a raised tile, the one in use edged
+   in gold ---- */
+:root :where(.app #view,#overlay) .seg:not(.jobcfgtabs){border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in)}
+:root :where(.app #view,#overlay) .seg:not(.jobcfgtabs) button{color:var(--fx-label);text-shadow:var(--fx-shadow);border-radius:4px}
+:root :where(.app #view,#overlay) .seg:not(.jobcfgtabs) button:not([aria-pressed="true"]):hover{color:var(--fx-ink);background:var(--kt)}
+:root :where(.app #view,#overlay) .seg:not(.jobcfgtabs) button[aria-pressed="true"]{color:var(--accent-ink);text-shadow:none;background:linear-gradient(180deg,var(--accent-2),var(--accent));box-shadow:0 0 10px -3px color-mix(in srgb,var(--fx-hot) 60%,transparent)}
+:root .app #view .themecard{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root .app #view .themecard:hover{box-shadow:var(--kt-hover)}
+:root .app #view .themecard[aria-pressed="true"]{background:var(--kt-sel);box-shadow:var(--kt-hot)}
+
+/* ---- the windows (#overlay .dialog: Comparer, choix de pièce, cible, historique...): their title band and their
+   foot the panes' gradient with a thin line, the title gilt in the game's colour of a window's name; the pieces to
+   choose raised tiles (the set's own edged in gold), the source's choice the game's segment; the tables' lines
+   thin ---- */
+:root #overlay .dialog > header{background:var(--fx-pane);border-bottom:1px solid var(--fx-line)}
+:root #overlay .dialog > header h3{color:var(--fx-ink);text-shadow:var(--fx-shadow)}
+:root #overlay .dialog > footer{background:var(--fx-pane);border-top:1px solid var(--fx-line)}
+:root #overlay .dialog .kicker{color:var(--fx-item)}
+:root #overlay .dialog table :is(td,th){border-color:color-mix(in srgb,var(--fx-line) 70%,transparent)}
+:root #overlay .dialog table th{color:var(--fx-label)}
+:root #overlay .gpcard{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root #overlay .gpcard:hover{box-shadow:var(--kt-hover)}
+:root #overlay .gpcard.orig{background:var(--kt-sel);box-shadow:var(--kt-hot)}
+:root #overlay .gpside h4{color:var(--fx-item)}
+:root #overlay .gpseg{border:1px solid var(--fx-cell-edge);border-radius:6px;background:var(--fx-well);box-shadow:var(--well-in);padding:2px}
+:root #overlay .gpseg button{border:0;color:var(--fx-label)}
+:root #overlay .gpseg button[aria-pressed="true"],:root #overlay .gpseg button.on{color:var(--accent-ink);text-shadow:none;background:linear-gradient(180deg,var(--accent-2),var(--accent))}
+:root #overlay .gplist.choice{background:none;border:0;box-shadow:none}
+/* the target window's monsters: a raised tile each, the one picked edged in gold; their levels the game's plates */
+:root #overlay .tgm{border:0;border-radius:6px;background:var(--kt);box-shadow:var(--kt-edge)}
+:root #overlay .tgm:hover{box-shadow:var(--kt-hover)}
+:root #overlay .tgm.on{background:var(--kt-sel);box-shadow:var(--kt-hot)}
+:root #overlay .tglv{border:1px solid var(--fx-frame);background:var(--fx-btn);color:var(--fx-ink);text-shadow:var(--fx-shadow);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+:root #overlay .tglv:hover{background:var(--fx-btn-hover);border-color:var(--fx-hot)}

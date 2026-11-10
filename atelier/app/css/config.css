@@ -444,3 +444,7 @@
 .cfgx .cfg-r{min-height:48px;padding-top:5px;padding-bottom:5px}
 .cfgx > .cfg-list > .cfg-band{margin-bottom:10px}
 .wce{margin-top:4px}
+/* a long title in a band ("Unbridled Learning automatique" on BLU) ends in "…" rather than going on two lines; a
+   part of the gauge too narrow for its name too (the layout check, 2026-11-10) */
+.cfg-band > b{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cfg-c .rgpart,.cfg-c .rgpart b{text-overflow:ellipsis}

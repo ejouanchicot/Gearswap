@@ -21,6 +21,7 @@ const ONLY_CHAR = arg('--char', null), SHOTS = arg('--shots', null), SIMPLE = pr
 // in the page: every visible element of the regions given whose content goes past its box
 function scan(view, regions){
   const out = [], W = document.documentElement.clientWidth;
+  const ONE_LINE = '.kband > *, .boxh > *, .boxh h3, .boxh h4, .panehead > *, .famtitle h4, .cfg-band > *, .sections button, .btn, .seg button, .prsit b, .klbl, .famtab span, th, summary > b, [role="tab"]';
   const sel = el => { const p = []; for (let e = el; e && e !== document.body && p.length < 4; e = e.parentElement)
     p.unshift(e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''));
     return p.join(' > '); };
@@ -43,6 +44,16 @@ function scan(view, regions){
       const scrollsY = /(auto|scroll)/.test(cs.overflowY);
       if (!scrollsY && el.scrollHeight > el.clientHeight + 3 && el.clientHeight > 0 && !['inline', 'inline-block', 'table-row', 'table-cell'].includes(cs.display) && !cs.webkitLineClamp?.match?.(/\d/))
         out.push({kind: cs.overflowY === 'hidden' || cs.overflowY === 'clip' ? 'text cut (height)' : 'content taller than its box', where: sel(el), text: text(el) + ` (${el.scrollHeight} > ${el.clientHeight})`});
+      // a text meant for one line (a title band's, a button's, a tab's, a label's) gone on two: its own words only, a
+      // block of several parts on several lines is the block's layout (the band of Ce que ça te donne, 2026-11-10)
+      if (el.matches(ONE_LINE)) {
+        const tops = new Set();
+        for (const n of el.childNodes) if (n.nodeType === 3 && n.textContent.trim()) {
+          const rg = document.createRange(); rg.selectNodeContents(n);
+          for (const q of rg.getClientRects()) if (q.width > 1) tops.add(Math.round(q.top / 4));
+        }
+        if (tops.size > 1 && cs.whiteSpace !== 'pre-line') out.push({kind: 'text on two lines', where: sel(el), text: text(el)});
+      }
       // a text, a button or a menu cut by a parent that hides what goes past it (not one that scrolls)
       const own = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || /^(button|select|input|a)$/i.test(el.tagName);
       if (own) for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) {
@@ -99,7 +110,7 @@ function scan(view, regions){
             const cur = ui2CurrentSet(data());
             if (cur) { S.optView = optViewKey(cur); render(); await look(`${c} ${j} optimizer ${s.path}`); S.optView = null; render(); }
           }
-          for (const sec of ['combat', 'perso', 'sim']) { S.section = sec; render(); await look(`${c} ${j} ${sec}`); }
+          for (const sec of ['combat', 'perso', 'bags', 'sim']) { S.section = sec; render(); await look(`${c} ${j} ${sec}`); }
           for (const tab of ['keys', 'modules', 'macro']) { S.section = 'jobcfg'; S.jobTab = tab; render(); await look(`${c} ${j} config ${tab}`); }
           S.section = 'sets'; render();
         }
@@ -116,6 +127,10 @@ function scan(view, regions){
         // the buffs, Buffs & target's tab (the old window is gone): last, it leaves the page on that tab
         await win('buffs', () => { closeOverlay(); S.section = 'combat'; render(); });
       }
+      // the screens outside a job: the Settings, the players' packages, the welcome page (no character)
+      S._cfg = true; render(); await look('settings'); S._cfg = false;
+      S._pkg = true; render(); await look('packages'); S._pkg = false;
+      const keep = [S.char, S.job]; S.char = null; S.job = null; render(); await look('home'); [S.char, S.job] = keep; render();
       return out;
     }, ONLY_CHAR);
     for (const f of found) all.push(Object.assign(f, {width}));

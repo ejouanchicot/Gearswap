@@ -32,7 +32,7 @@ export interface CombatView {
   sits: {label: string; list: Situation[]};
   party: {title: string; count: string; rows: PartyRow[]; add: null | {title: string; label: string; left: string}; editor: Editor};
   fight: {title: string; hint: string; profile: string; group: string; vs: string; foeMore: string; foeLess: string};
-  result: {title: string; hint: string; mine: FxCard[]; foes: FxCard[]; onFoe: string; nothing: string};
+  result: {title: string; hint: string; cols: string[]; mine: FxCard[]; foes: FxCard[]; onFoe: string; nothing: string};
   target: {title: string; meta: string; card: TargetCardView};
   impact: {title: string; note: string; set: string; what: string; ws: boolean; rows: ImpactRow[]};
   other: null | {open: boolean; title: string; label: string; who: string; total: string; down: boolean; openText: string; shutText: string; foe: FoeView};
@@ -138,7 +138,7 @@ export function combatView(): CombatView | null {
     profBar: {label: t('prMine'), picker: picker(false)}, sits: {label: t('prSit'), list: situations(true)},
     party: partyOf(d, b, B, shown),
     fight: {title: t('pbFight'), hint: t('pbFightHint'), profile: t('pbProfile'), group: t('pbGroup'), vs: t('pbVs'), foeMore: t('pbFoeMore'), foeLess: t('pbFoeLess')},
-    result: {title: t('pbResultTitle'), hint: t('pbResultHint'), ...effectsOf(B, P.tgt.hit), onFoe: t('pbOnFoe'), nothing: t('pbNothing')},
+    result: {title: t('pbResultTitle'), hint: t('pbResultHint'), cols: [t('pbColEffect'), t('pbColWho'), t('pbColValue')], ...effectsOf(B, P.tgt.hit), onFoe: t('pbOnFoe'), nothing: t('pbNothing')},
     target: {title: t('pbTarget'), meta: enemyKey(b.enemy), card: P.tgt},
     impact: impactOf(),
     other: P.foe ? {open: !!st()._pbOtherOpen, title: t('ttPbOther'), label: t('pbOther'), who: t('pbOtherWho'), total: P.foe.total, down: P.foe.down,

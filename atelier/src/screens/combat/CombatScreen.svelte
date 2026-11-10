@@ -83,8 +83,9 @@
         {/if}
       </div>
     </div>
-    <aside class="kcard kresult"><div class="kband"><b>{view.result.title}</b><small>{view.result.hint}</small></div>
+    <aside class="kcard kresult"><div class="kband" title={view.result.hint}><b>{view.result.title}</b></div>
       <div class="kfx">
+        {#if view.result.mine.length || view.result.foes.length}<div class="kfrh" aria-hidden="true">{#each view.result.cols as h (h)}<span>{h}</span>{/each}</div>{/if}
         {#each view.result.mine as c, i (i)}{@render fxcard(c)}{:else}<p class="muted small">{view.result.nothing}</p>{/each}
         {#if view.result.foes.length}<h4 class="kfxh">{view.result.onFoe}</h4>{#each view.result.foes as c, i (i)}{@render fxcard(c)}{/each}{/if}
       </div>

@@ -419,3 +419,32 @@ img.bi{display:block;image-rendering:auto}
 .kfr.foe > b{color:#ef8f7f}
 .kfr .kfxbar{grid-column:1 / -1;height:3px}
 .kfxh{margin:8px 2px 0;padding-bottom:2px}
+/* Buffs & target in the Sets screen's frame (2026-11-10): on a wide window nothing scrolls the whole tab; the fight's
+   column and "Ce que ça te donne" are one height, the taller one's, never past the window (each then scrolls inside),
+   12 px above the window's bottom as the list; the party and the member opened one height too */
+@media (min-width:1201px){
+  .pane.split:has(.kfight){padding-bottom:12px}
+  .tabmain:has(> .kfight){overflow:hidden;padding-bottom:0;display:flex;flex-direction:column}
+  .tabmain > .kfight{flex:1;min-height:0;display:flex;flex-direction:column}
+  .kfight > .kcols{flex:1;min-height:0;grid-template-rows:minmax(0,auto) minmax(0,1fr);row-gap:0;align-items:stretch}
+  .kfight > .kcols > .kmain,.kfight > .kcols > .kresult{grid-row:1;min-height:0;overflow:auto}
+  .kfight > .kcols > .kmain{grid-template-rows:max-content minmax(max-content,1fr);align-content:stretch}
+  .kfight > .kcols > .kresult{position:static;max-height:none}
+  .kfight .kab{align-items:stretch}
+}
+/* "Ce que ça te donne": who gives each effect at one place on every line, right after the effect's name, whatever the
+   figure's width (it moved with it: "43,8 % max" or "30 %" as the group changed, the player 2026-11-10); the figure on
+   the right */
+.kfr{grid-template-columns:96px minmax(0,1fr) auto}
+.kfr .kfri{justify-content:flex-start;min-width:0;overflow:hidden}
+/* the list's column heads (the band's "par effet, et qui le donne" went on two lines in a 290 px column, 2026-11-10):
+   on the lines' own three columns */
+.kfrh{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:2px 8px;padding:6px 2px 4px;border-bottom:1px solid var(--line);
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kfrh > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kfrh > span:last-child{text-align:right}
+@media (max-width:1200px){.kfrh{display:none}}
+/* a column 290 px wide (a window under 1400 px): the effect's name narrower, a long figure on the target ("−278 · tu
+   le touches 99 %") on a line of its own under its name, whole, rather than past the column or with its "%" alone (the layout check, 2026-11-10) */
+@media (max-width:1400px){.kfr,.kfrh{grid-template-columns:78px minmax(0,1fr) auto}}
+@media (max-width:1400px){.kfr.foe > b{grid-column:1 / -1;justify-self:end;white-space:nowrap}}
