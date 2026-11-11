@@ -55,7 +55,7 @@ What RNG adds on top of the shared pipeline:
 | `_master/config/rng/RNG_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
 | `_master/config/rng/RNG_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/rng/RNG_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/rng_sets.lua` | 170 | Template sets: every set the code reads, all empty |
+| `_master/sets/rng_sets.lua` | 177 | Template sets: every set the code reads, all empty |
 | `shared/data/alt/RNG_ALT_COMMANDS.lua` | - | Dual-box commands for an RNG partner (read by the main's alt system, not by the RNG job file) |
 
 ## How it works
@@ -224,7 +224,7 @@ T = `_master/sets/rng_sets.lua`. Player version:
 | Set | Looked up by | T |
 |-----|--------------|---|
 | `sets[RangeWeapon]`, `sets[MainWeapon]`, `sets[SubWeapon]` | `WeaponResolver.set_for` | examples only |
-| `sets.SingleWield` | `WeaponResolver` | commented |
+| `sets.SingleWield` | `WeaponResolver`: its `sub` replaces an off-hand weapon when Dual Wield is not there | declared empty |
 | `sets.MoveSpeed`, `sets.Kiting` | `BaseSetBuilder.apply_movement`, Mote Kiting | yes |
 | `sets.Adoulin` | `BaseSetBuilder` | commented |
 | `sets.buff['Velocity Shot']`, `['Hover Shot']`, `['Decoy Shot']`, `['Unlimited Shot']`, `['Double Shot']`, `.Barrage` | `Ranged.layers` | yes |
@@ -239,7 +239,7 @@ T = `_master/sets/rng_sets.lua`. Player version:
 | `sets.resting` | Mote | yes |
 | `sets.idle`, `.DT`, `.Town` | `select_idle_base` | yes |
 | `sets.engaged`, `.Acc`, `.DT` (and `.Acc.DT`) | `select_engaged_base` | first three |
-| `sets.DW.NoHaste` .. `.MaxHaste` | shared Dual Wield tiers | commented |
+| `sets.DW.NoHaste` .. `.MaxHaste` | shared Dual Wield tiers (only while Auto DW is on for RNG: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty |
 | `sets.defense.PDT` / `.MDT` | Mote defense layer | no |
 | `sets.TreasureHunter` | shared Treasure Hunter | commented |
 

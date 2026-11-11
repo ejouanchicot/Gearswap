@@ -135,7 +135,7 @@ Checked in the code for BLU:
 | Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Magical Blue Magic, Sanguine Blade and the other elemental weaponskills when they add at least 5 % (`_common/gear/ELEMENTAL_BELT_CONFIG.lua`, `//gs c belt`) |
 | Combat Mode | Hidden; `//gs c combatmode show`, then `!numpad0`: On locks main, sub and range |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
-| Dual Wield tiers | With two weapons and engaged, `sets.DW.<tier>` on top by your magic haste. The template has it commented out |
+| Dual Wield tiers | With two weapons and engaged, `sets.DW.<tier>` on top by your magic haste. The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { BLU = false }`) |
 | Movement speed | `sets.MoveSpeed` while you move, idle, outside a city |
 | Town idle | `sets.idle.Town` in a city, `sets.Adoulin` in the Adoulin cities, if you add them |
 | Doom | `sets.buff.Doom` while doomed |

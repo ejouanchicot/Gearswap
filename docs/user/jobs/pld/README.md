@@ -145,7 +145,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Waltz / Jump | `waltz`, `aoewaltz` on /DNC; `jump` on /DRG (no automatic Jump on PLD) |
 | Combat Mode | Hidden by default. Shown, On keeps main, sub and range where they are (no TP loss from a set swap) |
 | Treasure Mode | Hidden by default, and the template has no `sets.TreasureHunter`: add the set, then `//gs c th show` |
-| Dual Wield tiers | Only with two weapons (/NIN or /DNC) and a `sets.DW` family, which the template does not have |
+| Dual Wield tiers | Only with two weapons (/NIN or /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { PLD = false }`) |
 | Obi / Orpheus | Automatic on elemental weaponskills (Sanguine Blade, Aeolian Edge...) and damaging spells (Banish, Banishga, magical Blue Magic) |
 | Your own modes (`PLD_CUSTOM.lua`) | Modes with a key and gear rules, without code; empty by default ([keybinds guide](../../guides/keybinds.md#your-own-modes-job_customlua)) |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua`; `PLD_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

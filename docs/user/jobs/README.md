@@ -11,6 +11,11 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 [keybinds guide](../guides/keybinds.md) and the
 [commands guide](../guides/commands.md).
 
+"Not played by a maintained character" below means neither of the author's own
+characters (Tetsouo, Kaories) plays the job in game today, so its template has
+not been tested in game in its current form. Another player's character may play
+it from their own files.
+
 | Job | Page | Notes |
 |---|---|---|
 | BLM | [blm/README.md](blm/README.md) | Also [blm/states.md](blm/states.md), [blm/sets.md](blm/sets.md) |
@@ -34,7 +39,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | SMN | [smn/README.md](smn/README.md) | Also [smn/states.md](smn/states.md), [smn/sets.md](smn/sets.md); the provided set file is mostly empty |
 | THF | [thf/README.md](thf/README.md) | Also [states](thf/states.md), [sets](thf/sets.md) |
 | WAR | [war/README.md](war/README.md) | Also [war/states.md](war/states.md), [war/sets.md](war/sets.md), [features/tp-bonus.md](../features/tp-bonus.md) |
-| WHM | [whm/README.md](whm/README.md) | Also [whm/states.md](whm/states.md), [whm/sets.md](whm/sets.md); not played by a maintained character |
+| WHM | [whm/README.md](whm/README.md) | Also [whm/states.md](whm/states.md), [whm/sets.md](whm/sets.md) |
 
 TP bonus gear (Moonshade Earring and the like), for every job with a
 `<JOB>_TP_CONFIG.lua`: [features/tp-bonus.md](../features/tp-bonus.md).

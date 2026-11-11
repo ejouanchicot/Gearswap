@@ -1,16 +1,21 @@
 # Augment layer
 
 What an owned piece's augments add, in the catalogue's stat keys (`STAT_KEYS.md`; the
-names the engine before reads). Three parts, each a part file of the page's engine
-(`FFXI_PARTS`), plus its JSON:
+names the engine before reads). Six parts, each a part file of the page's engine
+(`FFXI_PARTS`); the first two also have a JSON twin:
 
 | File | Gives |
 |---|---|
 | `augments_ranked.js/.json` | `FFXI.RANKED`, `FFXI.ranked_stats(name, path, rank)`: rank/path items |
 | `capes.js/.json` | `FFXI.AMBU_CAPE_OPTIONS`, `FFXI.AMBU_CAPES`, `FFXI.ambu_cape_stats(choice)` |
 | `augments_parse.js` | `FFXI.parse_augments(itemName, augs, rankIfKnown)`, `FFXI.parse_augment_string(s)` |
+| `skirmish.js` | `FFXI.SKIRMISH_SETS`, `FFXI.SKIRMISH_STONES`, `FFXI.SKIRMISH_BY_NAME`, `FFXI.skirmish_aug(set, aug)`, `FFXI.skirmish_max(name, augs)`, `FFXI.augShape(aug)` |
+| `reive.js` | `FFXI.REIVE_BY_NAME`, `FFXI.reive_max(name, augs)` |
+| `oseem.js` | `FFXI.OSEEM_BY_NAME`, `FFXI.OSEEM_DARK`, `FFXI.oseem_max(name, augs)` |
 
-Rebuild and check everything: `augments_all.cmd` (sources must be in `cache/`).
+Rebuild and check the first three: `augments_all.cmd` (sources must be in `cache/`).
+The last three: `python skirmish_build.py`, `reive_build.py`, `oseem_build.py`, each
+running its `*_check.js` (section 4).
 
 ## Keys
 
@@ -86,6 +91,22 @@ line prefixing the next lines), plus BG Wiki and LSB spellings
 max, `rank_assumed: true`). Left in `unknown`: elemental affinities,
 "Enhances ... effect", ability delays, Vs. family, additional effects,
 resistances, value-less flags.
+
+## 4. Skirmish, Reive, Oseem (`skirmish`, `reive`, `oseem`)
+
+Built from BG Wiki tables kept as `skirmish_source.json` (the five Alluvion
+Skirmish sets: Yorium, Acro, Taeon, Telchine, Helios; the augments of each stone,
+Snow, Leaf, Dusk), `reive_source.json` (one Reive / Incursion cape a job, its four
+augments) and `oseem_source.json` (Chironic, Herculean, Merlinic, Odyssean,
+Valorous and the Escha weapons, each augment by path with the cap a stone raises
+it to, and the Dark Matter stats). Every augment is written at its max (Oseem: at
+its cap) as the game shows it (`augment_labels.py`, the labels of extdata.lua),
+then `*_check.js` reads every line back through `augments_parse.js`.
+
+`FFXI.skirmish_max`, `FFXI.reive_max`, `FFXI.oseem_max` take a piece you hold and
+give `{augs, changed, missing}`: each of its augments at its max, and what it does
+not carry yet (Oseem: also its `path`). An augment the source does not list is
+kept as it is.
 
 ## Checks (last run)
 

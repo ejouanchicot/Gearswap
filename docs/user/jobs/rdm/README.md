@@ -51,7 +51,7 @@ the job.
 | Key | What it does | When | Shown |
 |---|---|---|---|
 | `^numpad1` | Main Weapon: Naegling, Colada, Daybreak | always | yes |
-| `^numpad2` | Sub Weapon: Ammurapi, Genmei, Malevolence | always | yes |
+| `^numpad2` | Sub Weapon: Ammurapi, Genmei, Malevolence (Malevolence only with /NIN or /DNC) | always | yes |
 | `^numpad3` | Enfeeble Mode: Potency, Skill, Duration | always | yes |
 | `^numpad4` | Idle Mode: Refresh, DT | always | yes |
 | `^numpad5` | Combat Mode: Off, On (weapon lock) | always | yes |
@@ -173,7 +173,7 @@ Checked in the code for RDM:
 | Combat Mode | Native on RDM (`^numpad5`): On puts on `sets.CombatMode` if you define one, then locks main, sub and range, so no set swaps your weapons |
 | Dispelga with Daybreak | `//gs c dispelga`: Daybreak for the cast, your weapon back after, even through Combat Mode |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
-| Dual Wield tiers | With two weapons (/NIN, /DNC) and engaged, `sets.DW.<tier>` on top by your magic haste. The template has it commented out |
+| Dual Wield tiers | With two weapons (/NIN, /DNC) and engaged, `sets.DW.<tier>` on top by your magic haste. The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { RDM = false }`) |
 | Movement speed | `sets.MoveSpeed` while you move, idle, outside a city |
 | Town idle | `sets.idle.Town` in a city, `sets.Adoulin` in the Adoulin cities |
 | Doom | `sets.buff.Doom` while doomed |

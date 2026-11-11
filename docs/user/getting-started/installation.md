@@ -103,7 +103,7 @@ loads `data/<Name>/<Name>_<JOB>.lua` for your current job by itself.
 
 On load you get a `<JOB> SYSTEM LOADED` block in chat listing the job's keys,
 the keybind HUD appears after a few seconds, the job's macro book is selected,
-and 8 seconds after the load the lockstyle is applied.
+and about 10 seconds after the load the lockstyle is applied.
 
 Then check:
 

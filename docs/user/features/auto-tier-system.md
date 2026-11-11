@@ -1,10 +1,10 @@
-# Auto-tier: WHM and RDM Cures, DNC Waltzes, BLM, RDM and GEO spells
+# Auto-tier: WHM and RDM Cures, DNC Waltzes, BLM, RDM, GEO and SCH spells
 
 Two kinds of automatic tier choice:
 
 - **Heals** (WHM and RDM Cure, DNC Waltz): the tier is picked from the HP the target
   is missing, so you can put one macro on the top tier and spend less MP or TP.
-- **Step-down** (BLM, RDM, GEO): a spell on recast or too expensive is
+- **Step-down** (BLM, RDM, GEO, SCH): a spell on recast or too expensive is
   replaced by the next lower tier that can go.
 
 ## WHM: Cure and Curaga
@@ -87,7 +87,7 @@ Levels are your DNC level, main or sub. These values are in
 starts can be changed with `waltz_from` in `_common/combat/SUBJOB_CONFIG.lua` (for instance
 `waltz_from = {['Curing Waltz III'] = 800}`).
 
-## BLM, RDM and GEO: nukes, enfeebles, Aspir
+## BLM, RDM, GEO and SCH: nukes, enfeebles, Aspir, helices, storms
 
 Macro the tier you want. If it is on recast or you lack the MP, the next
 lower tier that can go is cast instead (Fire V -> Fire IV -> ... -> Fire).
@@ -99,18 +99,21 @@ cancelled and the recast of every tier is shown.
 | BLM | Nukes (Fire VI down to Fire), -ga III down to base, a -ja falls back to -ga III, Sleep, Sleepga, Bind, Bio, Poison, Drain, Aspir, Breakga to Break |
 | RDM | Nukes (Fire to Water, V down to base). Dia, Bio, Distract, Frazzle, Blind, Slow, Paralyze, Poison, Addle, Sleep, Gravity, only while `EnfeebleTier` is On (Ctrl+Numpad9) |
 | GEO | Nukes, -ra nukes (III down to base), Aspir (III down to Aspir) |
+| SCH | Nukes, -ra nukes, Aspir (same lists as GEO), helices and storms (II down to base: Pyrohelix II -> Pyrohelix, Firestorm II -> Firestorm) |
 
 Enhancing spells never step down. The tier lists are in
-`shared/data/spells/NUKE_TIERS.lua` and `RDM_ENFEEBLE_TIERS.lua` (RDM, GEO)
+`shared/data/spells/NUKE_TIERS.lua` (RDM, GEO, SCH), `RDM_ENFEEBLE_TIERS.lua` (RDM),
+`shared/jobs/sch/functions/logic/spell_tiers.lua` (SCH helices and storms)
 and `shared/jobs/blm/functions/logic/refiner/correspondence.lua` (BLM).
 
 ## Troubleshooting
 
 - **Cure always casts what you macro'd**: check `CureAutoTier` in the HUD
   (Ctrl+Numpad4 to switch it On).
-- **A party member's Cure is too small or too big**: their HP is an estimate
-  (2000 max HP assumed). Raise or lower the thresholds in
-  `WHM_CURE_CONFIG.lua`.
+- **A party member's Cure is too small or too big**: their max HP is worked
+  out from their HP and HP %, rounded (2000 is assumed only when the game
+  gives no HP, or for a target outside the party). Raise or lower the
+  thresholds in `WHM_CURE_CONFIG.lua`.
 - **`//gs c waltz` says it needs DNC**: DNC must be your main job or subjob.
 - **Waltz tier too high**: target the party member (F2-F6, or click) before
   pressing, so their missing HP can be read.

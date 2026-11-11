@@ -32,9 +32,11 @@ Mote-Include:
   wardrobe organizer, refill, watchdogs, factories for lockstyle and macrobook.
 - **Data** under `shared/data/`: spell, job ability and weaponskill databases,
   and the generated equipment HP/MP table (`shared/data/equipment/ITEM_HP_MP.lua`).
-- **Two played characters** on one PC: Tetsouo (main) and Kaories (alt,
-  dual-boxed). Their folders are built from the tracked templates in `_master/`
-  by `clone_character.py`.
+- **Characters**: `character_db.lua` lists nine. Tetsouo (main) and Kaories
+  (alt, dual-boxed) are played on this PC; Morphetrix has a live folder too
+  (converted from his Mote files, not yet tested in game). Their folders are
+  built from the tracked templates in `_master/` by `clone_character.py`; see
+  [characters-and-templates.md](architecture/characters-and-templates.md).
 
 Measured on 2026-11-04 from `data/`, on the working tree (files not yet tracked are not
 counted: `shared/utils/atelier/clean_measure.lua`, 109 lines, that day):
@@ -44,8 +46,9 @@ counted: `shared/utils/atelier/clean_measure.lua`, 109 lines, that day):
 | `shared/` | 980 | 151 081 | `git ls-files 'shared/*.lua' \| wc -l`, `git ls-files -z 'shared/*.lua' \| xargs -0 cat \| wc -l` |
 | `_master/` | 275 | 27 395 | same with `'_master/*.lua'` |
 | Total tracked Lua (adds `character_db.lua`, `default.lua`, `atelier/gear/dump_lua.lua` and the 58 Lua files under `scripts/`) | 1 316 | 185 981 | same with `'*.lua'` |
-| Live `Tetsouo/` (gitignored) | 398 | — | `find Tetsouo -name '*.lua' \| wc -l` |
-| Live `Kaories/` (gitignored) | 181 | — | `find Kaories -name '*.lua' \| wc -l` |
+
+The live folders (gitignored) are not counted: their file count moves with
+every Atelier export and backup written inside them (`find <Char> -name '*.lua' | wc -l`).
 
 `shared/data/equipment/ITEM_HP_MP.lua` alone is 6 657 of those lines (generated
 data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
@@ -53,14 +56,12 @@ data, see [equipment-and-inventory.md](systems/equipment-and-inventory.md)).
 ## Five facts that explain most of the code
 
 1. **Each job file runs in a throw-away sandbox.** On every file load
-   *(engine)* `load_user_files()` (`refresh.lua:62-184`) calls the old file's
-   `file_unload`, unregisters every event the old file registered through the
-   sandbox `windower.register_event` (`refresh.lua:69-71`,
-   `user_functions.lua:254-262`), deletes every `windower.text`/`prim` object
-   (`refresh.lua:73-79`), then builds a brand-new environment whose `_G` is
-   itself (`refresh.lua:114-149`). Module locals, the require cache, `_G` and
-   every Mote state die with it. What survives is listed in
-   [State and lifetime](#state-and-lifetime).
+   *(engine)* `load_user_files()` (`refresh.lua:62-184`) runs the old file's
+   `file_unload`, removes its events and text objects, then builds a brand-new
+   environment whose `_G` is itself; the steps are in the
+   [maintainer guide](maintainer-guide.md#what-load_user_files-does). Module
+   locals, the require cache, `_G` and every Mote state die with it. What
+   survives is listed in [State and lifetime](#state-and-lifetime).
 2. **Every job or subjob change ends in a new sandbox.** A main job change
    loads a new file *(engine)*. A subjob change is handled by Mote in the same
    sandbox, but the project turns it into a `gs reload` 2.0 s later (3.0 s
@@ -100,7 +101,7 @@ flowchart TD
 - **Entry file** (`data/<Char>/<Char>_<JOB>.lua`, template
   `_master/entry/Tetsouo_<JOB>.lua`): since 2026-09-30 one statement,
   `include('../shared/entry/<job>.lua')`. The shared entry
-  (`shared/entry/<job>.lua`, 168-372 lines, the same for every character) is
+  (`shared/entry/<job>.lua`, 168-376 lines, the same for every character) is
   the loader: it defines `get_sets`, `user_setup`, `init_gear_sets`,
   `job_sub_job_change`, `job_update`, `file_unload`, and finds the
   character's files through `shared/utils/core/char_paths.lua`. What every
@@ -152,28 +153,14 @@ includes `shared/entry/war.lua`:
    the facade exists; lockstyle after 8 s), `pcall(require
    dualbox_manager)`.
 
-`INIT_SYSTEMS.lua` timeline:
-
-| When | What | Where |
-|---|---|---|
-| sync | debug flags restored from `windower._gs_debug`, `windower._gs_reload_count++` | `:41-50` |
-| sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:60-65` |
-| sync | Gear hooks (`equip_hooks.lua` wraps `equip()` once per load; the sets exist: Mote ran `init_gear_sets` first): `ImpactLock.install()` — the cloak that grants Impact (Crepuscular / Twilight) stays on through the cast, every job (it also wraps `precast`, `aftercast`, `cancel_spell`); then `DuplicateGear.install()` — each side of a doubled ring / earring / weapon takes its own copy, by bag; then `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name, and each swap ranks its pieces by HP gained over the gear worn | `:72-89` |
-| sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:97-229` |
-| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `BuffTimers.start()` (own buff end times for `//gs c buff`, [midcast-and-buffs.md](systems/midcast-and-buffs.md#refresh-before-the-end)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `DualWield.install()` (DW tier pieces on `handle_equipping_gear`), `TreasureHunter.install()` (TH on the engaged set and on the first action against an untagged mob), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:305-408` |
-| +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:235-284` |
-| +2 s | MidcastWatchdog | `:149-159` |
-| +3 s | load check of PrecastGuard / CooldownChecker / WSPrecastHandler (message on failure) | `:445-457` |
-| +5 s | GlobalProbe snapshot of `_G` | `:478-483` |
-
-The file header (`INIT_SYSTEMS.lua:11-20`) keeps the same list.
-
-The four deferred blocks go through `LoadGate.defer`
-(`shared/utils/core/load_gate.lua`; `INIT_SYSTEMS.lua:155-160`): a block is
-dropped when a newer load has started or the subjob changed, and waits (0.5 s
-at a time, 10 s at most) for the game to report the load's main job; see
-[job-change-lifecycle.md](architecture/job-change-lifecycle.md#loadgate) and
-[core-lifecycle.md](systems/core-lifecycle.md) (coroutines and their invalidation).
+`INIT_SYSTEMS.lua` then starts, in order, what every job needs: synchronously
+the Atelier set and SubWeapon overrides, the debug flags, the require cache, the
+equip hooks, the watchdogs and listeners and the gear wrapper chain; later,
+through `LoadGate.defer` (dropped once a newer load has started or the job
+changed), warp and AutoMove at +0.5 s, the midcast watchdog at +2 s, the
+precast chain check at +3 s and the `_G` snapshot at +5 s. Full table, with
+lines: [core-lifecycle.md](systems/core-lifecycle.md#init_systemslua-in-execution-order);
+LoadGate: [job-change-lifecycle.md](architecture/job-change-lifecycle.md#loadgate).
 
 ## Life of an action
 
@@ -260,34 +247,13 @@ Consequences worth remembering:
 
 ## Characters and templates
 
-| Place | Tracked | Content |
-|---|---|---|
-| `_master/entry` (one-line entries), `sets`, `config/<job>`, `config/alt` (`<JOB>_ALT_CUSTOM.lua` only), `config_global` | yes | Generic templates, written for a character named Tetsouo |
-| `shared/entry/<job>.lua`, `shared/data/alt/<JOB>_ALT_COMMANDS.lua` | yes | Entry code and alt command tables, the same for every character (not copied by the clone) |
-| `_master/Kaories/`, `_master/Tetsouo/` | no (gitignored since 2026-09-27) | Per-character overlays (same relative path replaces the template) |
-| `data/Tetsouo/`, `data/Kaories/` | **no** (gitignored) | What GearSwap loads |
-| `data/Hysoka/`, `data/Gabvanstronger/` | no | Frozen one-shot clones; not maintained |
-
-- `clone_character.py` copies templates + overlay into `data/<Name>/`,
-  substitutes the name, and generates `DUALBOX_CONFIG.lua` (with
-  `DualBoxConfig.group` when dual-box is on) / `REGION_CONFIG.lua`. It copies
-  `_common/sets/` always and `_common/dualbox/alt/` only for a MAIN. The overlay applies
-  only to its own character or with `--source`. An existing folder is moved to
-  `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
-  and the files written in game (`KEPT_ON_RECLONE`: HUD position, message
-  modes, alt window and alt state, owned warp items, `combat_mode.lua`, `treasure_mode.lua`,
-  `STEALTH_CONFIG.lua`, `temp_binds.lua`) are
-  copied back from that backup.
-- Live Tetsouo uses **modular sets** (`<job>/{armor,capes,weapons}.lua` +
-  `_common/sets/rings.lua`); the generic templates are flat. The modular trees
-  are kept in the overlay `_master/Tetsouo/sets/<job>/` (on this PC only: the
-  overlays are gitignored) and, since `2557885`, the clone deploys an overlay's
-  `sets/<job>/` tree in place of the flat file, plus its `sets/common/` and the
-  loose craft/fishing sets.
-- `character_db.lua` is read only by the clone script.
-
-See [characters-and-templates.md](architecture/characters-and-templates.md),
-including what a re-clone would overwrite today.
+Templates live in `_master/` (tracked), per-character overlays in
+`_master/<Name>/` (gitignored), and the folders GearSwap loads in
+`data/<Name>/` (gitignored), built by `clone_character.py`. Entry code
+(`shared/entry/<job>.lua`) and the alt command tables (`shared/data/alt/`) are
+read in place by every character. Who is who, what the clone copies and keeps,
+modular sets and `character_db.lua`:
+[characters-and-templates.md](architecture/characters-and-templates.md).
 
 ## Map of the documentation
 
@@ -307,7 +273,7 @@ including what a re-clone would overwrite today.
 | [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, the `//gs c buff` command and its engine (`BUFF_CONFIG.lua`, `SelfBuffManager`, `BuffTimers` refresh, `BuffGuard` debuff handling), Scholar stratagems |
 | [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager, ElementalBelt (Obi / Orpheus), DualWield (DW tiers by haste), SpellGearLock (Dispelga) |
 | [systems/messages.md](systems/messages.md) | Message architecture: facade, engine, renderer, hooks and handlers, modes |
-| [systems/messages-formatters.md](systems/messages-formatters.md) | The 32 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |
+| [systems/messages-formatters.md](systems/messages-formatters.md) | The 33 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |
 | [systems/messages-catalog.md](systems/messages-catalog.md) | Every template namespace and key (incl. `ALTGROUP`, `SORTIE`, `TEMPBIND`), reachable or not; the `message_mode_config` factory is in messages.md |
 | [systems/keybinds-and-custom.md](systems/keybinds-and-custom.md) | `KeybindManager`, bind line rules (`//` and `/`), `COMMON_KEYBINDS`, key validation, `<JOB>_CUSTOM.lua` player modes and `when` rules, `//gs c tb` temporary binds |
 | [systems/ui-overlay.md](systems/ui-overlay.md) | Keybind HUD: build, update triggers, settings, persistence |

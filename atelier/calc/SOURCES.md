@@ -1,9 +1,11 @@
 # atelier/calc, stage 1: sources
 
-Every game value in `atelier/calc/*.js` was read on the BG-Wiki page listed here (fetched on
-2026-10-09) and the code carries the same address beside the value. Two things come from
-elsewhere: piece names from Windower's `res/items.lua` (calc_sets.js), and the base attributes,
-which BG-Wiki does not document (see DIFFERENCES.md, C1).
+Every game value in `atelier/calc/*.js` was read on the page listed here, and the code carries the
+same address beside the value. Most are BG-Wiki pages (the first ones fetched on 2026-10-09). The
+later sections also cite wiki.ffo.jp and w.atwiki.jp (Japanese wikis, where BG-Wiki gives no value
+or another one), LandSandBoat's job grades (the base attributes, which BG-Wiki does not document:
+DIFFERENCES.md, C1) and measurements in game. Piece names come from Windower's `res/items.lua`
+(calc_sets.js).
 
 ## Rules shared by every job
 
@@ -21,9 +23,10 @@ which BG-Wiki does not document (see DIFFERENCES.md, C1).
 | https://www.bg-wiki.com/ffxi/Attack_Speed | haste in 1024ths, 1% of gear haste = 10/1024; caps: equipment 256/1024, magic 448/1024, job ability 256/1024; delay left = (1 - Dual Wield) x (1024 - hastes) / 1024; 80% delay reduction cap; hand-to-hand base delay 480 less Martial Arts | calc_derived.js, calc_stats.js |
 | https://www.bg-wiki.com/ffxi/Adhemar_Attire_Set_%2B1 | set bonus: critical hit rate +4 / 6 / 8 / 10% for 2 / 3 / 4 / 5 pieces | calc_sets.js |
 
-Read and not used yet: https://www.bg-wiki.com/ffxi/Ranged_Accuracy (floor(AGI x 0.75) + the same
-skill ranges), https://www.bg-wiki.com/ffxi/Ranged_Attack (8 + skill + STR),
-the dDEX table of Critical_Hit_Rate (needs the enemy: next stage).
+Read here, used since Lot 4 (calc_ws_ranged.js, ranged weapon skills):
+https://www.bg-wiki.com/ffxi/Ranged_Accuracy (floor(AGI x 0.75) + the same skill ranges),
+https://www.bg-wiki.com/ffxi/Ranged_Attack (8 + skill + STR). The dDEX table of Critical_Hit_Rate
+(it needs the enemy) is used since the weapon skill stage (calc_ws_hits.js).
 
 Looked for and not found on BG-Wiki: the attributes of a race and job at level 99
 (https://www.bg-wiki.com/ffxi/Category:Base_Stats, https://www.bg-wiki.com/ffxi/Category:Hume and
@@ -360,7 +363,8 @@ the consecutive nuke penalty on Notorious Monsters.
 
 Read and not used: the Empyrean aftermaths of Hvergelmir and Gambanteinn (30 / 40 / 50 % triple damage,
 melee only), Claustrum (Damage taken -20 %, Refresh) and Mjollnir (Accuracy and Magic Accuracy +20,
-Refresh): a weapon outside calc_aftermath.js with an aftermath on still goes to the engine before.
+Refresh): a weapon outside calc_aftermath.js with an aftermath on is not computed; the page says why
+instead of a figure (the engine before is no longer loaded: DIFFERENCES.md section AP).
 
 ## The party's buffs (calc_buffs.js, read on 2026-10-22)
 

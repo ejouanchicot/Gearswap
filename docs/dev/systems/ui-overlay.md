@@ -128,7 +128,7 @@ flowchart TD
 | 1 | mode | `Mode Combat Engaged Idle Enfeeble Nuke PetIdleMode AutoPetEngage Rotation Xp PhalanxSIRD UseAltStep Auto Lock Marcato Dance Samba SneakInvi Klimaform Favor Regen` |
 | 2 | spell | `Spell Element Tier Aja Storm Bar EnSpell Spike Gain Ecosystem species RuneElement Light Dark Rune BRDRotation VictoryMarch Etude QuickDraw Roll Luzaf Indi Geo AOE` |
 | 3 | ja | `Step BRDSong WS` |
-| 4 | weapon | `Weapon WeaponSet SubSet Proc Instrument` |
+| 4 | weapon | `Weapon WeaponSet SubSet Proc Shield Instrument` |
 | 5 | mode (default) | any other state name. A bind with no `state` and no `section` goes nowhere. |
 
    So `NukeTier` is a mode (`Nuke` before `Tier`), `KlimaformAOE` a mode, `WeaponskillMode` a mode (`Mode` before `Weapon`). Binds whose `desc` contains `←` are dropped (`filter_reverse_keybinds`); the song-slot rows (key `""`) land in the JA bucket by their `BRDSong` state. The builder stores **keys**, not binds, from the list `update_display` built (one pass over the keys, not two), before the style filters; that is harmless because rendering walks the filtered list.
@@ -149,7 +149,7 @@ The HUD each template produces (running the real classifier over `_master/config
 | GEO | MainIndi, MainGeo, MainLight/DarkSpell, SpellTier, MainLight/DarkAOE, AOETier | | | HybridMode, CombatMode, LuopanMode, IndicolureMode, AutoMedicine |
 | MNK | | | MainWeapon | WeaponskillMode, OffenseMode, HybridMode, AutoMedicine |
 | NIN | | | MainWeapon, SubWeapon | MagicBurstMode, OffenseMode, WeaponskillMode, HybridMode, AutoMedicine |
-| PLD | | WS1, WS2 ("JA") | MainWeapon (hidden under /SCH Tanking, `visible`) | HybridMode, Xp (/RDM), RuneMode (/RUN), PhalanxSIRD (`^numpad2`), Regen (`^numpad3` under /SCH, `^numpad7` under /RUN), AutoMedicine |
+| PLD | | WS1, WS2 ("JA") | MainWeapon (hidden in the Tanking stance whatever the subjob, `visible`), StanceWeapon ("Tanking Weapon", same `^numpad1`, shown in Tanking only), Shield (`^numpad0`) | HybridMode, Xp (/RDM), RuneMode (/RUN), PhalanxSIRD (`^numpad2`), Regen (`^numpad3` under /SCH, `^numpad7` under /RUN), IdleDefense (`^numpad8`, shown in DPS and Hoxne, `visible`), AutoMedicine |
 | RDM | Storm (/SCH), EnSpell, GainSpell, Barspell, BarAilment, Spike | | MainWeapon, SubWeapon | EngagedMode, IdleMode, CombatMode, EnfeebleMode, NukeMode, SaboteurMode, EnfeebleTier, NukeTier, AutoMedicine |
 | RNG | | | MainWeapon, RangeWeapon, SubWeapon | RangedMode, HybridMode, OffenseMode, WeaponskillMode, AutoMedicine |
 | RUN | | | MainWeapon, SubWeapon | HybridMode, RuneMode, AutoMedicine |

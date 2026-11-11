@@ -72,7 +72,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
 | `_master/config/dnc/DNC_CONFIG.lua` | 16 | The job's own settings (`auto_presto = true`), read through `auto_options.lua` / `job_config.lua` |
 | `_master/config/dnc/DNC_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/dnc_sets.lua` | 1041 | Template sets (flat; data, size not a defect) |
+| `_master/sets/dnc_sets.lua` | 1046 | Template sets (flat; data, size not a defect) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
 Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
@@ -394,7 +394,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 | `sets.precast.FC`, `.FC.Utsusemi`, `sets.midcast.FastRecast`, `.Utsusemi` | Mote |
 | `sets.midcast['Ninjutsu' / 'Healing Magic' / 'Enhancing Magic']` (absent) | MidcastManager base |
 | `sets.TreasureHunter` | shared `TreasureHunter` once Treasure Mode is shown (`//gs c th show`) |
-| `sets.DW.*` (commented in T) | `DualWield` |
+| `sets.DW.*` (declared empty in T) | `DualWield` (only while Auto DW is on for DNC: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) |
 | `sets.buff.Doom` | `DoomManager` |
 | `sets.buff['Saber Dance']` | `SetBuilder.build_engaged_set`, Saber Dance up |
 | `sets.buff['Climactic Flourish']` | `WSVariantSelector.apply_variant`, weaponskill under Climactic |

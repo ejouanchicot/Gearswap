@@ -12,257 +12,21 @@ npm run check        # vérifie les types (TypeScript et Svelte)
 
 Les joueurs n'ont besoin de rien de tout ça : ils ouvrent le fichier construit, comme avant.
 
-## Où en est la migration
+## Ce qu'il y a dans `src/`
 
-Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.md`.
+La migration vers Svelte est finie (2026-10-20) ; son journal est dans l'historique git.
 
-- **Étape 0 (2026-10-18)** : la base. L'application Svelte (`App.svelte`) contient l'ancienne page : son cadre, puis
-  ses styles et ses scripts (`atelier/app/`), chargés dans leur ordre par `legacy/load.ts` (la liste est dans
-  `legacy/files.ts`). Rien ne change à l'écran.
-- **Étape 1 (2026-10-18)** : la barre du haut (`screens/topbar/`). Svelte la dessine à chaque redessin de l'ancienne
-  page (`stores/legacy.svelte.ts`, appelé par `window.__atelier.redraw()`) à partir de son état, lu par
-  `screens/topbar/model.ts` (les noms de l'ancienne page qu'il lit sont typés dans `legacy/globals.d.ts`). Ses boutons et
-  menus gardent les attributs `data-*` et les classes que lisent encore les gestionnaires de clics de l'ancienne page
-  (`events.js`, `packages.js`) : les actions passeront en Svelte avec les écrans qui les utilisent.
-- **Étape 2 (2026-10-18)** : la configuration du job (`screens/config/` : Touches, Modes, Fonctions, Macrobook &
-  lockstyle, Modules, et la liste des jobs à gauche). `#view` contient la zone de l'ancienne page (`#legacyview`) et
-  les écrans Svelte, redessinés tout de suite à la fin de chaque redessin (`flushSync`), avant que l'ancienne page
-  remette le focus, les blocs dépliés et le défilement. Restent à l'ancienne page : la fenêtre qui change une touche,
-  et les contrôles des réglages de Modules (interrupteurs, nombres, listes d'objets, tableaux de lignes, couleurs :
-  `ctlHtml`, `modules.js` modControl et `module_ux.js`, `module_items.js`, `module_rows.js`).
-- **Étape 3a (2026-10-18)** : Mon perso (`screens/perso/` : l'en-tête, le choix Stats / Sacs, PorterPacker, les
-  mérites). Restent à l'ancienne page : la liste des sets à gauche et les cartes de stats (celles de l'écran Sets,
-  étape 5).
-- **Étape 3b (2026-10-18)** : la vue Sacs de Mon perso (`screens/perso/bags.ts`, `Bags.svelte` : les sacs en tuiles,
-  où est le perso, l'état du rangement, la liste avec sa recherche et ses filtres, la sélection, les cartes du plan).
-  La recherche et la sélection d'objets redessinent la page (`render()`) au lieu d'écrire dans la liste : Svelte ne
-  change que ce qui bouge, le champ garde son curseur. Les données (les sacs, le plan, qui porte quoi) restent
-  celles de l'ancienne page (`bags_*.js`).
-- **Étape 4a (2026-10-18)** : Buffs & cible (`screens/combat/` : l'en-tête et ses actions, le groupe en onglets avec
-  ce que donne chaque membre, la cible, ce que ça change pour le set ouvert, le total). Restent à l'ancienne page : la
-  barre des profils et les onglets des situations (`profiles.js`), le panneau du membre choisi (`pbYouBody`,
-  `pbBody`), le choix de la cible et les autres debuffs (`buff_panels.js`), la liste des sets à gauche (étape 5).
-- **Étape 4b (2026-10-18)** : le panneau du membre choisi (`screens/combat/panel.ts`, `Panel.svelte` : un
-  formulaire en données, sections → lignes → contrôles, pour toi, GEO, BRD, COR, WHM, RDM, SCH et les jobs à
-  capacités). Restent à l'ancienne page, parce qu'ils y sont aussi dessinés ailleurs : la barre des profils et les
-  situations (leur forme courte au-dessus des sets, étape 5), la cible et les autres debuffs (l'ancienne fenêtre des
-  buffs, étape 7), la ligne de l'aftermath, les puces des rolls, Warcry et Haste Samba (`buff_panels.js`).
-- **Étape 5a (2026-10-18)** : l'écran Sets (`screens/sets/` : son cadre) et la liste des sets à gauche
-  (`setlist.ts`, `SetList.svelte`), la même pour Sets, Buffs & cible et Mon perso. Elle laisse dans l'état de la page
-  ce que l'ancienne y laissait (le set montré, les catégories ouvertes, les lignes des flèches du clavier). Une
-  autre vue repart du haut de la liste, comme quand l'ancienne page la recréait (`render`, sets_view.js). Restent à
-  l'ancienne page : la ligne au-dessus des sets (`ui2CtxBar`), la tête des catégories, les marques et actions d'une
-  ligne, tes sections à toi, le haut de la liste et son menu (`list_prefs.js`), la fiche du set (étape 5b) et la
-  colonne de ses chiffres (étape 5c).
-- **Étape 5b (2026-10-18)** : la fiche du set (`screens/sets/card.ts`, `Card.svelte` : sa tête et ses versions,
-  en rangée ou en grille pour les weaponskills DNC, les seize cases d'équipement, la ligne sous elles). Restent à
-  l'ancienne page : les menus des armes (`weaponMenus` ; le titre, `setTitleBox`, est passé en Svelte à l'étape 7m), la tête d'un weaponskill
-  (`ws_page.js`), la barre de l'essai (`trial.js`), le bouton pour équiper (`live.js`), la légende, les notes, les
-  chiffres du set (étape 5c) et la page de l'optimiseur (étape 6).
-- **Étape 5c (2026-10-18)** : la colonne des chiffres du set (`screens/sets/figures.ts`, `Figures.svelte`,
-  `StatBox.svelte` : les boîtes en données, l'attaque et la défense calculées ici). L'ancienne page dessine ces
-  mêmes boîtes par ce code (`window.ATELIER_FIGURES`, engine.js `tankHTML` / `offenseHTML`) pour ses écrans à elle
-  (la fenêtre des buffs, les cartes de Mon perso) : un seul calcul. Restent à l'ancienne page : la boîte du nuke
-  (`fight_stats.js`), le cycle des HP (`stat_opt.js`), la Luopan (`luopan.js`), la feuille des stats (`stats.js`),
-  toutes les stats (`globalsHTML`, passé en Svelte à l'étape 7w) ; les lignes de tank en plus (`tankExtraHTML`) sont passées en Svelte à l'étape 7v.
-- **Étape 5d (2026-10-19)** : les situations et les profils (`screens/profiles/` : `profiles.ts`,
-  `Situations.svelte`, `Picker.svelte`), la même chose dans la barre de Buffs & cible et dans la ligne au-dessus des
-  sets. La recherche et le filtre de situation de la fenêtre des profils redessinent la page au lieu de cacher les
-  lignes à la main (`profiles.js`). L'avertissement de sub (`subWarnHTML`) est passé en Svelte à l'étape 7f.
-- **Étape 6a (2026-10-19)** : la page de l'optimiseur d'un set (`screens/optimizer/optpage.ts`, `OptPage.svelte` :
-  l'en-tête, les objectifs et leurs réglages, le gros chiffre et son verdict, l'image du résultat — courbe, jauge,
-  rounds, facteurs, barres —, le tableau). Ce que valent les chiffres reste à `opt_page.js` (`opFigures`, `opRows`).
-  Restent à l'ancienne page : les blocs partagés avec l'optimiseur de stats (limites, onglets de recherche, pièces
-  changées) et cet optimiseur lui-même (`stat_opt.js`), les boutons de recherche, la situation d'un nuke.
-- **Étape 6b (2026-10-19)** : la fenêtre de recherche en cours (`screens/optimizer/run.svelte.ts`, `OptRun.svelte` :
-  l'horloge, le meilleur trouvé et son gain, sa courbe, une carte par marche, le fil des changements, puis le
-  résultat). Le composant est monté une fois dans une boîte à lui que l'ancienne page déplace entre `#overlay` et la
-  réserve des recherches cachées ; `optimizer.js`, `opt_all.js` et `moogle.js` changent l'état de la recherche
-  (`S._optRun`) puis le préviennent (`window.ATELIER_RUN.changed`) au lieu d'écrire dans la page. Restent à
-  l'ancienne page : les scènes du Mog (`moogle.js`), les boutons du résultat, le tableau final de « tout optimiser »
-  (`opt_all.js`).
-- **Étape 6c, 1re partie (2026-10-19)** : les fenêtres par-dessus la page (`screens/dialogs/` : `dialogs.svelte.ts`,
-  `Dialog.svelte`, montées une fois comme la fenêtre de recherche ; `showDialog`, trial.js, ne fait plus que les
-  ouvrir, chaque ouverture redessinée à neuf) et Comparer (`compare.ts`, `Compare.svelte`). Les autres fenêtres
-  gardent le HTML de leur corps (le choix d'une chanson, de la cible, pousser dans GearSwap...).
-- **Étape 6c, 2e partie (2026-10-19)** : la fenêtre des pièces d'une case (`gearpick.ts`, `GearPick.svelte` : ses
-  filtres, les pièces en cartes avec leur valeur et leur écart). Sa recherche cache toujours les cartes sur place
-  (events.js `#drawq`) : la fenêtre n'est redessinée qu'à un filtre.
-- **Étape 6c, 3e partie (2026-10-19)** : le choix de la cible (`target.ts`, `Target.svelte` : son cadre à lui, la
-  recherche, l'ordre, les zones, les favoris et les derniers choisis, chaque monstre). La recherche et la zone
-  redessinent la fenêtre en place (`ATELIER_DIALOG.update` : le champ garde son curseur) au lieu de cacher et
-  déplacer les cartes à la main (`tgFilter`, retiré).
-- **Étape 6c, 4e partie (2026-10-19)** : les fenêtres de choix du groupe (`partypick.ts`, `PartyPick.svelte` :
-  une chanson, un roll, une bulle, une tempête, une nourriture, un membre à ajouter). Leur recherche est dans la
-  fenêtre elle-même (`pbDlgSearch`, retiré).
-- **Étape 6c, 5e partie (2026-10-19)** : pousser un set dans GearSwap, le supprimer, en ajouter un vide
-  (`pushview.ts`, `PushView.svelte`), une fois que le jeu a dit ce qui changerait ; le plan, les avertissements et la
-  réponse du jeu restent à `push.js`.
-- **Étape 6c, 6e partie (2026-10-19)** : « Selon la PT » (`tiercost.ts`, `TierCost.svelte` : chaque version d'un set
-  dans chaque situation) et l'historique des écritures dans GearSwap (`history.ts`, `History.svelte`).
-- **Étape 6c, 7e partie (2026-10-19)** : « Tout optimiser » une fois cherché (`optall.ts`, `OptAll.svelte`, redessiné
-  en place pendant l'écriture des versions : le tableau garde son défilement, le Mog son saut) et la fenêtre du Lua à
-  coller (`openLua`, trial.js, par le cadre commun).
-- **Ménage (2026-10-19)** : l'ancienne fenêtre des buffs et l'ancienne fenêtre de la cible sont retirées (`openBuffs`,
-  `openTarget`, `buffPanelHTML` et ce qu'elles seules appelaient) : la nouvelle disposition ne les ouvrait plus
-  (`ui2()` vaut toujours vrai, la colonne complète de l'ancienne disposition n'était plus dessinée). Buffs & cible lit
-  la carte de la cible et les autres debuffs directement (`targetCardPanel`, `foePanelHTML`). Le bouton Debug de
-  l'ancienne fenêtre de la cible ne s'ouvre plus de nulle part : `openDebug` (engine.js) a été retiré le 2026-10-19
-  avec le joueur, ainsi que `debugReport`, ses textes, son clic et ses styles.
-- **Étape 6c, 8e partie (2026-10-19)** : « Filtrer les stats » (`statpick.ts`, `StatPick.svelte` : son cadre à lui, un
-  bloc par groupe de stats ; redessiné en place, la liste garde son défilement aussi après « Tous / Aucun » d'un
-  groupe, l'ancienne remontait en haut). Les outils du haut (ordre, presets) restent le HTML de `statPickTools`.
-- **Étape 6c, 9e partie (2026-10-19)** : « Ajouter un set » (`addset.ts`, `AddSet.svelte` : son cadre à lui, les trois
-  étapes ; `add_set.js` garde les étapes, la recherche qui cache des lignes en place et ce qui part au jeu). Un export
-  sans catalogue garde la liste des WS de `push.js` (`addWsList`) en HTML.
-- **Étape 6c, 10e partie (2026-10-19)** : les petites fenêtres des sacs (`bagdlg.ts`, `BagDialog.svelte`, dans le
-  cadre commun) : où sont les mogs, la tournée du Porter Moogle, les déplacements du plan avant l'envoi. Leurs boutons
-  du bas restent le HTML de `bags_place.js` / `bags_plan.js`.
-- **Étape 6c, 11e partie (2026-10-19)** : les fenêtres de choix des Modules (`modpick.ts`, `ModPick.svelte`, dans le
-  cadre commun) : objets, abilities et sorts, weaponskills. La recherche redessine la fenêtre en place (`miShow`,
-  module_items.js) ; `miGridHTML`, `mxActGrid` et `mxWsGrid` sont retirés.
-- **Étape 6c, 12e partie (2026-10-19)** : le menu d'un emplacement de la grille (`slotmenus.svelte.ts`,
-  `SlotMenu.svelte`) : fait à sa première ouverture en fin de `<body>` comme avant, dessiné tout de suite (sa taille le
-  place) ; `openSlotMenu` (trial.js) ne garde que le placement. L'infobulle (`#tip`) attend l'étape 7 avec la feuille
-  de stats, dont elle partage le code.
-- **Étape 7a (2026-10-19)** : la page d'accueil (`screens/home/home.ts`, `HomeScreen.svelte`) : le tableau des jobs
-  joués, ou la page de bienvenue quand rien n'est exporté ; `welcome.js` garde ses textes et la lecture des fichiers
-  (`welcomeRead`). Vues dans `scripts/atelier/parity/home.json`.
-- **Étape 7b (2026-10-19)** : les Réglages de la page (`screens/settings/settings.ts`, `SettingsScreen.svelte`) :
-  thème, langue, animations, assistant Mog, moteur de calcul. `config_page.js` garde les thèmes et les textes ;
-  `themeCardHTML`, `engineCardsHTML`, `motionConfigHTML` (motion.js) et `guideConfigHTML` (guide.js) sont retirés.
-  Vues dans `scripts/atelier/parity/settings.json`.
-- **Étape 7c (2026-10-19)** : la page Paquets (`screens/packages/packages.ts`, `PackagesScreen.svelte`) ;
-  `packages.js` garde `PKG`, la création du zip (Pyodide dans un worker) et les clics. Vues dans
-  `scripts/atelier/parity/packages.json`.
-- **Étape 7d (2026-10-19)** : Simuler (`screens/sim/sim.ts`, `SimScreen.svelte`) : les actions du job, les options,
-  les modes. Ce qu'il faut demander au jeu avant de dessiner passe par `simPrepare` (simulate.js, appelé par
-  `renderJob`) ; le résultat reste le HTML de `simResultHTML` (ses cartes partagent le code des stats). Vues dans
-  `scripts/atelier/parity/sim.json`. Plus aucun écran n'est dessiné par `#legacyview`, sauf un job sans export.
-- **Étape 7e (2026-10-19)** : un job sans export (`screens/home/NoExport.svelte`) ; `renderJob` ne dessine plus rien
-  (il garde le renvoi des anciens noms de section et `simPrepare`). `#legacyview` reste vide sur toutes les vues.
-  Vues `NX_` dans `scripts/atelier/parity/home.json`.
-- **Étape 7f (2026-10-19)** : l'avertissement « en jeu tu as un autre sub » au-dessus des sets (`subWarn`, sets.ts) ;
-  `subWarnHTML` est retiré. Vues `SW_` dans `scripts/atelier/parity/sets.json`.
-- **Étape 7g (2026-10-19)** : le haut de la liste des sets et son menu (`ListHead.svelte`, setlist.ts `listHead`), le
-  bouton « Équiper en jeu », la légende de la grille et les notes sous les pièces (card.ts `equipOf`, `legendOf`,
-  `notes`) ; `listHeadHTML`, `listMenuHTML`, `equipBtnHTML`, `legendHTML` et `familyNoteHTML` sont retirés. Vues
-  `LH_` dans `scripts/atelier/parity/sets.json`.
-- **Étape 7h (2026-10-19)** : le Mog à côté d'un mot (`components/MogNote.svelte`) : « rien trouvé » sous la liste des
-  sets, « il porte le gear » dans la fenêtre Pousser / Ajouter ; `mogCarryHTML` (guide.js) est retiré,
-  `mogSorryHTML` reste pour les fenêtres d'erreur de push.js.
-- **Étape 7i (2026-10-19)** : les lignes Warcry (Savagery, Agoge Mask, TP Bonus) et Haste Samba du panneau d'un membre
-  (panel.ts `warcryOf`, `sambaOf`, rendues par `Panel.svelte`) ; `warcryHTML` et `sambaHTML` sont retirés.
-- **Étape 7j (2026-10-19)** : la ligne Aftermath (niveau, stade Prime, TP, ce que l'arme en main donne) et les boutons
-  d'un roll (son job, Crooked Cards) du panneau d'un membre (panel.ts `amRow`, `rollChips`) ; `amRowHTML`,
-  `rollChips` (buff_panels.js), `pbSel`, `pbAmRow` et `pbF` (party_builder.js) sont retirés. Le panneau d'un membre
-  n'a plus de HTML de l'ancienne page.
-- **Étape 7k (2026-10-19)** : ce qui baisse la cible, « Autres debuffs » de Buffs & cible (`combat/foe.ts`,
-  `FoePanel.svelte`) : un onglet par job, sa grille, ce qui est posé sur la cible, le total dans la bande ;
-  `foePanelHTML` est retiré (l'interrupteur d'un onglet reste le HTML d'`offSwitch`).
-- **Étape 7l (2026-10-19)** : la carte de la cible (`combat/targetcard.ts`, `TargetCard.svelte`) et l'interrupteur
-  d'un onglet de debuffs ; `targetCardPanel` (target_pick.js) et `offSwitch` (buff_panels.js) sont retirés.
-  Buffs & cible n'a plus de bloc dessiné par l'ancienne page (restent des textes traduits et l'emblème d'un job).
-- **Étape 7m (2026-10-19)** : le titre d'un set (`TitleBox.svelte`, card.ts `TitleView`, `wsTitle`) : nom, version,
-  quand il se porte ou ce que fait la WS, chemin, boutons Optimiser / Supprimer ; `setTitleBox` et `wsTitleHTML`
-  (sets_view.js) sont retirés.
-- **Étape 7n (2026-10-19)** : le contrôle d'un réglage des Modules (`ModCtl.svelte`, modules.ts `ctlOf`, `mcCtl`) :
-  choix en boutons, « auto » et sa valeur forcée, interrupteur, texte, réglage montré tel qu'écrit ; `modControl` et
-  `mcControl` (modules.js) sont retirés. Restent le HTML de l'ancienne page : un nombre (`modNum`), une couleur
-  (`modColorList`, `modColorMap`, `modPresets`), une liste de tuiles (`modChips`), un tableau de lignes (`modRows`).
-  Au passage, le commentaire de `cardView` (card.ts) est remis au-dessus de sa fonction.
-- **Étape 7o (2026-10-19)** : un nombre (− / +, curseur, valeur standard) et une couleur (le sélecteur, son code, les
-  couleurs toutes prêtes) dans les Modules (modules.ts `numOf`, `swatch`, `colorMapOf`, `presetsOf`) ; `modNum`,
-  `modColorList`, `modColorMap`, `modPresets` et `mxSwatch` (module_ux.js) sont retirés.
-- **Étape 7p (2026-10-19)** : une liste de tuiles (à glisser, objets avec leur icône, ce qui en ajoute une) et un
-  tableau de lignes (case, nombre, nom avec son icône, monter / descendre / retirer, ajouter) dans les Modules
-  (modules.ts `chipsOf`, `rowsCtl`, `GearList.svelte` pour la liste des pièces du jeu) ; `modChips` (module_items.js),
-  `modRows`, `mrCellHTML` et `mrGearList` (module_rows.js) sont retirés. Les Modules n'ont plus de bloc dessiné par
-  l'ancienne page (restent les icônes d'objets et des textes traduits).
-- **Étape 7q (2026-10-19)** : le bouton « Supprimer ce set… » du titre (card.ts `delOf`) ; `delButton` (push.js) est
-  retiré, `deletable` y reste (la fenêtre qui demande confirmation s'en sert).
-- **Étape 7r (2026-10-19)** : le bloc d'un set de nuke dans l'optimiseur (optpage.ts `nukeTop`) ; `nukeSituationHTML`
-  (nuke_layers.js) est retiré. Trouvé en le vérifiant : un menu Svelte dont on a choisi une valeur à la main pouvait ne
-  plus suivre une valeur changée ailleurs (Svelte met `selected` sur l'option comme choix par défaut, que le
-  navigateur ignore une fois le menu touché). Tous les menus passés en Svelte prennent maintenant leur valeur de la page
-  à chaque dessin (`components/selsync.ts`, `use:selSync`).
-  Correction juste après : un menu sans option marquée (« Tout » du filtre plan des sacs) montre sa première option,
-  comme un menu redessiné le faisait ; sans elle il gardait l'ancien choix.
-- **Étape 7s (2026-10-19)** : le bloc « En combat » d'un set de nuke (figures.ts `fightBox`, dans `StatBox.svelte`,
-  qui sait maintenant n'avoir qu'une note sans liste : `bare`) ; `fightBoxHTML` (fight_stats.js) est retiré. Comme les
-  autres blocs de chiffres déjà passés en Svelte, ses chiffres défilent d'un set à l'autre (l'ancienne page les
-  redessinait) : un test qui lit trop tôt voit la valeur en route (tests de clics lancés animations coupées).
-- **Étape 7t (2026-10-19)** : le cycle des HP d'un tank PLD / RUN (figures.ts `hpCycle`, dessiné par `Figures.svelte`) ;
-  `hpCycleHTML` (stat_opt.js) est retiré, `hpCycleRows`, `setMaxHp` et `hpRef` y restent (l'optimiseur de stats s'en sert).
-- **Étape 7u (2026-10-19)** : le bloc Luopan d'un GEO, au cast et porté (figures.ts `luopanOf`) ; `luopanHTML`,
-  `luopanCastHTML` et `luopanTableHTML` (luopan.js) sont retirés, les calculs (`luopanFigures`, `luopanGear`…) y restent.
-- **Étape 7v (2026-10-19)** : les lignes sous les dégâts subis d'un tank (blocage avec un bouclier ultime, critiques
-  ennemis restants, Cure IV d'un set de Cure, Enmity perdue sur un coup : figures.ts `tankExtra`) ; `tankExtraHTML`
-  (stat_opt.js) est retiré.
-- **Étape 7w (2026-10-19)** : les lignes des listes de stats (`statlines.ts`, `StatLines.svelte` : ligne simple, stat
-  plafonnée et sa jauge, dégâts subis avec leur II, dégâts multipliés) et les chiffres du perso avec un set
-  (`globals.ts`, `Globals.svelte`), repliés sous les chiffres d'un set et ouverts en cartes dans Mon perso ;
-  `globalsHTML` (sets_view.js) est retiré. `cappedLi`, `layeredLi`, `mulLi` et `damageTakenLines` (stats.js) restent
-  pour la feuille de stats, l'étape suivante.
-- **Étape 7x (2026-10-19)** : la feuille de stats d'un set (`sheet.ts`, `Sheet.svelte` : un onglet par groupe, ce que
-  le set cherche d'abord, les effets sous condition, les notes) ; `setStatsHTML`, `cappedLi`, `layeredLi`, `mulLi` et
-  `damageTakenLines` (stats.js) sont retirés, leurs textes y restent. Les chiffres d'un set (figures.ts) n'ont plus de
-  HTML de l'ancienne page.
-- **Étape 7y (2026-10-19)** : les lignes d'un fichier avant et après (pushview.ts `diffLines`), dans le pli des
-  fenêtres Pousser / Supprimer / Ajouter, et la fenêtre qui crée un set du catalogue (`createView`, appelée par
-  add_set.js `createPreview`) ; `diffHTML` (push.js) est retiré.
-- **Étape 7z (2026-10-19)** : l'optimiseur de stats, ses deux colonnes (`optimizer/statpage.ts`, `StatPage.svelte` :
-  les minimums, les objectifs par genre, « ensuite », les pièces propres au set gardées, les notes ; le résultat
-  contre le set du fichier) ; `statWhatHTML` et `statResultHTML` (stat_opt.js) sont retirés. Restent en HTML les blocs
-  que l'optimiseur partage : les tuiles de minimums (`opLimitsHTML`), la recherche (`opSearchHTML`), les pièces
-  changées (`opChangesHTML`), la barre de l'essai (`trialRow`), la note des enfeebles (`enfNoteHTML`).
-- **Étape 7aa (2026-10-19)** : les blocs que les deux optimiseurs partagent : les tuiles des limites / minimums et les
-  pièces que l'essai change (`optimizer/blocks.ts`, `OptBlocks.svelte`) ; `opLimitHTML`, `opLimitsHTML` et
-  `opChangesHTML` (opt_page.js) sont retirés.
-- **Étape 7ab (2026-10-19)** : la recherche des deux optimiseurs (blocks.ts `searchView`, dans `OptBlocks.svelte` :
-  ses onglets, le menu de l'onglet ouvert, ses interrupteurs, les cases verrouillées et les pièces exclues) ;
-  `opSearchHTML`, `opMenuHTML`, `opSwitchHTML` et `opLocksHTML` (opt_page.js) sont retirés, `OP_TABS` et `OP_SWITCH`
-  y restent (c'est là qu'on ajoute un interrupteur).
-- **Étape 7ac (2026-10-19)** : la barre de l'essai sous la carte d'un set et dans les deux optimiseurs (`sets/trial.ts`,
-  `TrialRow.svelte` : ce qui est essayé, son gain sur une WS, Comparer, Garder, Tester en jeu, les liens) ;
-  `trialBar`, `trialRow` et `draftGainHTML` (trial.js) sont retirés. Le bouton Pousser reste le HTML de `pushButton`
-  (trial.js) : le pied de la fenêtre de recherche s'en sert aussi.
-- **Étape 7ad (2026-10-19)** : la note d'un set d'enfeeble dans l'optimiseur de stats (statpage.ts `enfNote`, sa case
-  Saboteur pour un RDM) et le calcul d'un round dans l'optimiseur (optpage.ts `roundCalc`) ; `enfNoteHTML`
-  (enfeeble.js) et `roundCalcHTML` (ws_page.js) sont retirés. Les deux optimiseurs n'ont plus de bloc dessiné par
-  l'ancienne page, sauf le bouton Pousser (`pushButton`).
-- **Étape 7ae (2026-10-20)** : l'en-tête d'un set de WS (`sets/wshead.ts`, `WsHead.svelte` : l'arme tenue et l'autre
-  main, la ligne des TP, leurs ⓘ) ; `wsHeadHTML`, `wsWeaponLine`, `heldSubMenu`, `fitOptions` et `wsTpLine`
-  (ws_page.js) sont retirés, avec la note du set de base (`wsBaseNote`, `.wsbase`) que la carte n'affichait jamais.
-  PLD et THF gardent les menus d'états d'arme de l'ancienne page (`weaponMenus`, prochaine étape). Les options d'un
-  menu dont l'ordre change (le classement des armes arrive après le premier dessin) sont clées par leur valeur, pas
-  par leur rang : sinon le menu garde l'option à la place de l'ancienne et montre un mauvais choix.
-- **Étape 7af (2026-10-20)** : les menus d'armes sous le titre d'un set et dans l'en-tête WS de PLD et THF
-  (`sets/weapons.ts`, `WeaponMenu.svelte` : un menu par état d'arme, Auto d'abord, la posture de PLD, puis ce que le
-  GearSwap du job met avec, avec « Revenir en Auto » sur une pièce forcée) ; `weaponMenus` et `weaponResultLines`
-  (weapons.js) sont retirés. La carte d'un set n'a plus de HTML de l'ancienne page.
-- **Étape 7ag (2026-10-20)** : l'infobulle (`#tip`, `sets/tips.svelte.ts`, `Tip.svelte` monté dans le `#tip` de
-  `App.svelte`) : la carte d'une pièce d'un set, du tiroir ou de la simulation, sa version au maximum avec Maj, et
-  l'explication d'un objectif de l'optimiseur ; `tipHTML`, `pieceTip` et `maxTip` (events.js) sont retirés.
-  `showTip` (events.js) décide toujours quand elle s'ouvre et la place à côté de l'élément survolé, une fois son
-  contenu dessiné (`ATELIER_TIP.show`).
-- **Étape 7ah (2026-10-20)** : le bouton Pousser (`sets/push.ts`, `PushButton.svelte`) dans la barre de l'essai et au
-  pied de la fenêtre de recherche, dont les boutons sont maintenant des données (`R.result.footer`, optimizer.js) ;
-  `pushButton` (trial.js) est retiré. Plus aucun bloc de l'ancienne page n'est dessiné en HTML dans un écran Svelte.
-- **Étape 7ai (2026-10-20)** : le ménage de fin. `#legacyview` est retiré (`App.svelte`), `render()` ne fait plus que
-  préparer la vue d'un job (`jobViewPrepare`, sets_view.js : le renvoi des anciens noms de section, `simPrepare`) ;
-  `renderHome` et `renderConfig` sont retirés, `renderPackages` reste comme marqueur de la page Paquets. Une seule
-  mise en page depuis le 2026-10-11 : `ui2()` et l'interrupteur `S.ui2` sont retirés, avec l'ancien tiroir de pièces
-  (drawer.js `openSlot` ouvre la fenêtre de gear_pick.js), ses gestionnaires (`data-showjunk`, `data-allitems`) et
-  ses textes. La classe `.ui2` reste sur `.setsx` : les styles s'y accrochent. `fit.css` reste (les corrections du
-  contrôle de mise en page).
-- **Ménage (2026-10-28, audit du jour, zone 7)** : les copies HTML laissées par la migration sont retirées
-  (`liveBadge`, `refreshBadge`, `historyBadge`, `porterHTML`, `tankHTML`, `offenseHTML`, `fbox`, `statLi`,
-  `statTitle`, `modTip`), avec le pont `window.ATELIER_FIGURES` et `boxHtml` (figures.ts) ; les gestionnaires de
-  clics sans bouton (`pbset`, `pbsong`, `pbroll`, `pbgeomode`, `pbopen`, `pbsavego`, `bfold`, `ptab`, `marcato`,
-  `oastop`) et les états jamais lus (`S.bFold`, `S._pTab`, `S._pbGeoMode`) ; 176 textes FR / EN que rien ne lit.
-  `stat_opt.js` est coupé en trois : ses textes (`stat_opt_texts.js`), les chiffres d'un set et du tank avec le cycle
-  des HP (`stat_figures.js`), l'optimiseur.
+- `main.ts` monte l'application (`App.svelte`) ; `bridge.ts` est le pont que lisent les tests
+  (`window.__atelier`).
+- `legacy/` : l'ancienne page (`atelier/app/`), toujours chargée par l'application. `files.ts` donne la liste de
+  ses styles et de ses scripts, dans l'ordre où ils sont lus ; `load.ts` les charge.
+- `screens/<écran>/` : un dossier par écran, le `.svelte` qui dessine et le `.ts` qui prépare ce qu'il montre :
+  `combat`, `config`, `dialogs` (les fenêtres), `home`, `optimizer`, `packages`, `perso` (dont les sacs),
+  `profiles`, `sets`, `settings`, `sim`, `topbar`, `update`.
+- `screens/update/` : l'écran de mise à jour (le bouton ⬆ de la barre du haut, ou `//gs c upgrade` en jeu). Ses
+  règles restent dans l'ancienne page (`atelier/app/js/update.js` sur `update_core.js`), les fichiers passent par
+  AtelierLink.
+- `components/` (morceaux communs), `stores/`, `styles/`.
 
 ## Vérifier une étape
 
@@ -280,7 +44,8 @@ Plan et chiffres : `notes/docs-perso/audit-atelier-ts-svelte-2026-10-17/RAPPORT.
 
 Lu par la page au moment où elle tourne, comme avant : les exports (`<Perso>/atelier/exports/*.js`,
 `atelier/index.js`), le lien au jeu (`atelier/live_*.js`, `atelier/link_*.js`), le moteur (`atelier/calc/`,
-`atelier/opt.js` ; l'ancien, `atelier/engine/`, n'est plus chargé depuis le Lot 5), Lua (`atelier/lua/`) et, pendant la migration, l'ancienne page (`atelier/app/`).
+`atelier/opt.js` ; l'ancien, `atelier/engine/`, n'est plus chargé depuis le Lot 5), Lua (`atelier/lua/`) et l'ancienne page (`atelier/app/`), chargée pour de bon
+(`legacy/files.ts`).
 
 ## Les vérifications
 

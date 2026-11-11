@@ -193,7 +193,7 @@ One view, with what never changes in sight:
   - an engaged set: **Real time to WS** (hit by hit), **Average time**, **DPS
     (auto-attacks)**, **TP per round**, **Hit chance, then time to WS**,
     **Subtle Blow to its cap, then time to WS**. An engaged set whose name is a
-    mode starts with that mode's goal and with DT+PDT ≤ -50, DT+MDT ≤ -29:
+    mode starts with that mode's goal and with DT+PDT ≤ -50, DT+MDT ≤ -21:
     `sets.engaged` and `.STP` the real time, `.Acc` the hit chance, `.SB`
     Subtle Blow (75 % at most, I and II 50 each), a Kraken Club set (`.PDTKC`,
     `NaeglingKC`) the real time with the club kept in the off hand; its

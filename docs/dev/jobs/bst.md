@@ -1,6 +1,6 @@
 # BST (Beastmaster) job
 
-The BST job area is 13 hook modules, the facade and 4 logic modules under
+The BST job area is 12 hook modules, the facade and 5 logic modules under
 `shared/jobs/bst/functions/` (about 2 350 lines), one entry point, ten config
 files and one sets file. GearSwap loads it when the main job becomes BST
 (`<Char>/<Char>_BST.lua`, one `include` of `shared/entry/bst.lua`). From then
@@ -46,7 +46,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | Path | Lines | Role |
 |------|------:|------|
 | `shared/entry/bst.lua` | 376 | Entry point (the same for every character; `<Char>_BST.lua` and its template `_master/entry/Tetsouo_BST.lua` are one `include` of it): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
-| `shared/jobs/bst/functions/bst_functions.lua` | 109 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
+| `shared/jobs/bst/functions/bst_functions.lua` | 109 | Facade: includes `message_buffs.lua` and the 12 hook files (13 includes in all), requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
 | `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 127 | `job_aftercast`: pet damage set for Ready moves that were not interrupted (held by `ReadyHold`), delayed `start_pet_monitoring`; `job_pet_aftercast` lets the hold go |
@@ -75,7 +75,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 151 | Monster correlation matrix (BG-Wiki Killer pages, 2026-10-27), loaded by the entry into `_G.BSTEcosystemData` (optional): said in the chat on an `Ecosystem` change and when a pet comes out |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
-| `_master/sets/bst_sets.lua` | 690 | Template sets (flat) |
+| `_master/sets/bst_sets.lua` | 701 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 225 + 271 | BST chat messages; the unprefixed facade copies of eight functions have no caller (callers use `show_bst_*`), and 33 templates have no sender (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
 
@@ -113,7 +113,7 @@ sequenceDiagram
     E->>E: INIT_SYSTEMS (AutoMove +0.5 s, hooks), data_loader, message hooks
     E->>E: JobChangeManager.cancel_all()
     E->>F: include bst_functions.lua
-    F->>F: include 13 hook files, require dualbox_manager
+    F->>F: include message_buffs + 12 hook files, require dualbox_manager
     E->>E: register_lockstyle_cancel("BST", cancel_bst_lockstyle_operations)
 ```
 
@@ -495,7 +495,8 @@ plus `weapons.lua`, `pets.lua` merged into `sets`). Player-facing version:
 | `sets.precast.WS`, `['Primal Rend']`, `['Decimation']`, `['Bora Axe']`, `['Calamity']` | Mote default precast | yes | yes |
 | `sets.MoveSpeed` | `BaseSetBuilder.apply_movement` (from `apply_common_overlays`, outside town) | yes | yes |
 | `sets.buff.Doom` | shared DoomManager | yes | yes |
-| `sets.DW.*` | `DualWield` | commented example | - |
+| `sets.DW.*` | `DualWield` (only while Auto DW is on for BST: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty | - |
+| `sets.SingleWield` | `WeaponResolver`: its `sub` replaces an off-hand weapon when Dual Wield is not there | declared empty | - |
 | `sets.TreasureHunter` | `TreasureHunter` | absent | - |
 | `sets.midcast['Healing Magic']` / Enhancing / Enfeebling / Elemental / Blue | `MidcastManager` base set | **absent** | **absent** |
 | `sets.precast.FC` | Mote default precast (magic) | absent (Mote `{}`) | absent |

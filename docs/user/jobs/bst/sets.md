@@ -257,6 +257,6 @@ you want (see the common page).
 - `sets.precast.FC` and the subjob magic sets (see Subjob magic).
 - `sets.precast.JA` for Charm, Tame, Feral Howl, Familiar, Unleash, Snarl,
   Run Wild and the pet commands.
-- `sets.DW.NoHaste` / `.Haste` / `.HasteII` / `.MaxHaste` (written as a comment
-  at the end of the file) and `sets.TreasureHunter` (common page).
+- `sets.TreasureHunter` (common page). `sets.DW.NoHaste` / `.Haste` / `.HasteII` /
+  `.MaxHaste` and `sets.SingleWield` are in the file, empty, ready to fill.
 - The optional Ready names in [Other names read during a Ready move](#other-names-read-during-a-ready-move).

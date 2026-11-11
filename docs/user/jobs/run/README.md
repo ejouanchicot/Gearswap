@@ -127,7 +127,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Waltz / Jump | `waltz`, `aoewaltz` on /DNC; `jump` on /DRG (no automatic Jump on RUN) |
 | Combat Mode | Hidden by default. Shown, On keeps main, sub and range where they are (no TP loss from a set swap) |
 | Treasure Mode | Hidden by default, and the template has no `sets.TreasureHunter`: add the set, then `//gs c th show` |
-| Dual Wield tiers | Only with two one-handed weapons and a `sets.DW` family, which the template does not have |
+| Dual Wield tiers | Only with two one-handed weapons (/NIN or /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { RUN = false }`) |
 | Obi / Orpheus | Automatic on elemental weaponskills (Herculean Slash) and damaging spells. Not on Lunge / Swipe, which are job abilities |
 | Your own modes (`RUN_CUSTOM.lua`) | Modes with a key and gear rules, without code; empty by default ([keybinds guide](../../guides/keybinds.md#your-own-modes-job_customlua)) |
 | Refill | `//gs c rf` restocks the common list of `_common/inventory/REFILL_CONFIG.lua`; `RUN_REFILL.lua` can add to it or replace it ([configuration](../../guides/configuration.md#refill-job_refilllua)) |

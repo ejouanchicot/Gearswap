@@ -141,7 +141,7 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 | Doom | `sets.buff.Doom` goes on while you are doomed |
 | Subjob magic | Healing, Enhancing, Enfeebling, Elemental and Blue Magic use the shared midcast rules; any other skill (Ninjutsu, Dark Magic...) is sent to the same rules afterwards. The provided sets have no midcast sets, so nothing changes until you add some |
 | Midcast watchdog | Puts your normal gear back if a spell's end is lost. Set your Fast Cast % in `BST_STATES.lua` (`FastCast`) for its timing |
-| Dual Wield tiers | Off until you add `sets.DW` (an example is commented in the provided sets) |
+| Dual Wield tiers | With two weapons (/NIN or /DNC) and engaged. The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { BST = false }`) |
 | Treasure Mode | Hidden and Off; needs `sets.TreasureHunter` |
 | Combat Mode | Hidden and Off; when shown and On, main, sub and range stay in place |
 | Your own modes and rules | `BST_CUSTOM.lua` (empty in the template) |

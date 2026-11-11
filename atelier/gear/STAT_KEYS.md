@@ -101,7 +101,7 @@ for armor (Head, Neck, Earring, Body, Hands, Ring, Back, Waist, Legs, Feet).
 `Ninjutsu Magic Accuracy`, `Ninjutsu Damage%`, `Quick Draw Damage%`, `Elemental WS Damage%`,
 `Magic Crit Rate II` on most items, `JA Haste`. Values the game hides behind "Enhances X
 effect" come from `HIDDEN` (build_catalog.py, a dozen items) and `hidden_values.json`
-(BG Wiki notes, ~290 items: hidden_fetch.py -> cache_bgwiki/, hidden_parse.py, hidden_review.py,
+(BG Wiki notes, 282 items: hidden_fetch.py -> cache_bgwiki/, hidden_parse.py, hidden_review.py,
 which also holds the hand-read values and, since 2026-10-22, the ones read on another BG Wiki page
 than the item's: ELSEWHERE; none comes from gear.py any more).
 A value the text gives always wins; the phrase stays in `text_only` either way.

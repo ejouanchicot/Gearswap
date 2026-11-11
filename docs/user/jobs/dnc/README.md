@@ -128,7 +128,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge...) when the day, weather or distance gives enough (`//gs c belt`) |
-| Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) |
+| Dual Wield tiers | While you hold two weapons and fight. The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { DNC = false }`) |
 | Treasure Mode | Off and hidden. `//gs c th show` to use it: the template already has `sets.TreasureHunter` |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |

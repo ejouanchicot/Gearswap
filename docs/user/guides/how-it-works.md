@@ -185,10 +185,11 @@ width):
 |---|---|---|
 | `<YourName>/` | **Yours**: entry files, `_common/`, one `<job>/` folder per job, `saved/` (written in game) | You, and a few commands that save settings (`ui`, `jamsg`, `combatmode`, `th`, `stealth`, `tb`...) |
 | `shared/` | The shared code, the same for everyone | An update of the setup only |
-| `_master/` | The templates the clone script copies from | An update only. In game only the alt-command files are read from there, when yours are missing |
+| `_master/` | The templates the clone script copies from | An update only. In game only the alt-command files are read from there, when yours are missing, and the Atelier page's **+ Add a job** makes a job from them |
 
-Edit only `<YourName>/`. An update replaces `shared/` and `_master/` and does
-not touch your folder (new options in the templates are not added to your
+Edit only `<YourName>/`. An update (`//gs c upgrade`) replaces `shared/`, the
+Atelier page, AtelierLink and the job templates (`_master/entry`, `config`,
+`sets`) and does not touch your folder (new options in the templates are not added to your
 files: compare them with `_master/` if you want them). The clone script
 builds `<YourName>/` once; running it again keeps a backup of the old folder
 ([installation](../getting-started/installation.md)). What each file of
@@ -205,7 +206,7 @@ your folder does: [configuration](configuration.md).
 
 On every load: the job's keys are bound (and sent again 2 s later, in case the
 game dropped some), the HUD is drawn after a few seconds, the macro book is
-set about 1.5 s later and the lockstyle 8 s later, and every mode goes back to
+set about 1.5 s later and the lockstyle about 10 s after the load, and every mode goes back to
 its default (except Auto Medicine).
 
 ### Job and subjob changes

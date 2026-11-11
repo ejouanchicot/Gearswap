@@ -72,7 +72,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
 | `craft [variant]`, `craft off` | Crafting set from the file named in `_common/inventory/CRAFT_CONFIG.lua` (`craft_file`, default `_common/sets/craft_sets.lua`, empty until you fill it; a slot left `""` is not touched). Variants `hq`, `nq`, `success`, and one per sub-craft: `wood`, `smith`, `gold`, `cloth`, `leather`, `bone`, `alchemy`, `cook`. Also applies lockstyle 19 (`craft_lockstyle` in the same file; `false`: the job's lockstyle stays) |
 | `fish` (`fishing`) | Fishing set from `_common/sets/fishing_sets.lua` (`fish_file` in the same file; empty until you fill it), lockstyle 17 (`fish_lockstyle`, `false` works the same way) |
-| `uncraft` | Leave the craft / fishing set |
+| `uncraft` | Leave the craft / fishing set. It is the only command that takes the craft shield off: another variant, `fish` or the same `craft` again leaves the shield you wear in place, and while a craft set is on, `wo` waits for `uncraft` |
 
 `wo` details: it unequips everything and locks your slots while it runs,
 then releases them and sends `ls` and `rf`. Its words are lowercase only: an

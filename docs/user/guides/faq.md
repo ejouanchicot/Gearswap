@@ -12,17 +12,26 @@ in-game name. Create it with the clone script
 The message names the file and line. Most often a set or config file you
 edited has a syntax error (a missing comma or brace).
 
-**I want SMN.** Pick SMN in the job list when you run the clone script (or
-re-run it to add SMN to an existing character). Its set file is mostly empty:
-fill it with your gear ([SMN sets](../jobs/smn/sets.md)).
+**I want SMN (or another job).** Pick it in the job list when you run the
+clone script. For a character that already exists, use **+ Add a job** on the
+Atelier page's Overview, with the game running on that character and the live
+link on: it adds that job from the templates (its sets with every piece taken
+out) and leaves your other jobs alone. Re-running the clone script also adds
+it, but puts every other job back to its template. The SMN set file is mostly
+empty: fill it with your gear ([SMN sets](../jobs/smn/sets.md)).
 
 **Where do I start reading?**
 [How it works](how-it-works.md) explains the whole flow in plain words; the
 [glossary](glossary.md) explains the terms.
 
 **How do I update?**
-Download the new version and copy `shared/`, `_master/` and the scripts over
-the old ones. Your `<YourName>/` folder is not touched. New options in the
+`//gs c upgrade` (or the ⬆ button at the top of the Atelier page) opens the
+page's update screen: it shows the version installed and the latest one on
+GitHub, what installing it changes, and installs it. The game must run with
+AtelierLink (`//gs c atelier link` once). Only the code and the job templates
+are replaced (`shared/`, the Atelier, AtelierLink, `_master/entry`, `config`
+and `sets`); your `<YourName>/` folder is not touched. A copy of the replaced
+files is kept, and one button puts the last update back. New options in the
 templates are not added to your own config files: compare with `_master/` if
 you want them.
 
@@ -57,7 +66,7 @@ pick `Tag` or `Full`. The job's set file needs a `sets.TreasureHunter`.
 ## Lockstyle
 
 **No lockstyle.**
-It is sent 8 s after a load. Check the number in
+It is sent about 10 s after a load. Check the number in
 `<job>/display/<JOB>_LOCKSTYLE.lua` exists in game (`/lockstyleset <n>` by
 hand). `//gs c ls` sends it again.
 
@@ -65,8 +74,10 @@ hand). `//gs c ls` sends it again.
 That is the default, around each lockstyle. `//gs c dressup` turns it off.
 
 **The lockstyle ignores my subjob.**
-The job's `_LOCKSTYLE.lua` needs a `get_style` function for `by_subjob` to
-count ([configuration](configuration.md#lockstyle-job_lockstylelua)).
+The job's `_LOCKSTYLE.lua` picks a style per subjob from its `by_subjob` list
+(or from its `get_style` function, which wins when there is one). Check that
+your subjob is in that list with a style that exists in game
+([configuration](configuration.md#lockstyle-job_lockstylelua)).
 
 ## Keys and HUD
 

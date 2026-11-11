@@ -208,4 +208,5 @@ name: `sets.precast.JA['Chain Affinity']`, `['Burst Affinity']`, `['Diffusion']`
 - `sets.engaged.SW.DT`, `sets.engaged.SW['Subtle Blow']`.
 - `sets.precast.FC.<Category>`, `sets.midcast['Enhancing Magic']`,
   `sets.midcast['Healing Magic']`, `sets.defense.PDT` / `.MDT`.
-- `sets.DW.*`, `sets.TreasureHunter` (see [set names](../../guides/sets.md)).
+- `sets.TreasureHunter` (see [set names](../../guides/sets.md)).
+- `sets.DW.*` is in the file, empty, ready to fill.

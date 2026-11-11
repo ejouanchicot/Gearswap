@@ -59,7 +59,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 | `_master/config/nin/NIN_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
 | `_master/config/nin/NIN_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/nin/NIN_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/nin_sets.lua` | 173 | Template sets: every set the code reads, all empty |
+| `_master/sets/nin_sets.lua` | 179 | Template sets: every set the code reads, all empty |
 
 Shared files changed for NIN (registries only):
 
@@ -164,7 +164,9 @@ level's `.DT`, else `sets.engaged.DT`. Then `lay_buff_layers` over
 `ENGAGED_BUFFS = {'Yonin', 'Innin', 'Sange', 'Issekigan'}` (each
 `sets.buff[name]` whose buff is in `buffactive`, in that order), Mote's
 layers, the weapons. The shared Dual Wield tier pieces go on after, from
-`dual_wield.lua`'s wrapper of `handle_equipping_gear`.
+`dual_wield.lua`'s wrapper of `handle_equipping_gear`, while Auto DW is on for
+NIN (`DualWield.on_for_job`: `jobs` in `DW_CONFIG.lua`, a job left out is on)
+and a tier is filled (an empty tier takes the one below).
 
 Trace line (`//gs c trace on`): `ENGAGED <path>, on top: <layers>`.
 
@@ -223,7 +225,8 @@ T = `_master/sets/nin_sets.lua`. Player version:
 | `sets.resting` | Mote | yes |
 | `sets.idle`, `.DT`, `.Town` | `BaseSetBuilder.select_idle_base` | yes |
 | `sets.engaged`, `.Acc`, `.DT`, `.Acc.DT` | `select_engaged_base` | `.Acc.DT` commented |
-| `sets.DW.*`, `sets.CombatMode`, `sets.TreasureHunter` | shared | commented |
+| `sets.DW.*` | shared DualWield (only while Auto DW is on for NIN: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty |
+| `sets.CombatMode`, `sets.TreasureHunter` | shared | commented |
 | `sets.defense.PDT` / `.MDT` | Mote defense layer | no |
 
 ## Configuration

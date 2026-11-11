@@ -195,5 +195,5 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 - `sets.engaged.<Weapon>AFM3` (optional, see *Engaged*).
 - `sets.midcast.Ninjutsu`, `sets.midcast['Healing Magic']`,
   `sets.midcast['Enhancing Magic']`.
-- `sets.Adoulin` and `sets.idle.Town` are in the file; `sets.DW.*` is there
-  commented out, ready to fill.
+- `sets.Adoulin`, `sets.idle.Town` and `sets.DW.*` are in the file (`sets.DW.*`
+  empty, ready to fill).

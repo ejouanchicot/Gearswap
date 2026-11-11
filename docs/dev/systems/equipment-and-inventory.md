@@ -25,7 +25,9 @@ The area holds three kinds of code:
   ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
   name without augments ([Gear scan](#gear-scan)). `ElementalBelt`, `DualWield` and `TreasureHunter` are installed by
   `INIT_SYSTEMS` on Mote's hooks; they are documented in
-  [factories-and-helpers.md](factories-and-helpers.md) and only summarised here.
+  [factories-and-helpers.md](factories-and-helpers.md) and only summarised here. `OffhandFilter` trims the `SubWeapon`
+  cycle to the shields at each load when the character cannot dual wield (no /NIN or /DNC on a job without the trait)
+  ([SubWeapon by subjob](#subweapon-by-subjob-offhandfilter)).
 - **Libraries called by job code.** `WeaponResolver` (weapon states -> sets), `BaseSetBuilder`
   (movement and town idle gear), `ElementalBonus` (Obi / Orpheus arithmetic), `AmpullaLock` (PLD/WAR
   Hoxne ammo lock), `SpellGearLock` (Dispelga's Daybreak).
@@ -51,7 +53,8 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/item_index.lua` | 177 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo), `is_shield(name)` (since 2026-10-16) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 212 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
-| `shared/utils/equipment/dual_wield.lua` | 247 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `shared/utils/equipment/dual_wield.lua` | 319 | Dual Wield tier sets laid on the engaged set by magic haste: the engaged mode's own tiers `sets.DW.<Mode>.<Tier>` first (for instance `sets.DW.SB.MaxHaste`; the mode is the one the job's set builder noted with `note_mode`, BRD only today), then the common `sets.DW.<Tier>` (both since 2026-11-06, `44dc63b5`); Auto DW on or off job by job (`<Char>/_common/gear/DW_CONFIG.lua`: `jobs = {BRD = false, ...}` turns one job off, a job left out is on; `enabled = false` turns every job off; `on_for_job`, since 2026-11-06, `d9d1e4be`); `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`); BRD `logic/set_builder.lua` (`note_mode`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `shared/utils/equipment/offhand_filter.lua` | 164 | `SubWeapon` cycle reduced to the values that are no weapon (shields, grips) while the character cannot dual wield, the value last chosen on each side (two weapons / one weapon) given back for the session (since 2026-11-06, `d9d1e4be`; [SubWeapon by subjob](#subweapon-by-subjob-offhandfilter)) | `INIT_SYSTEMS.lua` (`OffhandFilter.apply`, every load, after `init_gear_sets` and the Atelier set overrides); `atelier_export.lua` (`full_values`, `collect_modes`) | this page |
 | `shared/utils/party/support_tier.lua` | 173 | Weaponskill and engaged set version by party support (`.Group` / `.Solo`); `//gs c support` | `INIT_SYSTEMS.lua` (`SupportTier.install`), every job's engaged builder (`SupportTier.engaged`) | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
 | `shared/utils/party/party_jobs.lua` | 111 | Main job of each party member (0xDD / 0xDF, alt report, trusts) | `support_tier.lua` | [factories-and-helpers.md](factories-and-helpers.md#supporttier) |
 | `shared/utils/equipment/treasure_hunter.lua` | 291 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
@@ -468,6 +471,42 @@ The config is read once per sandbox (`enabled`, `CharPaths.load('common', 'WEAPO
 lookups come from the session-wide `ItemIndex` (`item_index.lua`), built on first use (see
 [For maintainers / AI](#for-maintainers--ai) for the cost).
 
+### SubWeapon by subjob: `OffhandFilter`
+
+`shared/utils/equipment/offhand_filter.lua` (new 2026-11-06, `d9d1e4be`; SPEC
+`notes/docs-perso/subweapon-selon-sub-2026-11-06/SPEC.md`) keeps the `SubWeapon` cycle to what the
+character can hold. `INIT_SYSTEMS.lua` calls `OffhandFilter.apply(player.main_job)` under `pcall` on
+every load (`INIT_SYSTEMS.lua:37`), after `init_gear_sets` and the Atelier set overrides, because a
+value may name a weapon set (`sets.Kraken = {sub = 'Kraken Club'}`) built there.
+
+- Only a `state.SubWeapon` that is a Mote list mode is touched (`sub_mode`); a job without one is left
+  alone.
+- Side: `WeaponResolver.can_dual_wield()` (main job NIN/DNC/THF/BLU, /NIN 10+ or /DNC 20+) gives
+  `dw`, anything else `single`. With Dual Wield the whole list stays.
+- On the `single` side each value is looked up as the item it puts in the off hand (the `sub` of
+  `sets[value]` when that set exists, else the value itself) and `WeaponResolver.is_offhand_weapon`
+  decides: weapons (`true`) are dropped; shields and grips (`false`) and names the game does not know
+  (`nil`) stay. The list is laid again with Mote's `options()` (`relist`), the current value kept when
+  it is still there. A list with no shield is left whole: `sets.SingleWield` then swaps the weapon at
+  equip time ([Weapon states](#weapon-states-weaponresolver)).
+- Memory: the value held on each side is kept for the session in
+  `windower._offhand_pick['<Char>/<JOB>'] = {dw = ..., single = ...}`, which outlives the reload a
+  subjob change makes. `apply` gives it back when the list shown holds it. It is taken each time
+  `SubWeapon` changes (`remember`), through a wrapper of the job's `job_state_change` (`watch`):
+  a key, `//gs c cycle`, `//gs c set`. It is not taken at the subjob change itself: Mote runs
+  `user_setup` again before `job_sub_job_change`, so the mode is back at its start value by then. A
+  relog starts from the start values.
+- `watch` runs 1.0 s after `apply` (the job's functions, which define `job_state_change`, are
+  included after `INIT_SYSTEMS`); it wraps once per load (`_G._offhand_wrapped`), calls the job's own
+  `job_state_change` first, and recognises the mode by its name or its description.
+- When the list was filtered or the value changed, the HUD is drawn again at once and 1.0 s later
+  (`redraw_hud`, `UI_MANAGER.update`): the HUD outlives the reload and was drawn with the values from
+  before the filter.
+- The Atelier export (`atelier_export.lua` `collect_modes`) sends the whole list of a filtered mode
+  (`full_values`); the page filters it for the subjob itself.
+- Each step writes a `LOAD` line to `//gs c trace` (`offhand <JOB> side=... list={...} kept={...}
+  pick=... now=...`, `offhand <JOB> kept <side>=<value>`).
+
 ### Movement and town idle: `BaseSetBuilder`
 
 `shared/utils/set_building/base_set_builder.lua` holds the five idle helpers the job set builders
@@ -845,6 +884,17 @@ Returned only (no `_G` export).
 
 Returned only (no `_G` export).
 
+### OffhandFilter (`offhand_filter.lua`)
+
+| Function | Returns | Callers |
+|---|---|---|
+| `apply(job)` | nothing; filters `state.SubWeapon` for the subjob held, gives back the value last chosen on that side, schedules `watch(job)` 1.0 s later | `INIT_SYSTEMS.lua:37`, every load |
+| `remember(job)` | nothing; keeps the current `SubWeapon` value in `windower._offhand_pick` for the side the subjob gives | the `job_state_change` wrapper of `watch` |
+| `watch(job)` | nothing; wraps `_G.job_state_change` once per load so a `SubWeapon` change calls `remember` | `apply` |
+| `full_values(name)` | the whole list of a mode this load filtered, or `nil` | `atelier_export.lua` (`collect_modes`) |
+
+Exported to `_G.OffhandFilter` and returned.
+
 ### BaseSetBuilder (`base_set_builder.lua`)
 
 | Function | Returns | Callers |
@@ -914,7 +964,7 @@ open until the stance is selected again. The registry is emptied on every job lo
 | Module | Public functions | Page |
 |---|---|---|
 | `ElementalBelt` | `settings`, `owned`, `applies`, `choose`, `apply`, `show_status`, `install` | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
-| `DualWield` | `settings`, `magic_haste`, `tier`, `apply`, `install`, `command` | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `DualWield` | `settings`, `magic_haste`, `tier`, `note_mode`, `mode`, `on_for_job`, `apply`, `install`, `command` | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
 | `TreasureHunter` | `mode`, `is_tagged`, `wants_engaged_th`, `apply_engaged`, `init`, `install`, `status_fields`, `clear` | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
 | `treasure_commands` | the `optional_state_commands.create(...)` handler for `//gs c th` | [commands-and-debug.md](commands-and-debug.md) |
 | `SpellGearLock` | `required`, `cast`, `begin`, `hold`, `release` | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock) |
@@ -1023,10 +1073,12 @@ return M
   (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `_G.HPPriority`,
   `_G._hp_priority_state` (HP priority), `_G._equip_hooks`, `_G._equip_hooks_wrapper` and `_G.equip`
   (equip hooks; `_G.sets` is not written), `_G._impact_lock`, `_G.precast`, `_G.aftercast`,
-  `_G.cancel_spell` and `_G._impact_wrapped_<name>` for each of them (Impact lock), `_G.ampulla_ammo_locked` (Ampulla lock). The `windower.*`
+  `_G.cancel_spell` and `_G._impact_wrapped_<name>` for each of them (Impact lock), `_G.ampulla_ammo_locked` (Ampulla lock),
+  `_G.OffhandFilter`, `_G.job_state_change` (wrapped) and `_G._offhand_wrapped` (off-hand filter). The `windower.*`
   fields written are the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
   `release`, since 2026-09-29), `windower._dup_gear_warned` (doubled items already warned about,
-  kept for the session) and `windower._item_index` (the item name lookups of `item_index.lua`, built
+  kept for the session), `windower._offhand_pick` (the `SubWeapon` value last chosen on each side, by
+  character and job, kept for the session) and `windower._item_index` (the item name lookups of `item_index.lua`, built
   once per session).
 - Doubled gear: the bag read is a module-level cache of `duplicate_gear.lua`, refreshed when older than
   5 s and cleared at each load (`install`).
@@ -1038,7 +1090,8 @@ return M
 - Events, keybinds, text objects: none in the modules of this page (the belt, Dual Wield and Treasure
   Hunter hooks are described on their page).
 - Coroutines: the refill move chain (one `coroutine.schedule` per move), the aftercast quiver check
-  (1.0 s), the Ampulla polling (0.5 s, invalidated by `lock_sequence`). The first two are neither
+  (1.0 s), the Ampulla polling (0.5 s, invalidated by `lock_sequence`), the off-hand filter's `watch`
+  and second HUD redraw (1.0 s after the load, plain `coroutine.schedule`). The first two are neither
   tracked nor cancelled; a refill started before a job change keeps moving items and prints its report
   from the old environment's closures.
 - GearSwap slot locks (`disable('ammo')`) survive `gs reload`, subjob and main job changes.

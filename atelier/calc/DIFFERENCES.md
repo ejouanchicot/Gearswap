@@ -498,6 +498,9 @@ section T (the reference "does the same"): agreement there is evidence, not proo
 
 ## X. The page asks this engine (2026-10-10)
 
+Replaced by section AP: the old engine is no longer loaded, nothing is handed to it, and the choice
+between the two is gone. What follows is the state of 2026-10-10.
+
 `calc_page.js` gives the page's shapes, `calc_bridge.js` switches between this engine ("own") and the
 one the page had before ("old"), on the page and in its workers; the choice is the page's (top bar),
 "old" by default. `node scripts/audit/calc_page_check.js` plays the 756 cases through the functions
@@ -787,7 +790,7 @@ Tiara +3, Locus Ghost Crabs Lv 139; the ones under STR Down or with Stoneskin on
 
 ## AD. Stage 4, damaging spells (2026-10-17): differences with the spell battery
 
-`node scripts/audit/calc_magic_check.js` runs every result of `scripts/audit/engine_ref/spells_*.json`
+`node scripts/audit/calc_magic_check.js` runs every result of `scripts/audit/engine_ref_spells/spells_*.json`
 (1076 cases, 9 job files) through `CALC.spellDamage` twice: (a) fed the case's own `stats`, (b) fed
 `CALC.characterStats(input)`; (b2) is (b) given the attributes of the job pairs stage 1 lacks (AD8);
 (c) is (a) with AD1 and AD2 done the old engine's way, to show what the rest of each gap is made of.
@@ -1012,7 +1015,8 @@ the mythics' "(Level 119 III)" pages (Lv1 floor(TP÷50 + 10) Accuracy, Lv2 floor
 TP, stage 5 6 % to 12 %). Its stats go on the sheet like an ability (calc_abilities.js), a mythic's Lv3 and an
 empyrean's triple damage into the round (calc_page.js, the round already counted them). The round's own relic path
 (Apocalypse's haste and accuracy, never called) is gone: the relics' aftermath is on the sheet now.
-Not here, still with the engine before: aeonic weapons (no melee effect on their page, and no list of them read),
+Not here, still with the engine before (replaced by section AP: the old engine is no longer loaded, such a case is
+not computed and the page says why): aeonic weapons (no melee effect on their page, and no list of them read),
 Verethragna (off-hand first hit), Kenkonken's Lv3 (off-hand only), Tizona / Carnwenhan / Yagrush ("?" levels),
 Gastraphetes. A mythic's Lv3 on a weaponskill ("can trigger once on any physical Weapon Skills") is not counted.
 Nirvana: its page's ÷10 + 20 and ×0.6 fall out of the Mythic_Aftermath table's own 30~49 / 40~99: the table's taken.
@@ -1052,7 +1056,8 @@ ASSUMED: the first shot's ~+100 accuracy (Category:Weapon_Skills: "The first swi
 distance penalty, no level correction of the ratio (the target's level is not on the engine's enemy); one hit where the
 page gives none (Coronach, Numbing Shot...). Not computed, a number missing on the page: Apex Arrow (defense ignored at
 2000 / 3000 TP), Jishnu's Radiance, Sniper Shot, Arching / Dulling Arrow (critical hit rate by TP), Blast Shot / Arrow,
-Slug Shot, Sidewinder (accuracy by TP). Hover Shot (an ability) is unknown: the case goes to the engine before.
+Slug Shot, Sidewinder (accuracy by TP). Hover Shot (an ability) is unknown: the case went to the engine before (since section AP: not computed, the page
+says why).
 True Shot: what the gear gives; the jobs' traits and gifts (RNG, COR) are not on the sheet yet.
 Bench (`banc/rng_*`): the Tetsouo RNG sets have no ranged weapon (both engines' figures mean nothing there), Kaories's
 Blast Shot is "not computed": 9 sets changed, the other 3 960 identical.

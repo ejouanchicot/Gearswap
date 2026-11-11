@@ -55,7 +55,7 @@ depends on the subjob.
 | Key | Does | When | Shown in the HUD |
 |---|---|---|---|
 | `^numpad1` | Cycle Main Weapon: Naegling, Twashtar, Carnwenhan, Mpu Gandring | always | yes |
-| `^numpad2` | Cycle Sub Weapon: Kraken, Demersal, Genmei, Centovente | always | yes |
+| `^numpad2` | Cycle Sub Weapon: Kraken, Demersal, Genmei, Centovente (only Genmei without /NIN or /DNC) | always | yes |
 | `^numpad3` | Cycle Main Instrument: Gjallarhorn, Daurdabla, Marsyas | always | yes |
 | `^numpad4` | Cycle Idle Mode: Refresh, DT, Regen | always | yes |
 | `^numpad5` | Cycle Engaged Mode: STP, Acc, DT, SB | always | yes |
@@ -119,14 +119,16 @@ and arguments: [commands guide](../../guides/commands.md).
 | `lullaby2` (`foe`) | Foe Lullaby II on `<stnpc>` |
 | `elegy` | Carnage Elegy on `<stnpc>` |
 | `requiem` | Foe Requiem VII on `<stnpc>` |
+| `nt` | Nightingale, then Troubadour 2 s later |
+| `sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
+| `forceidle` | Enables ring1 again and puts the idle set's left ring back on |
+| `skillup horn` / `skillup harp` (`wind` / `string`) | Instrument skill-up loop: sings its songs one after the other, on yourself by default, with the horn (Wind Instrument, default Loughnashade) or the harp (String Instrument, default Daurdabla) put in the range slot and the ammo slot emptied, for those songs only. A song goes once you are idle, 3 s after your last action, the next one whose recast is ready (default Army's Paeon VI, V, IV, III, II). Songs you have not learned are left out. It stops by itself when you engage, die or leave BRD, or after 5 failed songs in a row; never at the skill cap: stop it yourself |
+| `skillup off` (`stop`) / `skillup` (`status`) | Stops the loop / says whether it runs, with which instrument and how many songs were sung |
 
 The spells of `lullaby`, `lullaby2`, `elegy` and `requiem` can be changed with
 `BRDSongConfig.DEBUFF_SONGS` in `brd/combat/BRD_SONG_CONFIG.lua` (for instance `{elegy = 'Battlefield Elegy'}`).
 Their chat line (`Casting ...`) names the spell the command sends, before any
 tier change on recast.
-| `nt` | Nightingale, then Troubadour 2 s later |
-| `sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
-| `forceidle` | Enables ring1 again and puts the idle set's left ring back on |
 
 `carol`, `etude`, `dummy1`, `dummy2` and `song1`-`song5` aim at yourself when
 you target yourself, at your current target when it is another player
@@ -174,7 +176,7 @@ starts, after its recast check, never by the command.
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns. Not while engaged |
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge...) and subjob nukes when the day, weather or distance gives enough (`//gs c belt`). Songs never get it |
-| Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC). An Engaged Mode (or Kraken Club, `PDTKC`) can have its own: `sets.DW.Acc.NoHaste`, `sets.DW.SB.MaxHaste`..., worn before the common ones |
+| Dual Wield tiers | Only while you hold two weapons (/NIN, /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { BRD = false }`). An Engaged Mode (or Kraken Club, `PDTKC`) can have its own: `sets.DW.Acc.NoHaste`, `sets.DW.SB.MaxHaste`..., worn before the common ones |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none) |
 | Combat Mode | Off and hidden. **On BRD it also locks the instrument slot**: no instrument can change, dummy songs use whatever you wear, and Honor March / Aria of Passion are refused unless Marsyas / Loughnashade is already on. Leave it hidden unless you want exactly that |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
@@ -196,7 +198,7 @@ for refill, `combat/` for the rest):
 | `BRD_STATES.lua` | Modes, their values and defaults |
 | `BRD_KEYBINDS.lua` | The job keys above |
 | `BRD_CUSTOM.lua` | Your own modes, keys and gear rules ([keybinds guide](../../guides/keybinds.md)) |
-| `BRD_SONG_CONFIG.lua` | The song packs, dummy songs, Etudes, Victory March replacements, HUD short names, song tier fallback (`SONG_REFINE`, `enabled = false` turns it off), the spells of the debuff commands (`DEBUFF_SONGS`), the time left under which `//gs c songs` sings again (`REFRESH_BELOW`, 180 s) |
+| `BRD_SONG_CONFIG.lua` | The song packs, dummy songs, Etudes, Victory March replacements, HUD short names, song tier fallback (`SONG_REFINE`, `enabled = false` turns it off), the spells of the debuff commands (`DEBUFF_SONGS`), the time left under which `//gs c songs` sings again (`REFRESH_BELOW`, 180 s), the skill-up loop (`skillup = { songs = {...}, horn = 'Loughnashade', harp = 'Daurdabla', gap = 3, target = '<me>' }`, plus `horn_songs` / `harp_songs` inside it for one instrument's own list; `target = '<t>'` sings a debuff song on your target) |
 | `BRD_TIMING_CONFIG.lua` | Gap after each song of a rotation (3.0 s, +1.0 s after Honor March / Aria of Passion) and the `nt` delay (2.0 s) |
 | `BRD_HUD.lua` | HUD section and row order for BRD (written by `//gs c ui order` / `roworder`) |
 | `BRD_LOCKSTYLE.lua` | Lockstyle number (template: 7), and one per subjob in `by_subjob` |

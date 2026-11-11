@@ -21,7 +21,7 @@ keybind HUD (`//gs c ui`) lists the keys of the current job.
 | `#numpad0` | Auto Medicine on/off (common key) |
 | `!numpad7`, `!numpad8`, `!numpad9` | Alts follow / automation on-off / mirror (common keys, see [dual-box](dualbox.md)) |
 | `!z`, `!x` | Sneak / Invisible on you and your other characters (common keys, see [Sneak and Invisible](stealth.md)) |
-| `!numpad0` | Combat Mode, on a job where you showed it and gave it no other key (BLM, GEO, RDM and WHM keep their own key) |
+| `!numpad0` | Combat Mode, on a job where you showed it and gave it no other key (BLM, GEO, RDM, SCH and WHM keep their own key) |
 | `!numpad.` | Treasure Mode, on a job where you showed it (THF has its own key) |
 | F9-F12 with modifiers, `^-`, `^=` | Mote-Include's default keys, on every job (table below) |
 | Ctrl+F1-F8, Alt+F1-F8 | Free for `//gs c tb` |
@@ -197,7 +197,7 @@ key replaces the job's.
 
 Combat Mode On keeps your weapons where they are (main, sub, range; ammo too on
 BLM, GEO and WHM): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
-GEO, RDM and WHM by default, with their usual key, hidden elsewhere. Shown on
+GEO, RDM, SCH and WHM by default, with their usual key, hidden elsewhere. Shown on
 another job, its key is Alt+Numpad0 unless you pick one.
 
 | Command | Effect |
@@ -263,11 +263,16 @@ every job (Mote's) are folded at the bottom. Click **Change** on a key:
 3. The window warns of a key already taken on this job and subjob, of a key
    without Ctrl / Alt / Shift / Win (you could no longer type it in the
    chat), of F9-F12, Ctrl+- and Ctrl+= (Mote's) and of Ctrl+V (Windower's paste).
-4. **Save** writes `<YourName>/atelier/overrides/keybind_overrides.lua`. The first time,
-   the browser asks for GearSwap's `data` folder (the one holding
-   `atelier.html`). A browser that cannot write there downloads the file:
-   put it in `<YourName>/saved/`.
-5. In game: `//gs reload` or change job. The old key is freed.
+4. **Save** writes `<YourName>/atelier/overrides/keybind_overrides.lua`.
+   - With the game running and the live link on, the game writes it and
+     reloads GearSwap by itself: the new key works right away.
+   - Otherwise the page writes it. The first time, the browser asks for
+     GearSwap's `data` folder (the one holding `atelier.html`). A browser
+     that cannot write there downloads the file: put it in
+     `<YourName>/atelier/overrides/`. An older copy left in
+     `<YourName>/saved/` is removed when the page writes the new one.
+5. Without the live link, in game: `//gs reload` or change job. The old key is
+   freed.
 
 Your key files are never rewritten. A common key changed in the page changes
 on every job; a job key on that job only. Delete `keybind_overrides.lua` to go
@@ -317,4 +322,5 @@ in `<YourName>/saved/temp_binds.lua`).
 - `<JOB>_KEYBINDS.lua`, `COMMON_KEYBINDS.lua`, `<JOB>_CUSTOM.lua`: `//gs c reload`
   (or change job).
 - The files in `<YourName>/` are your copies; the templates in
-  `_master/` are only read by the clone script.
+  `_master/` are only read by the clone script, the alt commands (when your
+  `_common/dualbox/alt/` lacks a file) and the Atelier page's **+ Add a job**.

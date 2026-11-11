@@ -2,8 +2,8 @@
 
 `shared/utils/messages/data/` holds every chat template used by the template path of the message
 system: 38 pure-data Lua files (8 job namespaces under `data/jobs/`, 30 system namespaces under
-`data/systems/`) returning **548 templates** (counted on 2026-09-28 by loading each file with
-`lua5.1`, less the two of `run_messages.lua`, deleted the same day, and `BLM.buffself_error`, deleted on 2026-10-01). Nothing in these files runs on its own. A formatter module
+`data/systems/`) returning **550 templates** (counted again on 2026-11-11 by loading each file with
+`lua5.1`; the two BST templates `ecosystem_correlation` and `pet_correlation` of 2026-10-28, `ebc95f2a`, included). Nothing in these files runs on its own. A formatter module
 (`shared/utils/messages/formatters/**`), `info_block.lua`, `help_screen.lua` or a few utilities call
 `M.send(namespace, key, params)` from `shared/utils/messages/api/messages.lua`; the engine
 (`shared/utils/messages/core/message_engine.lua`) loads the namespace file on first use, fills the
@@ -159,8 +159,8 @@ key_name = {
 - `template` (string, required): literal text plus `{token}` placeholders.
 - `color` (number, optional): the chat mode passed to `add_to_chat` for every line of the message.
   It colours any text before the first inline colour token and decides which FFXI chat filter the
-  line falls under (121 is the "system" mode the help screens use). Distribution over the 548
-  templates (2026-10-12): 1 (x345), 167 (x42), 122 (x40), 158 (x34), 160 (x32), 207 (x12),
+  line falls under (121 is the "system" mode the help screens use). Distribution over the 550
+  templates (2026-11-11): 1 (x347), 167 (x42), 122 (x40), 158 (x34), 160 (x32), 207 (x12),
   121 (x12), 200 (x11), 123 (x10), 159 (x6), 8, 206 (x1 each) and two computed values:
   `MIDCAST.debug_result_fallback` and `STATUS.warning` compute their colour when the data file is
   executed, with `MessageColors.get_warning_color()` (the player's `warning`/`orange` override, else
@@ -357,7 +357,7 @@ their line in the data file; they have no path from any caller (see Known issues
 | `SYSTEM` | 5 | 0 | 5 |
 | `WARP` | 46 | 35 | 11 |
 | `WATCHDOG` | 29 | 27 | 2 |
-| **Total** | **548** | **401** | **147** |
+| **Total** | **550** | **403** | **147** |
 
 ### `BLM`
 
@@ -605,7 +605,7 @@ Re-checked on 2026-09-28. Open:
 - `SONGS` namespace is a duplicate of `BRD` with no sender since `message_songs.lua` was removed - `shared/utils/messages/data/systems/songs_messages.lua`.
 - `SYSTEM` colour-test templates are unreachable (COR `testcolors` branch shadowed by the common command) - `shared/jobs/cor/functions/COR_COMMANDS.lua` `testcolors` branch.
 - Region templates orphaned since `//gs c setregion`/`detectregion` were removed - `shared/utils/messages/data/systems/commands_messages.lua` `detectregion_header`.
-- Remaining unreachable templates in BST, BRD, BLM, RDM, DRG, WHM, COMBAT, COMMANDS, DUALBOX, EQUIPMENT, WARP, INIT, JA_BUFFS, KEYBINDS, MIDCAST, PROFILER, STATUS, WATCHDOG (147 of 548 with the entries above; see the catalogue). Most have had no sender since 2026-10-01.
+- Remaining unreachable templates in BST, BRD, BLM, RDM, DRG, WHM, COMBAT, COMMANDS, DUALBOX, EQUIPMENT, WARP, INIT, JA_BUFFS, KEYBINDS, MIDCAST, PROFILER, STATUS, WATCHDOG (147 of 550 with the entries above; see the catalogue). Most have had no sender since 2026-10-01.
 - Fixed 2026-10-01: `//gs c testmsg` reported `0/0 tests PASSED` (the test directory was not on the require path); the suites are back in `shared/utils/messages/api/tests/` - `shared/utils/messages/api/messages.lua` `Messages.test`.
 - `//gs c msgtests` fails on valid templates because its parameter whitelist does not match the templates (`instrument`, `hp`, `jug`, `tp`, `max`, `module`, `potency` missing) - `shared/utils/messages/message_validator.lua` `COMMON_PARAMS`. Fixed 2026-09-28 for colours: `VALID_COLORS` adds every key of `MessageEngine.COLOR_CODES` (27 tags, `gold`/`aqua`/`mustard`/`amber` included).
 - `M.ability` targets a namespace with no file - `shared/utils/messages/api/messages.lua` `Messages.ability` (its comment says so).

@@ -39,9 +39,9 @@ lockstyle, macro book) is common to all jobs.
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,
 and BRD, COR, GEO, PLD, RDM and WHM on the dual-boxed alt. BLU (added 2026-09-26) is played
-by a friend's character. DRK, RUN and SAM exist as templates but no
-maintained character plays them, and DRG, MNK, NIN, PUP, RNG and SCH are new
-and not yet played.
+by a friend's character. His characters are also set up for MNK, NIN, PUP,
+RNG, SAM and SCH (his main), DRG and DRK (another of them); DRK and RUN are set
+up for a third player. The list of characters and their jobs is `character_db.lua`.
 
 Per-job pages (modes, keys, commands): [docs/user/jobs/](docs/user/jobs/README.md).
 
@@ -86,7 +86,9 @@ file and what it holds is in `data/<YourName>/_WHERE-IS-WHAT.txt`. If the folder
 the old one to `addons/GearSwap/clone_backups/` rather than deleting it; the
 HUD position and per-job HUD order, message modes, alt window, alt state,
 owned warp items, Combat Mode and Treasure Mode choices, Sneak / Invisible
-settings and temporary keys you had are copied back.
+settings, temporary keys, the gear scan (`//gs c gearscan`), what you changed
+in the Atelier page (sets, keys, mode start values) and its export switch are
+copied back.
 
 ### 3. Put in your gear
 
@@ -179,7 +181,7 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
   2 s; rapid changes collapse into one reload. If GearSwap ever loads the
   wrong job file, it is reloaded.
 - **Lockstyle and macro book** per job (the macro book also per subjob and
-  per partner job): the macro book is set about 1.5 s after a load, the
+  per partner job): the macro book is set about 1.7 s after a load, the
   lockstyle about 10 s after.
   By default the DressUp addon is unloaded around `/lockstyleset` and loaded
   again 3 s later; `//gs c dressup` turns that off.

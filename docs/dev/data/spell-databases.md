@@ -50,7 +50,6 @@ table, with a line number only where it was re-read that day.
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | 11 families | Tier-downgrade map for RDM enfeebles (`TIERS`, `get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | 13 families | Tier-downgrade map for nukes V..I, -ra III..I and Aspir III..I (`TIERS`, `get(family)`), RDM and GEO (since 2026-09-26) |
 | `shared/utils/data/data_loader.lua` | 296 | - | Lazy `_G.FFXI_DATA` view of spells (15 aggregators), job abilities and weaponskills; used by `//gs c info` |
-| `shared/data/magic/dark/README_DARK_MAGIC.md` | 234 | - | Human reference for the Dark Magic modules (the only non-Lua file under `shared/data/`) |
 
 The gitignored `_dev/SPELL_DATABASES_SYSTEM.md` (local only) documents the deleted
 `UNIVERSAL_SPELL_DATABASE` (removed in `5917a09`, 2026-09-19); do not use it.
@@ -86,7 +85,7 @@ records carrying their job key from that skill aggregator.
 | `dark/dark_absorb.lua` | 161 | 10 | Absorb-STR/DEX/VIT/AGI/INT/MND/CHR, Absorb-ACC, Absorb-TP, Absorb-Attri | DARK; job views BLM, GEO, SCH |
 | `dark/dark_bio.lua` | 80 | 3 | Bio I-III | DARK; job views as above |
 | `dark/dark_drain.lua` | 137 | 6 | Drain I-III, Aspir I-III | DARK; job views as above |
-| `dark/dark_utility.lua` | 128 | 7 | Stun, Tractor, Death, Dread Spikes, Endark I-II, Kaustra (Klimaform is filed in `enhancing_utility.lua`) | DARK; job views as above |
+| `dark/dark_utility.lua` | 128 | 7 | Stun, Tractor, Death, Dread Spikes, Endark I-II, Kaustra (Klimaform is filed in `enhancing_utility.lua`). Stun is the only `dark/` record whose `element` is `Lightning`; the other 25 are `Dark` | DARK; job views as above |
 | `divine/divine_banish.lua` | 106 | 5 | Banish I-III, Banishga I-II (Banish IV commented out) | DIVINE; job view WHM |
 | `divine/divine_enlight.lua` | 43 | 2 | Enlight I-II | DIVINE; job view WHM |
 | `divine/divine_utility.lua` | 83 | 4 | Holy I-II, Flash, Repose | DIVINE; job view WHM |
@@ -557,6 +556,9 @@ Fixed:
 - BLM passed the Enhancing `get_spell_family` as its Enfeebling `database_func`: removed (2026-09-25).
 - `data_loader` never loaded `drg_pet_commands.lua`: bare `pet_commands` suffix added (2026-09-25).
 - Aggregator headers with wrong counts: corrected (`85ad22b`, 2026-09-24, and 2026-09-25).
-- `README_DARK_MAGIC.md` rewritten (2026-09-25).
+- `README_DARK_MAGIC.md` rewritten (2026-09-25), then taken out of `shared/data/magic/dark/` (2026-11-11):
+  it described helper functions (`get_description`, `get_absorb_spells`...) that `DARK_MAGIC_DATABASE.lua`
+  no longer has since it became data only (2026-10-01), and repeated this page. `shared/data/` now holds
+  Lua files only.
 - Descriptions of 17 spells re-read against BG-Wiki and corrected; Auroral Drape moved to
   `blu_debuffs_control.lua` as a debuff (2026-09-25).

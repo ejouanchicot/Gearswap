@@ -20,7 +20,7 @@ Set names and automatic gear: [sets.md](sets.md).
 | Ctrl+Numpad3 `^numpad3` | `MainInstrument` | **Gjallarhorn**, Daurdabla, Marsyas | Instrument for buff songs that do not need a specific one |
 | Ctrl+Numpad7 `^numpad7` | `VictoryMarch` | **Madrigal**, Minuet, Etude, None | When Haste or Haste II is already on you, Victory March in the pack is replaced by Blade Madrigal, Valor Minuet III or the Etude of `EtudeType`. None keeps it |
 | Ctrl+Numpad1 `^numpad1` | `MainWeapon` | Naegling, Twashtar, Carnwenhan, **Mpu Gandring** | Main weapon |
-| Ctrl+Numpad2 `^numpad2` | `SubWeapon` | Kraken, Demersal, **Genmei**, Centovente | Off-hand |
+| Ctrl+Numpad2 `^numpad2` | `SubWeapon` | Kraken, Demersal, **Genmei**, Centovente | Off-hand. Without Dual Wield (a subjob other than /NIN 10+ or /DNC 20+, or level 0 as in Sheol Gaol) the key only offers Genmei: the weapons are left out of the list. The last pick on each side is given back for the session |
 | Apps+Numpad1 `#numpad1` | `EtudeType` | **STR**, DEX, VIT, AGI, INT, MND, CHR | Etude sung by `//gs c etude` and by the Etude replacement |
 | Ctrl+Numpad0 `^numpad0` | `CarolElement` | **Fire**, Ice, Wind, Earth, Lightning, Water, Light, Dark | `//gs c carol` sings `<Element> Carol II` |
 | Ctrl+Numpad. `^numpad.` | `ThrenodyElement` | same eight, **Fire** | `//gs c threnody` casts `<Element> Threnody II` on `<stnpc>` |
@@ -63,6 +63,7 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 | `//gs c nt` | Nightingale, then Troubadour 2 s later (`BRD_TIMING_CONFIG.lua`) |
 | `//gs c sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
 | `//gs c forceidle` | Re-enables ring1 and puts the idle set's left ring back on |
+| `//gs c skillup horn` / `harp` | Instrument skill-up loop: the loop's songs one after the other (default Army's Paeon VI to II, on yourself) with the horn or the harp in the range slot, until `//gs c skillup off`; `//gs c skillup` says whether it runs. Details and settings (`skillup` in `BRD_SONG_CONFIG.lua`): [README](README.md#all-commands-on-this-job) |
 
 ## Notes
 

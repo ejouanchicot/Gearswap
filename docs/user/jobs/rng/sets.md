@@ -14,7 +14,7 @@ engaged set chosen is logged, and each buff set laid on a ranged attack.
 |---|---|
 | `sets['<Range weapon>']` | Range Weapon (`^numpad2`) is that value. Holds the weapon and its ammo: `sets['Fomalhaut'] = {range = "Fomalhaut", ammo = "Chrono Bullet"}` |
 | `sets['<Weapon>']` | Main Weapon (`^numpad1`) or Sub Weapon (`^numpad4`) is that value: `sets['Naegling'] = {main = "Naegling"}` |
-| `sets.SingleWield` | Instead of the off-hand weapon when you have no Dual Wield (not /NIN or /DNC): `{sub = "Nusku Shield"}` (commented in the provided file) |
+| `sets.SingleWield` | Instead of the off-hand weapon when you have no Dual Wield (not /NIN or /DNC): `{sub = "Nusku Shield"}` (in the provided file, empty, with that example in a comment) |
 
 `Free` (default) has no set: you keep what you wear. One set per value you add
 in `RNG_STATES.lua`, named exactly like the value. The weapon sets go on top
@@ -120,7 +120,7 @@ on the shot, not when you use the ability: use the `sets.buff` sets above.
 
 With /NIN or /DNC, engaged with two weapons: `sets.DW.NoHaste`, `.Haste`,
 `.HasteII`, `.MaxHaste` on top of the engaged set by your magic haste
-(commented in the provided file; `//gs c dw`).
+(in the provided file, empty: fill them; `//gs c dw`). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { RNG = false }`).
 
 ## Buffs
 
@@ -135,7 +135,7 @@ With /NIN or /DNC, engaged with two weapons: `sets.DW.NoHaste`, `.Haste`,
 
 ## Names the code reads that the provided file lacks
 
-- `sets.Adoulin`, `sets.SingleWield`, `sets.DW.*`, `sets.TreasureHunter` (all
-  commented), `sets.defense.PDT` / `.MDT`.
+- `sets.Adoulin`, `sets.TreasureHunter` (both commented), `sets.defense.PDT` / `.MDT`.
+- `sets.SingleWield` and `sets.DW.*` are in the file, empty, ready to fill.
 - `sets.precast.RA.Acc` (commented) and its `.Flurry1` / `.Flurry2`.
 - `sets.engaged.Acc.DT`.

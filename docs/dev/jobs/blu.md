@@ -72,7 +72,7 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/config/blu/BLU_CONFIG.lua` | 21 | Template of `<Character>/blu/combat/BLU_CONFIG.lua`: `auto_unbridled = false`, `expiacion_window = false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |
-| `_master/sets/blu_sets.lua` | 182 | Template sets: every set the code reads, all empty |
+| `_master/sets/blu_sets.lua` | 187 | Template sets: every set the code reads, all empty |
 | `_master/Gabvanstronger/config/blu/*`, `.../config_global/AUTO_ABILITIES.lua`, `.../sets/blu_sets.lua` | 5 + 1 files, 553 | Character overlay (see [Overlay](#character-overlay)); its `AUTO_ABILITIES.lua` is the file of before 2026-10-10, folded into the job files when the overlay is cloned |
 | `shared/data/alt/BLU_ALT_COMMANDS.lua` | - | Dual-box commands for a BLU partner (read by the main's alt system, not by the BLU job file) |
 
@@ -420,7 +420,7 @@ version: [sets.md](../../user/jobs/blu/sets.md).
 | `sets.idle.Town`, `sets.Adoulin` | `BaseSetBuilder` | no | no |
 | `sets.engaged`, `.Acc`, `.DT`, `['Subtle Blow']`, `.Refresh` | `select_engaged_base` | yes | yes |
 | `sets.engaged.SW`, `.SW.Acc`, `.SW.Refresh` | `select_engaged_base` (single wield) | yes | yes |
-| `sets.DW.<tier>` | shared DualWield | commented example | - |
+| `sets.DW.<tier>` | shared DualWield (only while Auto DW is on for BLU: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty | - |
 | `sets.TreasureHunter` | shared Treasure Hunter | no | - |
 
 G also has `sets['Pull']` and `sets.CP`, used by its `BLU_CUSTOM.lua` modes,

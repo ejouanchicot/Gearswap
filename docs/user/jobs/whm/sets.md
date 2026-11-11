@@ -263,4 +263,5 @@ that lacks its key piece while you own one.
 - `sets.midcast['Healing Magic']` (Sacrifice).
 - `sets.Adoulin`, `sets.idle.Weak`, `sets.defense.PDT` / `.MDT`.
 - `.Resistant` children of the Fast Cast sets.
-- `sets.DW.*`, `sets.TreasureHunter` (see [set names](../../guides/sets.md)).
+- `sets.TreasureHunter` (see [set names](../../guides/sets.md)).
+- `sets.DW.*` and `sets.SingleWield` are in the file, empty, ready to fill.

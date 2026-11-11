@@ -32,7 +32,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **JA** (Job Ability) | FFXI: an ability (Provoke, Berserk, Phantom Roll...). Its set is `sets.precast.JA['Name']` |
 | **Job file**, **entry file** | `<YourName>/<YourName>_<JOB>.lua`, the file GearSwap loads for your current job |
 | **Keybind** | A key that sends a command. Keys are bound when the job loads ([keybinds](keybinds.md)) |
-| **Lockstyle** | FFXI: `/lockstyleset <n>`, shows a saved outfit whatever you really wear. Sent 8 s after each load, again with `//gs c ls` |
+| **Lockstyle** | FFXI: `/lockstyleset <n>`, shows a saved outfit whatever you really wear. Sent about 10 s after each load, again with `//gs c ls` |
 | **Macro book** | FFXI: a book of macro pages. The job's `<JOB>_MACROBOOK.lua` picks the book and page for your subjob (and your partner's job) |
 | **Main** | 1. Main job: your job, as opposed to the subjob. 2. In a dual-box, the character you play, which drives the alts. `//gs c main` makes a character the main |
 | **MB** (Magic Burst) | FFXI: a nuke cast on a skillchain, for extra damage. Mage jobs have a mode for their burst set |
@@ -48,7 +48,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Slot lock** | A slot GearSwap leaves alone whatever the set says (Combat Mode, Doom, craft...) |
 | **Subjob** | FFXI: your second job (`/NIN`, `/SAM`...). A subjob change reloads the job file 2 s later |
 | **Tag** | Treasure Hunter: a mob is tagged once one of your actions lands on it with TH gear on; after that your normal gear can come back |
-| **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `_common/dualbox/alt/` lacks a file |
+| **Template** | The files in `_master/` the clone script copies from. In game they are read only for the alt commands, when your `_common/dualbox/alt/` lacks a file, and by the Atelier page's **+ Add a job**, which makes a job from them |
 | **TH** (Treasure Hunter) | FFXI: raises the drop rate of the mob it is applied to. `sets.TreasureHunter` and Treasure Mode (`//gs c th`) |
 | **Town set** | `sets.idle.Town` (or `sets.Adoulin`), worn idle in a town on top of the idle set |
 | **TP** (Tactical Points) | FFXI: built by fighting, spent by weaponskills (1000 minimum, 3000 maximum). TP bonus gear adds to the TP a weaponskill counts |

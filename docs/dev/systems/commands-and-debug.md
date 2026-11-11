@@ -81,7 +81,7 @@ Order of the shared prefixes in each job file, first to last (`alt/req` = `altjo
 | PUP | alt/req, `petmode`, wd, common, ui, dm, cs | |
 | SCH | alt/req, its own commands (`handle_job_command`: `nuke`, `helix`, `storm`, `strat`, `schhelp`), wd, common, ui, dm, cs | |
 | PLD, RUN, WAR | wd, alt/req, common, ui, dm, cs | WAR keeps a `perf` branch after `cs` that the common `perf` shadows |
-| BRD | alt/req, ui, `forceidle`, dm, cs, wd, common | Nothing in the repository sends `forceidle` |
+| BRD | alt/req, ui, `forceidle`, dm, `skillup`, cs, wd, common | Nothing in the repository sends `forceidle`. `skillup horn` / `harp` / `off` / `status` runs the instrument skill-up loop (`shared/jobs/brd/functions/logic/skillup.lua`) |
 | BST | alt/req, ui, dm, `debugprecast`, cs, wd, common | BST's own `debugprecast` answers before the common one and toggles `_G.BST_DEBUG_PRECAST` |
 | COR, GEO | alt/req, ui, dm, cs, wd, common | COR keeps a `testcolors` / `colors` branch that the common one shadows |
 | RDM | alt/req, ui, wd, common, raw Mote names, dm, cs | After `common`, every raw `selfCommandMaps` key is left to Mote. An unknown command at the end is cast as a JA / WS / spell name (read from `res`); if it is none of these and `selfCommandMaps` (the alt fallback) answers it, it is left to Mote; otherwise RDM prints "Command not recognized" |

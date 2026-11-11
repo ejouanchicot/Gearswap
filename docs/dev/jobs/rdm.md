@@ -49,7 +49,7 @@ the sets files (structure and set names only).
 | `shared/entry/rdm.lua` | 265 | Entry (the same for every character; `<Char>_RDM.lua` and its template `_master/entry/Tetsouo_RDM.lua` are one `include` of it): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload`; shared hooks from `shared/utils/core/entry_kit.lua` |
 | `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, then requires `dualbox_manager` |
 | `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 394 | `job_precast` as stages (guard, cooldown/refine, Phalanx, Saboteur) + WS + `SpellGearLock.begin`; `job_post_precast` (TP gear, spell FC set, lock hold, `debugprecast` trace) |
-| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 386 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
+| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 387 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
 | `shared/jobs/rdm/functions/RDM_AFTERCAST.lua` | 27 | `job_aftercast = LifecycleManager.aftercast(...)` with `SpellGearLock.release` as the extra step |
 | `shared/jobs/rdm/functions/RDM_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/rdm/functions/RDM_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -70,12 +70,12 @@ the sets files (structure and set names only).
 | `_master/config/rdm/RDM_KEYBINDS.lua` | 52 | Data only: 16 entries (Storm only on /SCH) handed to `KeybindManager.create('RDM', ...)` |
 | `_master/config/rdm/RDM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/rdm/RDM_HUD.lua` | 33 | HUD section / row order for this job (empty lists = default) |
-| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (not read by `LockstyleManager`, see Known issues) |
+| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30) |
 | `_master/config/rdm/RDM_MACROBOOK.lua` | 42 | `default` book 2 page 1, `solo[sub]`, empty `dualbox` |
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
 | `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
 | `_master/config/rdm/RDM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/rdm_sets.lua` | 566 | Template sets (flat) |
+| `_master/sets/rdm_sets.lua` | 577 | Template sets (flat) |
 | `_master/Kaories/config/rdm/*`, `_master/Kaories/sets/rdm_sets.lua` | 7 files, 631 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; its own `RDM_REFILL.lua` list; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
 | `_master/Gabvanstronger/config/rdm/*`, `_master/Gabvanstronger/sets/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
 | `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 122 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
@@ -311,7 +311,7 @@ every subjob change, so values reset). Keys from `RDM_KEYBINDS.lua`;
 | `EngagedMode` | DT, Acc, TP, Enspell | DT | `^numpad6` | `SetBuilder.select_engaged_base` |
 | `IdleMode` (replaced) | Refresh, DT | Refresh | `^numpad4`, Mote's `^f12` | Mote `get_idle_set`, `SetBuilder.select_idle_base` |
 | `MainWeapon` | Naegling, Colada, Daybreak | Naegling | `^numpad1` | `SetBuilder.apply_weapon` |
-| `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `SetBuilder.offhand_item`, `apply_weapon` |
+| `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `SetBuilder.offhand_item`, `apply_weapon`; at each load `offhand_filter.lua` keeps only the shields and grips (Ammurapi, Genmei) when the character cannot dual wield, and gives back each side's last choice for the session |
 | `CombatMode` | Off, On | Off | `^numpad5` | shared Combat Mode hook, `job_precast`, `SetBuilder` |
 | `EnfeebleMode` | Auto, Potency, Skill, Duration | Auto | `^numpad3` | `midcast_enfeebling` (`mode_state`); a mode other than Auto drops the type (`enfeeble_mode_forced`) when `.<Mode>` exists and `.<type>.<Mode>` does not |
 | `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `midcast_elemental` |
@@ -410,7 +410,8 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `sets.midcast['Elemental Magic']`, `.FreeNuke`, `['Magic Burst']` | `NukeMode` P8 | yes |
 | `sets.midcast['Dark Magic']`, `.Impact`, `.Stun`, `.Drain`, `.Aspir` | MidcastManager | yes |
 | `sets.buff.Doom` | shared DoomManager | yes |
-| `sets.DW.<tier>` | shared DualWield | commented example |
+| `sets.DW.<tier>` | shared DualWield (only while Auto DW is on for RDM: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty |
+| `sets.SingleWield` | `WeaponResolver`: its `sub` replaces an off-hand weapon when Dual Wield is not there | declared empty |
 | `sets.TreasureHunter` | shared Treasure Hunter | no |
 
 ## Configuration

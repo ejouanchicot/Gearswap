@@ -46,7 +46,7 @@ remain without a reachable caller are listed per module under Public API.
 | `formatters/magic/message_debuffs.lua` | 420 | 11 | "Blocked by debuff" lines, auto-cure lines, AutoMedicine toggle |
 | `formatters/magic/message_midcast.lua` | 130 | 9 | MidcastManager debug trace |
 | `formatters/magic/message_precast.lua` | 135 | 7 | Precast debug trace |
-| `formatters/system/message_altgroup.lua` | 105 | 12 | `ALTGROUP` lines: `//gs c alts`, `main` / `setalt` roles, alt window toggle, usage screen |
+| `formatters/system/message_altgroup.lua` | 107 | 12 | `ALTGROUP` lines: `//gs c alts`, `main` / `setalt` roles, alt window toggle, usage screen |
 | `formatters/system/message_equipment.lua` | 152 | 15 | `//gs c checksets` report and checker debug |
 | `formatters/system/message_init.lua` | 33 | 1 | INIT_SYSTEMS module load failures |
 | `formatters/system/message_sortie.lua` | 165 | 8 | `SORTIE` lines: target box, target list, alt orders, GEO escort, sortie help |
@@ -56,7 +56,7 @@ remain without a reachable caller are listed per module under Public API.
 | `formatters/system/message_warp.lua` | 629 | 71 | Warp/teleport system: casting lines, status/test blocks, help, item_user and IPC debug |
 | `formatters/system/message_watchdog.lua` | 273 | 28 | Midcast watchdog status/stats/config/debug/alert/test/help |
 | `formatters/ui/message_alt_commands.lua` | 237 | 1 | `//gs c altcmds` listing |
-| `formatters/ui/message_commands.lua` | 541 | 39 | Output of _common/debug commands, `//gs c help` and `//gs c commands` |
+| `formatters/ui/message_commands.lua` | 544 | 39 | Output of _common/debug commands, `//gs c help` and `//gs c commands` |
 | `formatters/ui/message_dualbox.lua` | 121 | 13 | Dual-box config, role and job sync lines |
 | `formatters/ui/message_info.lua` | 66 | 3 | `//gs c info <name>` card, usage, not found |
 | `formatters/ui/message_keybinds.lua` | 113 | 5 | Keybind list line format and bind errors |

@@ -41,8 +41,8 @@ spell, which set was chosen and why.
 | `sets.MoveSpeed` | Moving, outside a city, on top of the idle set |
 
 `sets.idle.Town` and `sets.Adoulin` go on top of the Idle Mode set. In the provided
-file `sets.Adoulin` holds only legs and body: every other slot keeps your Idle Mode
-piece.
+file `sets.Adoulin` holds only the body (Councilor's Garb): every other slot keeps your
+Idle Mode piece.
 
 A plain `sets.idle` is worn only if the current Idle Mode has no set of its own.
 
@@ -60,9 +60,9 @@ wear. The game's item list decides whether it is a weapon. You must really
 have Dual Wield: /NIN at level 10+ or /DNC at level 20+. Red Mage has none of its
 own, so on any other subjob, or with /NIN at level 0 (Sheol Gaol and similar
 events), `Malevolence` in the Sub Weapon mode keeps the normal (one weapon) sets,
-and the dagger is not sent to the off hand (the game would refuse it). Optional:
-`sets.SingleWield = { sub = "Genmei Shield" }` puts that item in the off hand
-instead; without it the off hand is left out.
+and the dagger is not sent to the off hand (the game would refuse it). `sets.SingleWield`
+(empty in the provided file) can name the item put in the off hand instead, for
+example `sets.SingleWield = { sub = "Genmei Shield" }`; empty, the off hand is left out.
 
 The shared Dual Wield tier sets (`sets.DW.NoHaste` ... `sets.DW.MaxHaste`) go on
 top of the `.DW` set: see [set names](../../guides/sets.md).
@@ -263,6 +263,6 @@ provided file), and by the same rule `sets.precast.JA['Saboteur']`,
 - Family sets `sets.midcast.Boost`, and for /SCH `sets.midcast.Storm`.
 - `sets.midcast.Haste`, `sets.midcast.Protect`, `sets.midcast.Shell`,
   `sets.midcast.StatusRemoval` (fall back to the Enhancing / Healing base).
-- `sets.DW.*` tiers (commented at the end of the file), `sets.TreasureHunter`.
-- `sets.SingleWield` (off hand when a Sub Weapon set holds a weapon and you
-  cannot dual wield, see Engaged).
+- `sets.TreasureHunter`.
+- `sets.DW.*` tiers and `sets.SingleWield` (off hand when a Sub Weapon set holds
+  a weapon and you cannot dual wield, see Engaged) are in the file, empty, ready to fill.

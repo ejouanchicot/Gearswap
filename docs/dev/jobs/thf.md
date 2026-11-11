@@ -72,7 +72,7 @@ function; line numbers are deliberately not used.
 | `_master/config/thf/THF_MACROBOOK.lua` | 72 | Book/page per subjob and per dual-box partner job |
 | `_master/config/thf/THF_TP_CONFIG.lua` | 70 | Moonshade piece, weapon TP bonus table, `_G.THFTPConfig` |
 | `_master/config/thf/THF_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/thf_sets.lua` | 918 | Template sets (flat) |
+| `_master/sets/thf_sets.lua` | 923 | Template sets (flat) |
 | `shared/data/job_abilities/THF_JA_DATABASE.lua` + `thf/*.lua` | | `JA_DATABASE_FACTORY.create('THF')`, read by the ability message handler (messages only) |
 
 Author overlay (`_master/Tetsouo/`, tracked; deployed only by a clone to that
@@ -502,7 +502,7 @@ overlay has the same names (weapon sets in its `weapons.lua`).
 | `sets.midcast.EnhancingMagic` | nothing (the skill key is `'Enhancing Magic'`) | yes |
 | `sets.TreasureHunter` | shared `wants_engaged_th` / `apply_engaged`, action overlay | yes |
 | `sets.TreasureHunterSA`, `TA`, `SATA` | `TreasureHunter.sata_overlay` (SATA / Full) | yes |
-| `sets.DW.*` | `DualWield` | commented example |
+| `sets.DW.*` | `DualWield` (only while Auto DW is on for THF: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty |
 
 `sets.midcast.RA = sets.precast.RA` in T: both names are one table, so a
 sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
@@ -557,7 +557,7 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 - `//gs c buff`: `BuffCommand`, common command
   ([midcast and buffs](../systems/midcast-and-buffs.md#buff-command-and-engine)).
 - Gear hooks installed by `INIT_SYSTEMS`: `ElementalBelt` (Aeolian Edge and
-  other elemental WS, elemental ninjutsu), `DualWield` (needs `sets.DW`),
+  other elemental WS, elemental ninjutsu), `DualWield` (needs a filled `sets.DW` tier and Auto DW on for THF),
   `TreasureHunter` (action overlay; the engaged wrapper lays THF's SA/TA + TH
   layer),
   `CustomStates`, `CastTime`, `CombatMode` ([factories and helpers](../systems/factories-and-helpers.md)).

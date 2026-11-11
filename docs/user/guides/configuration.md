@@ -177,7 +177,7 @@ Per job, `<YourName>/<job>/`:
 | `<JOB>_TP_CONFIG.lua` | TP bonus pieces for weaponskills ([tp-bonus](../features/tp-bonus.md)) |
 | `<JOB>_HUD.lua` | This job's HUD section and row order, empty by default; written by `//gs c ui order` / `roworder` ([HUD](../features/ui.md#order-of-the-sections-and-rows)) |
 | `<JOB>_REFILL.lua` | Consumables for `//gs c rf` on this job, added to the common list or replacing it; every line commented at first (see below) |
-| others | Job-specific: `BLM_ELEMENTAL_CONFIG`, `BLM_MP_CONFIG`, `BLU_SPELL_MAP`, `BRD_SONG_CONFIG`, `BRD_TIMING_CONFIG`, `BST_ECOSYSTEM_DATA`, `BST_PET_DATA`, `DNC_WS_CONFIG`, `PLD_BLU_MAGIC`, `PLD_WEAPONS`, `PLD_WS_CONFIG`, `RDM_SABOTEUR_CONFIG`, `RUN_BLU_MAGIC`, `WAR_WS_CONFIG`, `WHM_CURE_CONFIG` (see the job's page) |
+| others | Job-specific: `BLM_ELEMENTAL_CONFIG`, `BLM_MP_CONFIG`, `BLU_SPELL_MAP`, `BRD_SONG_CONFIG`, `BRD_TIMING_CONFIG`, `BST_ECOSYSTEM_DATA`, `BST_PET_DATA`, `DNC_WS_CONFIG`, `PLD_BLU_MAGIC`, `PLD_WEAPONS`, `PLD_WS_CONFIG`, `RDM_CURE_CONFIG`, `RDM_SABOTEUR_CONFIG`, `RUN_BLU_MAGIC`, `WAR_WS_CONFIG`, `WHM_CURE_CONFIG` (see the job's page) |
 
 ## A job's own switches (`<JOB>_CONFIG.lua`)
 
@@ -238,7 +238,7 @@ return WARLockstyleConfig
 `by_subjob` gives a subjob its own lockstyle; a subjob without a line takes
 `default`. A file with a `get_style` function (BST, COR, DNC, DRK, GEO, PLD, RUN,
 WAR and SMN) goes through it; the files without one are read the same way. The
-lockstyle is sent 8 s after each load, and again with `//gs c ls`. The Atelier
+lockstyle is sent about 10 s after each load, and again with `//gs c ls`. The Atelier
 page changes these numbers too (Configuration, **Macros & lockstyle**).
 
 ## Macro book (`<JOB>_MACROBOOK.lua`)

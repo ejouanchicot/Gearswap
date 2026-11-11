@@ -181,4 +181,4 @@ is worn on spells without a set of their own.
 | `sets.precast.WS['Name'].SaberDance` / `.FanDance` / `.Clim`... for Pyrrhic Kleos, Evisceration, Exenterator, Aeolian Edge | Buff variants for those weaponskills |
 | `sets.midcast['Ninjutsu']`, `['Healing Magic']`, `['Enhancing Magic']` | Subjob spell gear (common names) |
 | `sets.idle.Normal` | Idle gear outside town in `HybridMode` Normal (without it, `sets.idle`) |
-| `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces by haste (commented out at the end of the file) |
+| `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces by haste (in the file, empty, at the end) |

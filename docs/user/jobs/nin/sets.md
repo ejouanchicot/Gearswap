@@ -145,5 +145,5 @@ Ei and Aeolian Edge also get the Obi / Orpheus belt by itself.
 - `sets.Adoulin`, `sets.engaged.Acc.DT` (commented), `sets.precast.WS['Name'].Acc`
   (one commented example), `sets.midcast['Spell Name']`,
   `sets.defense.PDT` / `.MDT`.
-- `sets.DW.*`, `sets.CombatMode`, `sets.TreasureHunter` (commented, see
-  [set names](../../guides/sets.md)).
+- `sets.CombatMode`, `sets.TreasureHunter` (commented, see
+  [set names](../../guides/sets.md)). `sets.DW.*` is in the file, empty, ready to fill.

@@ -282,9 +282,10 @@ Skill-up loop: `start_skillup` reads `skillup` from `smn/combat/SMN_CONFIG.lua`
 `cast_to_release_delay` (5 s) later, then the next iteration
 `release_to_next_delay` (1.5 s) after that. Every step checks
 `skillup_valid` (active, same counter, main job SMN, not dead);
-`stop_skillup` bumps the counter. `file_unload` calls
-`_G.cancel_smn_skillup_loop` under `pcall`, so a reload or job change ends
-the loop.
+`halt_skillup` (silent) clears `active` and bumps the counter;
+`stop_skillup` (the `stop` / `off` command) calls it and prints the message.
+`_G.cancel_smn_skillup_loop` is `halt_skillup`, and `file_unload` calls it
+under `pcall`, so a reload or job change ends the loop without a word.
 
 `job_state_change` is `LifecycleManager.state_change()`: skips `Moving`,
 refreshes the HUD. It sends no `gs c update`: Mote's state commands and
@@ -410,9 +411,11 @@ it stays on after the first cast.
 - `job_pet_midcast` sets `eventArgs.handled = true` after equipping a Blood
   Pact set; removing it lets Mote's `default_pet_midcast` equip
   `sets.midcast.Pet` over the pact set.
-- `stop_skillup` must bump `SKILLUP_STATE.counter`: pending coroutines test it.
-- Keep `_G.cancel_smn_skillup_loop` exported: the entry's `file_unload`
-  calls it.
+- `halt_skillup` must bump `SKILLUP_STATE.counter`: pending coroutines test
+  it. `stop_skillup` and `file_unload` (through `_G.cancel_smn_skillup_loop`)
+  both go through it.
+- Keep `_G.cancel_smn_skillup_loop = halt_skillup` exported: the entry's
+  `file_unload` calls it.
 
 ### Traps
 

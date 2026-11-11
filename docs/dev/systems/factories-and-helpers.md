@@ -511,7 +511,8 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 `shared/utils/equipment/dual_wield.lua` lays Dual Wield pieces by magic haste tier on top of the engaged set, for every job. `INIT_SYSTEMS` installs it on `handle_equipping_gear`, after Mote and the job equip and before TreasureHunter and the custom states, so the player's custom gear still wins.
 
 - **When it applies.** The status is Engaged, `enabled` is true, and the sub slot holds a weapon with a combat skill. The sub item is read from the game by id in `gearswap.res`: a shield is Armor, and a grip has skill 0. It is skipped while a COR roll hold is open (`GearHold.active()`, `shared/utils/core/gear_hold.lua`, which reads `_G.cor_roll_hold`).
-- **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
+- **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing or empty tier falls back to the one below, which means more DW. No `sets.DW` at all, or every tier empty: nothing happens. Since 2026-11-06 (`d9d1e4be`) twenty templates, every job but MNK and PUP (hand-to-hand, no off hand), declare `sets.DW` with its four tiers empty under a commented example (`_master/sets/<job>_sets.lua`).
+- **Auto DW, job by job** (2026-11-06, SPEC `notes/docs-perso/dual-wield-tous-jobs-2026-11-06`). `DualWield.on_for_job()` is false when `enabled` is false (every job), or when `DW_CONFIG.lua`'s `jobs` table sets the job played to `false` (that job only; a job left out is on). `apply` returns at once then, and the job's engaged sets decide alone. The template lists the twenty jobs, all `true`; `//gs c dw` shows `Auto DW ON` / `OFF`.
 - **Tiers by engaged mode** (2026-11-06, SPEC `notes/docs-perso/engaged-par-mode-2026-11-06`). A job's set builder calls `DualWield.note_mode(name)` with the engaged set it took (BRD `set_builder.lua`: `PDTKC`, `STP`, `Acc`, `SB`; nil for the base set), kept in `_G._dual_wield_mode` (each engaged equip runs the builder before `apply`). `tier_set(tier, mode)` reads `sets.DW.<Mode>` first, from the tier down; nothing filled there: the common tiers, from the tier down. A mode named as a tier is never read as a mode. A job that does not call it keeps the common tiers. The set chosen goes to the trace (tag `DW`) when it changes; `windower._dw_last_tier` holds `SB.MaxHaste` for a mode's own tier.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
@@ -523,10 +524,11 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 
 | Function | Behaviour |
 |---|---|
-| `settings()` | Defaults merged with `DW_CONFIG.lua`, cached in `_G._dual_wield_settings` |
+| `settings()` | Defaults merged with `DW_CONFIG.lua` (`jobs` keys upper-cased, any value but `false` read as on), cached in `_G._dual_wield_settings` |
 | `magic_haste()` -> percent, parts | Estimate and its parts |
 | `tier()` -> name, forced | Forced tier or the estimate's |
-| `note_mode(mode)`, `mode()` | The engaged mode the job's set builder took last |
+| `on_for_job()` -> boolean | Auto DW on for the job played (`enabled`, then `jobs[<JOB>] ~= false`) |
+| `note_mode(mode)`, `mode()` | The engaged mode the job's set builder took last (`_G._dual_wield_mode`) |
 | `apply(status)` | Equip the tier set |
 | `install()` | Wrap + raw events, once per sandbox (`_G._dual_wield_installed`) |
 | `command(args)` | `//gs c dw` |
@@ -775,7 +777,7 @@ Dual-box: `INIT_SYSTEMS.lua` registers the IPC hooks `ls` and `lockstyle`, which
 | `_G._macrobook_schedule_id` | `macrobook_manager.lua` | one sandbox; a coroutine from a previous sandbox checks its own copy |
 | `windower._automove_seq` | `automove.lua` | survives `gs reload` and job change (reset by `lua reload gearswap`); kills old chains at their next tick |
 | `_G.AUTOMOVE_RUNNING`, `_G._automove_sequence`, `_G.AutoMove`, `state.Moving` | `automove.lua` | one sandbox |
-| `_G.__CraftManagerState {active, active_name, gear}` | `craft_manager.lua` | one sandbox; GearSwap's slot locks (`disable_table`) outlive it |
+| `windower._craft_state {active, active_name, gear}` | `craft_manager.lua` | survives `gs reload` and job changes, like GearSwap's slot locks (`disable_table`) it describes; reset by `lua reload gearswap` (on `_G.__CraftManagerState` until 2026-11-04). `_G.CraftManager`, the module itself, is set only once a craft command has loaded it |
 | `_G.AUTO_JUMP_SEQUENCE_ACTIVE` | `auto_jump.lua` | one sandbox |
 | CureManager config / formatter | module locals | one sandbox (module cached) |
 | Belt settings / owned cache / install flag | `_G._elemental_belt_settings`, `_G._elemental_belt_owned`, `_G._elemental_belt_installed` | one sandbox |
@@ -840,7 +842,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 
 **Per job:**
 
-| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own part of `buff` (the common `buff`: every job) | `AutoOptions` names (keys: [AutoOptions](#autooptions-sharedutilscoreauto_optionslua)) | Other job-specific shared use |
+| Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example written out in template (every template but MNK / PUP declares empty tiers) | AbilityHelper | Own `JumpAuto` state and key (AutoJump itself: every job) | Own part of `buff` (the common `buff`: every job) | `AutoOptions` names (keys: [AutoOptions](#autooptions-sharedutilscoreauto_optionslua)) | Other job-specific shared use |
 |---|---|---|---|---|---|---|---|---|---|---|
 | BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | `blm_dark_arts`, `blm_klimaform` | ElementalMatcher defers to ElementalBelt |
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |

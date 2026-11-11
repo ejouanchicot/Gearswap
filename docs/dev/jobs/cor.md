@@ -75,7 +75,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_CONFIG.lua` | 16 | The job's own settings, read through `JobConfig` (`refresh_mp_below = 50`) |
 | `_master/config/cor/COR_TP_CONFIG.lua` | 61 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/cor_sets.lua` | 444 | Template sets (flat; `sets.SingleWield` as a commented example) |
+| `_master/sets/cor_sets.lua` | 450 | Template sets (flat; `sets.SingleWield` and `sets.DW.*` declared empty, with a commented example above each) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
 | `shared/utils/messages/utilities/party_messages.lua` | 48 | `//gs c party` listing |
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
@@ -430,7 +430,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | `sets.precast.RA` (+ `.Flurry1/.Flurry2`), `sets.midcast.RA` (+ `[<RangedMode>]`, `.TripleShot`) | Mote `get_ranged_set`; `COR_MIDCAST` |
 | `sets.precast.WS` + `[<ws>]`, then `.Marksmanship` (WS skill) for gun WSs without a named set | Mote default (`select_specific_set`: name, map, then `spell.skill`) |
 | `sets.midcast['Enhancing Magic' / 'Healing Magic' / 'Elemental Magic' / 'Enfeebling Magic']` (absent) | `COR_MIDCAST` |
-| `sets.DW.NoHaste/Haste/HasteII/MaxHaste` (commented in T) | `DualWield` |
+| `sets.DW.NoHaste/Haste/HasteII/MaxHaste` (declared empty in T) | `DualWield` (only while Auto DW is on for COR: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) |
 | `sets.TreasureHunter` (absent in T) | `TreasureHunter` once shown |
 | `sets.buff.Doom` | `DoomManager` |
 

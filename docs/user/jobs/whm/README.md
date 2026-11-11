@@ -7,8 +7,8 @@ command and every automatic feature you get on WHM with the provided template.
 - Every set name the code reads, and the gear put on by itself: [sets.md](sets.md)
 - Commands shared by every job, in detail: [commands guide](../../guides/commands.md)
 
-No maintained character plays WHM today: the job is the template only, so it
-has not been checked in game in its current form.
+Kaories plays WHM, with her own gear; this page describes the provided
+template.
 
 ## Overview
 
@@ -127,7 +127,7 @@ part off; `//gs c set CureAutoTier Off` does the same from a macro.
 | `ls` (`lockstyle`) | Apply the lockstyle again |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle |
 | `craft [variant\|off]`, `fish`, `uncraft` | Crafting / fishing sets |
-| `dw [auto\|none\|haste\|haste2\|max]` | Dual Wield tier status or forced tier (needs `sets.DW`, none in the template) |
+| `dw [auto\|none\|haste\|haste2\|max]` | Dual Wield tier status or forced tier (needs `sets.DW` pieces: the template declares the tiers empty) |
 | `belt` | Obi / Orpheus status for today |
 | `warp`, `w2`, `ret`, `esc`, `tph`... `<cmd>all`, `warp fix` | Warp spells, rings and destination items |
 | `mount` | Random mount, or dismount |
@@ -170,7 +170,7 @@ Checked in the code for WHM:
 | Keybind HUD, key guard | The HUD shows every mode; the keys are sent again 2 s after each load |
 | Dual-box | Job exchange with your other boxes, alt commands, macro book per alt job |
 | Chat messages | Ability / spell / weaponskill messages (`jamsg`, `spellmsg`, `wsmsg`), plus a line for each cure tier change |
-| Dual Wield tiers | Only with `sets.DW` in your set file (none in the template) |
+| Dual Wield tiers | Only with two weapons held (/NIN or /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { WHM = false }`) |
 | HP priority | Gear swap order by HP, every character; settings in `_common/gear/HP_PRIORITY_CONFIG.lua` ([configuration](../../guides/configuration.md)) |
 
 ## Configuration files for this job

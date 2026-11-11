@@ -114,7 +114,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
-| Dual Wield tiers | Only while holding two weapons with a `sets.DW`: not the case with the DRK weapons of the template |
+| Dual Wield tiers | Only while holding two weapons (/NIN or /DNC): not the case with the DRK weapons of the template. `sets.DW` and its four tiers are in the set file, empty |
 | Your own modes | `DRK_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |
 | Lockstyle, macro book | Set on load and on each subjob change (lockstyle per subjob in the template) |

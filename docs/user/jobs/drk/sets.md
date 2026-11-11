@@ -89,7 +89,7 @@ Nether Void, and Jump / High Jump for /DRG (a copy of `sets.engaged`).
 | `sets.midcast.Absorb` | Every Absorb spell. `sets.midcast['Absorb-TP']` (or any exact Absorb name) wins over it |
 | `sets.midcast.Drain`, `sets.midcast['Drain III']`, `sets.midcast.Aspir` | By name (Drain II uses `sets.midcast.Drain`) |
 | `sets.midcast.Stun` | Stun, when you add it (else the Dark Magic set) |
-| `sets.midcast['Enfeebling Magic']` | Enfeebling spells (Sleep, Bind, Poison...) |
+| `sets.midcast['Enfeebling Magic']` | Enfeebling spells (Sleep, Bind, Poison...). A set by spell name wins (`sets.midcast.Sleep` also serves Sleep II), then one by the spell's enfeebling type: `sets.midcast.<type>` or `sets.midcast['Enfeebling Magic'].<type>` (`macc`, `duration`, `potency`...; types and their spells on the [RDM sets page](../rdm/sets.md#enfeebling-magic)). None in the provided file |
 | `sets.midcast['Elemental Magic']` | Elemental spells (Fire, Blizzard...); not in the provided file, so only a set named after the spell is used |
 
 `sets.buff['Dark Seal']` and `sets.buff['Nether Void']` (whole sets) go on top

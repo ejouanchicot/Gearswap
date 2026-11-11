@@ -74,7 +74,7 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_CONFIG.lua` | 19 | `auto_divine_emblem`, `auto_majesty` (both `true`): the switches of the two precast auto-abilities, read through `shared/utils/core/auto_options.lua` |
 | `_master/config/pld/PLD_WEAPONS.lua` | 29 | `shields`, `stance_weapon`, `grips` for the set builder; every line commented (examples only), so nothing is forced but the default grip |
 | `_master/config/pld/PLD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/pld_sets.lua` | 803 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
+| `_master/sets/pld_sets.lua` | 824 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
 | `_master/Kaories/sets/pld_sets.lua` | 764 | Kaories overlay sets (no /SCH sets, see Known issues) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
 
@@ -614,8 +614,8 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
 | `<char>/pld/keys/PLD_STATES.lua` | see states | file | entry `user_setup` (`CharPaths.module('job', 'PLD_STATES', 'PLD')`) |
-| `SORTIE_RUNE_OPTIONS`, `SORTIE_WEAPON_OPTIONS`, `SCH_WEAPON_OPTIONS` | 5 runes, 2 weapons, 2 weapons | `PLD_STATES.lua` | `install_profile` |
-| `<char>/pld/keys/PLD_KEYBINDS.lua` | 9 entries | file | entry `user_setup`, `file_unload`, HUD |
+| `SORTIE_RUNE_OPTIONS`, `SCH_WEAPON_OPTIONS` | 5 runes, 2 weapons | `PLD_STATES.lua` | `install_profile` |
+| `<char>/pld/keys/PLD_KEYBINDS.lua` | 12 entries | file | entry `user_setup`, `file_unload`, HUD |
 | `<char>/pld/keys/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `<char>/pld/display/PLD_HUD.lua` | empty lists | file | HUD ([UI overlay](../systems/ui-overlay.md)); rewritten by `//gs c ui order` / `roworder` |
 | `<char>/pld/combat/PLD_WS_CONFIG.lua` -> `_G.PLDWSConfig` | 2 slots, 3 swords | file (`CharPaths.optional`: a missing file gives nil and no slots, a broken one still errors) | `configure`, `rebuild_ws_slots` |

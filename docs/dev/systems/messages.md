@@ -16,7 +16,7 @@ verbosity (`full` / `on` / `off`) persisted to `<Char>/saved/message_modes.lua` 
 This page covers the core: facade, API, engine, renderer, colours and palette, chat options (width,
 separators, job tag, colour overrides), the chat-line filter, `InfoBlock`, `HelpScreen`, action
 hooks and handlers, mode settings, validator, and the allowed direct `add_to_chat` calls. The 34
-formatter modules (32 under `shared/utils/messages/formatters/`, 2 under `utilities/`) are documented in
+formatter modules (33 under `shared/utils/messages/formatters/`, 2 under `utilities/`) are documented in
 [messages-formatters.md](messages-formatters.md); the template files under
 `shared/utils/messages/data/` in [messages-catalog.md](messages-catalog.md); the HUD and the
 `//gs c ui` commands that set the chat options in [ui-overlay.md](ui-overlay.md).
@@ -644,7 +644,7 @@ message system cannot load. Current state (grep `add_to_chat(`, 2026-09-28):
 | Last rendering level | `core/message_renderer.lua` (9), `message_core.lua` (13, including the wrapper), `api/messages.lua` (25: `list` and the `testmsg` runner) |
 | Formatters writing their own lines | `formatters/system/message_warp.lua` (29 in code), `formatters/ui/message_commands.lua` (14), `formatters/system/message_system.lua` (1, colour sample), `utilities/roll_messages.lua` (1, fitted roll lines) |
 | Diagnostic tools | `core/DEBUG_COMMANDS.lua`, `debug/full_test.lua`, `debug/lag_debugger.lua`, `debug/system_checker.lua`, `debug/trace_log.lua`, `equipment/wardrobe_auditor.lua`, `wardrobe/lib/chat.lua`, `inventory/refill/refill_panels.lua` |
-| Fallback | `core/INIT_SYSTEMS.lua` (`ensure_message_init`) |
+| Fallback | `core/INIT_SYSTEMS.lua` (`ensure_message_init`), `core/module_cache.lua` (`report`, a broken character file: `MessageFormatter.show_error` first, `add_to_chat(167, ...)` only when the message system does not load, `module_cache.lua:85`) |
 | Formatter outside `messages/` | `shared/utils/whm/whm_message_formatter.lua` (debug lines) |
 
 `shared/jobs/` has none. `debug/debug_logger.lua` mentions `add_to_chat` only in a comment.

@@ -48,8 +48,8 @@ In the provided file:
 - `sets.idle.Refresh` is empty. Put only the Refresh pieces in it
   (`sets.idle.Refresh = { body = "..." }`): it goes on top of PDT, so every slot you list
   replaces your PDT piece while your MP is under 50 %.
-- `sets.Adoulin` starts from `sets.idle.Normal` plus `sets.MoveSpeed` and Councilor's Garb,
-  so it fills every slot.
+- `sets.Adoulin` holds only Councilor's Garb (body): every other slot keeps your
+  `sets.idle.Normal` piece.
 
 ## Engaged
 
@@ -205,7 +205,7 @@ is read but equal to the base roll set, see above.)
 | `sets.precast.RA.Flurry1`, `sets.precast.RA.Flurry2` | Shooting under Flurry / Flurry II |
 | `sets.midcast.RA.TripleShot` | Ranged midcast under Triple Shot |
 | `sets.precast.JA['Triple Shot']`, `['Crooked Cards']`, `['Cutting Cards']` | Those abilities |
-| `sets.SingleWield` | Your off hand when you cannot dual wield, e.g. `{ sub = "Nusku Shield" }` (commented example after the weapon sets) |
-| `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces with /NIN or /DNC (commented example at the end of the file) |
+| `sets.SingleWield` | Your off hand when you cannot dual wield, e.g. `{ sub = "Nusku Shield" }` (in the file after the weapon sets, empty, with that example in a comment) |
+| `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces with /NIN or /DNC (in the file, empty, at the end) |
 | `sets.midcast.Cure`, `sets.midcast['Enhancing Magic']`... | Subjob spells ([guide](../../guides/sets.md)) |
 | `sets.precast.FC` | Fast Cast for subjob spells |

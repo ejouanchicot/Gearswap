@@ -146,7 +146,7 @@ checks as a macro: debuff guard, recast check, roll gear, Luzaf's Ring.
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
 | Movement speed | `sets.MoveSpeed` on idle while you move outside town; `sets.Adoulin` in Adoulin, `sets.idle.Town` in other towns (the provided file has no `sets.idle.Town`, so other towns count as the field) |
 | Obi / Orpheus | Added to damaging Quick Draws (not Light / Dark Shot), elemental weaponskills (Leaden Salute, Wildfire, Hot Shot, Aeolian Edge...) and subjob nukes, when the day, weather or distance gives enough (`//gs c belt`) |
-| Dual Wield tiers | Only if you define `sets.DW` (a commented example is in the template) and hold two weapons (/NIN, /DNC). Held back while a roll is under way |
+| Dual Wield tiers | Only while you hold two weapons (/NIN, /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { COR = false }`). Held back while a roll is under way |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none). In a fight, its pieces wait while a roll is under way |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked, so the knife and gun of your roll set are not swapped in either |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name (the gun still needs its set) |

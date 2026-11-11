@@ -68,7 +68,7 @@ the sets file (structure and set names only).
 | `_master/config/whm/WHM_MACROBOOK.lua` | 85 | `default` book 11 page 1, `solo[sub]` pages 1-5, empty `dualbox` |
 | `_master/config/whm/WHM_TP_CONFIG.lua` | 73 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.WHMTPConfig` |
 | `_master/config/whm/WHM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/sets/whm_sets.lua` | 861 | Template sets (flat) |
+| `_master/sets/whm_sets.lua` | 882 | Template sets (flat) |
 
 `WHM_REFILL.lua` is the commented template (the common list of `REFILL_CONFIG.lua` applies); no live copy is maintained.
 
@@ -351,7 +351,9 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `sets.midcast['Dark Magic']`, `['Elemental Magic']` | MidcastManager | yes |
 | `sets.midcast.StatusRemoval.Caress`, `BarElement.Solace`, `Banish.Misery`, `CureSIRD.Solace` | versions worn under Divine Caress / Afflatus Solace / Afflatus Misery (`version_of`, `wear_version`; CureSIRD.Solace in `job_midcast`) | yes (copies of their base) |
 | `sets.resting`, `sets.buff.Doom` | Mote resting, DoomManager | yes |
-| `sets.TreasureHunter`, `sets.DW` | shared Treasure Hunter, DualWield | no |
+| `sets.TreasureHunter` | shared Treasure Hunter | no |
+| `sets.DW.*` | shared DualWield (only while Auto DW is on for WHM: `DualWield.on_for_job`, `jobs` in `DW_CONFIG.lua`; an empty tier takes the one below) | declared empty |
+| `sets.SingleWield` | `WeaponResolver`: its `sub` replaces an off-hand weapon when Dual Wield is not there | declared empty |
 
 ## Configuration
 

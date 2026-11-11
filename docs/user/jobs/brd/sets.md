@@ -38,7 +38,7 @@ in town too.
 | `sets.idle.Refresh`, `sets.idle.DT`, `sets.idle.Regen` | `IdleMode` has that value, outside town |
 | `sets.idle` | The set of the current `IdleMode` does not exist |
 | `sets.idle.Town` | Idle in a town (Dynamis excluded). Laid on top of the Idle Mode set: the slots it leaves out keep your idle pieces. The provided file builds it from `sets.idle.DT` plus `sets.MoveSpeed`, so every slot is set |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of the Idle Mode set the same way. The provided file builds it from `sets.idle`, `sets.MoveSpeed` and Councilor's Garb |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of the Idle Mode set the same way. In the provided file it holds only Councilor's Garb (body): every other slot keeps your idle pieces |
 | `sets.MoveSpeed` | Running, outside town |
 
 Then the weapon sets.

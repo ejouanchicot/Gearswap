@@ -173,7 +173,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Dual-box | As an alt, GEO tells the main when Entrust goes up or down, so the main's alt commands can aim an Indi- at the party |
 | Your own modes and gear rules | `GEO_CUSTOM.lua`: extra modes with a key, gear put on last ([keybinds guide](../../guides/keybinds.md)) |
 | Midcast watchdog | Puts your idle / engaged set back when the game never confirms the end of a cast ([watchdog](../../features/watchdog.md)); `FastCast` (80) is its fallback estimate |
-| Lockstyle and macros | Macro book 5 page 1 is set about 1.5 s after each load, lockstyle 5 after 8 s |
+| Lockstyle and macros | Macro book 5 page 1 is set about 1.5 s after each load, lockstyle 5 about 10 s after it |
 
 Not on GEO: the Magic Burst party call and BLM's own tier refiner (BLM), pet
 Blood Pact gear (SMN), cure auto-tier (WHM).

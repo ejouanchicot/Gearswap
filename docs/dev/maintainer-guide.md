@@ -109,6 +109,46 @@ the boot order and INIT_SYSTEMS timeline are in
 
 Each fact gives the evidence, then what to do.
 
+### What `load_user_files` does
+
+Every load (main job change, zone-in on another job, `gs reload`, `gs load`,
+login) goes through `load_user_files(job_id)` *(engine, `refresh.lua:62-184`)*.
+This is the one place where its steps are written out; the other pages link
+here. In order:
+
+1. Calls the current file's `file_unload` through `user_pcall2`
+   (`refresh.lua:66`): an error is printed, not raised (`flow.lua:339-348`).
+   On a cold load there is no current file, so no `file_unload`.
+2. Unregisters every event id in `registered_user_events` (`refresh.lua:69-71`).
+   Every `windower.register_event` / `raw_register_event` made from the sandbox
+   goes through `register_event_user` / `raw_register_event_user`, which record
+   the id there (`user_functions.lua:254-274`).
+3. Deletes every text and prim object created since the addon loaded
+   (`refresh.lua:73-79`; the registry is filled by GearSwap's
+   `windower.text.create` override, `gearswap.lua:55-84`). The keybind HUD and
+   the alt window are text objects, so they always go here.
+4. Drops the sandbox and the sets: `current_file`, `sets` and `user_env` set to
+   nil (`refresh.lua:81-86`).
+5. Forces `player.main_job_id` to the requested job (`refresh.lua:91-94`) and
+   searches the file: `<name>_<JOB>.lua`, then fallbacks down to `default.lua`
+   (`refresh.lua:97-110`, directories as in `pathsearch` below). Since
+   2026-10-25 `data/default.lua` is always found: a job with no file of its own
+   loads `shared/entry/no_job_file.lua`, which equips nothing, takes off the
+   keys the last job kept (`KeybindManager.release_all`) and opens only the
+   Atelier live link, so the page can add the job
+   (`shared/utils/atelier/job_adder.lua`).
+6. Builds a brand-new `user_env` (`refresh.lua:114-149`): `require =
+   include_user` (`:132`), `windower = user_windower` (`:118`, the shared proxy
+   of `user_functions.lua:418-423`), `coroutine` = the real Windower library
+   (`:131`), `gearswap` = GearSwap's own `_G` (`:114`), `_G = user_env`
+   (`:149`). `player`, `buffactive`, `world`, `pet`, `party` are GearSwap's
+   live tables, shared by every sandbox.
+7. Runs the file's chunk (`refresh.lua:168`), then `get_sets()`
+   (`refresh.lua:180`).
+
+What happens inside `get_sets()` for this project's entries is in
+[core-lifecycle.md, How a job file boots](systems/core-lifecycle.md#how-a-job-file-boots).
+
 ### The sandbox, and what is missing from it
 
 `load_user_files` builds the job file's environment as a plain table
@@ -136,9 +176,9 @@ metatable**. A global that is not listed there is `nil`:
   runtime error while running the file, including errors in files it requires
   in turn. **A failed `pcall(require, X)` never proves that X is missing**:
   print `tostring(err)`.
-- `require` resolves through `pathsearch` (`refresh.lua:677-728`): `libs-dev/`,
+- `require` resolves through `pathsearch` (`refresh.lua:684-735`): `libs-dev/`,
   `libs/`, `data/<Char>/`, `data/common/`, `data/`, then the AppData copies
-  and last Windower's `addons/libs/` (`refresh.lua:693-703`).
+  and last Windower's `addons/libs/` (`refresh.lua:700-709`).
   A file under `data/<Char>/` shadows a file with the same relative path under
   `data/`.
 - Windower's `strings` library **is** loaded by GearSwap (`gearswap.lua:44`) and
@@ -158,7 +198,7 @@ feature a degraded path.
 |---|---|---|
 | Sandbox `_G`, module locals, the `ModuleCache`, `sets`, Mote `state.*` | Until the next load | `user_env = nil` (`refresh.lua:83`), new table (`:114`) |
 | `windower.*` written from project code | Until `//lua reload gearswap` | `windower` is `user_windower`, one table created when the addon loads with `__index = windower` and no `__newindex` (`user_functions.lua:418-423`) |
-| `disable_table` (slot locks), Windower keybinds, `command_registry` | Engine lifetime: survives every load, even a main job change | `statics.lua:194-195`. On 0x100, `player.main_job_id` is assigned (`packet_parsing.lua:737`) before the "enable all slots" test compares it (`:756`), so that test never passes |
+| `disable_table` (slot locks), Windower keybinds, `command_registry` | Engine lifetime: survives every load, even a main job change | `statics.lua:194-195`. On 0x100, `player.main_job_id` is assigned (`packet_parsing.lua:737`) before the "enable all slots" test compares it (`:749`), so that test never passes |
 
 Consequences:
 
@@ -321,7 +361,7 @@ The server's answer 0x061 corrects `main_job_id` (`:381`) but never reloads.
 A refused or reordered request leaves the previous job's file loaded.
 `shared/utils/core/job_sync_watchdog.lua` compares the loaded job with
 `windower.ffxi.get_player()` and reloads. `gs reload` itself reads the live job
-(`refresh_user_env`, `refresh.lua:657-666`).
+(`refresh_user_env`, `refresh.lua:664-673`).
 
 ### `user_setup()` runs inside `include('Mote-Include.lua')`
 
@@ -377,7 +417,11 @@ the end of every action, **cancelled or not** (`Mote-Include.lua:279-282`).
 in this order: `ElementalBelt.install`, `DualWield.install`,
 `TreasureHunter.install`, `MidcastFallback.install`,
 `CustomStates.install_hooks`, `CastTime.install_hook`,
-`CombatMode.install_hook`. Each later wrapper wraps the earlier ones, and each
+`CombatMode.install_hook` (what each layer wraps and when it works:
+[core-lifecycle.md, The gear hook chain](systems/core-lifecycle.md#the-gear-hook-chain);
+everything else INIT_SYSTEMS starts, in order:
+[its timeline](systems/core-lifecycle.md#init_systemslua-in-execution-order)).
+Each later wrapper wraps the earlier ones, and each
 does its own work either before or after calling inward. The result, observed
 by running the real install functions offline ([section 6](#a-harness-for-the-wrapper-chain)):
 
@@ -458,10 +502,14 @@ The coding standard, as reviews enforce it:
 
 ### What git tracks
 
-`shared/`, `_master/` (generic templates), `character_db.lua`,
-`clone_character.py`, `docs/`, and these entries under `scripts/`
+`shared/`, `_master/` (generic templates), `character_db.lua`, `default.lua`,
+the root scripts (`clone_character.py`, `make_package.py`, `migrate_config.py`,
+`migrate_layout.py`, `where_is_what.py`), `VERSION` and `release_manifest.json`,
+the Atelier (`atelier.html`, `atelier/` minus its link keys, live files, old engine
+`atelier/engine/` and `node_modules/`),
+`docs/`, and these entries under `scripts/`
 (`check_syntax.py`, `check_overlay.py`, `run_tests.py`, `item_db/`, `addon_patches/`,
-`atelier/`, `convert/`, `loadcheck/`; `.gitignore`, block `scripts/*`). Ignored (`.gitignore`):
+`atelier/`, `convert/`, `loadcheck/`, `release/`; `.gitignore`, block `scripts/*`). Ignored (`.gitignore`):
 
 - every character folder the game loads (`data/<Char>/`), and, through the same
   unanchored patterns, the per-character overlays `_master/<Char>/`;
@@ -579,9 +627,10 @@ and [ui-overlay.md, For maintainers / AI](systems/ui-overlay.md#for-maintainers-
 - [ ] Wrap your own work in `pcall`; respect `eventArgs.cancel` in `cleanup_*`.
 - [ ] Events: `raw_register_event` (action packets: `ActionListener.on`), registered on every load; loops: a
       `windower.*` generation counter.
-- [ ] Update the INIT_SYSTEMS header comment and the hook-chain table in
-      [core-lifecycle.md](systems/core-lifecycle.md#the-gear-hook-chain) and the
-      timeline in [README.md](README.md#boot-sequence-of-one-load).
+- [ ] Update the INIT_SYSTEMS header comment, and in
+      [core-lifecycle.md](systems/core-lifecycle.md) the hook-chain table and the
+      [INIT_SYSTEMS table](systems/core-lifecycle.md#init_systemslua-in-execution-order)
+      (the only full copy of the order).
 - [ ] New globals in `global_probe.lua` `EXPECTED`.
 
 ### Add a set name the code reads
@@ -674,7 +723,7 @@ Since 2026-10-18 the page players open, `atelier/index.html`, is **built**: neve
       and keeps it in IndexedDB (`atelier-icons`, key `v1:<id>`: change `ICON_HD_KEY` when `icon_hd.js` draws
       differently). Packages carry both files. The folder is gitignored.
 - [ ] What a player reads, last commit vs now: `node scripts/atelier/atelier_clicks_test.js --compare [names]`
-      (53 click tests, `scripts/atelier/clicks/README.md`); pixel parity of a screen:
+      (63 click tests, `scripts/atelier/clicks/*_clicks.js` on 2026-11-11, `scripts/atelier/clicks/README.md`); pixel parity of a screen:
       `node scripts/atelier/page_parity.js scripts/atelier/parity/<screen>.json`.
 - [ ] All the page's checks in one command: `bash scripts/atelier/cycle.sh quick <screens> -- <click tests>` for a
       small change, `bash scripts/atelier/cycle.sh full` (about 30 min) before committing a change of many screens.
@@ -698,7 +747,8 @@ Since 2026-10-18 the page players open, `atelier/index.html`, is **built**: neve
     engine would not.
 - **Loading.** `python scripts/loadcheck/check_load.py [Perso ...] [--quick] [--inject Perso:JOB:SUB]`
   copies the game folder to a temporary one and loads there every job of every character
-  with every subjob (1 365 loads, about 7 min; `--quick` 2 subjobs a job). It reports load
+  with every subjob (21 loads a job: the count follows the character folders on disk, and
+  so does the time, several minutes; `--quick` 2 subjobs a job). It reports load
   errors, errors in the first 10 s, leaks into the next load (Lua's tables changed, Windower
   libs in the sandbox, functions left on `windower.*`), files loaded twice, time, memory and
   commands sent. It then breaks every character file read by one load, four ways, one at a
