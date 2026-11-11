@@ -38,6 +38,9 @@ Object.assign(T.fr, {
   statObj_charmPlus: 'Charm+', statD_charmPlus: '"Charm"+N des pièces : la durée de Charm (BG Wiki) ; un "Vs. beasts: Charm" n’est pas compté',
   statObj_macc: 'Précision magique', statD_macc: 'la Magic Accuracy des pièces : celle de Charm, où ton CHR entre aussi (BG Wiki CHR ; le set du guide FFXIAH : CHR, puis M.Acc, puis Charm+)',
   statObj_charmDur: 'Durée de Charm (niveau égal)', statD_charmDur: '(150 + 1,25 × CHR) × (1 + 5 % par Charm+), BG Wiki Charm Duration ; contre un mob plus bas ×3 à +5 niveaux, ×6 à +9 et plus ; plus haut ×0,04 à -6',
+  statObj_rewardPot: 'Puissance de Reward', statD_rewardPot: 'le soin de Reward × (1 + ce %) ; le gear compte jusqu’à +50 % (BG Wiki Reward), les job points ajoutent +20 % en plus. Le biscuit reste celui du set',
+  statObj_rewardRecast: 'Recast de Reward (s en moins)', statD_rewardRecast: 'les secondes que le gear retire au recast de Reward (1:30) : 23 au plus (BG Wiki Reward), les mérites retirent jusqu’à 15 s en plus',
+  statObj_mnd: 'MND', statD_mnd: 'ton MND : il monte le soin de base de Reward, plus ou moins selon le biscuit (BG Wiki Pet Food)',
   petPdtLine: 'PDT du pet', petMdtLine: 'MDT du pet', petTrait: 'Stout Servant (trait)',
   statPetBase: 'Préc. du pet sans gear (niv. 119) =',
   // a piece's pet stats in its tip, and the set sheet's tab of them (any job with a pet: tips.svelte.ts, sheet.ts)
@@ -62,6 +65,9 @@ Object.assign(T.en, {
   statObj_charmPlus: 'Charm+', statD_charmPlus: 'the pieces’ "Charm"+N: Charm’s length (BG Wiki); a "Vs. beasts: Charm" is not counted',
   statObj_macc: 'Magic accuracy', statD_macc: 'the pieces’ Magic Accuracy: Charm’s, which your CHR feeds too (BG Wiki CHR; the FFXIAH guide’s set: CHR, then M.Acc, then Charm+)',
   statObj_charmDur: 'Charm length (even level)', statD_charmDur: '(150 + 1.25 × CHR) × (1 + 5 % a Charm+), BG Wiki Charm Duration; on a lower mob ×3 at +5 levels, ×6 at +9 or more; on a higher one ×0.04 at -6',
+  statObj_rewardPot: 'Reward potency', statD_rewardPot: 'Reward’s heal × (1 + this %); the gear counts up to +50 % (BG Wiki Reward), job points add +20 % on top. The pet food stays the set’s',
+  statObj_rewardRecast: 'Reward recast (s off)', statD_rewardRecast: 'the seconds the gear takes off Reward’s recast (1:30): 23 at most (BG Wiki Reward), the merits take up to 15 s more',
+  statObj_mnd: 'MND', statD_mnd: 'your MND: it raises Reward’s base heal, more or less with the pet food (BG Wiki Pet Food)',
   petPdtLine: 'Pet PDT', petMdtLine: 'Pet MDT', petTrait: 'Stout Servant (trait)',
   statPetBase: 'Pet acc. without gear (lv. 119) =',
   tipPet: 'Pet', petTab: 'Pet',
@@ -98,6 +104,27 @@ const isPetSet = s => isPetEngaged(s) || isPetIdle(s) || !!readyKind(s);
 // first traded An. Jackcoat +3 and Ankusa Gaiters +3, 41 Charm+, for 9 CHR): opt_search.js tolGainPass
 const CHARM_TOL = {gain: 'charmplus', keep: ['chr', 'macc'], tol: 0.02};
 const isCharmSet = s => S.job === 'BST' && !!s && /^sets\.precast\.JA\.Charm$/.test(s.path);
+// The Reward set (sets.precast.JA.Reward): the pet's heal (BG Wiki Reward, Pet_Food, 2026-11-11) is the pet food's
+// base raised by the master's MND, x (1 + Reward potency), the gear's potency capped at +50 %: potency to its cap,
+// then its recast (1:30, the gear's cut capped at 23 s: the set is worn at the use, when the recast is set; Khimaira
+// Bonnet, Ankusa Trousers, the player's set 2026-11-11), then MND. The pet food in the ammo slot is what Reward uses (it cannot be used without): never searched,
+// as a jug in Call Beast's and Bestial Loyalty's (stat_enh.js keptSlots). Both Jackcoats' "Augments Reward" III
+// (the ailments it removes: the same list on BG Wiki) parts nothing; the potency does (Tot. Jackcoat +3: +26 %)
+const isRewardSet = s => S.job === 'BST' && !!s && /^sets\.precast\.JA\.Reward$/.test(s.path);
+const REWARD_OBJS = ['rewardPot', 'rewardRecast', 'mnd'];
+const rewardRelevant = s => isRewardSet(s) ? ['rewardPot', 'rewardRecast', 'mnd', 'hp', 'pdtRed', 'mdtRed'] : [];
+// The seconds a piece takes off Reward's recast when the game's text gives no figure (BG Wiki Reward, 2026-11-11);
+// the Ankusa / Totemic Trousers carry theirs in the catalogue
+// The ailments Reward removes with that body on (BG Wiki Reward, 2026-11-11): every Totemic / Ankusa Jackcoat and
+// Monster Jackcoat +1 / +2 ("Augments" / "Enhances "Reward"" II-III) Silence, Weight, Slow, Paralysis, Poison, Blind;
+// Beast Jackcoat (+1) Paralysis, Poison, Blind (Monster Jackcoat's own: not working, BG Wiki). The Reward set must
+// keep the six (a floor, statOpts): a body for MND alone took them away (the player, 2026-11-11)
+const REWARD_CURE_BODY = [[/^(Totemic Jackcoat|Tot\. Jackcoat|Ankusa Jackcoat|An\. Jackcoat|Mst\. Jackcoat)/, 6], [/^(Beast Jackcoat|Bst\. Jackcoat)/, 3]];
+const rewardFloor = s => isRewardSet(s) ? {min: {rewardCure: 6}} : {};
+const REWARD_RECAST_TEXT = {'Khimaira Bonnet': 10, 'Bison Warbonnet': 10, 'Brv. Warbonnet': 15, 'Stout Bonnet': 15, 'Mst. Trousers +2': 10};
+// The pieces whose "Enhances "Reward" effect" carries no figure in the game's text: BG Wiki Reward's potency for each
+const REWARD_TEXT = {'Ogre Gloves': 10, 'Ogre Gloves +1': 11, 'Beast Gaiters': 10, 'Bst. Gaiters +1': 11, "Pallas's Shield": 5,
+  "Zoraal Ja's Axe": 10, 'Ferine Earring': 2, 'Monster Gaiters': 20, 'Mst. Gaiters +1': 20, 'Mst. Gaiters +2': 30};
 // The set worn while both fight (sets.pet.engagedBoth and its versions)
 const isPetBoth = s => S.job === 'BST' && !!s && /^sets\.pet\.engagedBoth(\.|$)/.test(s.path);
 
@@ -110,6 +137,7 @@ const isPetBoth = s => S.job === 'BST' && !!s && /^sets\.pet\.engagedBoth(\.|$)/
 const READY_OBJS = {phys: ['petAcc', 'petAtk', 'petTpb'], multi: ['petAcc', 'petDa', 'petAtk'], matk: ['petMab', 'petMacc', 'petTpb'], macc: ['petMacc', 'petTpb', 'petInt']};
 function petObjectives(s){
   if (isCharmSet(s)) return ['chr', 'macc', 'charmPlus'];
+  if (isRewardSet(s)) return REWARD_OBJS;
   if (readyKind(s)) return READY_OBJS[readyKind(s)];
   if (isPetIdle(s)) return ['petDt', 'petRegen', 'pdtRed'];
   if (!isPetEngaged(s)) return null;
@@ -137,8 +165,9 @@ function petTrait(){
 const stoutOf = r => (((r.stats || {})['x:stout servant'] || {}).v) || 0;
 // The physical damage a piece takes off the pet, as a positive %: its Pet: DT and PDT, its "Stout Servant"+N
 const petPdtOfStats = r => stoutOf(r) - ((((r.pet || {}).dt || {}).v || 0) + (((r.pet || {}).pdt || {}).v || 0));
-// A piece's pet stats for the stats optimizer (r: its pieceStats); a weapon's levels apart (only the best one counts)
-function petVec(r, slot){
+// A piece's pet stats for the stats optimizer (r: its pieceStats, name: the piece's); a weapon's levels apart (only
+// the best one counts)
+function petVec(r, slot, name){
   const pet = k => ((r.pet || {})[k] || {}).v || 0, out = {}, lv = petLevelOf(r, slot);
   for (const [k, key] of [['acc', 'petacc'], ['atk', 'petatk'], ['haste', 'pethaste'], ['stp', 'petstp'], ['da', 'petda'], ['regen', 'petregen'],
     ['mab', 'petmab'], ['macc', 'petmacc'], ['int', 'petint'], ['x:melee dmg', 'petmelee'], ['tpb', 'pettpb']]) if (pet(k)) out[key] = pet(k);
@@ -151,6 +180,15 @@ function petVec(r, slot){
   const chr = ((r.stats || {}).chr || {}).v || 0, charm = (((r.stats || {})['x:charm'] || {}).v) || 0;
   if (chr) out.chr = chr;
   if (charm) out.charmplus = charm;
+  // the Reward set: its Reward potency % (the catalogue's "Reward"+N, else BG Wiki's figure of an "Enhances" line)
+  const reward = (((r.stats || {})['x:reward'] || {}).v) || REWARD_TEXT[name] || 0;
+  if (reward) out.reward = reward;
+  // its recast cut in seconds, positive ("Reward" recast delay / time -N in the catalogue, else BG Wiki's figure)
+  const st = k => (((r.stats || {})[k] || {}).v) || 0;
+  const rec = -(st('x:reward recast delay') || st('x:reward recast time')) || REWARD_RECAST_TEXT[name] || 0;
+  if (rec > 0) out.rewardrec = rec;
+  const cure = slot === 'body' && name ? (REWARD_CURE_BODY.find(([re]) => re.test(name)) || [])[1] : 0;
+  if (cure) out.rewardcure = cure;
   if (lv) out[slot === 'main' || slot === 'sub' ? 'petlvw' : 'petlv'] = lv;
   return out;
 }

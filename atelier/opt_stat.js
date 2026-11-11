@@ -26,8 +26,8 @@
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
         "petacc", "petatk", "pethaste", "petstp", "petda", "petlv", "petlvw", "petpdt", "petmdt", "petstout",
         "petmab", "petmacc", "petint", "petmelee", "pettpb",
-        // a BST's Charm set (the page's bst_pet.js): CHR and "Charm"+N
-        "chr", "charmplus",
+        // a BST's Charm set (the page's bst_pet.js): CHR and "Charm"+N; its Reward set: Reward potency %
+        "chr", "charmplus", "reward", "rewardrec", "rewardcure",
         // enhancing magic (the page's stat_opt.js statVec): duration written on the piece / in its augments, a Lethargy
         // set piece, Refresh potency and seconds received, Regen potency (% then flat) and seconds, Gain, Aquaveil
         "enhdurL", "enhdurA", "leth", "refpot", "refsec", "regenpct", "regenflat", "regensec", "gain", "aquaveil", "barplus",
@@ -230,6 +230,14 @@
         // length at an even level (BG Wiki Charm Duration: floor(1.25 x CHR + 150) s, x (1 + 0.05 x Charm+))
         f.chr = (b.chr || 0) + t.chr; f.charmPlus = t.charmplus; f.macc = t.macc;
         f.charmDur = Math.floor(Math.floor(1.25 * f.chr + 150) * (1 + 0.05 * t.charmplus));
+        // a BST's Reward set (BG Wiki Reward, Pet_Food, 2026-11-11): the heal is the pet food's base, raised by the
+        // master's MND, x (1 + Reward potency); the gear's potency caps at +50 % (the job points' +20 % apart, on top)
+        // its recast (1:30): the gear's cut capped at 23 s (the universal 25 %), the merits' -15 s apart
+        // (the potency past the cap parts sets equal on it, a ten-thousandth a point: Tot. Jackcoat over An. Jackcoat, the
+        // same MND, should the cap read on BG Wiki prove wrong in game; never shown, the figure rounds to the tenth)
+        f.rewardPot = Math.min(50, t.reward) + t.reward / 10000; f.rewardRecast = Math.min(23, t.rewardrec); f.mnd = (b.mnd || 0) + t.mnd;
+        // the ailments it removes, from its body ("Augments Reward": the page's bst_pet.js REWARD_CURE_BODY), a floor
+        f.rewardCure = t.rewardcure;
         f.petRegen = t.petregen;   // its Regen from gear (Pet: Regen ; the same key as a luopan's, never both)
         var enhAll = (b.enh || 0) + t.enh, mndAll = (b.mnd || 0) + t.mnd, x = Math.floor(enhAll / 3) + mndAll;
         var ss = x < 80 ? x : x <= 130 ? Math.floor(2 * enhAll / 3) + 2 * mndAll - 60 : enhAll + 3 * mndAll - 190;
@@ -303,7 +311,7 @@
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
         "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "bioDot", "dreadSpikes", "endark",
-        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb",
+        "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "rewardPot", "rewardRecast", "mnd", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb",
         // a Bard's songs (atelier/opt_song.js)
         "songPlus", "songPot", "songDurPct", "songTime", "songTimeShort", "songSkill", "songAcc"];
     function statShort(f, fl) {

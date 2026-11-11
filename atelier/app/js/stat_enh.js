@@ -144,6 +144,8 @@ function statOpts(s){
   let mine = by[s.path] || {};
   if (moveSet(s) && mine.objs && !mine.objs.includes('move')) mine = {};
   if (doomSet(s) && mine.objs && !mine.objs.includes('holyWater')) mine = {};
+  // a Reward set kept on the objectives of before its heal and recast were counted (the ability's pieces, HP): its own
+  if (isRewardSet(s) && mine.objs && !mine.objs.includes('rewardRecast')) mine = Object.assign({}, mine, {objs: null});
   // an experience set kept on objectives of before it knew the absorb: its own ones
   if (xpSet(s) && mine.objs && !mine.objs.includes('absorb')) mine = Object.assign({}, mine, {objs: null});
   // a job ability's set kept on the objectives it had before the pieces boosting the ability were searched for (Enmity,
@@ -152,7 +154,8 @@ function statOpts(s){
   // sets.EnmityMax the same, its objectives of before (Enmity, DEF, HP) left for its own
   if (enmityMaxSet(s) && mine.objs && mine.objs.join() === 'enmity,def,hp') mine = Object.assign({}, mine, {objs: null});
   const objs = (mine.objs || statDefault(s)).slice(0, 3);
-  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0, luDt: 0}, statFloorDefault(s, objs[0]), mine.floor || {})};
+  // (a Reward set: the six ailments its body makes Reward remove, always: bst_pet.js rewardFloor)
+  return {objs, floor: Object.assign({pdt: 0, mdt: 0, hp: 0, hpMax: 0, sird: 0, fc: 0, ecrit: 0, enmity: 0, phalanx: 0, ceLoss: 0, luDt: 0}, statFloorDefault(s, objs[0]), rewardFloor(s), mine.floor || {})};
 }
 // The floors a tank's idle and Enmity sets start with (the guide's solve_idle / solve_enmity: DT+PDT at the -50 % cap,
 // the gear's enemy critical hit rate -5 beside the -5 of the merits); 0 (no floor) elsewhere
@@ -181,6 +184,9 @@ function statFloorDefault(s, first){
   if (isPetIdle(s)) return {};
   // a movement set: laid over the idle set, which keeps its damage taken (moveSet)
   if (moveSet(s) || doomSet(s)) return {};
+  // a BST's Reward set: worn for the use alone, its recast before the damage taken (the player, 2026-11-11: the
+  // floors cost Khimaira Bonnet's 2 s); its ailments floor stays (rewardFloor)
+  if (isRewardSet(s)) return {};
   // a job ability's set on sets.precast.JA: only its boosting pieces over the base, worn for the use alone; the base
   // holds the damage taken floors (Rev. Coronet took Cover to DT+PDT -37: "floors not reached", 2026-11-01). A tank's
   // keeps the HP band all the same: a piece that takes it over the Fast Cast cuts HP when the next set goes on
@@ -309,11 +315,18 @@ function refHp(x, d, plain){
 // A set laid over another one (sets.precast.JA.Sentinel = FullEnmity + Caballarius Leggings): its own pieces stay
 // when asked (a job ability's set: on by default), only the rest is searched. The slots kept, or none
 function keptSlots(s){
+  // the item the ability uses, worn in the ammo slot: always the set's own (a BST's pet food for Reward, a jug for
+  // Call Beast / Bestial Loyalty: BG Wiki Reward "can only be used while equipping Pet Food in the ammo slot")
+  const held = AMMO_ITEM_ABILITIES.includes(abilityName(s)) && withoutTrial(() => withWeapons(s).pieces).ammo ? ['ammo'] : [];
+  // the Reward set's pieces naming Reward are weighed by their potency (bst_pet.js), not kept as they are: both
+  // Jackcoats name it, only the Totemic one heals more (the player, 2026-11-11)
+  if (isRewardSet(s)) return held;
   const list = abilityPieces(s);
-  if (!list.length) return [];
+  if (!list.length) return held;
   const mine = ((S.optOpts || {}).statBy || {})[s.path] || {};
-  return (mine.keepOwn != null ? mine.keepOwn : true) ? list : [];
+  return [...new Set([...held, ...((mine.keepOwn != null ? mine.keepOwn : true) ? list : [])])];
 }
+const AMMO_ITEM_ABILITIES = ['reward', 'call beast', 'bestial loyalty'];
 // The slots of a job ability's set whose piece boosts that ability: its description or its augments name it
 // (Rev. Leggings +4 "Holy Circle", Cab. Leggings "Sentinel", Chev. Sabatons "Divine Emblem"); not the set's other
 // pieces, which only differ from the set it is laid over (Cryptic Earring in Holy Circle's)

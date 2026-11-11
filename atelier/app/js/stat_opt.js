@@ -12,6 +12,8 @@ const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enm
   'darkSkill', 'darkAcc', 'drainPot', 'aspirPot', 'absorbPot', 'darkTime', 'absorbTp', 'bioDot', 'dreadSpikes', 'endark',
   // a BST's pet (bst_pet.js)
   'petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur',
+  // a BST's Reward set (bst_pet.js isRewardSet)
+  'rewardPot', 'rewardRecast', 'mnd',
   // a movement set's (moveSet)
   'move',
   // the Doom set's (doomSet)
@@ -22,7 +24,7 @@ const STAT_OBJS = ['def', 'hp', 'hpLow', 'cureSelf', 'cureOther', 'enmity', 'enm
   'jaPlus',
   // a Bard's song sets (brd_song.js)
   'songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc'];
-const STAT_PCT = new Set(['songDurPct', 'holyWater', 'absorb', 'fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt', 'move']);
+const STAT_PCT = new Set(['rewardPot', 'songDurPct','holyWater', 'absorb', 'fc', 'sird', 'cmp', 'pdtRed', 'mdtRed', 'ecritRed', 'cure', 'enhdur', 'blockGear', 'statusRes', 'eleRes', 'ceLoss', 'luDt', 'petHaste', 'petDt', 'petMdt', 'move']);
 // a reduction of the enemy's critical hits reads as the gear says it (−7 %)
 // the enmity of a Cure reads as its two parts (CE + VE, the total being 7 CE: opt.js cureEnm), not a bare figure that
 // looks like HP
@@ -78,6 +80,8 @@ const statSet = s => !!s && !noStatSearch(s) && !songInstrumentSet(s) && (isPetS
 function statDefault(s){
   const list = withSird(s, statDefaultOf(s)), fam = family(s.path, s.pieces);
   if (xpSet(s)) return list;
+  // a BST's Reward set: its heal (bst_pet.js), not the count of pieces naming Reward (both Jackcoats name it)
+  if (isRewardSet(s)) return REWARD_OBJS;
   // a job ability's set: the pieces that boost that ability first (Cab. Surcoat's Fealty, Cab. Leggings' Sentinel); a
   // tank's then Enmity and DEF
   if (abilityName(s)) return ['PLD', 'RUN'].includes(S.job) ? ['jaPlus', 'enmity', 'def'] : ['jaPlus', ...list.filter(k => k !== 'jaPlus')].slice(0, 3);
@@ -102,13 +106,13 @@ function withSird(s, list){
 /* ---- the objectives by kind, and the ones a set is shown ---- */
 const STAT_OBJ_GROUPS = [['enh', ['enhTime', 'refreshTick', 'refreshMp', 'regenTick', 'regenHp', 'gainPot', 'temper', 'enspell', 'barEle', 'barStatus', 'aquaveil', 'auspice']], ['def', ['def', 'hp', 'pdtRed', 'mdtRed', 'ecritRed', 'blockGear', 'absorb', 'meva', 'mdb', 'statusRes', 'eleCover', 'eleRes']], ['enm', ['jaPlus', 'enmity', 'enmityLow', 'ceLoss', 'cureEnm']],
   ['cure', ['cureOther', 'cureSelf', 'cure', 'cmp', 'hpLow', 'holyWater', 'cursnaRecv', 'cursna', 'healSkill', 'esunaPlus', 'erasePlus', 'naVeil']], ['magic', ['phalanx', 'stoneskin', 'enlight', 'enhdur', 'enhSkill', 'divSkill', 'divAcc', 'mab', 'fc', 'sird']],
-  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur']], ['song', ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc']], ['move', ['move']]];
+  ['regen', ['refresh', 'regen']], ['enf', ['enfPot', 'enfTime', 'enfAcc', 'enfEff', 'enfSkill']], ['eled', ['edDown', 'edDot', 'edTime', 'edAcc']], ['dark', ['drainPot', 'aspirPot', 'absorbPot', 'absorbTp', 'darkTime', 'bioDot', 'dreadSpikes', 'endark', 'darkSkill', 'darkAcc']], ['luopan', ['luDt', 'luRegen', 'geomancy', 'geoSkill', 'luCharm']], ['pet', ['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb', 'chr', 'macc', 'charmPlus', 'charmDur', 'rewardPot', 'rewardRecast', 'mnd']], ['song', ['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc']], ['move', ['move']]];
 // The objectives only one kind of job has a use for (the player, 2026-11-05: "Luopan que GEO, pet que BST, PUP, SMN"):
 // a luopan's for a GEO; a pet's for the jobs with one (a wyvern: DRG); Charm's for a BST. Never shown elsewhere, not
 // even with every objective shown
 const STAT_JOB_ONLY = [[['luDt', 'luRegen', 'luCharm', 'geomancy', 'geoSkill'], ['GEO']],
   [['petAcc', 'petAtk', 'petHaste', 'petStp', 'petDa', 'petDt', 'petMdt', 'petRegen', 'petMab', 'petMacc', 'petInt', 'petMelee', 'petTpb'], ['BST', 'PUP', 'SMN', 'DRG']],
-  [['chr', 'macc', 'charmPlus', 'charmDur'], ['BST']],
+  [['chr', 'macc', 'charmPlus', 'charmDur', 'rewardPot', 'rewardRecast'], ['BST']],
   // a Bard's songs (brd_song.js)
   [['songPlus', 'songPot', 'songDurPct', 'songTime', 'songTimeShort', 'songSkill', 'songAcc'], ['BRD']]];
 const statJobOk = k => { const hit = STAT_JOB_ONLY.find(([keys]) => keys.includes(k)); return !hit || hit[1].includes(S.job); };
@@ -122,6 +126,7 @@ function statRelevant(s, chosen){
   add(luopanRelevant(s));
   if (isPetSet(s)) { add([...petRelevant(s), 'pdtRed', 'mdtRed', 'hp']); return out; }
   if (isCharmSet(s)) { add(charmRelevant(s)); return out; }
+  if (isRewardSet(s)) { add(rewardRelevant(s)); return out; }
   if (songOf(s)) { add(songRelevant(s)); return out; }
   const enh = enhContext(s);
   if (enh && !tankPhalanx(s, enh)) { add([...(ENH_OBJS[enh.kind] || ENH_PLAIN), ...(ENH_MORE[enh.kind] || []), 'mdtRed', 'enhSkill', 'sird', 'cmp', 'hp',
@@ -270,7 +275,7 @@ function statVec(p, slot){
   if (v('x:cursna received')) out.crecv = v('x:cursna received');
   if (BAR_PLUS[p.name]) out.barplus = BAR_PLUS[p.name];
   if (S.job === 'GEO') Object.assign(out, luopanVec(r, all));
-  if (S.job === 'BST') Object.assign(out, petVec(r, slot));
+  if (S.job === 'BST') Object.assign(out, petVec(r, slot, p.name));
   if (S.job === 'BRD') Object.assign(out, songVec(r, p.name));
   Object.assign(out, enfVec(r, all, p.name), edVec(r, all, p.name), darkVec(r, all), healerVec(p.name, slot), castVec(r));
   if (v('mab')) out.mab = v('mab');
