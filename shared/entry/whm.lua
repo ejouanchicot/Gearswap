@@ -235,7 +235,10 @@ function file_unload()
     -- OffenseMode to None. Not during a craft session, whose lock
     -- CraftManager owns. The Combat Mode lock is freed by the next job
     -- (shared/utils/core/combat_mode.lua).
-    if not (_G.CraftManager and _G.CraftManager.is_active()) then
+    local craft_ok, crafting = pcall(function()
+        return require('shared/utils/craft/craft_manager').is_active()
+    end)
+    if not (craft_ok and crafting) then
         if windower._whm_melee_lock or (state and state.OffenseMode and state.OffenseMode.value == 'Melee ON') then
             enable('main', 'sub', 'range')
             windower._whm_melee_lock = nil

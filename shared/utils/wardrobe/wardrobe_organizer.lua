@@ -586,6 +586,11 @@ end
 --- the job loaded, or every job when its SCOPE is 'all_jobs'.
 --- @param all_jobs boolean|nil True for //gs c wo alt (every job, ALT bags)
 function WardrobeOrganizer.organize(all_jobs)
+    -- A run takes the gear off; a craft session's gear stays on until //gs c uncraft
+    if require('shared/utils/craft/craft_manager').is_active() then
+        Chat.warn('A craft set is on: //gs c uncraft first.')
+        return
+    end
     if IS_RUNNING then
         Chat.warn('Organize already in progress (use //gs c wo reset to clear).')
         return
@@ -704,6 +709,10 @@ end
 function WardrobeOrganizer.reset()
     IS_RUNNING = false
     reset_module_state()
+    if require('shared/utils/craft/craft_manager').is_active() then
+        Chat.warn('State reset. Slots kept locked: a craft set is on (//gs c uncraft frees them).')
+        return
+    end
     Phases.enable_slots()
     Chat.success('State reset. IS_RUNNING=false. Slots re-enabled.')
 end
@@ -714,6 +723,10 @@ end
 function WardrobeOrganizer.recover()
     IS_RUNNING = false
     reset_module_state()
+    if require('shared/utils/craft/craft_manager').is_active() then
+        Chat.warn('Slots kept locked: a craft set is on (//gs c uncraft frees them).')
+        return
+    end
     Phases.force_enable_all()
     Chat.success('Recovery sent: 3 spaced enable passes for all 16 slots.')
 end

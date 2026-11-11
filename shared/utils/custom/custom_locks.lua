@@ -45,7 +45,8 @@ end
 function CustomLocks.release(wanted)
     for slot in pairs(locked()) do
         if not (wanted and wanted[slot]) then
-            if not combat_mode_holds(slot) then enable(slot) end
+            -- A craft session keeps every slot until //gs c uncraft
+            if not combat_mode_holds(slot) and not require('shared/utils/craft/craft_manager').is_active() then enable(slot) end
             locked()[slot] = nil
         end
     end

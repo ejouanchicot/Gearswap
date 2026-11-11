@@ -210,7 +210,7 @@ function job_state_change(stateField, newValue, oldValue)
         else
             -- Not during a craft session: CraftManager owns the lock until
             -- //gs c uncraft, and enabling here would drop the synthesis gear.
-            if not (_G.CraftManager and _G.CraftManager.is_active()) then
+            if not require('shared/utils/craft/craft_manager').is_active() then
                 enable('main', 'sub', 'range')
                 windower._whm_melee_lock = nil
                 CombatMode.release('whm_melee')

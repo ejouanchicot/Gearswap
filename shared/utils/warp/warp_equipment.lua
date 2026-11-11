@@ -84,6 +84,18 @@ function WarpEquipment.unlock(is_timeout, tag)
     lock_timer = nil
 
     -- Unlock specific slot or all equipment slots
+    -- A craft session keeps every slot until //gs c uncraft: the warp's own
+    -- lock ends, the slots stay locked, and no "unlocked" line is shown
+    local craft_ok, crafting = pcall(function()
+        return require('shared/utils/craft/craft_manager').is_active()
+    end)
+    if craft_ok and crafting then
+        is_locked = false
+        current_warp_type = nil
+        current_slot = nil
+        return
+    end
+
     local success, err = pcall(function()
         if current_slot and current_slot ~= 'all' then
             enable(current_slot)

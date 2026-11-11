@@ -172,6 +172,24 @@ local function diff_gear(previous, target)
     return changed, release
 end
 
+--- The shield a craft command leaves where it is: the one worn in the sub
+--- slot while a session runs, or the very piece the set asks for. Only
+--- //gs c uncraft takes it off: a variant, //gs c fish or the same command
+--- again never unlocks, swaps or empties the sub slot (an Escutcheon loses its
+--- synthesis support the moment it leaves the slot).
+--- @param previous table|nil Canonical gear of the running session
+--- @param target table Canonical gear of the set being applied
+--- @return string|nil Name of the shield to keep, nil when there is none
+local function kept_shield(previous, target)
+    local worn = player and player.equipment and player.equipment.sub
+    if type(worn) ~= 'string' or worn == '' or worn == 'empty' then return nil end
+    local ok, ItemIndex = pcall(require, 'shared/utils/equipment/item_index')
+    local shield = (ok and ItemIndex.is_shield(worn)) or worn:lower():find('escutcheon') ~= nil
+    if not shield then return nil end
+    if previous or same_item(target.sub, worn) then return worn end
+    return nil
+end
+
 --- Count the entries of a gear table.
 --- @param gear table Gear table
 --- @return number Number of slots it covers
@@ -218,6 +236,13 @@ end
 local function equip_craft_gear(entry, label, previous_gear)
     local target      = canonical_gear(entry.gear)
     local description = entry.description or label
+    local shield      = kept_shield(previous_gear, target)
+    if shield then
+        target.sub = shield
+        -- Locked now, not with the rest 2 s later: a gear change in between
+        -- would put the idle set's sub back
+        disable('sub')
+    end
 
     if not previous_gear then
         -- Defensive: unlock all slots in case a previous //gs c wo or craft
@@ -230,21 +255,28 @@ local function equip_craft_gear(entry, label, previous_gear)
         -- were still disabled by the first session's `gs disable all`, making
         -- the second equip a silent no-op. The list mirrors gearswap.lua's
         -- `disenable(...,'all',...)` handler in user_functions.lua.
-        enable('main', 'sub', 'range', 'ammo',
-               'head', 'neck', 'ear1', 'ear2',
-               'body', 'hands', 'ring1', 'ring2',
-               'back', 'waist', 'legs', 'feet')
+        local slots = {'main', 'range', 'ammo', 'head', 'neck', 'ear1', 'ear2',
+                       'body', 'hands', 'ring1', 'ring2', 'back', 'waist', 'legs', 'feet'}
+        if not shield then table.insert(slots, 2, 'sub') end
+        enable(unpack(slots))
 
+        local pieces = {}
+        for slot, item in pairs(target) do
+            if not (shield and slot == 'sub') then pieces[slot] = item end
+        end
         MessageCommands.show_craft_equipping(description, count_pieces(target))
-        equip(target)
+        equip(pieces)
         lock_after_delay(nil, description)
         return target
     end
 
     local changed, release = diff_gear(previous_gear, target)
+    if shield then changed.sub = nil end
     local touched = {}
     for slot in pairs(changed) do table.insert(touched, slot) end
-    for _, slot in ipairs(release) do table.insert(touched, slot) end
+    for _, slot in ipairs(release) do
+        if not (shield and slot == 'sub') then table.insert(touched, slot) end
+    end
 
     if #touched == 0 then
         -- Same pieces already on: nothing to swap, just re-assert the lock in

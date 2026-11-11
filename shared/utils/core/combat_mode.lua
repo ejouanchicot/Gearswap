@@ -48,9 +48,11 @@ local unpack_list = table.unpack or unpack
 --- SETTINGS (shown / hidden / keys per job: optional_state.lua)
 ---============================================================================
 
+-- Through the module, not _G.CraftManager: the global only exists once a craft
+-- command ran in this load, while the session itself survives a reload.
 local function craft_active()
-    local craft = rawget(_G, 'CraftManager')
-    return craft and craft.is_active and craft.is_active() or false
+    local ok, active = pcall(function() return require('shared/utils/craft/craft_manager').is_active() end)
+    return ok and active == true
 end
 
 local Optional = require('shared/utils/core/optional_state').create({
