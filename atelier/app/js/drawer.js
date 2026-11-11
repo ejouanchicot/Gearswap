@@ -90,12 +90,12 @@ function placeEffects(s, slot, list){
   }
 }
 // The paths of a path piece (Kaykaus, Odyssey...) your copies are not on (heldPaths, optimizer.js), each at its top
-// rank; null when the piece has no paths
+// rank, only the path chosen for its family (opt_page.js pathWanted); null when the piece has no paths
 function pathCopies(name, mine){
   const e = rankedEntry(name);
   if (!(e && e.paths)) return null;
   const held = heldPaths(name, e, mine);
-  return Object.keys(e.paths).filter(path => !held.has(path)).map(path => ({piece: {name, augs: ['Path: ' + path], rank: e.max_rank}, owned: false}));
+  return Object.keys(e.paths).filter(path => !held.has(path) && pathWanted(name, path)).map(path => ({piece: {name, augs: ['Path: ' + path], rank: e.max_rank}, owned: false}));
 }
 // Why a weapon cannot go in a hand of this set ('' when it can): a weaponskill's main hand takes the weapons that
 // open it, an off hand what the main hand takes (subWhy)

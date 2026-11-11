@@ -119,6 +119,8 @@ function optChoices(tpNames){
     choices[slot] = (owned[slot] || []).filter(x => !tpNames.has(x.name) && !excl[x.name] && reach(x) && !broth(x, slot)).map(x => {
       // how many you have (an export before 2026-10-03 counts the bags they are in)
       const mine = ownRank({name: x.name, id: x.id, augs: x.augs, copies: x.count || (x.where || []).length, keep: true, rare: isRare(x.name)});
+      // every item of the game: a rank piece of yours below its family's rank, at that rank (opt_page.js rankRaised)
+      if (o.where === 'all') return rankRaised(mine) || mine;
       const up = o.where === 'mine_max' ? upgradeOf(mine) : null;
       return up ? Object.assign({}, up.piece, {copies: mine.copies, keep: true, maxed: true, from: mine}) : mine; });
     if (o.where === 'all') choices[slot] = choices[slot].concat(gameChoices(slot, choices[slot], tpNames).filter(x => !excl[x.name]));
@@ -186,7 +188,8 @@ function gameChoices(slot, have, tpNames){
     const rank = e && e.paths ? rankWanted(it.name, e) : null;
     if (e && e.paths && rank == null) continue;
     if (e && e.paths) for (const path of Object.keys(e.paths)) {
-      if (!(held && held.has(path))) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank, missing: true}));
+      // only the path chosen for its family (opt_page.js rankPathOf: by default the one your copies are on)
+      if (!(held && held.has(path)) && pathWanted(it.name, path)) out.push(engineFill({name: it.name, augs: ['Path: ' + path], rank, missing: true}));
     }
     else out.push(engineFill({name: it.name, missing: true, copies: twoAllowed(it.name) ? 2 : 1, rare: isRare(it.name)}));
   }

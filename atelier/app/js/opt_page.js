@@ -149,15 +149,18 @@ function rankFamilies(){
   for (const it of (window.FFXI && FFXI.CATALOG ? FFXI.CATALOG.items : [])) {
     const e = it.jobs.includes(job) ? rankedEntry(it.name) : null;
     if (!e || !RANK_KINDS.includes(e.kind)) continue;
-    const f = by[rankFamOf(it.name)] = by[rankFamOf(it.name)] || {fam: rankFamOf(it.name), kind: e.kind, max: e.max_rank, n: new Set(), first: it.name};
+    const f = by[rankFamOf(it.name)] = by[rankFamOf(it.name)] || {fam: rankFamOf(it.name), kind: e.kind, max: e.max_rank, n: new Set(), paths: new Set(), first: it.name};
     f.n.add(it.name);
+    for (const p of Object.keys(e.paths || {})) f.paths.add(p);
+    // an armour family's icon is its head piece (Gleti's Mask, Sakpata's Helm...), the first piece met else
+    if (!f.head && it.slots.includes(FFXI.opt.SLOT.head)) { f.head = true; f.first = it.name; }
   }
   const mine = {};
   for (const x of Object.values(ownedOf() || {}).flat()) if (by[rankFamOf(x.name)] && rankedEntry(x.name)) mine[x.name + '|' + (x.augs || []).join('|')] = x;
-  const own = fam => Object.values(mine).filter(x => rankFamOf(x.name) === fam).map(x => ({name: x.name, rank: ownRank({name: x.name, augs: x.augs}).rank}))
+  const own = fam => Object.values(mine).filter(x => rankFamOf(x.name) === fam).map(x => ({name: x.name, rank: ownRank({name: x.name, augs: x.augs}).rank, path: pieceStats({name: x.name, augs: x.augs}).path}))
     .sort((a, b) => a.name.localeCompare(b.name));
   // (a piece and its +1, Kaykaus Mitra and Kaykaus Mitra +1, count once)
-  const list = Object.values(by).map(f => ({fam: f.fam, kind: f.kind, max: f.max, n: new Set([...f.n].map(n => n.replace(/ \+1$/, ''))).size, first: f.first, mine: own(f.fam)}))
+  const list = Object.values(by).map(f => ({fam: f.fam, kind: f.kind, max: f.max, n: new Set([...f.n].map(n => n.replace(/ \+1$/, ''))).size, paths: [...f.paths].sort(), first: f.first, mine: own(f.fam)}))
     .sort((a, b) => RANK_KINDS.indexOf(a.kind) - RANK_KINDS.indexOf(b.kind) || a.fam.localeCompare(b.fam));
   RANK_FAMS = {key, list};
   return list;
@@ -177,6 +180,41 @@ function rankWanted(name, e){
   const v = rankFamSet()[rankFamOf(name)];
   if (v === 'off') return null;
   return v == null || v === '' ? e.max_rank : Math.min(e.max_rank, +v);
+}
+// The path a family's pieces to get are searched on, by character (S.optOpts.rankPath: {Nyame: 'B'}; 'all': every
+// path). Not said: the path your copies of the family are on when they are all on one (Nyame Path B: Path A is not
+// offered), else every path
+const rankPathSet = () => (((S.optOpts || {}).rankPath || {})[S.char]) || {};
+function setRankPath(changes){
+  const all = Object.assign({}, (S.optOpts || {}).rankPath);
+  all[S.char] = Object.assign({}, all[S.char], changes);
+  S.optOpts = Object.assign({}, S.optOpts, {rankPath: all}); save(); render();
+}
+// The path a family is searched on: a path, or '' for every path
+function rankPathOf(fam){
+  const v = rankPathSet()[fam];
+  if (v === 'all') return '';
+  if (v) return v;
+  const held = new Set();
+  for (const x of Object.values(ownedOf() || {}).flat()) if (rankFamOf(x.name) === fam && rankedEntry(x.name)) {
+    const p = pieceStats({name: x.name, augs: x.augs}).path;
+    if (p) held.add(p);
+  }
+  return held.size === 1 ? [...held][0] : '';
+}
+// Whether a piece of the game on that path is searched (its family's path, rankPathOf)
+const pathWanted = (name, path) => { const p = rankPathOf(rankFamOf(name)); return !p || p === path; };
+// Searching every item of the game, your copy of a rank piece is searched at its family's rank (rankWanted), the
+// player's filter: above yours as a copy to improve (a maxed choice, as "Mine at best" does), below yours at that
+// lower rank (R0 chosen with R20 copies: R0). Left as it is when the family is not unlocked; a rank gearscan never
+// read counts as the top one, as the engine does
+function rankRaised(mine){
+  const e = rankedEntry(mine.name);
+  if (!(e && e.paths)) return null;
+  const want = rankWanted(mine.name, e), path = pieceStats(mine).path, cur = mine.rank != null ? mine.rank : e.max_rank;
+  if (want == null || !path || want === cur) return null;
+  const augs = mine.augs && mine.augs.length ? mine.augs : ['Path: ' + path];
+  return want > cur ? Object.assign({}, mine, {augs, rank: want, keep: true, maxed: true, from: mine}) : Object.assign({}, mine, {augs, rank: want});
 }
 const OP_SWITCH = {
   wardOnly: {label: 'optWard', tip: () => t('ttOptWard')},
@@ -309,13 +347,18 @@ function cycleOf(s, plain){
   }
   return S._cyc[key];
 }
-Object.assign(T.fr, {opRanks: 'Rang des pièces à avoir', opRanksTip: 'Les pièces à rang que tu n’as pas (Odyssey, Limbus, Nolan), au rang où tu les aurais, famille par famille. « Pas débloqué » : la recherche ne les propose pas. Celles que tu as gardent leur vrai rang.',
+// the right column's tabs (atelier/src/screens/sets/rtabs.ts) and the stats optimizer's fold of what it looks for
+Object.assign(T.fr, {rtStats: 'Stats', rtStatsTip: 'Les stats de ce set, comme sans l’optimiseur.', optGoals: 'Objectifs et limites'});
+Object.assign(T.en, {rtStats: 'Stats', rtStatsTip: 'This set’s stats, as without the optimizer.', optGoals: 'Objectives and limits'});
+Object.assign(T.fr, {opRanks: 'Rang des pièces à avoir', opRanksTip: 'Les pièces à rang que tu n’as pas (Odyssey, Limbus, Nolan), au rang où tu les aurais, famille par famille. « Pas débloqué » : la recherche ne les propose pas. Les tiennes sont cherchées à ce rang aussi : au-dessus du leur comme pièce à améliorer, en dessous à ce rang plus bas. Le path : celui de tes pièces de la famille si elles sont toutes sur le même, sinon tous ; « Tous » propose chaque path.',
+  opPathAll: 'Tous', opPathAllTip: 'Chaque path de la famille', opPathTip: 'Seulement le Path {p}', opPathMine: 'Path {p} (le tien)',
   opRankOff: 'Pas débloqué', opRankMax: 'R{n} (max)', opRankN: '{n} pièce(s)', opRankOffS: 'Non', opRankMine: 'tu as : {l}', opRankNone: 'aucune à toi',
   opToastFold: 'Le détail de la recherche', opV_detail: 'Détail', opV_detailTip: 'Les rounds jusqu’à la WS, les pièces changées, tous les chiffres et le calcul pas à pas.',
   opV_noRun: 'pas encore lancé', opV_none: 'aucun', opV_hoxne: 'Hoxne', opV_vim: 'Vim Torque',
   opV_where_mine: 'Mes pièces', opV_where_mine_max: 'Mes pièces au max', opV_where_all: 'Tous les objets', opV_search_fast: 'Rapide', opV_search_classic: 'Classique',
   opRankAllMax: 'Tout au max', opRankAllOff: 'Rien de débloqué', opRankK_odyssey: 'Odyssey', opRankK_limbus: 'Limbus', opRankK_nolan: 'Nolan'});
-Object.assign(T.en, {opRanks: 'Rank of the pieces to get', opRanksTip: 'The rank pieces you do not hold (Odyssey, Limbus, Nolan), at the rank you would have them, family by family. “Not unlocked”: the search does not offer them. Yours keep their own rank.',
+Object.assign(T.en, {opRanks: 'Rank of the pieces to get', opRanksTip: 'The rank pieces you do not hold (Odyssey, Limbus, Nolan), at the rank you would have them, family by family. “Not unlocked”: the search does not offer them. Yours are searched at that rank too: above theirs as a piece to improve, below it at that lower rank. The path: the one your pieces of the family are on when they share one, else every path; “All” offers each path.',
+  opPathAll: 'All', opPathAllTip: 'Every path of the family', opPathTip: 'Path {p} only', opPathMine: 'Path {p} (yours)',
   opRankOff: 'Not unlocked', opRankMax: 'R{n} (max)', opRankN: '{n} piece(s)', opRankOffS: 'No', opRankMine: 'you have: {l}', opRankNone: 'none of yours',
   opToastFold: 'The search in detail', opV_detail: 'Detail', opV_detailTip: 'The rounds to the weaponskill, the pieces changed, every figure and the sum step by step.',
   opV_noRun: 'not run yet', opV_none: 'none', opV_hoxne: 'Hoxne', opV_vim: 'Vim Torque',

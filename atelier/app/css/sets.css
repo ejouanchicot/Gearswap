@@ -372,6 +372,9 @@
 .opranki{display:grid;gap:1px;min-width:0}
 .opranki b{font-size:13px;font-weight:600}
 .opranki small{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oprankcs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:flex-end}
+.oprankcs select.rksel{flex:none;width:118px;min-width:0;max-width:118px;font-family:var(--mono);font-weight:600}
+.rksel.off{color:var(--bad,#ff7b72)}
 .oprankc{display:inline-flex;padding:2px;gap:2px;border-radius:8px;background:var(--well);border:1px solid var(--line-strong)}
 .rkchip{padding:3px 9px;border:0;border-radius:6px;background:none;color:var(--muted);font:inherit;font-size:12px;font-weight:600;font-family:var(--mono);cursor:pointer}
 .rkchip:hover{color:var(--ink)}
@@ -2344,3 +2347,17 @@
 /* an item with many tags (jobs, "réglages", its bags): the tags end in "…" rather than past the line (the layout
    check, 2026-11-10: "réglages" cut on 88 lines of Tetsouo's bags) */
 .bvitem .bvu{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* ---- the right column's tabs (atelier/src/screens/sets/rtabs.ts, 2026-11-11): the set's stats, the optimizer's
+   detail and its search settings on top of the column, each a click away. The optimizer's own way back (← / ✕) is the
+   Stats tab now. Under 1100 px the column is no longer hidden: it comes under the set, the stats it held with it (the
+   copy of the figures in the card is then left out) ---- */
+.globalcol.rtabbed > .rtabs{border-top:0;border-radius:0;flex-wrap:wrap}
+.globalcol.rtabbed > .rtabs button{flex:1 1 84px}
+.rtabbed .ophead [data-optback],.rtabbed .optchead [data-optback]{display:none}
+@media (max-width:1099.98px){
+  .setsx.ui2 > .globalcol.rtabbed{display:block;grid-column:-2 / -1;min-width:0;max-height:none;overflow:visible}
+  .setsx.ui2 > .detail:has(~ .globalcol.rtabbed) .globals-inline{display:none}
+  /* (the list beside both, the set and the column under it: on one row only it got the set's height, cut) */
+  .setsx.ui2:has(> .globalcol.rtabbed) > .setlist{grid-row:1 / span 2}
+}

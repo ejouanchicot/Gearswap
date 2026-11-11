@@ -48,28 +48,40 @@ export interface SearchView {
     groups: Array<{slot: string; label: string; count: number; items: Array<{n: string; tip: string; iconHtml: string; why: string}>; more: null | {label: string}}>};
   ranks: null | {title: string; tip: string; allMax: string; allOff: string;
     kinds: Array<{label: string; rows: Array<{fam: string; label: string; count: string; iconHtml: string; mine: string; mineTip: string;
-      chips: Array<{value: string; label: string; on: boolean; title: string}>}>}>};
+      chips: Array<{value: string; label: string; on: boolean; title: string}>;
+      paths: null | Array<{value: string; label: string; on: boolean; title: string}>}>}>};
 }
 
 // Searching every item of the game: the rank a family of rank pieces is searched at (opt_page.js rankFamilies), by
-// kind; each family its icon, how many pieces the job wears, yours with their rank, the ranks as chips (not unlocked,
-// then the four top ranks: R15 to R30, a Nolan's R0 to R15)
+// kind; each family its icon, how many pieces the job wears, yours with their rank, the ranks in a menu (not unlocked,
+// then every rank from the top one down to R0)
+// A family on several paths (Nyame A / B): the path its pieces to get are searched on (opt_page.js rankPathOf), every
+// path as a chip after "All"; the one your copies are on said in its tip
+function pathChips(f: LegacyAny) {
+  const paths = f.paths as string[];
+  if (!paths || paths.length < 2) return null;
+  const cur = rankPathOf(f.fam), held = new Set((f.mine as Array<{path?: string}>).map(x => x.path).filter(Boolean));
+  return [{value: 'all', label: t('opPathAll'), on: !cur, title: t('opPathAllTip')}]
+    .concat(paths.map(p => ({value: p, label: p, on: cur === p, title: t(held.has(p) ? 'opPathMine' : 'opPathTip', {p})})));
+}
 function ranksView(o: LegacyAny): SearchView['ranks'] {
   if (o.where !== 'all') return null;
   const fams: Array<LegacyAny> = rankFamilies(), set = rankFamSet();
   if (!fams.length) return null;
   const row = (f: LegacyAny) => {
+    // every rank, the top one first (a Nolan's R15 to R0)
     const steps: string[] = [];
-    for (let r = f.max; r >= 0 && steps.length < 4; r -= 5) steps.unshift(String(r));
+    for (let r = f.max; r >= 0; r--) steps.push(String(r));
     const raw = set[f.fam] == null || set[f.fam] === '' ? String(f.max) : String(set[f.fam]);
-    const cur = raw === 'off' || steps.includes(raw) ? raw : steps.filter(r => +r <= +raw).pop() || steps[0];
+    const cur = raw === 'off' || steps.includes(raw) ? raw : String(f.max);
     const short = (n: string) => n.split(' ').slice(1).join(' ') || n, mine = f.mine as Array<{name: string; rank?: number}>;
     const said = mine.map(x => short(x.name) + (x.rank != null ? ' R' + x.rank : ''));
     return {fam: f.fam, label: f.fam.replace(/'s$/, ''), count: t('opRankN', {n: f.n}), iconHtml: icon(f.first),
       mine: said.length ? t('opRankMine', {l: said.slice(0, 3).join(', ') + (said.length > 3 ? ' +' + (said.length - 3) : '')}) : t('opRankNone'),
       mineTip: mine.map(x => x.name + (x.rank != null ? ' R' + x.rank : '')).join('\n'),
       chips: [{value: 'off', label: t('opRankOffS'), on: cur === 'off', title: t('opRankOff')}]
-        .concat(steps.map(r => ({value: r, label: 'R' + r, on: cur === r, title: +r === f.max ? t('opRankMax', {n: r}) : 'R' + r})))};
+        .concat(steps.map(r => ({value: r, label: 'R' + r, on: cur === r, title: +r === f.max ? t('opRankMax', {n: r}) : 'R' + r}))),
+      paths: pathChips(f)};
   };
   const kinds = [...new Set(fams.map(f => f.kind as string))];
   return {title: t('opRanks'), tip: t('opRanksTip'), allMax: t('opRankAllMax'), allOff: t('opRankAllOff'),

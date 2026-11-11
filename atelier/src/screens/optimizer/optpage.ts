@@ -33,6 +33,8 @@ export interface ResultRow { label: string; obj: boolean; cells: Array<{text: st
 export interface OptPageView {
   head: {backTitle: string; back: string; title: string; set: string; ctx: string; goHtml: string};
   settings: string;
+  // the stats optimizer's fold of what is looked for (OptColumn.svelte): its objectives and floors
+  goals: string;
   // one view, in tabs (OptPage.svelte): the one open (S._opView: result, what, pieces, calc, special) and the tabs, the
   // search's own three (blocks.ts searchView) after the result and what is looked for
   tab: string;
@@ -249,14 +251,14 @@ export function optPageView(s: LegacyAny, ws: unknown): OptPageView {
     : optGoButtons(act) + (kind === 'jump' || kind === 'stat' || kind === 'nuke' ? '' : `<button class="${more}" data-tiercost title="${esc(t(ws ? 'tcTip' : 'tcTipEng'))}">${t('tcBtn')}</button>` +
       (ws ? `<button class="${more}" data-optall title="${esc(t('oaTip'))}">${t('oaBtn')}</button>` : ''));
   const head = {backTitle: t('ttOptBack'), back: t('optBack'), title: t('optPageTitle'), set: shortPath(s.path), ctx: `${buffTier()} · ${enemyKey(b.enemy)}`, goHtml};
-  const out: OptPageView = {head, settings: t('optSettings'), tab: '', tabs: [], settingsOpen: !!(S as LegacyAny).boxOpen.optset, simple, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
+  const out: OptPageView = {head, settings: t('optSettings'), goals: t('optGoals'), tab: '', tabs: [], settingsOpen: !!(S as LegacyAny).boxOpen.optset, simple, noEngine: null, statWhat: null, statResult: null, what: null, result: null};
   if (!engineReady()) return {...out, noEngine: noEngineText()};
   // a set judged by its stats (idle, Enmity, Phalanx, Fast Cast...): stat_opt.js
   // (beside the set, the column's result keeps the useful lines: card.ts opt)
-  if (kind === 'stat') return {...out, statWhat: statWhatView(s), statResult: statResultView(s, true)};
   const S0 = S as LegacyAny, tab = OP_VIEWS.includes(S0._opView) ? S0._opView : 'detail';
-  // a tab of the search's settings is that block's own tab
+  // a tab of the search's settings is that block's own tab (the right column's tabs: sets/rtabs.ts)
   if (tab !== 'detail') S0._opTab = tab;
+  if (kind === 'stat') return {...out, tab, statWhat: statWhatView(s), statResult: statResultView(s, true)};
   const what = whatOf(s, kind), result = resultOf(s, kind), subs = tabSubs(result);
   const tabs = [{id: 'detail', label: t('opV_detail'), on: 0, tip: t('opV_detailTip')}]
     .concat(what.search.tabs.map(x => ({id: x.id, label: x.label, on: x.on, tip: x.tip})))

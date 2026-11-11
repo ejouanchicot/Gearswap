@@ -13,6 +13,7 @@ import {figuresView, type FiguresView} from './figures';
 import {wsHeadView, type WsHeadView} from './wshead';
 import {weaponMenusView, weaponResults, weaponTip, type WeaponMenu, type WeaponResult} from './weapons';
 import {optPageView, type OptPageView} from '../optimizer/optpage';
+import {rightTabsView, type RightTabs} from './rtabs';
 
 import {trialBarView, type TrialBar} from './trial';
 export interface SlotView { slot: string; ci: number; label: string; empty: boolean; cls: string; aria: string; reset: null | {title: string}; lock: null | {title: string};
@@ -42,6 +43,8 @@ export interface CardView {
   chips: Chips | null;
   // the stats optimizer, open in the column beside the card (OptColumn.svelte), or null
   opt: OptPageView | null;
+  // the right column's tabs (rtabs.ts): the set's stats, the optimizer's views; null when the set has no optimizer
+  rtabs: RightTabs | null;
   // the pane's head band: "Set · Idle" (its family)
   pane: string;
   // the weapons' menus folded in one line (data-fold="wfold"): what they hold now, open or not
@@ -320,6 +323,6 @@ export function cardView(card: LegacyAny, ci: number, bypath: LegacyAny, q: stri
   S0._globals = {s, view: figuresView(s)};
   const tabs = [{key: 'set', label: t('cvTabSet')}, ...(ctl && ctl.k === 'picks' ? [{key: 'weap', label: t('wLine')}] : []), {key: 'lua', label: 'Lua'}, {key: 'legend', label: t('legendBtn')}];
   const tab = (tabs.find(x => x.key === (S0.boxOpen || {}).cardtab) || tabs[0]!).key;
-  return {k: 'card', tabs, tab, ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s),
+  return {k: 'card', tabs, tab, ci, ws, title, versions, ctl, trial, slots, equip, footHtml: foot, wantsHtml, legend, notes, figures: S0._globals.view, chips, opt, rtabs: acts.opt ? rightTabsView(!!opt, opt && opt.tabs.length ? (opt.tabs.find(x => x.id === 'detail') || {sub: ''}).sub : '') : null, pane: t('paneSet') + ' · ' + listFamLabel(card.fam), weapons: weaponLineOf(ctl), lua: setLuaOf(s),
     simple, codeLabel: t('ssCode'), noteTip: simple ? [notes.fam && !notes.fam.none ? plainText(notes.fam.textHtml) : '', notes.base].filter(Boolean).join(' · ') : ''};
 }

@@ -86,7 +86,13 @@ document.addEventListener('click', e => {
   if ('optws' in d) { S._optScratch = d.optws === 'best'; optimizeWs(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); return; }
   // an engaged set with a mode by its name keeps its own goal (eng_modes.js engModeWrite)
   if (d.optobj) { if (!engModeWrite(d.optobj, d.v)) S.optOpts = Object.assign({}, S.optOpts, {[d.optobj]: d.v}); save(); render(); return; }
-  if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; render(); return; }
+  if ('optview' in d) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]); S.optView = s ? optViewKey(s) : null; S._opView = 'detail'; render(); return; }
+  // the right column's tabs (atelier/src/screens/sets/rtabs.ts): the set's stats close the optimizer, any other tab
+  // opens it on that view (a search's settings tab is the search block's own tab too)
+  if (d.rtab) { const s = shownSet(S._cards[S.sel[S.job]], S.sel[S.job]);
+    if (d.rtab === 'stats') S.optView = null;
+    else { S.optView = s ? optViewKey(s) : null; S._opView = d.rtab; if (d.rtab !== 'detail') S._opTab = d.rtab; }
+    render(); return; }
   if ('optback' in d) { S.optView = null; render(); return; }
   // the objectives' list of the stats optimizer beside the set, folded but the first (StatPage.svelte compact)
   if ('optobjs' in d) { S._optObjsOpen = !S._optObjsOpen; render(); return; }
@@ -160,6 +166,8 @@ document.addEventListener('click', e => {
   if (d.exclmore) { S._exclOpen = Object.assign({}, S._exclOpen, {[d.exclmore]: !(S._exclOpen || {})[d.exclmore]}); render(); return; }
   // the rank a family of rank pieces of the game is searched at (opt_page.js rankWanted), or every family's
   if (d.optrank) { setRankFam({[d.optrank]: d.v}); return; }
+  // the path a family's pieces to get are searched on (opt_page.js rankPathOf)
+  if (d.optpath) { setRankPath({[d.optpath]: d.v}); return; }
   if (d.optrankall) { setRankFam(Object.fromEntries(rankFamilies().map(f => [f.fam, d.optrankall === 'off' ? 'off' : '']))); return; }
   if ('livereload' in d) { liveReload(false); return; }
   if ('liverestart' in d) { liveReload(true); return; }
@@ -271,6 +279,8 @@ document.addEventListener('change', e => {
     const picked = [...e.target.selectedOptions].map(x => x.value), all = Object.assign({}, (S.optOpts || {}).nukeSpells);
     all[e.target.dataset.nukespells] = picked;
     S.optOpts = Object.assign({}, S.optOpts, {nukeSpells: all}); save(); render(); return; }
+  // the rank a family of rank pieces is searched at (opt_page.js rankWanted), from its menu
+  if (e.target.dataset && e.target.dataset.optranksel) { setRankFam({[e.target.dataset.optranksel]: e.target.value}); return; }
   // the optimizer's settings, kept for the next run
   if (e.target.dataset && e.target.dataset.optopt) { const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     // (an engaged set with a mode by its name keeps its own goal and limits: eng_modes.js engModeWrite)
