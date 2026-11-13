@@ -140,16 +140,13 @@ function Phases.unequip(on_done)
 
     local SETTLE = 1.2  -- seconds between attempts (server gear-swap window)
     local attempt = 0
+    -- No native `/equip <slot> empty` strategy any more: sent in a row, it made the client free one of its item-name
+    -- records twice and crash (0xc0000374, PorterPacker's same fallback, full dump of 2026-11-13). `gs c naked`
+    -- unlocks what it empties (COMMON_COMMANDS.lua handle_naked), so the GearSwap strategies are enough.
     local strategies = {
         function() windower.send_command('gs c naked')        end,  -- 1: job-defined naked
         function() windower.send_command('gs c naked')        end,  -- 2: retry same
         function() windower.send_command('gs equip naked')    end,  -- 3: GS direct equip
-        function()                                                  -- 4: native FFXI /equip
-            local left = still_equipped()
-            for _, slot in ipairs(left) do
-                windower.send_command(('input /equip %s empty'):format(slot))
-            end
-        end,
     }
 
     local function lock_and_finish()

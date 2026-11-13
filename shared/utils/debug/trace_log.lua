@@ -144,11 +144,18 @@ end
 --- GearSwap's own globals do.
 --- @return string e.g. "mem 48213KB", '' when unavailable
 local function memory()
+    local kb = TraceLog.memory_kb()
+    return kb and (' mem %dKB'):format(kb) or ''
+end
+
+--- Lua memory of the GearSwap addon in KB, garbage not yet collected included.
+--- @return number|nil nil when GearSwap's collectgarbage is not reachable
+function TraceLog.memory_kb()
     local G = rawget(_G, 'gearswap')
     local count = type(G) == 'table' and rawget(G, 'collectgarbage')
-    if type(count) ~= 'function' then return '' end
+    if type(count) ~= 'function' then return nil end
     local ok, kb = pcall(count, 'count')
-    return ok and (' mem %dKB'):format(kb) or ''
+    return ok and kb or nil
 end
 
 --- The older loads not yet freed, by load number (env_watch.lua notes every load in a weak table, which the

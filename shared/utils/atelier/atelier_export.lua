@@ -29,6 +29,9 @@
 
 local AtelierExport = {}
 
+-- Not table.concat: in game it is Windower's, quadratic (shared/utils/core/text_join.lua)
+local join = require('shared/utils/core/text_join').join
+
 -- What the export holds, raised when it gains something the page relies on: the page warns about
 -- an export written by an older exporter (2: key conditions, empty sets; 3: macro fallback, bag,
 -- priority, temp keys; 2026-10-02; 4: the set catalog, 2026-10-06)
@@ -200,14 +203,14 @@ local function json(value)
     if #value > 0 or next(value) == nil then
         local parts = {}
         for i = 1, #value do parts[i] = json(value[i]) end
-        return '[' .. table.concat(parts, ',') .. ']'
+        return '[' .. join(parts, ',') .. ']'
     end
     local parts = {}
     for _, key in ipairs(sorted_keys(value)) do
         local text = json(value[key])
         if text ~= 'null' then parts[#parts + 1] = json(tostring(key)) .. ':' .. text end
     end
-    return '{' .. table.concat(parts, ',') .. '}'
+    return '{' .. join(parts, ',') .. '}'
 end
 
 local function write(path, text)
@@ -401,13 +404,28 @@ local function new_data()
 end
 
 --- Run one stage; while //gs c trace is on, a stage that cost something is written (tag EXPORT).
-local function run_stage(stages, stage)
+local TRACE_GROWTH_KB = 10 * 1024   -- a step that grew Lua memory more than this is written, however fast
+
+--- Run one step of the export; while //gs c trace is on, a step that cost time or memory is written (tag EXPORT).
+--- @param label string What the step is, for the trace line (stage 6, json sets...)
+--- @param fn function The step
+local function traced(label, fn)
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    local on = ok_t and Trace.enabled()
+    local kb0 = on and Trace.memory_kb()
     local started = os.clock()
-    stages[stage]()
-    local ms = (os.clock() - started) * 1000
-    if ms >= 5 then
-        pcall(function() require('shared/utils/debug/trace_log').log('EXPORT', 'stage %d: %d ms', stage, ms) end)
+    local result = fn()
+    if not on then return result end
+    local ms, kb1 = (os.clock() - started) * 1000, Trace.memory_kb()
+    local grown = kb0 and kb1 and kb1 - kb0 or 0
+    if ms >= 5 or grown >= TRACE_GROWTH_KB then
+        pcall(Trace.log, 'EXPORT', '%s: %d ms, %+d KB', label, ms, grown)
     end
+    return result
+end
+
+local function run_stage(stages, stage)
+    traced('stage ' .. stage, stages[stage])
 end
 
 --- The data of the loaded job, as the page reads it (the file of export(), the
@@ -547,18 +565,19 @@ function AtelierExport.export_spread(no_file)
                 keys = sorted_keys(data)
             elseif at < #keys then
                 at = at + 1
-                local text = json(data[keys[at]])
+                local key = keys[at]
+                local text = traced('json ' .. tostring(key), function() return json(data[key]) end)
                 if text ~= 'null' then parts[#parts + 1] = json(tostring(keys[at])) .. ':' .. text end
             -- the end on three frames: the text, the file, the index of the exports (one frame froze 0.1 to 0.4 s)
             elseif not body then
-                body = '{' .. table.concat(parts, ',') .. '}'
+                body = traced('body', function() return '{' .. join(parts, ',') .. '}' end)
                 return true
             elseif not written then
                 written = true
-                if not no_file then write_export(data, body, true) end
+                if not no_file then traced('file', function() write_export(data, body, true) end) end
                 return true
             else
-                if not no_file then write_index() end
+                if not no_file then traced('index', write_index) end
                 mark.body = body
                 return false
             end

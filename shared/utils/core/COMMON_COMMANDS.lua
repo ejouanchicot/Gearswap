@@ -332,6 +332,24 @@ end
 
 -- NAKED COMMAND (Strip all equipment)
 
+--- The slots naked unlocks before emptying them. equip() skips a disabled slot: Combat Mode, WHM Melee ON or a
+--- custom lock kept the weapons on, and PorterPacker then fell back on the client's `/equip <slot> empty`, which
+--- crashed the game (a double free in its item-name table, full dump of 2026-11-13). Those locks come back by
+--- themselves at the next update (combat_mode.lua apply, reassert_holds). Two stay: a craft session keeps all its
+--- gear (craft_manager.lua), and Doom keeps its pieces (doom_manager.lua locks them until the Doom is gone).
+--- @param all_slots table Every slot naked empties
+--- @return table The slots to enable
+local function naked_unlock_slots(all_slots)
+    local ok_c, crafting = pcall(function() return require('shared/utils/craft/craft_manager').is_active() end)
+    if ok_c and crafting then return {} end
+    local doom_kept = buffactive and buffactive['doom'] and {neck = true, ring1 = true, ring2 = true, waist = true} or {}
+    local unlock = {}
+    for _, slot in ipairs(all_slots) do
+        if not doom_kept[slot] then unlock[#unlock + 1] = slot end
+    end
+    return unlock
+end
+
 --- Strip all equipment slots (//gs c naked or //gs c equip naked).
 --- @return boolean Always true
 function CommonCommands.handle_naked()
@@ -349,6 +367,8 @@ function CommonCommands.handle_naked()
     for _, slot in ipairs(all_slots) do
         naked_set[slot] = empty
     end
+    local unlock = naked_unlock_slots(all_slots)
+    if #unlock > 0 then enable((table.unpack or unpack)(unlock)) end
     equip(naked_set)
     local MessageFormatter = require('shared/utils/messages/message_formatter')
     MessageFormatter.show_info('All slots cleared.')
