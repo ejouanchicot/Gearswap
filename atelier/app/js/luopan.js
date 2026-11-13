@@ -50,7 +50,8 @@ Object.assign(T.fr, {
   statObj_luRegen: 'Luopan : Regen', statD_luRegen: 'PV par tick retirés de ce qu’il perd ; set porté',
   statObj_luCharm: 'Luopan : Bagua Charm', statD_luCharm: 'PV de moins perdus par tick (Luopan Duration) ; pris au cast',
   statObj_geomancy: 'Geomancy+', statD_geomancy: 'la plus haute pièce, pas la somme ; pris au cast du Geo- ou de l’Indi-',
-  statObj_geoSkill: 'Skill Geomancy + Handbell', statD_geoSkill: 'les tiens + le gear ; pris au cast',
+  statObj_geoSkill: 'Skill Geomancy + Handbell', statD_geoSkill: 'les tiens + le gear, compté jusqu’à 900 (au-delà rien de plus) ; pris au cast',
+  statObj_indiTime: 'Durée de l’Indi', statD_indiTime: '180 s + les secondes des pièces, × les % des augments (Lifestream Cape, Gada) ; pris au cast',
 });
 Object.assign(T.en, {
   statGrp_luopan: 'Luopan', statLuDt: 'Luopan damage taken ≥',
@@ -58,7 +59,8 @@ Object.assign(T.en, {
   statObj_luRegen: 'Luopan: Regen', statD_luRegen: 'HP per tick, subtracted from what it loses; worn set',
   statObj_luCharm: 'Luopan: Bagua Charm', statD_luCharm: 'less HP lost per tick (Luopan Duration); taken at cast time',
   statObj_geomancy: 'Geomancy+', statD_geomancy: 'the highest piece, not the sum; taken when the Geo- or Indi- is cast',
-  statObj_geoSkill: 'Geomancy + Handbell skill', statD_geoSkill: 'yours + the gear; taken at cast time',
+  statObj_geoSkill: 'Geomancy + Handbell skill', statD_geoSkill: 'yours + the gear, counted up to 900 (nothing more past it); taken at cast time',
+  statObj_indiTime: 'Indi duration', statD_indiTime: '180 s + the pieces’ seconds, × the augments’ % (Lifestream Cape, Gada); taken at cast time',
 });
 
 const LUOPAN = {hp: 1665, loss: 24, le: 17, ea: 30, tick: 3, max: 600, own: -50, cap: -87.5};
@@ -95,17 +97,33 @@ function luopanCastSet(){
 // A set a Geo- or Indi- spell is cast in (Geomancy+ and the skills are taken there), and one worn with the luopan out
 const isGeoCast = s => S.job === 'GEO' && !!s && /^sets\.midcast\.(Geo|Geomancy|Indi)\b/.test(s.path);
 const isLuopanWorn = s => S.job === 'GEO' && !!s && /luopan|\.Pet\b/i.test(s.path) && !isGeoCast(s);
+// An Indi- cast through Entrust on someone else: Geomancy+ does nothing to it (BG Wiki Category:Geomancy: "Geomancy+
+// items do not affect Entrusted spells"), its length and the skills do
+const isEntrustCast = s => isGeoCast(s) && /entrust/i.test(setNames(s));
+// Whether the character's own Geomancy + Handbell skills, without gear, already reach the 900 where every Geomancy spell
+// is at its top (opt_stat.js O.GEO_SKILL_CAP): then the gear's skill is lost and the set looks for Conserve MP instead.
+// A mastered GEO is there (Kaories, 2026-11-13: 464 + 464, rank C 373 + 36 gifts + 39 master levels + 16 merits)
+function geoSkillCapped(){
+  const c = measuredChar() || {};
+  return !!c.skills && skillLevel(c, 'geomancy') + skillLevel(c, 'handbell') >= ((FFXI.opt || {}).GEO_SKILL_CAP || 900);
+}
 // What such a set is for when nothing was chosen (null: not one of them). The potency (Geomancy+, skills, the charm)
-// only on the cast sets: worn afterwards it does nothing; the luopan's damage taken and Regen only on the worn ones
+// only on the cast sets: worn afterwards it does nothing; the luopan's damage taken and Regen only on the worn ones.
+// Geo-: Geomancy+, the charm, Conserve MP; Indi- on oneself: Geomancy+, its length, Conserve MP; an Entrust: its length
+// and Conserve MP. The skills come second while they are short of 900 (three objectives at most: Conserve MP gives way)
 function luopanObjectives(s){
-  if (isLuopanCast(s)) return ['geomancy', 'geoSkill', 'luCharm'];
-  if (isGeoCast(s)) return ['geomancy', 'geoSkill', 'pdtRed'];
+  const capped = geoSkillCapped(), skill = capped ? [] : ['geoSkill'];
+  if (isLuopanCast(s)) return ['geomancy', ...skill, 'luCharm', 'cmp'].slice(0, 3);
+  if (isEntrustCast(s)) return [...skill, 'indiTime', 'cmp'];
+  if (isGeoCast(s)) return ['geomancy', ...skill, 'indiTime', 'cmp'].slice(0, 3);
   return isLuopanWorn(s) ? ['luDt', 'luRegen', 'pdtRed'] : null;
 }
 // The luopan objectives a set is shown: the cast ones on a cast set, the worn ones on a GEO's idle and luopan sets
 function luopanRelevant(s){
   if (S.job !== 'GEO') return [];
-  if (isGeoCast(s)) return isLuopanCast(s) ? ['geomancy', 'geoSkill', 'luCharm'] : ['geomancy', 'geoSkill'];
+  if (isLuopanCast(s)) return ['geomancy', 'geoSkill', 'luCharm', 'cmp'];
+  if (isEntrustCast(s)) return ['indiTime', 'geoSkill', 'cmp'];
+  if (isGeoCast(s)) return ['geomancy', 'geoSkill', 'indiTime', 'cmp'];
   return isLuopanWorn(s) || ['idle', 'special'].includes(family(s.path, s.pieces)) ? ['luDt', 'luRegen'] : [];
 }
 // A piece's luopan stats for the optimizer (r: its pieceStats, all: its "All magic skills", counted once, as Geomancy)
@@ -117,6 +135,11 @@ function luopanVec(r, all){
   if (one.duration) out.charm = luopanCharm(one.duration);
   if (one.geo) out.geo = one.geo;
   if (skill) out.geoskill = skill;
+  // an Indi-'s length: the seconds the pieces write ("Indicolure spell duration" Bagua Pants, Azimuth Gaiters, Solstice;
+  // "Indicolure effect duration" Nantosuelta's Cape), the % of the augments ("Indi. eff. dur." Lifestream Cape, Gada)
+  const sec = v('x:indicolure spell duration') + v('x:indicolure effect duration'), pct = v('x:indi.eff.dur.');
+  if (sec) out.indisec = sec;
+  if (pct) out.indipct = pct;
   return out;
 }
 

@@ -22,7 +22,7 @@
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
         "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja", "hw", "crecv", "absorb",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
-        "petdt", "petregen", "charm", "geoskill",
+        "petdt", "petregen", "charm", "geoskill", "indisec", "indipct",
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
         "petacc", "petatk", "pethaste", "petstp", "petda", "petlv", "petlvw", "petpdt", "petmdt", "petstout",
         "petmab", "petmacc", "petint", "petmelee", "pettpb",
@@ -210,7 +210,13 @@
         var geo = 0;
         for (var gs in pieces) { var gv = pieces[gs] && pieces[gs].st && pieces[gs].st.geo; if (gv > geo) geo = gv; }
         f.luDt = Math.min(37.5, -t.petdt); f.luRegen = t.petregen; f.luCharm = t.charm; f.geomancy = geo;
-        f.geoSkill = (b.geoSkill || 0) + t.geoskill;
+        // the skills count up to 900 together, where every Geomancy spell is at its top (BG Wiki Category:Geomancy:
+        // "All Geomancy spells reach their maximum potency at 900 combined skill"; the same in the Japanese guides)
+        f.geoSkill = Math.min(GEO_SKILL_CAP, (b.geoSkill || 0) + t.geoskill); f.geoSkillRaw = (b.geoSkill || 0) + t.geoskill;
+        // an Indi- spell's length (BG Wiki Category:Geomancy): 180 s + the pieces' "Indicolure spell / effect duration"
+        // seconds, x (1 + the augments' "Indi. eff. dur." %: Lifestream Cape, Gada). The job points' seconds (2 a
+        // level, 40 at most) are not in the export: left out, the same in every set
+        f.indiTime = Math.floor((INDI_BASE + t.indisec) * (1 + t.indipct / 100) + 1e-9);
         // a BST's pet in a fight (the page's bst_pet.js, players' readings): its Accuracy without gear + the pieces + a
         // level's worth for each level over 119 (only the best weapon's), counted up to what hits the target; Attack the
         // same; Haste capped at 25 % from gear; damage taken at -87.5 %
@@ -306,10 +312,12 @@
         return f;
     };
     var ELEMENTS = ["fire", "ice", "wind", "earth", "lightning", "water", "light", "dark"];
+    var GEO_SKILL_CAP = 900, INDI_BASE = 180;
+    O.GEO_SKILL_CAP = GEO_SKILL_CAP;
     // the step a figure is compared by when other objectives follow it (DEF: 25, about 1 % of an end-game DEF)
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
-    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
+    O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "indiTime", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
         "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "bioDot", "dreadSpikes", "endark",
         "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "rewardPot", "rewardRecast", "mnd", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb",
         // a Bard's songs (atelier/opt_song.js)
