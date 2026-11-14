@@ -2,7 +2,7 @@
 --- Combat Mode - weapon lock available on every job
 ---============================================================================
 --- state.CombatMode (Off / On). On keeps the weapons where they are: main,
---- sub and range are disabled (plus ammo on BLM, GEO and WHM), so a spell or a
+--- sub and range are disabled (plus ammo on BLM and WHM; main and sub only on GEO and BRD), so a spell or a
 --- set never swaps them and the TP stays. Off gives them back to the job.
 --- When the player's set file defines sets.CombatMode, turning On puts it on
 --- first, then locks (e.g. the nuking weapons on BLM).
@@ -37,7 +37,12 @@ local DEFAULT_SLOTS = {'main', 'sub', 'range'}
 local DEFAULT_KEY = '!numpad0'
 local SLOTS_BY_JOB = {
     BLM = {'main', 'sub', 'range', 'ammo'},
-    GEO = {'main', 'sub', 'range', 'ammo'},
+    -- GEO: the weapons only. Its handbell is no weapon: Dunna swapped for an ammo and back keeps the TP
+    -- (tried in game by the player, 2026-11-13), so the WS sets' ammo and the spells' Dunna go on freely
+    GEO = {'main', 'sub'},
+    -- BRD: the same for its instruments (the player, 2026-11-13): the songs' instrument and the WS sets' ammo
+    -- go on, the TP stays
+    BRD = {'main', 'sub'},
     WHM = {'main', 'sub', 'range', 'ammo'},
 }
 
