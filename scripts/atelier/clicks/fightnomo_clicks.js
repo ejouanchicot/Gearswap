@@ -13,8 +13,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
   await page.evaluate(() => { S.motion = false; S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); }); await wait(300);
   await page.evaluate(() => new Promise(r => loadRanked(r))); await wait(500);
-  const box = () => page.evaluate(() => { const b = document.querySelector('.ui2own .box.g-mag'); if (!b) return 'none';
-    return b.textContent.replace(/\s+/g, ' ').slice(0, 400) + ' | lis ' + b.querySelectorAll('li').length + ' tips ' + [...b.querySelectorAll('li[title]')].map(l => l.title.slice(0, 30)).join(' / ') + ' | open ' + b.querySelector('[data-fold]').getAttribute('aria-expanded'); });
+  const box = () => page.evaluate(() => { const b = document.querySelector('.ui2own .box.g-mag') || document.querySelector('.globalcol .figtabs .figpage'); if (!b) return 'none';
+    // (in the figures' tabs, 2026-11-01: the box's title is its tab's, it does not fold)
+    const tab = document.querySelector('.globalcol .figtabbar [aria-selected=true]'), head = b.classList.contains('figpage') && tab ? tab.textContent : '';
+    return (head + b.textContent).replace(/\s+/g, ' ').slice(0, 400) + ' | lis ' + b.querySelectorAll('li').length + ' tips ' + [...b.querySelectorAll('li[title]')].map(l => l.title.slice(0, 30)).join(' / ') + ' | open ' + (b.querySelector('[data-fold]') ? b.querySelector('[data-fold]').getAttribute('aria-expanded') : 'tab'); });
   for (const [c, j] of [['Tetsouo', 'BLM'], ['Tetsouo', 'GEO'], ['Kaories', 'RDM'], ['Tetsouo', 'SCH']]) {
     const paths = await page.evaluate((c, j) => { S.char = c; S.job = j; S.section = 'sets'; render(); return ((data() || {}).sets || []).filter(x => isNukeSet(x.path)).map(x => x.path).slice(0, 4); }, c, j);
     for (const p of paths) {
@@ -22,8 +24,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
       out.push(`${c} ${j} ${p}: ` + await box());
     }
   }
-  await page.evaluate(() => { const b = document.querySelector('.ui2own .box.g-mag [data-fold]'); if (b) b.click(); }); await wait(300);
-  out.push('folded: ' + await box());
+  // (the nuke's fight box: a tab of its own on 2026-11-01, 20f75d22, that no longer folds; its lines in the Summary tab
+  // since 2026-11-06, e91b7dce: no [data-fold] left to click) the figures' tabs left and back: the fight lines still there
+  for (const tab of ['all', 'summary']) { await page.evaluate(sel => { const b = document.querySelector(sel); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + sel); }); }, `.globalcol .figtabbar [data-figtab="${tab}"]`); await wait(300); }
+  out.push('summary again: ' + await box());
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();
 })();

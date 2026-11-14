@@ -31,7 +31,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
       out.push(`  tab ${tab}: ` + await read());
     }
     await page.evaluate(() => document.querySelector('[data-rtab="pieces"]').click()); await wait(300);
-    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-locksclear]'); if (b) b.click(); }); await wait(300);
+    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-locksclear]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + (':is(.oppage, .optcolumn) [data-locksclear]')); }); }); await wait(300);
     out.push('  unlocked: ' + await read());
   }
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));

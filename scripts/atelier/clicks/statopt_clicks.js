@@ -20,10 +20,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
     const p = await open(c, j, fam); await wait(500); out.push(`${c} ${j} ${fam} ${p}: ` + await read());
     if (!p) continue;
     await page.evaluate(() => { const b = [...document.querySelectorAll(':is(.oppage, .optcolumn) .opobj:not(.on)')][0]; if (b) b.click(); }); await wait(400); out.push('  obj: ' + await read());
-    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-statobjall]'); if (b) b.click(); }); await wait(400); out.push('  all: ' + await read());
+    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-statobjall]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + (':is(.oppage, .optcolumn) [data-statobjall]')); }); }); await wait(400); out.push('  all: ' + await read());
     await page.evaluate(() => { const s = document.querySelector(':is(.oppage, .optcolumn) [data-statthen="1"]'); if (s) { s.value = s.options[2] ? s.options[2].value : ''; s.dispatchEvent(new Event('change', {bubbles: true})); } }); await wait(400); out.push('  then: ' + await read());
     await page.evaluate(() => { const i = document.querySelector(':is(.oppage, .optcolumn) [data-statfloor="hp"]'); if (i) { i.value = '3000'; i.dispatchEvent(new Event('change', {bubbles: true})); } }); await wait(400); out.push('  floor: ' + await read());
-    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-help="optpage"]'); if (b) b.click(); }); await wait(300); out.push('  help: ' + await read());
+    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-help="optpage"]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + (':is(.oppage, .optcolumn) [data-help="optpage"]')); }); }); await wait(300); out.push('  help: ' + await read());
   }
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();

@@ -7,7 +7,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const browser = await puppeteer.launch({executablePath: require(path.join(__dirname, '../lib/browser.js')).CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
   const page = await browser.newPage(); const errs = []; await page.setViewport({width: 1600, height: 900});
   page.on('pageerror', e => errs.push(e.message));
-  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}, boxOpen: {figtab: 'fight'}})); } catch (e) {} });
+  await page.evaluateOnNewDocument(() => { window.fetch = () => new Promise(() => {}); try { localStorage.clear(); localStorage.setItem('atelier', JSON.stringify({guide: {mode: 'off', seen: {tour: true}}, boxOpen: {figtab: 'summary'}})); } catch (e) {} });
   await page.goto(process.env.PAGE_URL || 'file:///' + path.resolve(__dirname, '../../../atelier/index.html').split(path.sep).join('/'), {waitUntil: 'load'});
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
@@ -24,8 +24,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
       out.push(`${c} ${j} ${p}: ` + await box());
     }
   }
-  await page.evaluate(() => { const b = document.querySelector('.ui2own .box.g-mag [data-fold]'); if (b) b.click(); }); await wait(300);
-  out.push('folded: ' + await box());
+  // (the nuke's fight box: a tab of its own on 2026-11-01, 20f75d22, that no longer folds; its lines in the Summary tab
+  // since 2026-11-06, e91b7dce: no [data-fold] left to click) the figures' tabs left and back: the fight lines still there
+  for (const tab of ['all', 'summary']) { await page.evaluate(sel => { const b = document.querySelector(sel); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + sel); }); }, `.globalcol .figtabbar [data-figtab="${tab}"]`); await wait(300); }
+  out.push('summary again: ' + await box());
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));
   await browser.close();
 })();

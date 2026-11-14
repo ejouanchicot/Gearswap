@@ -20,7 +20,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await page.evaluate(() => document.querySelector('.setlist .famtab[data-listfam="idle"]').click()); await wait(300); out.push('family idle: ' + await info());
   await page.evaluate(() => document.querySelector('[data-listmenu]').click()); await wait(300); out.push('menu: ' + await info());
   await page.evaluate(() => document.querySelector('.listmenu [data-listpaths]').click()); await wait(300); out.push('paths: ' + await info());
-  await page.evaluate(() => { const b = document.querySelector('.listmenu [data-listall]'); if (b) b.click(); }); await wait(300); out.push('all: ' + await info());
+  await page.evaluate(() => { const b = document.querySelector('.listmenu [data-listall]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.listmenu [data-listall]')); }); }); await wait(300); out.push('all: ' + await info());
   await page.evaluate(() => { const m = document.querySelector('[data-listmenu]'); m.click(); }); await wait(300); out.push('menu again: ' + await info());
   await page.evaluate(() => document.querySelector('[data-action="add"]').click()); await wait(300); out.push('add: ' + await info());
   await page.evaluate(() => { closeOverlay(); S.job = 'BRD'; render(); }); await wait(300); out.push('BRD: ' + await info());

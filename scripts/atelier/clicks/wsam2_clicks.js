@@ -16,8 +16,12 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   for (const job of ['WAR', 'DNC']) {
     await page.evaluate(j => { S.char = 'Tetsouo'; S.job = 'BLM'; S.section = 'combat'; S.pbTab = j; { const b = buffState(); for (const k of Object.keys(b)) delete b[k]; } const b = buffState(); b.pbMembers = [j]; for (const ja of (pbJaJobs().get(j) || [])) { const r = jaRole(ja.name); b[r] = b[r] || {}; b[r][ja.name] = true; } render(); }, job); await wait(300);
     out.push(job + ': ' + await info());
-    await page.evaluate(() => { const b = document.querySelector('.pbbody [data-savagery="3"][data-wparty]'); if (b) b.click(); }); await wait(300);
-    await page.evaluate(() => { const b = document.querySelector('.pbbody [data-agoge][data-wparty]'); if (b) b.click(); }); await wait(300);
+    // a party WAR's Savagery and Agoge Mask only exist for a WAR (panel.ts jaPanel: Warcry · party); a DNC has its
+    // Haste Samba line instead, so the WAR's two buttons are clicked, and must be there, for the WAR only
+    if (job === 'WAR') {
+      await page.evaluate(() => { const b = document.querySelector('.pbbody [data-savagery="3"][data-wparty]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.pbbody [data-savagery="3"][data-wparty]')); }); }); await wait(300);
+      await page.evaluate(() => { const b = document.querySelector('.pbbody [data-agoge][data-wparty]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.pbbody [data-agoge][data-wparty]')); }); }); await wait(300);
+    }
     await page.evaluate(() => { const s = document.querySelector('.pbbody [data-buff="pSamba"]'); if (s) { s.value = 'sub'; s.dispatchEvent(new Event('input', {bubbles: true})); s.dispatchEvent(new Event('change', {bubbles: true})); } }); await wait(300);
     out.push('  changed: ' + await info());
   }

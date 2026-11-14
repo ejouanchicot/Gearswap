@@ -17,7 +17,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await page.evaluate(() => document.querySelector('.oppage .optgo').click());
   await wait(1500); out.push('after 1.5 s: ' + await peek());
   await wait(2000); out.push('after 3.5 s: ' + await peek());
-  await page.evaluate(() => { const b = document.querySelector('[data-moglines]'); if (b) b.click(); }); await wait(200);
+  await page.evaluate(() => { const b = document.querySelector('[data-moglines]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('[data-moglines]')); }); }); await wait(200);
   out.push('moogle lines: ' + await page.evaluate(() => { const d = document.querySelector('#overlay .optrun .body'); return d ? d.className + ' / btn ' + (document.querySelector('[data-moglines]') || {}).textContent : '-'; }));
   await page.evaluate(() => document.querySelector('[data-orhide]').click()); await wait(500);
   out.push('hidden: ' + await peek());
@@ -35,7 +35,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   out.push('compare: ' + (cmp ? await page.evaluate(() => 'window ' + !!document.querySelector('#overlay .cmpdlg, #overlay .dialog') + ', run window gone ' + !document.querySelector('#overlay .optrun')) : 'no compare button'));
   await page.evaluate(() => { if (!document.querySelector('#overlay').hidden) document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})); }); await wait(300);
   // a second search, stopped
-  await page.evaluate(() => { S.optView = optViewKey(S._curSet || data().sets.find(x => family(x.path, x.pieces) === 'engaged')); render(); const b = document.querySelector('.oppage .optgo'); if (b) b.click(); }); await wait(2000);
+  await page.evaluate(() => { S.optView = optViewKey(S._curSet || data().sets.find(x => family(x.path, x.pieces) === 'engaged')); render(); const b = document.querySelector('.oppage .optgo'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.oppage .optgo')); }); }); await wait(2000);
   out.push('second search: ' + await peek());
   await page.evaluate(() => document.querySelector('#overlay [data-optstop]').click()); await wait(1500);
   out.push('stopped: busy ' + await page.evaluate(() => !!S._optBusy) + ' | ' + await peek());

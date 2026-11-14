@@ -173,9 +173,16 @@ def judge(t, proc):
 
 def main():
     os.chdir(DATA)
-    every = '--all' in sys.argv
-    full, verbose = '--full' in sys.argv or every, '-v' in sys.argv
-    jobs = int(sys.argv[sys.argv.index('-j') + 1]) if '-j' in sys.argv else 6
+    # an unknown word stops here: `--ful` used to run the quick set without a word (audit 2026-11-14 tests P3-8)
+    args, known = sys.argv[1:], ('--all', '--full', '-v', '-j')
+    for i, a in enumerate(args):
+        if a not in known and not (i > 0 and args[i - 1] == '-j'):
+            sys.exit('run_tests.py: unknown option %r (known: --full, --all, -v, -j <n>)' % a)
+    if '-j' in args and (args.index('-j') + 1 >= len(args) or not args[args.index('-j') + 1].isdigit()):
+        sys.exit('run_tests.py: -j wants a number of tests run together (-j 6)')
+    every = '--all' in args
+    full, verbose = '--full' in args or every, '-v' in args
+    jobs = int(args[args.index('-j') + 1]) if '-j' in args else 6
     cache, prints = read_cache(), {}
     for t in WATCH:
         prints[t] = fingerprint(t)

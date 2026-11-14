@@ -27,7 +27,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   // free weapons on, as a player may have left it: the Charm set's weapons must not move
   const weapons = await page.evaluate(p => { S.optOpts = Object.assign({}, S.optOpts, {freeWeapons: true}); const w = withWeapons(data().sets.find(x => x.path === p)).pieces; return (w.main || {}).name + ' / ' + (w.sub || {}).name; }, P);
   out.push('weapons before: ' + weapons);
-  const open = p => { S.selPath[S.job] = p; render(); const b = document.querySelector('.detail [data-optview]'); if (b) b.click(); };
+  const open = p => { S.selPath[S.job] = p; render(); const b = document.querySelector('.detail [data-optview]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.detail [data-optview]')); }); };
   await step('optimizer page', open, P, () => 'page ' + !!document.querySelector(':is(.oppage, .optcolumn)') + ', objectives shown ' + document.querySelectorAll(':is(.oppage, .optcolumn) [data-statobj]').length, 600);
   await step('stats search', p => { S.selPath[S.job] = p; render(); S._optScratch = false; optimizeStats(shownSet(S._cards[S.sel[S.job]], S.sel[S.job])); }, P, () => 'busy ' + !!S._optBusy, 500);
   for (let i = 0; i < 240 && await page.evaluate(() => !!S._optBusy); i++) await wait(500);

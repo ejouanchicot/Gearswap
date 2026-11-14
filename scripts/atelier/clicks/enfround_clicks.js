@@ -16,7 +16,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const enf = () => page.evaluate(() => { const p = document.querySelector(':is(.oppage, .optcolumn)'); if (!p) return 'none'; const b = p.querySelector('[data-enfsab]'); return [...p.querySelectorAll('p.small')].map(x => x.textContent).join(' / ').slice(0, 300) + ' | sab ' + (b ? b.checked + ' ' + b.parentElement.textContent : 'none'); });
   for (const pr of ["/Enfeebl|MndEnf|IntEnf|Dispel|Frazzle|Distract|Paralyze|Slow|Silence/.test(x.path) && statSet(x)", "family(x.path, x.pieces) === 'midcast' && /Enfeeb/.test(x.path)"]) {
     out.push('enf ' + await open(pr)); await wait(500); out.push('  ' + await enf());
-    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-enfsab]'); if (b) b.click(); }); await wait(400); out.push('  sab: ' + await enf());
+    await page.evaluate(() => { const b = document.querySelector(':is(.oppage, .optcolumn) [data-enfsab]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + (':is(.oppage, .optcolumn) [data-enfsab]')); }); }); await wait(400); out.push('  sab: ' + await enf());
   }
   const calc = () => page.evaluate(() => { const d = document.querySelector(':is(.oppage, .optcolumn) .rdcalc'); return d ? d.open + ' | ' + [...d.querySelectorAll('li')].map(l => l.textContent.slice(0, 60)).join(' / ') + ' | ' + d.querySelector('p').textContent.slice(0, 40) : 'none'; });
   for (const [c, j] of [['Tetsouo', 'WAR'], ['Tetsouo', 'DNC']]) {

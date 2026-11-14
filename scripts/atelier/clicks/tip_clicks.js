@@ -47,8 +47,21 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
     for (let i = 0; i < Math.min(k, 8); i++) { await page.mouse.move(5, 5); await wait(80); const el = (await page.$$('.opobj[data-objtip]'))[i]; await el.hover(); await wait(250); out.push(`  obj ${i}: ` + await tip()); }
   }
   // the simulation's pieces
-  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sim'; S.simOpen = {}; S.optView = null; render(); }); await wait(500);
-  await page.evaluate(() => { const b = document.querySelector('[data-simpick]'); if (b) b.click(); }); await wait(1500);
+  // Simulate draws its actions only with the game linked to the page and on that job (sim.ts simView: liveOk, _live.job),
+  // its groups folded, and its pieces only from the game's answer (simulate.js simRun, /simulate): the link, the job's
+  // actions (as sim_clicks.js does) and an answer made of two of the job's sets are faked here; the first group opened,
+  // its first action picked
+  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sim'; S.simOpen = {}; S.sim = {}; S.optView = null;
+    S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, job: 'WAR', version: 7})});
+    S._simActions = {key: 'Tetsouo|7', list: {ja: ['Berserk', 'Provoke'], ws: ['Upheaval', 'Savage Blade'], aim: {Provoke: 'enemy', Upheaval: 'enemy', 'Savage Blade': 'enemy'}}, at: Date.now()};
+    S._simBuffs = {key: 'Tetsouo|7', opts: {buffs: ['Berserk']}, at: Date.now()};
+    const sets = (data().sets || []).filter(s => Object.keys(s.pieces || {}).length >= 5);
+    const list = s => Object.fromEntries(Object.entries(s.pieces).map(([k, p]) => [k, {name: p.name, augs: p.augs || []}]));
+    const res = {ok: true, phases: [{phase: 'precast', list: list(sets[0])}, {phase: 'midcast', list: {}}, {phase: 'aftercast', list: list(sets[1] || sets[0])}], messages: []};
+    window.fetch = url => /\/simulate\?/.test(url) ? Promise.resolve({ok: true, json: async () => res}) : new Promise(() => {});
+    render(); }); await wait(500);
+  for (const sel of ['[data-simgroup]', '[data-simpick]']) {
+    await page.evaluate(sel => { const b = document.querySelector(sel); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + sel); }); }, sel); await wait(sel === '[data-simpick]' ? 1500 : 300); }
   const sims = await page.$$('.slot[data-simp]'); out.push('sim pieces ' + sims.length);
   for (const el of sims.slice(0, 10)) { await page.mouse.move(5, 5); await wait(80); await el.hover(); await wait(250); out.push('  simp: ' + await tip()); }
   console.log(out.join('\n')); console.log('errors', JSON.stringify(errs));

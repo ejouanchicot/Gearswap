@@ -18,7 +18,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
       const s = data().sets.find(x => x.path === p);
       return s ? p.replace('sets.', '') + ' ' + cardFamily(s.path, s.pieces) + '/' + (statSet(s) ? 'stats' : roundSet(s) ? 'engaged' : '-') : p + ' absent'; }).join(', '));
   // the optimizer page of a set: the button of its card, then what the page shows
-  const open = p => { S.selPath[S.job] = p; render(); const b = document.querySelector('.detail [data-optview]'); if (b) b.click(); };
+  const open = p => { S.selPath[S.job] = p; render(); const b = document.querySelector('.detail [data-optview]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.detail [data-optview]')); }); };
   for (const p of ['sets.pet.engaged', 'sets.pet.engaged.PDT'])
     await step(p, open, p, p => {
       const s = data().sets.find(x => x.path === p), f = statFigures(s), fl = document.querySelector(':is(.oppage, .optcolumn) [data-statfloor="petAccBase"]');

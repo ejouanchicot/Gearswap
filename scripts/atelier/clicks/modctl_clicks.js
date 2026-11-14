@@ -19,7 +19,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
       S.modFile = view === 'files' ? (modFiles(data()).find(f => f.scope === 'job') || {}).file || null : null;
       S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, write: true})}); render(); }, view, fam); await wait(300);
     out.push(`${view} ${fam}: ` + await counts());
-    await page.evaluate(() => { const b = document.querySelector('#view .modsw:not([disabled])'); if (b) b.click(); }); await wait(250);
+    await page.evaluate(() => { const b = document.querySelector('#view .modsw:not([disabled])'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('#view .modsw:not([disabled])')); }); }); await wait(250);
     await page.evaluate(() => { const b = [...document.querySelectorAll('#view .modseg button:not([disabled])')].find(x => x.getAttribute('aria-pressed') !== 'true'); if (b) b.click(); }); await wait(250);
     const typed = await page.evaluate(() => { const i = document.querySelector('#view .modin:not(.add):not([disabled])'); if (!i) return ''; i.focus(); return i.className; });
     if (typed) { await page.keyboard.type('7', {delay: 30}); await page.keyboard.press('Tab'); await wait(300); }

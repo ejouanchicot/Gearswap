@@ -20,10 +20,10 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
     out.push('  start: ' + await read());
     await page.evaluate(() => { const s = ui2CurrentSet(data()); const o = data().sets.find(x => x.pieces.head && x.pieces.head.name !== (s.pieces.head || {}).name); setTrial(s, 'head', o.pieces.head); render(); }); await wait(500);
     out.push('  tried: ' + await read());
-    for (const a of ['trykeep', 'trysave']) { await page.evaluate(a => { const b = document.querySelector('.trybar [data-' + a + ']'); if (b) b.click(); }, a); await wait(400); out.push('  ' + a + ': ' + await read()); }
-    await page.evaluate(() => { const b = document.querySelector('.trybar [data-cmpopen]'); if (b) b.click(); }); await wait(400); out.push('  cmp: ' + await read());
+    for (const a of ['trykeep', 'trysave']) { await page.evaluate(a => { const b = document.querySelector('.trybar [data-' + a + ']'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.trybar [data-' + a + ']')); }); }, a); await wait(400); out.push('  ' + a + ': ' + await read()); }
+    await page.evaluate(() => { const b = document.querySelector('.trybar [data-cmpopen]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.trybar [data-cmpopen]')); }); }); await wait(400); out.push('  cmp: ' + await read());
     await page.evaluate(() => closeOverlay()); await wait(200);
-    await page.evaluate(() => { const b = document.querySelector('.trybar [data-tryundo]'); if (b) b.click(); }); await wait(400); out.push('  undo: ' + await read());
+    await page.evaluate(() => { const b = document.querySelector('.trybar [data-tryundo]'); if (b) b.click(); else setTimeout(() => { throw new Error('missing button ' + ('.trybar [data-tryundo]')); }); }); await wait(400); out.push('  undo: ' + await read());
   }
   console.log('errors', JSON.stringify(errs));
   await browser.close();
