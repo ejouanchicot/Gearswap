@@ -103,6 +103,9 @@ function subFollowsSet(path, bypath){
   const s = bypath[path], rule = SUB_FOR_GRIP[S.job], jump = isJumpSet(path) && S.job !== 'DRG';
   const at = S.char + '|' + S.job + '|' + path;
   if (!s || at === S._subPath || !(jump || (rule && ['engaged', 'ws'].includes(family(s.path, s.pieces))))) return;
+  // the set the page opens on (its start, F5): it was open already, the subjob kept is the player's (a WAR's Naegling +
+  // Kraken Club set put /DNC back at each F5 over the /SAM chosen, 2026-11-14)
+  if (S._subPath === undefined) { S._subPath = at; return; }
   const grip = jump ? 'jump' : gripOf(withWeapons(s).pieces);
   if (!grip) return;
   S._subPath = at;

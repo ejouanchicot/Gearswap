@@ -97,7 +97,7 @@ document.addEventListener('click', e => {
   // the objectives' list of the stats optimizer beside the set, folded but the first (StatPage.svelte compact)
   if ('optobjs' in d) { S._optObjsOpen = !S._optObjsOpen; render(); return; }
   // the page's subjob set to the game's (atelier/src/screens/sets/sets.ts subWarn)
-  if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; render(); return; }
+  if (d.subfix) { S.subs[S.char + '|' + S.job] = d.subfix; save(); render(); return; }
   // every objective of the stats optimizer, or only the set's (stat_opt.js statRelevant)
   if ('statobjall' in d) { S.optOpts = Object.assign({}, S.optOpts, {statAll: !(S.optOpts || {}).statAll}); save(); render(); return; }
   // a set's stats settings back to the defaults (stat_opt.js statOpts)
@@ -171,7 +171,7 @@ document.addEventListener('click', e => {
   if (d.optrankall) { setRankFam(Object.fromEntries(rankFamilies().map(f => [f.fam, d.optrankall === 'off' ? 'off' : '']))); return; }
   if ('livereload' in d) { liveReload(false); return; }
   if ('liverestart' in d) { liveReload(true); return; }
-  if ('livejump' in d) { const L = S._live[S.char]; S.job = L.job; S.subs[S.char + '|' + L.job] = L.sub; render(); return; }
+  if ('livejump' in d) { const L = S._live[S.char]; S.job = L.job; S.subs[S.char + '|' + L.job] = L.sub; save(); render(); return; }
   if (d.simbuff) { const st = simState(); st.buffs = toggleBuff(st.buffs || [], d.simbuff); simRun(); return; }
   if ('wstp' in d) { S.wsTp = d.wstp ? +d.wstp : null; render(); return; }
   if ('macroalt' in d) { S.macroAlt[S.char + '|' + S.job] = d.macroalt; render(); return; }
@@ -250,7 +250,8 @@ document.addEventListener('input', e => {
   }
 });
 document.addEventListener('change', e => {
-  if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; render(); }
+  // the subjob chosen is kept (S.subs is saved): it was lost at the next opening of the page
+  if (e.target.classList.contains('subsel') && e.target.value) { S.subs[S.char + '|' + S.job] = e.target.value; save(); render(); }
   if (e.target.classList.contains('jobsel')) { S.job = e.target.value || null; S.backTo = null; S.section = 'sets'; S.q = ''; render(); }
   if (e.target.classList.contains('kmod') || e.target.classList.contains('kname')) manualKey();
   if (e.target.classList.contains('tpin')) { const v = Math.max(0, Math.min(3000, Math.round(+e.target.value || 0)));
