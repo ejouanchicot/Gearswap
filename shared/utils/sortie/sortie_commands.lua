@@ -242,6 +242,23 @@ local function indi_by_bot(cfg)
     return (cfg.escort or {}).profile ~= nil and profile_indi() ~= nil
 end
 
+--- The follow order for a profile. Silmaril's `sm follow <name>` looks the leader up only among the characters it
+--- runs on this PC (Follow_ViewModel.Process_Action: info.Characters): a linkshell member playing elsewhere is never
+--- found and nothing happens, without a word (Kaories never followed Gabvanstronger on Aminon, 2026-11-14). Such a
+--- leader is followed by the profile's own Follow module (Movement > Follow on that name, "Follow" in its Priority
+--- list: Movement_Actions.Follow finds party members too); the command follow is turned off, or that module stands
+--- aside (it returns while Move.Following). `follow_by_profile = true` does the same for one of our own characters.
+--- @param cfg table Sortie config
+--- @param follow string|nil
+--- @param by_profile boolean|nil
+--- @return string
+local function follow_order(cfg, follow, by_profile)
+    if not follow or by_profile then return 'sm follow off' end
+    local name = follow:lower()
+    if name == me():lower() or name == tostring(cfg.alt):lower() then return 'sm follow ' .. follow end
+    return 'sm follow off'
+end
+
 --- The alt loads a profile and starts it. Its Indi- is cast by hand only when Silmaril cannot be trusted to
 --- (indi_by_bot).
 --- @param cfg table Sortie config
@@ -250,9 +267,10 @@ end
 --- @param follow string|nil A player the alt follows with this profile (a target's `follow`), nil: follow off
 --- @param behind boolean|nil The alt walks behind its locked monster (a target's `behind`: //gs c behind on the
 ---   GEO, shared/jobs/geo/functions/logic/stand_behind.lua); any other profile stops it
-local function load_profile(cfg, profile, indi, follow, behind)
+--- @param by_profile boolean|nil The profile's Follow module follows, not the command (`follow_by_profile`)
+local function load_profile(cfg, profile, indi, follow, behind, by_profile)
     to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. profile)
-    to_alt(cfg, follow and ('sm follow ' .. follow) or 'sm follow off')
+    to_alt(cfg, follow_order(cfg, follow, by_profile))
     -- never both: two things steering the alt's run at once (Silmaril's follow and //gs c behind)
     to_alt(cfg, (behind and not follow) and 'gs c behind' or 'gs c behind off')
     to_alt(cfg, 'sm on')
@@ -426,10 +444,12 @@ local function engage_target(cfg, name, phase, force)
         -- luopan dismissed (refused without effect when there is none), the profile once the ability is through.
         to_alt(cfg, 'sm off')
         to_alt(cfg, '/ja "Full Circle" <me>')
-        coroutine.schedule(function() load_profile(cfg, step.profile, step.indi, step.follow, step.behind) end,
+        coroutine.schedule(function()
+            load_profile(cfg, step.profile, step.indi, step.follow, step.behind, step.follow_by_profile)
+        end,
             AFTER_FULL_CIRCLE)
     else
-        load_profile(cfg, step.profile, step.indi, step.follow, step.behind)
+        load_profile(cfg, step.profile, step.indi, step.follow, step.behind, step.follow_by_profile)
     end
     if target.prep and target.auto_fight and target.mob then
         require('shared/utils/sortie/sortie_watch').start(key, target.mob, function(mob) start_fight(cfg, target, key, mob and mob.id) end)

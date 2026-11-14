@@ -206,6 +206,21 @@ Sortie.handle({'melee'}); run_queue()
 check('dropped before the load: fightopen off', has('send Kaories gs c fightopen off') ~= nil, true)
 check('  no fightend', has('send Kaories gs c fightend'), nil)
 
+-- a leader Silmaril does not run on this PC (a linkshell member): `sm follow <name>` would find nobody, the
+-- profile's Follow module follows; the command follow off. follow_by_profile: the same for our own character
+CFG.targets.lsfollow = {profile = 'AminonFight', indi = 'Indi-Fury',
+    prep = {profile = 'AminonPrep', indi = 'Indi-Refresh', follow = 'Gabvanstronger'}}
+sent, noted, now, queue = {}, {}, 0, {}
+Sortie.handle({'lsfollow'}); run_queue()
+check('ls member: no sm follow <name>', has('send Kaories sm follow Gabvanstronger'), nil)
+check('ls member: follow off (the profile follows)', has('send Kaories sm follow off') ~= nil, true)
+CFG.targets.byprofile = {profile = 'LeechAuto', indi = 'Indi-Fury',
+    prep = {profile = 'LeechPrep', indi = 'Indi-Refresh', follow = 'Tetsouo', follow_by_profile = true}}
+sent, noted, now, queue = {}, {}, 0, {}
+Sortie.handle({'byprofile'}); run_queue()
+check('follow_by_profile: no sm follow Tetsouo', has('send Kaories sm follow Tetsouo'), nil)
+check('follow_by_profile: follow off', has('send Kaories sm follow off') ~= nil, true)
+
 -- 3. a target with no fight_ja and no follow behaves as before
 sent, now = {}, 0
 Sortie.handle({'melee'}); run_queue()
