@@ -2,30 +2,64 @@
 
 This page applies to every job that has a `<JOB>_TP_CONFIG.lua`.
 
-Before a weaponskill, the weaponskill handler adds up your current TP and the
-TP bonus you already have (weapon, buffs, and the TP pieces your weaponskill set
-wears already, such as Boii Cuisses written in `sets.precast.WS`). If TP bonus
-pieces let you reach the next step (2000 or 3000 TP), it equips the fewest that
-do it; when one piece is enough, the smallest one that is (a gap of 100 takes
-Boii Cuisses +100, not Moonshade +250, so the ear keeps the set's earring). If
-the pieces cannot reach the next step, nothing is added. TP is capped at 3000.
+Before a weaponskill, GearSwap puts on the TP bonus pieces of your config
+(Moonshade Earring, Boii Cuisses...) **when they add more damage than the set
+pieces they replace**. A weaponskill's fTP rises in a straight line between its
+values at 1000, 2000 and 3000 TP, and a TP Bonus counts as that much more TP:
+a piece is worth something at any TP, not only where it reaches 2000 or 3000.
+TP is capped at 3000: at 3000 a TP piece adds nothing and only costs the set's
+piece. Measured in game in November 2026: on Disaster, Moonshade + Boii Cuisses
+gave +17 % under 2000 TP, and -5 % at 3000.
 
-The pieces are only ever added, never taken off: a TP piece written in a
-weaponskill set stays on even when it is of no use (at 3000 TP, say). Leave them
-out of your weaponskill sets and let this rule put them on.
+How GearSwap decides, in this order:
 
-Example (WAR, Laphria, Warcry with 5 Savagery merits and Agoge = 700, Boii
-Cuisses in the base WS set):
+1. **The Atelier's table.** At each export of a job, the Atelier page works out
+   with its damage engine, for every weaponskill set and weapon, which pieces
+   add the most at each step of 50 TP (your set's real stats, critical hit rate
+   by TP, Fencer, the 3000 cap), and writes it into one file a job,
+   `<Char>/atelier/overrides/tp_pieces_<JOB>.lua` (`tp_pieces_WAR.lua`...): the
+   game reads only the file of the job you play. A piece goes on only where the
+   engine finds a real gain. The table is used only while your weaponskill set
+   is the one it was worked out for.
+   - It is worked out with the buffs ticked in the Atelier's panel (Warcry aside,
+     which moves the TP in game). Tick other buffs and hold still a few seconds:
+     the table is worked out and written again.
+   - A weaponskill set the engine cannot work out (a ranged weaponskill such as
+     Blast Shot, an fTP not known) is left out and named in the message; the
+     job's other sets still get their table, and that one is left to the formula.
+2. **The fTP formula**, without a table or once you changed the set: the gain
+   the fTP's rise gives, against `replaces` (3 % by default, in your
+   `<JOB>_TP_CONFIG.lua`) for each set piece taken off. Never on a weaponskill
+   whose fTP stays the same at every TP (Ukko's Fury, Evisceration: their TP
+   raises the critical hit rate, accuracy or a duration).
+3. **The 2000 / 3000 steps**, the rule before, for a weaponskill whose fTP is
+   not known (Shadowstitch, Mordant Rime, Raging Rush, True Strike).
 
-| TP | Added | TP at the weaponskill |
-|----|-------|------|
-| 1000 | Moonshade | 2050 |
-| 1200 | nothing | 2000 |
-| 1950 | Moonshade | 3000 |
-| 2200 | nothing | 3000 |
+The TP your weapon, Fencer, Warcry, Hagakure and the TP pieces your set wears
+already (Boii Cuisses written in `sets.precast.WS`) give are counted first.
+Leave TP pieces out of your weaponskill sets and let this rule put them on: a
+piece written in the set stays on even where it costs damage (at 3000 TP).
 
-The Atelier page (Sets tab, a weaponskill set) shows these steps and the TP the
-weaponskill opens with, worked out the same way.
+Example (WAR, Laphria, the Disaster set as exported on 2026-11-12, the buffs and target
+chosen in the page; the Atelier's figures, which move with your set, buffs and target):
+
+| TP | Put on | Damage added |
+|----|--------|------|
+| 1000 to 2800 | Moonshade + Boii Cuisses | +31 % at 1000 |
+| 2850 to 3000 | Boii Cuisses alone | +5 % at 2850, +1.5 % at 3000 |
+
+At 3000 TP the TP Bonus adds nothing: Boii Cuisses stays there for its other stats
+(physical damage limit), which the engine finds worth more than the set's Nyame
+Flanchard. With the table, that counts even at 3000; without it, nothing goes on
+at 3000.
+
+`//gs c trace` writes each decision on a `TP` line: the real TP, where the
+decision came from (`table`, `formula`, `formula (set changed)`, `thresholds`,
+`capped`), the pieces and the gain expected.
+
+The Atelier page (Sets tab, a weaponskill set) shows the TP where the pieces
+change, each with what goes on and what it adds, worked out the same way; its
+optimizer and its fight simulation use the same decision.
 
 ## Pieces (equipped only when they help)
 
@@ -80,8 +114,11 @@ its weaponskill gear goes on ([PUP modes](../jobs/pup/states.md#pet-ws)).
 ## Files
 
 - Per job: `<Char>/<job>/combat/<JOB>_TP_CONFIG.lua`
+- The Atelier's table, one file a job: `<Char>/atelier/overrides/tp_pieces_<JOB>.lua` (delete it: the formula decides for that job)
 - Code: `shared/utils/precast/ws_precast_handler.lua`,
   `shared/utils/precast/tp_bonus_handler.lua`,
-  `shared/utils/weaponskill/tp_bonus_calculator.lua`
+  `shared/utils/weaponskill/tp_bonus_calculator.lua`,
+  `shared/utils/weaponskill/tp_piece_decision.lua`,
+  `shared/utils/weaponskill/tp_pieces_table.lua`, page `atelier/app/js/tp_table.js`
 
 See also: [job index](../jobs/README.md), [configuration](../guides/configuration.md).

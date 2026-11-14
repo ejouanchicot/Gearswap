@@ -15,9 +15,17 @@
 ---
 --- Total: 18 weaponskills
 ---
+--- Fields read by the TP piece decision (tp_bonus_calculator.lua) and the
+--- Atelier (build_ws_table.py): ftp = {[TP] = fTP}, a TP missing = unknown;
+--- replicating = every hit uses the fTP; tp_effect = what the TP raises when
+--- the fTP stays the same (crit, accuracy, duration, effect_chance, mp);
+--- source = where each value comes from: measured > jp (wiki.ffo.jp) > bg
+--- (BG-Wiki) > lsb (LandSandBoat); `all` = every field of the entry.
+--- Research quoted in notes/docs-perso/moonshade-ftp-2026-11-11/sources/.
+---
 --- @file shared/data/weaponskills/DAGGER_WS_DATABASE.lua
 --- @author ejouanchicot
---- @version 1.0 - Improved formatting
+--- @version 1.1 - type, hits, mods, ftp, replicating, tp_effect, source (BG-Wiki + wiki.ffo.jp, 2026-11-12)
 --- @date Created: 2025-10-29
 ---============================================================================
 
@@ -33,6 +41,12 @@ dagger_ws.weaponskills = {
         skill_level         = 5,
         job_levels          = {BLM = 4, BRD = 3, BST = 3, COR = 3, DNC = 1, DRG = 4, DRK = 3, GEO = 3, NIN = 3, PLD = 3, PUP = 3, RDM = 3, RNG = 3, SAM = 4, SMN = 4, THF = 1, WAR = 3, SCH = 2},
         stat_modifiers      = "100% DEX",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {DEX = 100},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
+        tp_effect           = 'duration',
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Scission'},
         requires_quest      = false,
         requires_merit      = false,
@@ -46,6 +60,10 @@ dagger_ws.weaponskills = {
         skill_level         = 40,
         job_levels          = {BLM = 15, BRD = 14, BST = 14, COR = 14, DNC = 14, DRG = 16, DRK = 14, GEO = 14, NIN = 14, PLD = 14, PUP = 14, RDM = 14, RNG = 14, SAM = 16, SMN = 16, THF = 13, WAR = 14},
         stat_modifiers      = "40% DEX / 40% INT",
+        type                = 'Magical',
+        mods                = {DEX = 40, INT = 40},
+        ftp                 = {[1000] = 1.0, [2000] = 2.0, [3000] = 3.0},
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Detonation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -59,6 +77,12 @@ dagger_ws.weaponskills = {
         skill_level         = 70,
         job_levels          = {BLM = 26, BRD = 24, BST = 25, COR = 24, DNC = 24, DRG = 28, DRK = 25, GEO = 25, NIN = 25, PLD = 25, PUP = 25, RDM = 24, RNG = 24, SAM = 28, SMN = 28, THF = 23, WAR = 24},
         stat_modifiers      = "100% CHR",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {CHR = 100},
+        ftp                 = {[1000] = 1.0},
+        tp_effect           = 'effect_chance',
+        source              = {all = 'jp', date = '2026-11-12', unknown = 'fTP at 2000 / 3000 TP, bind chance by TP'},
         sc_properties       = {'Reverberation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -73,6 +97,13 @@ dagger_ws.weaponskills = {
         job_levels          = {BLM = 37, BRD = 34, BST = 35, COR = 34, DNC = 34, DRG = 40, DRK = 35, GEO = 35, NIN = 35, PLD = 35, PUP = 35, RDM = 34, RNG = 34, SAM = 40, SCH = 37, SMN = 40, THF = 33, WAR = 34},
         main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "100% DEX",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {DEX = 100},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
+        attack              = 2.0,
+        tp_effect           = 'duration',
+        source              = {all = 'bg', hits = 'jp', date = '2026-11-12'},
         sc_properties       = {"Scission"},
         requires_quest      = false,
         requires_merit      = false,
@@ -87,6 +118,10 @@ dagger_ws.weaponskills = {
         job_levels          = {BLM = 46, BRD = 43, BST = 44, COR = 43, DNC = 43, DRG = 50, DRK = 44, GEO = 44, NIN = 44, PLD = 44, PUP = 44, RDM = 43, RNG = 43, SAM = 50, SCH = 46, SMN = 50, THF = 41, WAR = 43},
         main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'COR', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "40% DEX / 40% INT",
+        type                = 'Magical',
+        mods                = {DEX = 40, INT = 40},
+        ftp                 = {[1000] = 1.0, [2000] = 2.375, [3000] = 3.75},
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {"Detonation", "Impaction"},
         requires_quest      = false,
         requires_merit      = false,
@@ -100,6 +135,10 @@ dagger_ws.weaponskills = {
         skill_level         = 150,
         job_levels          = {BLM = 53, BRD = 51, BST = 52, COR = 51, DNC = 51, DRG = 56, DRK = 52, GEO = 52, NIN = 52, PLD = 52, PUP = 52, RDM = 51, RNG = 51, SAM = 56, SMN = 56, THF = 49, WAR = 51},
         stat_modifiers      = "100% MND",
+        type                = 'Magical',
+        mods                = {MND = 100},
+        tp_effect           = 'mp',
+        source              = {all = 'bg', date = '2026-11-12', note = 'no damage; MP multiplier 1.0 / 2.1 / 3.4'},
         sc_properties       = {},
         requires_quest      = false,
         requires_merit      = false,
@@ -114,6 +153,10 @@ dagger_ws.weaponskills = {
         job_levels          = {BLM = 59, BRD = 56, BST = 57, COR = 56, DNC = 56, DRG = 63, DRK = 57, GEO = 57, NIN = 57, PLD = 57, PUP = 57, RDM = 56, RNG = 56, SAM = 63, SCH = 59, SMN = 63, THF = 55, WAR = 56},
         main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "100% MND",
+        type                = 'Magical',
+        mods                = {MND = 100},
+        tp_effect           = 'mp',
+        source              = {all = 'bg', date = '2026-11-12', note = 'no damage; MP multiplier 1.25 / 2.5 / 4.125'},
         sc_properties       = {},
         requires_quest      = false,
         requires_merit      = false,
@@ -131,6 +174,13 @@ dagger_ws.weaponskills = {
         skill_level         = 200,
         job_levels          = {DNC = 62, THF = 60},
         stat_modifiers      = "40% DEX / 40% CHR",
+        type                = 'Physical',
+        hits                = 5,
+        mods                = {DEX = 40, CHR = 40},
+        ftp                 = {[1000] = 1.1875, [2000] = 1.1875, [3000] = 1.1875},
+        replicating         = true,
+        tp_effect           = 'accuracy',
+        source              = {all = 'bg', date = '2026-11-12', unknown = 'accuracy by TP'},
         sc_properties       = {'Scission', 'Detonation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -144,6 +194,11 @@ dagger_ws.weaponskills = {
         skill_level         = 225,
         job_levels          = {DNC = 68, THF = 66},  -- BG Wiki: Thief or Dancer only
         stat_modifiers      = "40% DEX / 40% AGI",
+        type                = 'Physical',
+        hits                = 2,
+        mods                = {DEX = 40, AGI = 40},
+        ftp                 = {[1000] = 4.5, [2000] = 6.8, [3000] = 8.5},
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Fragmentation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -157,6 +212,14 @@ dagger_ws.weaponskills = {
         skill_level         = 230,
         job_levels          = {BRD = 73, BST = 75, COR = 70, DNC = 70, NIN = 75, RDM = 71, RNG = 73, THF = 67, WAR = 73},  -- BG Wiki: no PUP
         stat_modifiers      = "50% DEX",
+        type                = 'Physical',
+        hits                = 5,
+        mods                = {DEX = 50},
+        ftp                 = {[1000] = 1.25, [2000] = 1.25, [3000] = 1.25},
+        replicating         = true,
+        tp_effect           = 'crit',
+        crit                = {[1000] = 10, [2000] = 25, [3000] = 50},
+        source              = {all = 'jp', crit = 'bg', date = '2026-11-12'},
         sc_properties       = {'Gravitation', 'Transfixion'},
         requires_quest      = true,
         quest_name          = "Cloak and Dagger",
@@ -172,6 +235,10 @@ dagger_ws.weaponskills = {
         job_levels          = {BLM = 92, BRD = 85, BST = 86, COR = 82, DNC = 78, DRG = 97, DRK = 87, GEO = 88, NIN = 86, PLD = 88, PUP = 88, RDM = 83, RNG = 85, SAM = 97, SCH = 92, SMN = 97, THF = 78, WAR = 85},
         main_or_sub         = {'RDM', 'THF', 'BRD', 'RNG', 'NIN', 'DNC'},  -- BG Wiki: main or sub job must be one of them
         stat_modifiers      = "40% DEX / 40% INT",
+        type                = 'Magical',
+        mods                = {DEX = 40, INT = 40},
+        ftp                 = {[1000] = 2.0, [2000] = 3.0, [3000] = 4.5},
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Scission', 'Detonation', 'Impaction'},
         requires_quest      = false,
         requires_merit      = false,
@@ -189,6 +256,13 @@ dagger_ws.weaponskills = {
         skill_level         = 357,
         job_levels          = {BRD = 95, BST = 96, COR = 93, DNC = 93, NIN = 96, RDM = 94, RNG = 95, THF = 91, WAR = 95},
         stat_modifiers      = "73~85% AGI (merit ranks)",
+        type                = 'Physical',
+        hits                = 4,
+        mods                = {AGI = 85},
+        ftp                 = {[1000] = 1.1875, [2000] = 1.1875, [3000] = 1.1875},
+        replicating         = true,
+        tp_effect           = 'duration',
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Fragmentation', 'Scission'},
         requires_quest      = true,
         quest_name          = "Martial Mastery",
@@ -208,6 +282,12 @@ dagger_ws.weaponskills = {
         skill_level         = nil,
         job_levels          = {BRD = 75, DNC = 85, RDM = 75, THF = 75},
         stat_modifiers      = "80% STR",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {STR = 80},
+        ftp                 = {[1000] = 5.0, [2000] = 5.0, [3000] = 5.0},
+        tp_effect           = 'duration',
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Darkness', 'Gravitation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -225,6 +305,11 @@ dagger_ws.weaponskills = {
         skill_level         = nil,
         job_levels          = {THF = 85, BRD = 85, DNC = 85},
         stat_modifiers      = "80% DEX",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {DEX = 80},
+        ftp                 = {[1000] = 5.0, [2000] = 10.19, [3000] = 13.0},
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Darkness', 'Distortion'},
         requires_quest      = true,
         quest_name          = "Kupofried's Weapon Skill Moogle Magic",
@@ -239,6 +324,12 @@ dagger_ws.weaponskills = {
         skill_level         = nil,
         job_levels          = {THF = 75},
         stat_modifiers      = "60% DEX",
+        type                = 'Physical',
+        hits                = 1,
+        mods                = {DEX = 60},
+        ftp                 = {[1000] = 4.0, [2000] = 6.09, [3000] = 8.5},
+        attack              = 1.75,
+        source              = {all = 'jp', attack = 'bg', date = '2026-11-12'},
         sc_properties       = {'Fusion', 'Compression'},
         requires_quest      = true,
         quest_name          = "Unlocking a Myth (Thief)",
@@ -255,6 +346,12 @@ dagger_ws.weaponskills = {
         skill_level         = nil,
         job_levels          = {BRD = 75},
         stat_modifiers      = "30% DEX / 70% CHR",
+        type                = 'Physical',
+        hits                = 2,
+        mods                = {DEX = 30, CHR = 70},
+        ftp                 = {[1000] = 5.0},
+        tp_effect           = 'effect_chance',
+        source              = {all = 'jp', date = '2026-11-12', unknown = 'fTP at 2000 / 3000 TP, Weight chance by TP'},
         sc_properties       = {'Fragmentation', 'Distortion'},
         requires_quest      = true,
         quest_name          = "Unlocking a Myth (Bard)",
@@ -271,6 +368,13 @@ dagger_ws.weaponskills = {
         skill_level         = nil,
         job_levels          = {DNC = 75},
         stat_modifiers      = "40% STR / 40% DEX",
+        type                = 'Physical',
+        hits                = 4,
+        mods                = {STR = 40, DEX = 40},
+        ftp                 = {[1000] = 1.75, [2000] = 1.75, [3000] = 1.75},
+        replicating         = true,
+        tp_effect           = 'duration',
+        source              = {all = 'jp', date = '2026-11-12'},
         sc_properties       = {'Distortion', 'Scission'},
         requires_quest      = true,
         quest_name          = "Unlocking a Myth (Dancer)",
@@ -286,7 +390,12 @@ dagger_ws.weaponskills = {
         description         = "4-hit, dmg varies",
         skill_level         = 424,
         job_levels          = {RDM = 99, THF = 99, BRD = 99, DNC = 99},
-        stat_modifiers      = "25% DEX / 25% AGI",
+        stat_modifiers      = "20% DEX / 20% AGI",  -- wiki.ffo.jp (BG-Wiki: 25% / 25%)
+        type                = 'Physical',
+        hits                = 4,
+        mods                = {DEX = 20, AGI = 20},
+        ftp                 = {[1000] = 5.7578125, [2000] = 14.515625, [3000] = 23.2773438},
+        source              = {all = 'jp', date = '2026-11-12', note = 'JP 1474/3716/5959 /256 and DEX/AGI 20% (BG: 5.375/14/23, 25%); our DNC measure of 2026-10-13 found BG too low', unknown = 'replicating'},
         sc_properties       = {'Liquefaction', 'Impaction', 'Fragmentation'},
         requires_quest      = false,
         requires_merit      = false,
@@ -294,7 +403,7 @@ dagger_ws.weaponskills = {
             {weapon = "Mpu Gandring", level = 119, type = "Prime", aftermath = true}
         },
         element             = nil,
-        notes               = "Prime WS, 4 hits, fTP 5.375/14/23, Mpu Gandring only"
+        notes               = "Prime WS, 4 hits, fTP 5.758/14.516/23.277 (JP), Mpu Gandring only"
     }
 }
 

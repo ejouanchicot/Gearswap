@@ -146,10 +146,11 @@
         //   x1.95 from 1000 to 2000 TP and x3.18 +-0.35 from 1000 to 3000 TP.
         // So the page's 9.15 is not the 2000 TP value: with its 3.05 at 1000 TP, 2000 TP is 5.95 to 6.24 and
         // 3000 TP is 9.7 +-0.7. The table is set as a straight line through the page's two numbers, 9.15 moved to
-        // 3000 TP: inside both measures
-        "Disaster": {url: U + "Disaster", mods: {STR: 60, VIT: 60}, ftp: [3.05, 6.1, 9.15],
-            unverified: "fTP at 2000 and 3000 TP: measured 5.95 to 6.24 and 9.7 +-0.7 in game, set at 6.10 and 9.15",
-            missing: "number of hits"},
+        // 3000 TP: inside both measures.
+        // 2026-11-12, over the page: wiki.ffo.jp (html/39096) gives 3.235 / 6.47 / 9.705, one hit, STR 53% / VIT 53%,
+        // in line with an FFXIAH test (x2.06 / x3.18) and with our crabs of 2026-11-11/12 (115 Disaster: a straight
+        // line, x2 from 1000 to 2000 TP). Our database says the same (GREATAXE_WS_DATABASE.lua, its `source`)
+        "Disaster": {url: U + "Disaster", mods: {STR: 53, VIT: 53}, ftp: [3.235, 6.47, 9.705], hits: 1},
         "Fell Cleave": {url: U + "Fell_Cleave", mods: {STR: 60}, ftp: same(2.75)},
         "Full Break": {url: U + "Full_Break", mods: {STR: 50, VIT: 50}, ftp: same(1)},
         "Iron Tempest": {url: U + "Iron_Tempest", mods: {STR: 60}, ftp: same(1), hits: 1, attack: [1, 2, 3.5],
@@ -187,8 +188,10 @@
         // rank 15 augment "Mordant Rime: Damage +15%", multiplied together (+49.5%)
         "Mordant Rime": {url: U + "Mordant_Rime", type: "Physical", mods: {CHR: 70, DEX: 30}, ftp: same(5), hits: 2,
             missing: "its TP row (question marks)", weapons: {"Carnwenhan": [1.3], "Carnwenhan R15": [1.3, 1.15]}},
-        "Ruthless Stroke": {url: U + "Ruthless_Stroke", type: "Physical", mods: {DEX: 25, AGI: 25},
-            ftp: [5.375, 14, 23], hits: 4},
+        // 2026-11-12, over the page (5.375 "Verification Needed" / 14 / 23, DEX / AGI 25%): wiki.ffo.jp's exact /256
+        // values and 20% (html/39092); our DNC measure of 2026-10-13 found the page's too low
+        "Ruthless Stroke": {url: U + "Ruthless_Stroke", type: "Physical", mods: {DEX: 20, AGI: 20},
+            ftp: [5.7578125, 14.515625, 23.2773438], hits: 4, unverified: "whether hits 2 to 4 use the fTP"},
         "Viper Bite": {url: U + "Viper_Bite", type: "Physical", mods: {DEX: 100}, ftp: same(1),
             attack: same(2)},
         "Dancing Edge": {url: U + "Dancing_Edge", type: "Physical", mods: {DEX: 40, CHR: 40}, ftp: same(1.1875),

@@ -620,6 +620,7 @@ declare function weaponModes(d: LegacyAny): LegacyAny[];
 declare const WEAPON_GATES: Record<string, LegacyAny>;
 declare function tpAsk(s: LegacyAny, pieces: LegacyAny, x: LegacyAny): LegacyAny;
 declare function tpSteps(r: LegacyAny, s: LegacyAny): number[];
+declare function tpStepsTable(s: LegacyAny): number[] | null;
 declare function tpTotalParts(s: LegacyAny, r: LegacyAny): LegacyAny;
 declare function tpBonusParts(s: LegacyAny, r: LegacyAny): LegacyAny;
 declare function wsWeaponFits(m: LegacyAny, v: string, ws: string): boolean;

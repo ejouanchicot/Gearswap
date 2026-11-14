@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Not a public-facing system. Single caller: ws_precast_handler.lua.
 ---   Computes TP-bonus gear delta when a weaponskill is launched, defers the
----   actual lookup to TPBonusCalculator (which IS the public engine).
+---   actual decision to TPBonusCalculator.decide (which IS the public engine).
 ---
 ---   If you need TP-bonus computations from a job module, use
 ---   `TPBonusCalculator` (shared/utils/weaponskill/tp_bonus_calculator.lua).
@@ -73,9 +73,16 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
 
     local range_weapon = player.equipment and player.equipment.range or nil
 
-    local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon, nil, range_weapon)
-    -- worked out again once the weaponskill set is on (WSPrecastHandler.apply_tp_gear): its own TP pieces count
-    _G.temp_tp_bonus_args = {tp = current_tp, config = tp_config, main = weapon_name, sub = sub_weapon, range = range_weapon}
+    local args = {tp = current_tp, config = tp_config, main = weapon_name, sub = sub_weapon, range = range_weapon,
+        buffs = buffactive, ws = spell.english, skill = spell.skill, job = player.main_job}
+    local ok, tp_gear = pcall(calculator.decide, args)
+    if not ok then
+        trace('%s decide failed: %s', spell.english, tp_gear)
+        tp_gear = nil
+    end
+    -- worked out again once the weaponskill set is on (WSPrecastHandler.apply_tp_gear): its own TP pieces
+    -- count, and the Atelier's table is used only for the set it was worked out for
+    _G.temp_tp_bonus_args = args
     trace('%s tp %s main %s sub %s range %s -> gear %s', spell.english, current_tp,
         weapon_name, sub_weapon, range_weapon, tp_gear)
 

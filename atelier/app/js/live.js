@@ -357,6 +357,8 @@ async function liveTick(){
         canonNames(d); m[d.sub || 'NONE'] = d; DATA_GEN++;
         CHARS[c] = {jobs: Object.keys(DATA[c])};
         now.at = d.at; now.fresh = true;
+        // the TP pieces table of the job worked out again when its sets changed (tp_table.js)
+        if (typeof tpTableAfterExport === 'function') setTimeout(() => tpTableAfterExport(c, d), 1000);
         // the job a reload left with no file to show (events.js readData): back to it, where it was, unless another
         // job was picked meanwhile
         const back = S.backTo;

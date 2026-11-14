@@ -13,13 +13,15 @@
 ---     • WAR/BST: Fencer (+200-630 when single-wielding, based on level + JP Gifts)
 ---   - Available TP bonus pieces (e.g., Moonshade +250, Boii +100, Mpaca's Cap +200)
 ---
----   Logic: Only equip TP bonus gear if it allows reaching the next TP threshold (2000 or 3000)
----   Equipment strategy: Equip the MINIMUM necessary pieces to reach threshold
+---   decide(): the pieces worth their gain at that TP (tp_piece_decision.lua: the Atelier's table, else the
+---   fTP's rise, else the thresholds below). calculate(): the thresholds rule, kept for a weaponskill whose
+---   fTP is unknown: only equip TP bonus gear if it reaches the next TP threshold (2000 or 3000), the
+---   MINIMUM necessary pieces.
 ---
 ---   @file    shared/utils/weaponskill/tp_bonus_calculator.lua
 ---   @author  ejouanchicot
----   @version 1.3 - Lazy loading for MessageWeaponskill
----   @date    Created: 2025-01-02 | Updated: 2025-11-27
+---   @version 1.4 - decide(): table / formula / thresholds
+---   @date    Created: 2025-01-02 | Updated: 2026-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -49,18 +51,17 @@ TPBonusCalculator.config = {
 ---   Core Functions
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- TP the weaponskill will actually open with.
+--- The TP Bonus the weaponskill opens with besides the TP shown, in its three parts.
 ---
 --- Weapon, buff and Fencer bonuses are already in effect when the skill fires,
---- so they count towards the threshold before any gear is chosen.
---- @param current_tp number TP shown right now
+--- so they count before any gear is chosen.
 --- @param tp_config table Job TP config supplying the bonus lookups
 --- @param weapon_name string|nil Equipped main weapon
 --- @param active_buffs table|nil buffactive, or a stand-in
 --- @param sub_weapon string|nil Equipped sub (its own TP Bonus, and Fencer)
 --- @param range_weapon string|nil Equipped ranged weapon (its own TP Bonus)
---- @return number Effective TP
-local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, range_weapon)
+--- @return number weapons, number buffs, number Fencer
+local function tp_parts(tp_config, weapon_name, active_buffs, sub_weapon, range_weapon)
     -- the weapon's TP Bonus: the job's config when it lists the weapon, else read from the game and
     -- your gear scan (shared/utils/weaponskill/weapon_tp_bonus.lua: Ikenga's Axe R23 gives 200)
     local WeaponTP = require('shared/utils/weaponskill/weapon_tp_bonus')
@@ -91,7 +92,15 @@ local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, su
         fencer_bonus = tp_config.get_fencer_bonus(weapon_name, sub_weapon)
     end
 
-    return current_tp + weapon_bonus + buff_bonus + fencer_bonus
+    return weapon_bonus, buff_bonus, fencer_bonus
+end
+
+--- TP the weaponskill will actually open with: the TP shown plus weapon, buff and Fencer bonuses.
+--- @param current_tp number TP shown right now
+--- @return number Effective TP
+local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon, range_weapon)
+    local weapons, buffs, fencer = tp_parts(tp_config, weapon_name, active_buffs, sub_weapon, range_weapon)
+    return current_tp + weapons + buffs + fencer
 end
 
 --- The next TP threshold worth reaching for.
@@ -228,6 +237,41 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     end
     debug('show_total_available', total_available)
     return pieces_for_gap(available, gap)
+end
+
+--- The weaponskill's database entry (shared/data/weaponskills/), or nil.
+local function ws_info(ws, skill)
+    if not ws then return nil end
+    local ok, Universal = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    return ok and Universal and Universal.resolve(ws, skill) or nil
+end
+
+--- The Atelier's worked-out variants for this weaponskill and weapon, or nil.
+local function table_variants(job, ws, weapon)
+    local ok, Table = pcall(require, 'shared/utils/weaponskill/tp_pieces_table')
+    return ok and Table and Table.variants(job, ws, weapon) or nil
+end
+
+--- Which TP pieces a weaponskill gets, and why (tp_piece_decision.lua: the Atelier's table while the set
+--- worn is the one it was worked out for, else the fTP's rise, never on a fixed fTP, the thresholds for an
+--- fTP unknown).
+--- @param a table {tp = TP shown, config = job TP config, main, sub, range, buffs = buffactive,
+---   worn = GearSwap's equip list once the weaponskill set is on (or nil), ws = name, skill = spell.skill,
+---   job = main job}
+--- @return table|nil gear {slot = name}, table why {source, gain, real_tp, key_tp}
+function TPBonusCalculator.decide(a)
+    if not a.tp or not a.config then return nil, {source = 'no TP config'} end
+    local already, available = split_worn(ranked_pieces(a.config) or {}, a.worn)
+    local weapons, buffs, fencer = tp_parts(a.config, a.main, a.buffs, a.sub, a.range)
+    local real_tp, key_tp = a.tp + weapons + buffs + fencer + already, a.tp + buffs
+    local Decision = require('shared/utils/weaponskill/tp_piece_decision')
+    local gear, why = Decision.decide({real_tp = real_tp, key_tp = key_tp, info = ws_info(a.ws, a.skill),
+        variants = table_variants(a.job, a.ws, a.main), worn = a.worn, available = available,
+        replaces = a.config.replaces, thresholds = function()
+            return TPBonusCalculator.calculate(a.tp, a.config, a.main, a.buffs, a.sub, a.worn, a.range)
+        end})
+    why.real_tp, why.key_tp = real_tp, key_tp
+    return gear, why
 end
 
 --- TP the weaponskill opens with: the TP shown plus weapon, buff and Fencer bonuses.

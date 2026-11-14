@@ -161,6 +161,7 @@ local ATELIER = {
     ['mode_overrides.lua'] = 'atelier/overrides/mode_overrides.lua',
     ['list_layout.js'] = 'atelier/overrides/list_layout.js',
     ['bag_plan.js'] = 'atelier/overrides/bag_plan.js',
+    -- the TP pieces tables, one a job (tp_pieces_WAR.lua...): atelier_rel() below
     ['set_push_history.lua'] = 'atelier/history.lua',
     ['atelier.on'] = 'atelier/export.on',
     ['atelier_live.off'] = 'atelier/live.off',
@@ -168,6 +169,13 @@ local ATELIER = {
     ['exports'] = 'atelier/exports',
 }
 local ATELIER_OLD = {exports = {'saved/atelier'}}
+--- Place in <Char>/ of an Atelier file: ATELIER above, the TP pieces table of a job in atelier/overrides/
+--- (shared/utils/weaponskill/tp_pieces_table.lua), anything else in atelier/.
+local function atelier_rel(file)
+    if ATELIER[file] then return ATELIER[file] end
+    if file:match('^tp_pieces_%u+%.lua$') then return 'atelier/overrides/' .. file end
+    return 'atelier/' .. file
+end
 local ROOT_SAVED = {['temp_binds.lua'] = true, ['trace.log'] = true, ['trace.old.log'] = true,
     ['trace.on'] = true, ['atelier.on'] = true, ['rolldebug.log'] = true}
 
@@ -221,7 +229,7 @@ end
 local function candidates(kind, file, job)
     local out = {}
     if kind == 'atelier' then
-        out[1] = ATELIER[file] or ('atelier/' .. file)
+        out[1] = atelier_rel(file)
         for _, old in ipairs(ATELIER_OLD[file] or {'saved/' .. file, 'config/' .. file, file}) do out[#out + 1] = old end
         return out
     end
@@ -334,7 +342,7 @@ end
 function CharPaths.writable(kind, file, job, char)
     char = char or CharPaths.name()
     if kind == 'atelier' and char and new_layout(char) then
-        local path = data_dir() .. char .. '/' .. (ATELIER[file] or ('atelier/' .. file))
+        local path = data_dir() .. char .. '/' .. (atelier_rel(file))
         CharPaths.ensure_dir(path:match('^(.*)/[^/]*$'))
         return path
     end

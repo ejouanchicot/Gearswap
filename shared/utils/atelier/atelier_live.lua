@@ -67,6 +67,8 @@ local AtelierLive = {}
 
 local FIRST_PORT, PORT_TRIES = 52740, 8
 local SAVED_FILES = {['keybind_overrides.lua'] = true, ['mode_overrides.lua'] = true, ['set_overrides.lua'] = true, ['list_layout.js'] = true, ['bag_plan.js'] = true}
+-- the TP pieces table of a job (tp_pieces_WAR.lua: shared/utils/weaponskill/tp_pieces_table.lua)
+local function tp_pieces_file(file) return file ~= nil and file:match('^tp_pieces_%u+%.lua$') ~= nil end
 local MAX_BODY = 2 * 1024 * 1024
 local MAX_HEADERS, MAX_HEADER_TIME = 64, 2   -- header lines of one request, and seconds to read them (read_request)
 local POLL_EVERY = 6   -- frames between two looks at the door
@@ -306,7 +308,7 @@ local function route(req, live)
     end
     if req.path == '/save' and req.method == 'POST' then
         local file = req.query:match('file=([%w_%.]+)')
-        if not SAVED_FILES[file] then return '400 Bad Request', '{"error":"file"}' end
+        if not (SAVED_FILES[file] or tp_pieces_file(file)) then return '400 Bad Request', '{"error":"file"}' end
         -- the .lua ones are read by GearSwap at each load: data only (set_overrides.lua, key_overrides.lua)
         if file:match('%.lua$') and require('shared/utils/core/lua_data').parse(req.body) == nil then
             return '400 Bad Request', '{"error":"not data"}'
@@ -315,6 +317,8 @@ local function route(req, live)
         local path = CharPaths.writable('atelier', file)
         if not (path and write(path, req.body)) then return '500 Internal Server Error', '{"error":"write"}' end
         CharPaths.retire(file)
+        -- the TP pieces table is read once per load: read again at the next weaponskill
+        if tp_pieces_file(file) then pcall(function() require('shared/utils/weaponskill/tp_pieces_table').forget() end) end
         return '200 OK', Export.json({ok = true, file = file})
     end
     if req.path == '/actions' then

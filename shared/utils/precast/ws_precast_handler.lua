@@ -116,6 +116,20 @@ function WSPrecastHandler.handle(spell, eventArgs, tp_config)
     return true
 end
 
+--- The TP line of the debug trace (//gs c trace): real TP, where the decision came from, the
+--- pieces put on and the gain expected.
+local function trace_decision(args, gear, why)
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if not (ok_t and Trace) then return end
+    local names = {}
+    for slot, name in pairs(gear or {}) do names[#names + 1] = slot .. '=' .. tostring(name) end
+    table.sort(names)
+    Trace.log('TP', '%s with the set on: real TP %s (table TP %s), %s -> %s, gain %s', tostring(args.ws),
+        tostring(why.real_tp), tostring(why.key_tp), tostring(why.source),
+        #names > 0 and table.concat(names, ', ') or 'nothing',
+        (why.gain and string.format('%+.1f%%', why.gain * 100) or '?') .. (why.at and (' at ' .. why.at .. ' TP') or ''))
+end
+
 --- Equip the TP bonus gear computed by handle(), then clear it.
 --- Called from job_post_precast.
 --- @param spell table Spell object from GearSwap
@@ -132,10 +146,10 @@ function WSPrecastHandler.apply_tp_gear(spell)
     local args = _G.temp_tp_bonus_args
     if not ok_g then list = nil end
     if args and type(list) == 'table' and _G.TPBonusCalculator then
-        local ok, again = pcall(_G.TPBonusCalculator.calculate, args.tp, args.config, args.main, buffactive, args.sub, list, args.range)
+        args.worn, args.buffs = list, buffactive
+        local ok, again, why = pcall(_G.TPBonusCalculator.decide, args)
         if ok then tp_gear = again end
-        local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
-        if ok_t and Trace then Trace.log('TP', 'with the set on -> gear %s', tp_gear) end
+        trace_decision(args, tp_gear, ok and why or {source = 'error: ' .. tostring(again)})
     end
     _G.temp_tp_bonus_args = nil
     if tp_gear then

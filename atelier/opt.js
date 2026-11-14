@@ -9,7 +9,8 @@
 //   FFXI.opt.selection(b)             the page's buff state as the buff total takes it (aggregate below)
 //   FFXI.opt.context(...)             player, buffs, target and weaponskill of one evaluation
 //   FFXI.opt.ws(ctx, pieces, tp)      the weaponskill's average damage with those pieces
-//   FFXI.opt.tpPieces(rule, pieces, tp)  the TP pieces the job's rule adds (tp_bonus_calculator.lua)
+//   FFXI.opt.tpPieces(rule, pieces, tp)  the TP pieces the thresholds rule adds (tp_bonus_calculator.lua calculate)
+//   FFXI.opt.tpBest(ctx, pieces, tp, rule)  the TP pieces worth their gain by the engine (the game's decision, tp_table.js)
 //   FFXI.opt.nuke(ctx, pieces)        a nuke set's average damage over its spells
 //   FFXI.opt.value(ctx, pieces, opts)  a set's value for an objective, with the defense floors
 //
@@ -388,6 +389,43 @@
         return out;
     };
 
+    // The TP pieces worth putting on at a TP, by the engine itself: of the rule's pieces the set does not wear (one
+    // slot each, none on a slot another piece blocks), the combination whose weaponskill does the most damage; none
+    // when no combination beats the set alone (the pieces it would replace are worth more). The game applies the
+    // same decision from the table the page works it into (app/js/tp_table.js, shared/utils/weaponskill/
+    // tp_piece_decision.lua): measured in game 2026-11-11/12, the fTP rises in a straight line, a TP piece adds
+    // whatever TP it adds, not only where it reaches 2000 or 3000.
+    // Returns {add: {slot: piece}, gain: the damage added (0.17 = +17 %), base: the damage without, damage: with}
+    O.tpBest = function (ctx, pieces, tp, rule) {
+        var none = {add: {}, gain: 0, base: null, damage: null};
+        if (!rule || !rule.pieces || !ctx || !ctx.ws) return none;
+        var twin = {ring1: "ring2", ring2: "ring1", ear1: "ear2", ear2: "ear1"}, blocked = O.blocked(pieces), left = [];
+        rule.pieces.forEach(function (p) {
+            var on = pieces[p.slot], other = pieces[twin[p.slot]];
+            if (!((on && on.name === p.name) || (other && other.name === p.name)) && !blocked[p.slot]) left.push(p);
+        });
+        var damageOf = function (worn) {
+            var pl = playerOf(ctx, worn);
+            var r = pl ? FFXI.average_ws(pl.player, ctx.enemy, ctx.ws, tp, ctx.wsType, "Damage dealt") : null;
+            return r && r[1] ? r[1][0] : null;
+        };
+        var base = damageOf(pieces);
+        if (!base || !left.length) return {add: {}, gain: 0, base: base, damage: base};
+        var best = {add: {}, gain: 0, base: base, damage: base}, n = Math.min(left.length, 6);
+        for (var mask = 1; mask < (1 << n); mask++) {
+            var add = {}, worn = Object.assign({}, pieces), clash = false;
+            for (var i = 0; i < n; i++) if (mask & (1 << i)) {
+                if (add[left[i].slot]) clash = true;
+                add[left[i].slot] = {name: left[i].name};
+                worn[left[i].slot] = add[left[i].slot];
+            }
+            if (clash) continue;
+            var d = damageOf(worn);
+            if (d != null && d > best.damage) best = {add: add, gain: d / base - 1, base: base, damage: d};
+        }
+        return best;
+    };
+
     // ------------------------------------------------------------ search
     // The defensive totals of a set's gear: DT + PDT, DT + MDT (Shell not counted), Subtle Blow as the game caps it
     // (BG Wiki: I and II 50 each, 75 together; sbBuff, a party's Auspice, counts in I)
@@ -444,16 +482,18 @@
         if (ctx.mode === "engaged" || ctx.mode === "stats" || ctx.mode === "nuke") return null;
         var tps = opts.objective === "damage_avg" ? (opts.tps || [opts.tp]) : [opts.tp], low = null;
         for (var i = 0; i < tps.length; i++) {
-            var pl = playerOf(ctx, wornAt(pieces, opts, tps[i]));
+            var pl = playerOf(ctx, wornAt(pieces, opts, tps[i], ctx));
             var h = pl ? hitAt(ctx, pl.player, tps[i]) : null;
             if (h && (!low || h[1] < low.rest)) low = {first: h[0], rest: h[1]};
         }
         return low;
     };
     O.hit = function (ctx, pieces, opts) { var h = O.hits(ctx, pieces, opts); return h ? h.rest : null; };
-    // The set worn at the weaponskill: the pieces, then the TP pieces the job's rule lays at that TP
-    function wornAt(pieces, opts, tp) {
-        var worn = Object.assign({}, pieces), add = O.tpPieces(opts.tpRule, pieces, tp), blocked = O.blocked(pieces);
+    // The set worn at the weaponskill: the pieces, then the TP pieces worth their gain at that TP (O.tpBest, the
+    // game's decision), or the thresholds rule's without a weaponskill to judge them on
+    function wornAt(pieces, opts, tp, ctx) {
+        var add = ctx && ctx.ws ? O.tpBest(ctx, pieces, tp, opts.tpRule).add : O.tpPieces(opts.tpRule, pieces, tp);
+        var worn = Object.assign({}, pieces), blocked = O.blocked(pieces);
         // no TP piece on a slot another piece blocks (no Boii Cuisses under Onca Suit)
         for (var s in add) if (!blocked[s]) worn[s] = add[s];
         return worn;
@@ -576,7 +616,7 @@
         var metric = opts.objective === "tp_return" ? "TP return" : "Damage dealt", total = 0, under = 0, def = null;
         var worth = function (e) { return opts.objective === "tp_return" ? e.r[1][1] + e.r[1][0] / 1e6 : e.r[1][0]; };
         for (var i = 0; i < tps.length; i++) {
-            var worn = wornAt(pieces, opts, tps[i]), e = once(ctx, worn, tps[i], metric);
+            var worn = wornAt(pieces, opts, tps[i], ctx), e = once(ctx, worn, tps[i], metric);
             if (!e) return {v: -Infinity};
             def = def || e.def;
             total += worth(e);

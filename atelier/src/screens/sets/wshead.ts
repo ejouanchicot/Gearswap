@@ -63,7 +63,7 @@ function weaponOf(s: LegacyAny): WsWeapon | null {
 // the TP steps, then the TP the weaponskill opens with (its make-up in the explanation), the TP Bonus in total
 function tpOf(s: LegacyAny): WsTp {
   const wsTp = S0().wsTp, live = liveWrite();
-  const r = tpAsk(s, withWeapons(s).pieces, null), steps: number[] = tpSteps(r, s), parts = tpTotalParts(s, r);
+  const r = tpAsk(s, withWeapons(s).pieces, null), steps: number[] = tpStepsTable(s) || tpSteps(r, s), parts = tpTotalParts(s, r);
   const bonus = r && r.bonus ? ` ${t('tpBonusOf', {n: r.bonus})}` : '';
   const note = !live ? t('tpNeedLive') : r && r.config === false ? t('tpNoConfig') : (wsTp ? t('tpLiveNote') : t('tpOffNote')) + bonus;
   const chip = (v: string, label: string) => ({v, label, pressed: String(wsTp || '') === v, title: +v ? t('ttWsTp', {n: v}) : t('ttWsTpOff')});

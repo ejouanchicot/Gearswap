@@ -2,7 +2,7 @@
 --- WAR TP Bonus Configuration
 ---============================================================================
 --- Configuration for TP bonus equipment and Warcry settings.
---- Determines which gear to equip based on current TP to reach 2000/3000 TP thresholds.
+--- Determines which gear to equip worth putting on at the current TP.
 ---
 --- Features:
 ---   • Savagery merit and Agoge Mask configuration
@@ -10,7 +10,7 @@
 ---   • TP bonus equipment pieces (Moonshade Earring, Boii Cuisses +3, etc.)
 ---   • Weapon TP bonus detection (Chango +500 TP)
 ---   • Fencer activation detection (one-handed weapons + shield/empty sub)
----   • Automatic TP threshold calculations (2000/3000 TP)
+---   • TP pieces put on when they add more than the set pieces they replace
 ---
 --- @file    config/war/WAR_TP_CONFIG.lua
 --- @module  WAR_TP_CONFIG
@@ -43,8 +43,19 @@ local WARTPConfig = {
     ---==========================================================================
     --- TP BONUS EQUIPMENT PIECES
     ---==========================================================================
-    --- These pieces will be equipped intelligently based on TP thresholds.
-    --- The calculator will equip the minimum needed to reach 2000 or 3000 TP.
+    --- Put on before a weaponskill when they are worth it (shared/utils/weaponskill/tp_piece_decision.lua).
+    --- Put on when they add more than the set pieces they replace (`replaces` below).
+
+    --- What one set piece is worth, for the TP pieces below. Before a weaponskill the
+    --- Atelier's table says which pieces add more than the set pieces they replace
+    --- (export the job in the Atelier: it is worked out for each weaponskill set).
+    --- Without that table, or once the set changed, the fTP decides: the pieces go
+    --- on when they add more than `replaces` for each set piece taken off.
+    --- Example: replaces = 0.03 (3 %): Moonshade alone must add 3 % or more,
+    --- Moonshade + Boii Cuisses 6 % or more. Never on a weaponskill whose fTP
+    --- stays the same at every TP (its TP raises only critical hit rate, accuracy
+    --- or a duration). 0.05 = put them on less often, 0 = whenever they add anything.
+    replaces = 0.03,
 
     pieces = {{
         slot = "ear1",

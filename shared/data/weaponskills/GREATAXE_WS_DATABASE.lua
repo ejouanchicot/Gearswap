@@ -188,13 +188,16 @@ greataxe_ws.weaponskills = {
     ['Disaster'] = {
         description         = 'Damage varies with TP.',
         type                = 'Physical',
-        mods                = {STR = 60, VIT = 60},
+        mods                = {STR = 53, VIT = 53},
+        hits                = 1,
         element             = nil,
         skillchain          = {'Transfixion', 'Scission', 'Gravitation'},
-        ftp                 = {[1000] = 3.05, [2000] = 9.15},
+        ftp                 = {[1000] = 3.235, [2000] = 6.47, [3000] = 9.705},
+        source              = {all = 'jp', ftp = 'measured', date = '2026-11-12',
+                               note = 'wiki.ffo.jp html/39096; FFXIAH test x2.06 / x3.18; our crabs 2026-11-11/12: x2 from 1000 to 2000 TP in a straight line (BG-Wiki: 3.05 / 9.15, STR / VIT 60%)'},
         skill_required      = 1,
         jobs                = {WAR = 99},
-        special_notes       = 'Laphria (Sortie great axe) weapon skill. Laphria grants a Prime Aftermath. Hits and fTP at 3000 TP not documented on BG-Wiki (2026-09-30).'
+        special_notes       = 'Laphria (Sortie great axe) weapon skill. Laphria grants a Prime Aftermath. One hit; fTP in a straight line between 1000 / 2000 / 3000 TP.'
     },
 
     ---========================================================================

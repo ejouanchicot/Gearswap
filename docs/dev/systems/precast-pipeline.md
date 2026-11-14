@@ -36,12 +36,14 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/precast/cooldown_checker.lua` | 143 | CooldownChecker: ability and spell recast checks with tolerance |
 | `shared/utils/precast/recast_announce.lua` | 83 | Party message (`/p`) for an action refused on recast, per `RECAST_CONFIG.party_announce` |
 | `_master/config_global/RECAST_CONFIG.lua` | 115 | Recast tolerance (2.0 s), party announce list, global `is_recast_ready` / `is_on_cooldown` |
-| `shared/utils/precast/ability_helper.lua` | 465 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
-| `shared/utils/precast/ws_precast_handler.lua` | 147 | WSPrecastHandler: validation, TP gear calculation, 1000 TP check on the game's own TP, TP gear application |
+| `shared/utils/precast/ability_helper.lua` | 472 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
+| `shared/utils/precast/ws_precast_handler.lua` | 161 | WSPrecastHandler: validation, TP gear calculation, 1000 TP check on the game's own TP, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 46 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
-| `shared/utils/precast/tp_bonus_handler.lua` | 86 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
+| `shared/utils/precast/tp_bonus_handler.lua` | 93 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 283 | `decide` (the TP pieces worth their gain) and `calculate` (the thresholds rule); exported as `_G.TPBonusCalculator` |
+| `shared/utils/weaponskill/tp_piece_decision.lua` | 241 | Pure decision: the Atelier's table, the fTP formula, the thresholds; `_G.TPPieceDecision` |
+| `shared/utils/weaponskill/tp_pieces_table.lua` | 114 | Reads the played job's `<Char>/atelier/overrides/tp_pieces_<JOB>.lua` as data, once per load (`forget()` after the Atelier writes one); `file(job)` gives the name |
 | `shared/utils/weaponskill/weapon_tp_bonus.lua` | 94 | `WeaponTP.of(weapon, tp_config)`: a weapon's TP Bonus, from the job's TP config, else the game's description and your gear scan |
 | `shared/utils/weaponskill/game_facts.lua` | 96 | Values a TP config leaves on `'auto'` (merits, job point gifts such as Fencer's, a piece owned), read from the game; nil outside it |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
@@ -450,16 +452,16 @@ sequenceDiagram
     H->>H: live_tp() < 1000 -> cancel + "Not enough TP"
     H-->>J: true / false
     P->>H: apply_tp_gear(spell)
-    H->>T: calculate again with worn = gearswap.equip_list (_G.temp_tp_bonus_args)
+    H->>T: decide again with worn = gearswap.equip_list (_G.temp_tp_bonus_args)
     H->>P: equip(gear), clear _G.temp_tp_bonus_gear / _G.temp_tp_bonus_args
 ```
 
 - **TP pieces worn by the set** (since 2026-10-02): `calculate_tp_gear` keeps its
   arguments in `_G.temp_tp_bonus_args`; `apply_tp_gear`, once Mote has equipped the
-  weaponskill set, calls `TPBonusCalculator.calculate` again with `worn` = GearSwap's
+  weaponskill set, calls `TPBonusCalculator.decide` again with `worn` = GearSwap's
   equip list. A config piece the set already wears (same slot, same name) counts as
-  there and is not added; one piece that closes the gap is the smallest that does.
-  Without an equip list it equips the first answer. Trace: `TP ... with the set on -> gear ...`.
+  there and is not added. Without an equip list it equips the first answer. Trace:
+  `TP <WS> with the set on: real TP ..., (table TP ...), <source> -> <pieces>, gain ...`.
 
 - `WSPrecastHandler`'s local `ensure_modules_loaded` loads MessageFormatter,
   WSValidator, TPBonusHandler and AutoJump (`shared/utils/drg/auto_jump.lua`)
@@ -492,40 +494,52 @@ sequenceDiagram
 
 ### TP bonus gear
 
-`TPBonusHandler.calculate_tp_gear` reads `live_tp()`, `player.equipment.main/sub` and
-`buffactive`, calls `TPBonusCalculator.calculate` and stores the result in
-`_G.temp_tp_bonus_gear` (and writes a `TP` trace line). `WSPrecastHandler.apply_tp_gear`
-equips and clears it in `job_post_precast`; DNC applies its WS variant first so the TP
-piece is not overwritten.
+`TPBonusHandler.calculate_tp_gear` reads `live_tp()`, `player.equipment.main/sub/range`,
+`buffactive`, the weaponskill (`spell.english`, `spell.skill`) and the main job, calls
+`TPBonusCalculator.decide` (in a pcall) and stores the result in `_G.temp_tp_bonus_gear`
+(and writes a `TP` trace line). `WSPrecastHandler.apply_tp_gear` decides again with the
+set on, equips and clears it in `job_post_precast`; DNC applies its WS variant first so
+the TP piece is not overwritten.
 
-`TPBonusCalculator.calculate(tp, cfg, main, buffs, sub, worn, range)` (`tp_bonus_calculator.lua:205`):
+Since 2026-11-12 the pieces go on by what they add, not by thresholds: the fTP rises in a
+straight line between 1000, 2000 and 3000 TP and a TP Bonus counts as that much more TP,
+capped at 3000 (measured in game: `notes/docs-perso/moonshade-ftp-2026-11-11/SPEC.md`).
+`TPBonusCalculator.decide(args)` (`args` = `{tp, config, main, sub, range, buffs, worn, ws,
+skill, job}`):
 
-1. Effective TP (`effective_tp`) = current TP + `WeaponTP.of(main)` + `WeaponTP.of(sub)`
-   when the sub is a different weapon + `WeaponTP.of(range)` when the ranged weapon is a
-   third one + `get_warcry_bonus()` (only if `buffactive['Warcry']`) + `get_hagakure_bonus()`
-   + `get_fencer_bonus(main, sub)`. `WeaponTP.of(weapon, tp_config)`
-   (`shared/utils/weaponskill/weapon_tp_bonus.lua`): the job config's `get_weapon_bonus`
-   wins when it gives more than 0; otherwise the TP Bonus written in the game's item
-   description, plus the augments and path-rank stats of your copy as `//gs c gearscan`
-   read it (`<Char>/saved/gear_augments.lua`, ranks from `PATH_RANK_GEAR.lua`; nothing from
-   the scan when your copies differ). Cached per weapon for the load.
-2. Pieces already worn (`split_worn`): the TP pieces the weaponskill set puts on count
-   as there, added to the effective TP, and their slot leaves the candidates.
-3. Next threshold from `config.thresholds = {2000, 3000}` (`next_threshold`); none
-   above 3000 -> nil.
-4. Pieces sorted by bonus descending (`ranked_pieces`). If the gap exceeds the sum of the
-   pieces still available -> nil.
-5. `pieces_for_gap`: the smallest single piece whose bonus covers the gap, else the greedy
-   largest-first combination.
+1. Real TP = current TP + the weapons' TP Bonus (`WeaponTP.of` on main, a different sub, a
+   third ranged weapon) + `get_warcry_bonus()` (only under `buffactive['Warcry']`) +
+   `get_hagakure_bonus()` + `get_fencer_bonus(main, sub)` (`tp_parts`) + the TP pieces
+   the set already wears (`split_worn`: their slot leaves the candidates). Table TP =
+   current TP + the buffs' part only (the table holds each weapon's own and Fencer's).
+2. `TPPieceDecision.decide` (`tp_piece_decision.lua`), in this order:
+   - real TP 3000 or more: nothing (`capped`);
+   - **table**: the Atelier's variants for this job, weaponskill and main weapon
+     (`tp_pieces_table.lua`), the one whose `set` is what the equip list wears (names, any
+     case; a slot the equip list leaves out, locked by `//gs disable`, is skipped, at least half
+     the set compared; each set written once in the job's `sets`): the segment of the table TP
+     (the TP where the pieces change, worked out every 50 TP), its pieces kept only if the
+     config still offers them. No threshold: the page put a piece there only when the
+     engine found the weaponskill doing more damage with it than with the set piece;
+   - **formula** (no table, or `formula (set changed)`): on the database's fTP
+     (`shared/data/weaponskills/*_WS_DATABASE.lua` via `UNIVERSAL_WS_DATABASE.resolve`),
+     every combination of the pieces left, gain = first hit's share x (fTP(real + bonus)
+     - fTP(real)) / fTP(real), share = fTP / (fTP + hits - 1), 1 for a replicating, magical
+     or hybrid weaponskill; kept when gain - `replaces` (config, default 0.03) x pieces is
+     the best above 0. Never a piece when the fTP is the same at every TP;
+   - **thresholds** (fTP unknown at one of the three TP): `calculate`, below.
+3. Returns `gear, why` (`why = {source, gain, real_tp, key_tp}`).
 
-`TPBonusHandler` calls `calculate` with no `worn` (step 2 counts nothing) and keeps its
-arguments in `_G.temp_tp_bonus_args`; `WSPrecastHandler.apply_tp_gear` runs it again in
-`job_post_precast` with `gearswap.equip_list` (the set about to be sent) as `worn`, so a
-TP piece already in the WS set (Boii Cuisses in the base set) is not added a second time.
+`TPBonusCalculator.calculate(tp, cfg, main, buffs, sub, worn, range)` is the rule before,
+kept for an fTP unknown and for the Atelier's `/tpbonus`: effective TP as in step 1, the
+next threshold from `config.thresholds = {2000, 3000}` (`next_threshold`, none above 3000),
+nil when the pieces left cannot reach it, else `pieces_for_gap`: the smallest single piece
+that covers the gap, else the greedy largest-first combination.
 
 TP config schema (per job, `<Character>/<job>/combat/<JOB>_TP_CONFIG.lua`, loaded
 into `_G.<JOB>TPConfig` by the entry point): `pieces = { {slot, name, bonus}, ... }`
-plus optional `get_weapon_bonus(weapon)`, `get_warcry_bonus()`,
+plus optional `replaces` (0.03: what one set piece is worth to the formula),
+`get_weapon_bonus(weapon)`, `get_warcry_bonus()`,
 `get_hagakure_bonus()`, `get_fencer_bonus(weapon, sub)`. The BLM config
 (`_master/config/blm/BLM_TP_CONFIG.lua`) defines `moonshade = {name, tp_bonus}`
 instead of `pieces`, which the calculator does not read.

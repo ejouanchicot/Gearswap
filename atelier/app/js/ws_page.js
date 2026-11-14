@@ -118,8 +118,12 @@ async function tpAskWait(s, pieces, tp){
   if (waits.length) await Promise.all(waits);
   return tpAsk(s, pieces, tp);
 }
+// The TP pieces on the set at the TP chosen: the engine's decision, as the game makes it from the table (tp_table.js),
+// else the game's own answer (no engine, or no TP pieces in the export)
 function tpBonusGear(s, pieces){
   if (!S.wsTp || S._noTpGear) return null;
+  const best = tpBestGear(s, pieces, Math.min(3000, +S.wsTp + partyTp()));
+  if (best) return best;
   const r = tpAsk(s, pieces, S.wsTp);
   return r && r.gear;
 }
@@ -129,7 +133,7 @@ function tpBonusGear(s, pieces){
 // config, its weapons and the buffs ticked), so both tabs offer the same ones
 function simTpSteps(ws){
   const d = data(), set = d && (d.sets.find(x => wsOfSet(x) === ws) || d.sets.find(x => x.path === 'sets.precast.WS'));
-  return set ? tpSteps(tpAsk(set, withWeapons(set).pieces, null), set) : TP_STEPS;
+  return set ? (tpStepsTable(set) || tpSteps(tpAsk(set, withWeapons(set).pieces, null), set)) : TP_STEPS;
 }
 // A piece's TP Bonus: its value in the job's TP config, else its description (weapons: the game's bonus)
 function tpbOf(p, slot, cfg){

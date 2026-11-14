@@ -390,6 +390,11 @@ local function build_stages(data)
             data.temp_binds = ok_t and TempBinds.current and TempBinds.current() or nil
             local ok_s, SetOverrides = pcall(require, 'shared/utils/atelier/set_overrides')
             data.set_overrides = ok_s and SetOverrides.read() or nil
+            -- the TP pieces table the page worked out for this job (<Char>/atelier/overrides/tp_pieces_<JOB>.lua):
+            -- the page compares its signature before working it out again (atelier/app/js/tp_table.js). Read once
+            -- per load, forgotten when the page writes it (atelier_live.lua): no longer read again at each export
+            local ok_p, TPTable = pcall(require, 'shared/utils/weaponskill/tp_pieces_table')
+            data.tp_pieces = ok_p and player and TPTable.read(player.main_job) or nil
         end,
         function()                                                                   -- 22
             local ok_g, configs = pcall(function() return require('shared/utils/atelier/atelier_configs').collect(player.name, player.main_job) end)
