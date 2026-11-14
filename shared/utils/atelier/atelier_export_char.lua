@@ -25,7 +25,10 @@ local BAG_NAMES = {[0] = 'Inventory', [1] = 'Mog Safe', [2] = 'Storage', [4] = '
     [6] = 'Mog Sack', [7] = 'Mog Case', [8] = 'Wardrobe', [9] = 'Mog Safe 2', [10] = 'Wardrobe 2', [11] = 'Wardrobe 3',
     [12] = 'Wardrobe 4', [13] = 'Wardrobe 5', [14] = 'Wardrobe 6', [15] = 'Wardrobe 7', [16] = 'Wardrobe 8'}
 
---- The augments of one copy of an item (its extdata), or nil.
+--- The augments of one copy of an item (its extdata), or nil, and its rank on a path (Odyssey gear, Unity +1, JSE
+--- necks: the same decode as //gs c gearscan, shared/utils/equipment/gear_scan.lua): the page reads the rank of your
+--- copy from here, as the export sees it now, without waiting for a gearscan.
+--- @return table|nil augments, number|nil rank
 local function copy_augments(item)
     local ok_ext, extdata = pcall(require, 'extdata')
     local ok, ext = false, nil
@@ -35,7 +38,8 @@ local function copy_augments(item)
     for _, a in ipairs(ext.augments) do
         if type(a) == 'string' and a ~= '' and a ~= 'none' then augs[#augs + 1] = a end
     end
-    return #augs > 0 and augs or nil
+    local rank = ext.path and tonumber(ext.rank) or nil
+    return #augs > 0 and augs or nil, rank
 end
 
 --- Whether an ammo is a BST jug broth (Meaty Broth: "Calls Blackbeard Randy."): ammo with damage and no
@@ -77,8 +81,8 @@ end
 local function porter_list(slips) local out = {} for id, w in pairs(slips or slip_items()) do out[tostring(id)] = w end return out end
 
 --- Owned items the main job can wear, by slot: `items` = {slot = {name, ...}} and
---- `owned` = {slot = {{name = , augs = }, ...}}, one entry per distinct copy (two capes
---- with other augments are two choices in the page).
+--- `owned` = {slot = {{name = , augs = , rank = }, ...}}, one entry per distinct copy (two capes
+--- with other augments are two choices in the page; two copies of a path piece at other ranks too).
 --- @param slips table|nil The Porter Moogle's items when the caller already read them (slip_items())
 --- @return table by_slot, table owned, table the slips read
 local function collect_items(slips)
@@ -89,9 +93,9 @@ local function collect_items(slips)
     -- each copy with the places it is in (several bags when the same copy is twice) and how
     -- many there are (two Moonlight Rings in one wardrobe: one place, count 2), and its item id (one
     -- name, several items: a prime weapon's stages, Laphria II to V, each its own stats)
-    local function add(info, augs, where)
+    local function add(info, augs, where, rank)
         if not (info and info.slots and type(info.slots) == 'table' and info.slots.it and wearable(info)) then return end
-        local copy = info.id .. '|' .. table.concat(augs or {}, '|')
+        local copy = info.id .. '|' .. table.concat(augs or {}, '|') .. '|' .. tostring(rank)
         for slot_id in info.slots:it() do
             local slot = SLOT_BY_ID[slot_id]
             if slot and not seen[slot .. '|' .. info.en] then
@@ -103,7 +107,7 @@ local function collect_items(slips)
                 local key = slot .. '#' .. copy
                 local entry = entry_of[key]
                 if not entry then
-                    entry = {name = info.en, id = info.id, augs = augs, where = {}, count = 0}
+                    entry = {name = info.en, id = info.id, augs = augs, rank = rank, where = {}, count = 0}
                     entry_of[key] = entry
                     owned[slot] = owned[slot] or {}
                     table.insert(owned[slot], entry)
@@ -120,7 +124,10 @@ local function collect_items(slips)
             local info = type(item) == 'table' and item.id and item.id > 0 and res.items[item.id]
             -- the augments are read for gear only: add() keeps nothing else, and decoding every potion and
             -- crystal of sixteen bags was a third of this stage
-            if info and info.slots and wearable(info) then add(info, copy_augments(item), BAG_NAMES[bag] or tostring(bag)) end
+            if info and info.slots and wearable(info) then
+                local augs, rank = copy_augments(item)
+                add(info, augs, BAG_NAMES[bag] or tostring(bag), rank)
+            end
         end
     end
     -- a slip keeps only items without augments

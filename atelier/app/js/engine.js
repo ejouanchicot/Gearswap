@@ -243,11 +243,33 @@ function ownCopy(slot, p){
   if (!(q.augs && q.augs.length) && sc && !sc.differ && sc.augments) q.augs = sc.augments;
   return q;
 }
-// Your copy's rank (//gs c gearscan, same path): without it the engine counts a rank item at its top rank
+// Your copy's rank: as the export read it in your bags (owned[slot][i].rank, shared/utils/atelier/atelier_export_char.lua:
+// up to date at each export, no //gs c gearscan needed), else what //gs c gearscan read (same path); without either the
+// engine counts a rank item at its top rank
 function ownRank(q){
+  if (q.rank == null) { const r = ownedRank(q); if (r != null) q.rank = r; }
   const sc = scanOf()[q.name];
   if (q.rank == null && sc && sc.rank != null && (q.augs || []).some(a => a === 'Path: ' + sc.path)) q.rank = sc.rank;
   return engineFill(q);
+}
+// The rank of your copies of a piece in the export, {name: [{path, rank}]} kept a page state; the copy on the piece's
+// path when it names one ('Path: A'), the highest rank of them (two copies: the better one is the one a set wears)
+let OWNED_RANK_MEMO = {key: null, map: {}};
+function ownedRank(q){
+  const key = DATA_GEN + '|' + S.char + '|' + S.job;
+  if (OWNED_RANK_MEMO.key !== key) {
+    const map = {};
+    for (const x of Object.values(ownedOf() || {}).flat()) if (x && x.rank != null) {
+      const path = ((x.augs || []).find(a => /^Path: /.test(a)) || '').slice(6);
+      (map[x.name] = map[x.name] || []).push({path, rank: x.rank});
+    }
+    OWNED_RANK_MEMO = {key, map};
+  }
+  const copies = OWNED_RANK_MEMO.map[q.name];
+  if (!copies) return null;
+  const want = ((q.augs || []).find(a => /^Path: /.test(a)) || '').slice(6);
+  const fit = copies.filter(c => !want || !c.path || c.path === want);
+  return fit.length ? Math.max(...fit.map(c => c.rank)) : null;
 }
 // What the game's description gives that the engine's catalogue lacks (Raetic Bangles' "M. Accuracy", a Haste it
 // left out): handed to the engine (atelier/opt.js gear: piece.fill), only for a stat it has none of
