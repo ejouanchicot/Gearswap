@@ -75,7 +75,10 @@ local function run_all() local n = 0 while #tasks > 0 and n < 5000 do n = n + 1 
 package.preload['resources'] = function() return {items = setmetatable({}, {__index = function(_, id)
     return {category = id < 400 and 'Armor' or 'General'} end})} end
 package.preload['shared/utils/messages/info_block'] = function() return {show = function(b) said[#said + 1] = b.title end} end
-package.preload['shared/utils/core/char_paths'] = function() return {writable = function() return os.tmpname() end} end
+-- one log file in %TEMP%, removed at the end (os.tmpname() on Windows left a new file at the root of the drive
+-- on every call: 75,687 of them on D:\ by 2026-11-14)
+local LOG = (os.getenv('TEMP') or '.') .. '/bag_mover_test.log'
+package.preload['shared/utils/core/char_paths'] = function() return {writable = function() return LOG end} end
 
 --- Every item of every bag, as one sorted line: what must be the same before and after.
 local function census()
@@ -300,4 +303,5 @@ check('every item is still there', census(), before)
 windower.ffxi.get_bag_info = info
 
 print(failed == 0 and '\nno item can be lost: every run leaves every item in a bag' or ('\n' .. failed .. ' check(s) failed'))
+os.remove(LOG)
 os.exit(failed == 0 and 0 or 1)

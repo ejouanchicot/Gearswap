@@ -97,6 +97,9 @@ local windower = {
     play_sound = function() end, get_mouse_position = function() return 0, 0 end,
     -- the Atelier switch on, so set_combine notes what each set inherits
     _atelier_on = true,
+    -- the character's trace stays shut: an export run here would fill their real trace.log
+    -- (39,000 lines and false freezes at Tetsouo on 2026-11-14)
+    _trace_log_on = false,
 }
 
 local function obj()
