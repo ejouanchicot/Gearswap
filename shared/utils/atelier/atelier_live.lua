@@ -544,6 +544,15 @@ function AtelierLive.start()
             client = live.server:accept()
         end
     end)
+    -- The addon going away (//lua unload or reload gearswap; a job change unregisters this first, refresh.lua):
+    -- the door is closed here, not left to Lua's collector tearing the state down. Both heap crashes at an unload
+    -- with this Windower (2026-11-12 15:43, 2026-11-13 07:43, Kaories, Atelier open) had LuaSocket's core.dll
+    -- just called on the crashing thread. Nothing else here: no file is written while the addon unloads.
+    windower.raw_register_event('unload', function()
+        local open = windower._atelier_live
+        if open and open.server then pcall(function() open.server:close() end) end
+        windower._atelier_live = nil
+    end)
     return live.port
 end
 
