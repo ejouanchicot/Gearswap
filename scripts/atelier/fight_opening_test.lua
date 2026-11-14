@@ -155,6 +155,18 @@ check('over: Full Circle had gone', at(FC), 0)
 check('over: no Bolster', at(BOL), nil)
 check('over: no opened', at(OPENED), nil)
 
+-- GearSwap loaded again during the opening (//gs reload, a subjob change): the fight let go, no `opened` sent for
+-- abilities that died with the old load (audit 2026-11-14 P3-5)
+fresh()
+pet = LUOPAN
+windower._load_gen = 1
+FO.open_fight('Tetsouo', 'aminon', 'bolster,bog,ea'); run(0.5)
+windower._load_gen = 2
+run(20)
+check('reloaded: no opened', at(OPENED), nil)
+check('reloaded: the fight let go', windower._geo_fight, nil)
+windower._load_gen = nil
+
 -- Bolster on recast: BoG, then EA once the bot's bubble is placed, 3.5 s after that spell
 fresh()
 recast['Bolster'] = 100

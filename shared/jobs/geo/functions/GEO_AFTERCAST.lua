@@ -49,11 +49,12 @@ function job_aftercast(spell, action, spellMap, eventArgs)
 
     -- When this character's last spell / ability ended: our queued abilities wait for a gap after it
     -- (shared/utils/precast/ability_queue.lua)
-    require('shared/utils/precast/ability_queue').note_end(spell)
+    -- (under pcall: an error in the queue or the opening leaves the rest of the aftercast to run)
+    pcall(function() require('shared/utils/precast/ability_queue').note_end(spell) end)
 
     -- A bubble placed: Ecliptic Attrition on it when the fight opening asked for it (logic/fight_opening.lua)
     if spell.skill == 'Geomancy' and spell.english and spell.english:find("^Geo%-") and not spell.interrupted then
-        require('shared/jobs/geo/functions/logic/fight_opening').on_bubble_placed()
+        pcall(function() require('shared/jobs/geo/functions/logic/fight_opening').on_bubble_placed() end)
     end
 
     -- Clear Entrust pending flag after Indi spell completes (buff consumed)

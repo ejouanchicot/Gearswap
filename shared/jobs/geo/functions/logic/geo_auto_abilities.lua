@@ -42,6 +42,18 @@ local REPLAY_WINDOW = 5
 --- A party member other than this character.
 --- @param target table spell.target
 --- @return boolean
+--- One call to the ability queue (shared/utils/precast/ability_queue.lua) under pcall: an error there leaves the
+--- spell and its recast to go as before (nil back), and says so in the trace.
+local function queue_call(method, ...)
+    local args = {...}
+    local ok, result = pcall(function() return AbilityHelper.queue()[method](unpack(args)) end)
+    if not ok then
+        pcall(function() require('shared/utils/debug/trace_log').log('JA', 'queue %s failed: %s', method, tostring(result)) end)
+        return nil
+    end
+    return result
+end
+
 local function is_ally(target)
     if not target or target.type == 'SELF' then return false end
     return (target.type == 'PLAYER' or target.type == 'NPC') and target.in_party == true
@@ -64,20 +76,19 @@ local function full_circle_first(spell, eventArgs)
         windower._geo_full_circle_replay = nil
         return false
     end
-    local Queue = AbilityHelper.queue()
     -- a Full Circle already waiting in the ability queue (Bolster came): that one goes, the bot casts again after
-    if Queue.queued('Full Circle') then
+    if queue_call('queued', 'Full Circle') then
         eventArgs.cancel = true
         return true
     end
     if not AbilityHelper.is_ability_ready('Full Circle') then return false end
     eventArgs.cancel = true
     send_command('input /ja "Full Circle" <me>')
-    Queue.sent_outside('Full Circle')
+    queue_call('sent_outside', 'Full Circle')
     local cast = ('input /ma "%s" %s'):format(spell.english, spell.target.id)
     windower._geo_full_circle_replay = {spell = spell.english, expires = os.clock() + REPLAY_WINDOW}
     coroutine.schedule(function()
-        Queue.allow_next(spell.english)
+        queue_call('allow_next', spell.english)
         send_command(cast)
     end, FULL_CIRCLE_DELAY)
     return true
@@ -120,7 +131,7 @@ local function compass_first(spell, eventArgs)
     end
     eventArgs.cancel = true
     send_command('input /ja "Widened Compass" <me>')
-    AbilityHelper.queue().sent_outside('Widened Compass')
+    queue_call('sent_outside', 'Widened Compass')
     local state = {expires = os.clock() + COMPASS_GUARD, replay = false}
     windower._geo_compass_wait = state
     local cast = ('input /ma "%s" %s'):format(spell.english, target.id)
@@ -128,7 +139,7 @@ local function compass_first(spell, eventArgs)
         if windower._geo_compass_wait ~= state then return end
         state.replay = true
         state.expires = os.clock() + COMPASS_GUARD
-        AbilityHelper.queue().allow_next(spell.english)
+        queue_call('allow_next', spell.english)
         send_command(cast)
     end, COMPASS_WAIT)
     return true

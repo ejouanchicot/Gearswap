@@ -81,5 +81,13 @@ fc_queued = 'Full Circle'
 check('a Full Circle waiting in the queue: Geo- cancelled', cast())
 check('  no second Full Circle sent', count('input /ja "Full Circle" <me>') == 0)
 
+-- the ability queue in error: Full Circle and the Geo-'s recast still go (geo_auto_abilities.lua queue_call)
+package.loaded['shared/utils/precast/ability_helper'].queue = function() error('queue broken') end
+windower._geo_full_circle_replay, sent, later, fc_queued = nil, {}, nil, nil
+check('queue broken: Geo- cancelled for Full Circle all the same', cast())
+check('  Full Circle sent', count('input /ja "Full Circle" <me>') == 1)
+if later then later() end
+check('  the Geo- recast after it', count('input /ma "Geo-Gravity" 77') == 1)
+
 print(fails == 0 and 'ALL OK' or (fails .. ' FAILED'))
 os.exit(fails == 0 and 0 or 1)

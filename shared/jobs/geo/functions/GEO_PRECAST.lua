@@ -99,8 +99,9 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- One of our queued abilities just went: the bot's spell is held back 1.5 s so it does not cut it, never Stun
-    -- (shared/utils/precast/ability_queue.lua)
-    if require('shared/utils/precast/ability_queue').hold_check(spell, eventArgs) then
+    -- (shared/utils/precast/ability_queue.lua). Under pcall: an error in the queue lets the spell go, never blocks it
+    local ok_q, held = pcall(function() return require('shared/utils/precast/ability_queue').hold_check(spell, eventArgs) end)
+    if ok_q and held then
         return
     end
 

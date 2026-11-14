@@ -277,7 +277,8 @@ function job_self_command(cmdParams, eventArgs)
             coroutine.schedule(function()
                 if windower._geo_last_indi ~= indi then
                     -- ours: not held back after an ability (shared/utils/precast/ability_queue.lua)
-                    require('shared/utils/precast/ability_queue').allow_next(indi)
+                    -- (under pcall: the Indi- goes even when the queue errs)
+                    pcall(function() require('shared/utils/precast/ability_queue').allow_next(indi) end)
                     send_command('input /ma "' .. indi .. '" <me>')
                 end
             end, tonumber(cmdParams[3]) or INDI_ENSURE_WAIT)

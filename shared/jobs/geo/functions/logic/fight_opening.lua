@@ -125,6 +125,18 @@ local function run_steps(st, steps, ea_after)
     windower._geo_ea_after = ea_after and (os.clock() + EA_AFTER_WINDOW) or nil
 end
 
+--- GearSwap loaded again since the fight began (a //gs reload, a subjob change): its queued abilities died with the
+--- old load and nothing re-arms the watch; the fight is let go, said in the trace (audit 2026-11-14 P3-5: `opened`
+--- went anyway and windower._geo_fight stayed set). The leader loads its fight profile at 15 s all the same.
+local function reloaded(st)
+    if windower._load_gen == st.load_gen then return false end
+    if windower._geo_fight == st then
+        trace('%s: fight opening dropped: GearSwap loaded again', st.key)
+        windower._geo_fight, windower._geo_ea_after = nil, nil
+    end
+    return true
+end
+
 local function any_queued(steps)
     for _, ability in ipairs(steps) do
         if queue().queued(ability) then return true end
@@ -134,7 +146,7 @@ end
 
 --- `opened` once none of the opening's abilities waits any more (or after OPEN_MAX).
 local function answer_when_through(st, steps, ea_after, until_)
-    if windower._geo_fight ~= st or not st.opening then return end
+    if reloaded(st) or windower._geo_fight ~= st or not st.opening then return end
     if any_queued(steps) and os.clock() < until_ then
         coroutine.schedule(function() answer_when_through(st, steps, ea_after, until_) end, OPEN_LOOK)
         return
@@ -182,7 +194,7 @@ local function on_given_back(st, ability)
 end
 
 local function watch(st)
-    if windower._geo_fight ~= st or windower._load_gen ~= st.load_gen then return end
+    if reloaded(st) or windower._geo_fight ~= st then return end
     if os.clock() > st.watch_until then
         trace('%s: no longer watched (%d min)', st.key, WATCH_MAX / 60)
         windower._geo_fight = nil

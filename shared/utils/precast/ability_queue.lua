@@ -25,6 +25,10 @@
 --- do not: their checks belong to the load that queued them, and a newer load
 --- drops them (windower._load_gen).
 ---
+--- GEO only for now: note_end and hold_check are called from GEO_AFTERCAST.lua and
+--- GEO_PRECAST.lua alone. Another job queueing an ability would see no spell end
+--- (busy() blind to its spells): call both from its aftercast / precast first.
+---
 --- @file    shared/utils/precast/ability_queue.lua
 --- @author  ejouanchicot
 --- @version 1.0
