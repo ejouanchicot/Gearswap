@@ -264,17 +264,6 @@ local function load_profile(cfg, profile, indi, follow, behind)
     set_profile_indi(indi)
 end
 
---- A target with a `prep` profile, once the fight starts (`sortie <target>
---- fight`, sent by the trigger of the prep profile: SORTIE_CONFIG.lua). The
---- alt is stopped (the prep profile would cast its Geo- again), dismisses
---- the prep luopan (a profile never casts a Geo- while one is out), then
---- loads the fight profile like any other load, once Full Circle has gone
---- through (sent with it, the spell is refused). A target's `fight_ja` (Bolster, Blaze of Glory) go out one by one
---- in between, with the bot still off: its first Geo- then carries them (Aminon, asked 2026-11-13).
---- `full_circle = false`: no Full Circle, the abilities go at once (a prep that never puts a luopan up, as Aminon's:
---- the player, 2026-11-13). This character's stance is left as it is.
---- @param cfg table Sortie config
---- @param target table Entry of cfg.targets
 --- The fight under way (from `<target> fight` to its profile load), on `windower`: the alt's answers come through
 --- commands, maybe after a GearSwap load. Any other //gs c sortie order drops it (2026-11-13: `triboulex` pressed
 --- after a wrong `aminon fight` did not stop it, and Bolster went on Triboulex).
@@ -340,6 +329,18 @@ end
 --- Seconds the fight waits for the alt's `placed` before going on anyway (its own wait is 12 s).
 local PLACED_WAIT = 14
 
+--- A target with a `prep` profile, once the fight starts (`sortie <target>
+--- fight`, sent by the trigger of the prep profile: SORTIE_CONFIG.lua). The
+--- alt is stopped (the prep profile would cast its Geo- again), dismisses
+--- the prep luopan (a profile never casts a Geo- while one is out), then
+--- loads the fight profile like any other load, once Full Circle has gone
+--- through (sent with it, the spell is refused). A target's `fight_ja` (Bolster, Blaze of Glory) go out one by one
+--- in between, with the bot still off: its first Geo- then carries them (Aminon, asked 2026-11-13).
+--- `full_circle = false`: no Full Circle, the abilities go at once (a prep that never puts a luopan up, as Aminon's:
+--- the player, 2026-11-13). This character's stance is left as it is.
+--- @param cfg table Sortie config
+--- @param target table Entry of cfg.targets
+---
 --- The fight, placement first when the target has `behind` and `mob`: the alt, bot and follow off, walks behind
 --- that monster (//gs c behind first, shared/jobs/geo/functions/logic/stand_behind.lua) and answers
 --- `sortie <target> placed`; only then the rest goes (continue_fight). Pending on `windower`: the answer comes
@@ -393,6 +394,7 @@ end
 --- @param cfg table Sortie config
 --- @param name string Target as typed
 --- @param phase string|nil 'fight', or nil
+--- @param force boolean|nil true: the boss check skipped (`//gs c sortie <target> force`)
 --- @return boolean handled
 local function engage_target(cfg, name, phase, force)
     local key = (cfg.aliases or {})[name] or name
@@ -526,8 +528,8 @@ function SortieCommands.handle(args)
     end
     -- the fight under way is dropped by an escort or another target (engage_target, after its boss check); an
     -- order (judgment, fullcircle...) leaves it going
-    if sub == 'escort' then cancel_fight(cfg) end
     if sub == 'escort' then
+        cancel_fight(cfg)
         return escort(cfg, rest)
     elseif orders[sub] then
         local order = orders[sub]
