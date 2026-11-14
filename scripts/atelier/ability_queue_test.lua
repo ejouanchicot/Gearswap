@@ -171,6 +171,29 @@ check('hold: allow_next goes', (try('Geo-Frailty')), false)
 check('hold: allow_next only once', (try('Geo-Frailty')), true)
 now = 1.6
 check('hold over at 1.5 s', (try('Absorb-TP')), false)
+-- a Cure held is sent again after the hold, once, on its target; not when a spell is already under way
+fresh()
+Q.queue('Bolster'); run(0.5)
+local function cure(name)
+    return Q.hold_check({action_type = 'Magic', english = name, target = {id = 17000123, name = 'Tetsouo'}}, {})
+end
+check('cure: held', cure('Cure IV'), true)
+check('cure: held again (bot spam)', cure('Cure IV'), true)
+check('cure: Absorb-TP held, not sent again', (try('Absorb-TP')), true)
+run(3)
+local CURE = 'input /ma "Cure IV" 17000123'
+check('cure: sent again once', count(CURE), 1)
+check('cure: just after the hold', at(CURE), 1.6)
+check('cure: no other spell sent again', #sent, 2)
+check('cure: let through the hold', (try('Cure IV')), false)
+fresh()
+Q.queue('Bolster'); run(0.5)
+cure('Curaga II')
+casting = true
+run(3)
+check('cure: bot sent it again first: not sent', count('input /ma "Curaga II" 17000123'), 0)
+casting = false
+
 -- sent outside the queue (a precast chain) holds the same way
 fresh()
 Q.sent_outside('Widened Compass')

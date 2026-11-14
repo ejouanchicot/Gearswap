@@ -112,10 +112,13 @@ p = plan(ALL, {bolster_up = true, bog_ready = false, luopan = true})
 check('under Bolster, luopan from before, BoG on recast: Full Circle', p, 'Full Circle')
 p = plan(ALL, {bolster_up = true, bog_ready = true, ea_ready = true})
 check('under Bolster, no luopan: BoG', p, 'Blaze of Glory')
+-- Ecliptic Attrition only on a Blaze of Glory luopan (the player, 2026-11-14)
+p, ea = plan(ALL, {ea_ready = true, luopan = true, luopan_bog = true})
+check('nothing but EA, BoG luopan out: EA now', p, 'Ecliptic Attrition')
 p, ea = plan(ALL, {ea_ready = true, luopan = true})
-check('nothing but EA, luopan out: EA now', p, 'Ecliptic Attrition')
+check('nothing but EA, luopan without BoG: nothing', p, '') check('  no EA after', ea, false)
 p, ea = plan(ALL, {ea_ready = true})
-check('nothing but EA, no luopan: none now', p, '') check('  EA after the bubble', ea, true)
+check('nothing but EA, no luopan: nothing', p, '') check('  no EA after', ea, false)
 p = plan({bog = true, ea = true}, {bolster_ready = true, bog_ready = true, ea_ready = true})
 check('Bolster not listed (Leech): no Bolster', p, 'Blaze of Glory')
 
@@ -215,6 +218,16 @@ Queue.note_end({action_type = 'Magic'})
 FO.on_bubble_placed()
 run(30)
 check('no luopan within 5 s: no EA', at(EA), nil)
+FO.fight_end(); run()
+
+-- the BoG before it refused: the bubble has none, no EA on it
+fresh()
+recast['Bolster'] = 100
+refuse["Blaze of Glory"] = 9
+FO.open_fight('Tetsouo', 'aminon', 'bolster,bog,ea'); run(14)
+now = 15
+bubble(); run(30)
+check('bubble without BoG: no EA', at(EA), nil)
 FO.fight_end(); run()
 
 -- placed too late (after 45 s): no EA

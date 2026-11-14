@@ -17,8 +17,9 @@
 ---   Bolster not ready,
 ---     Blaze of Glory ready -> [Full Circle if a luopan is out], Blaze of Glory,
 ---                            then Ecliptic Attrition once the bot's bubble is placed
----     neither             -> Ecliptic Attrition: now on a luopan out, else once
----                            the bot's bubble is placed
+---     neither             -> Ecliptic Attrition only on a luopan out placed with
+---                            Blaze of Glory; else nothing (it waits for the next
+---                            Blaze of Glory: the player's choice, 2026-11-14)
 --- Then `send <leader> gs c sortie <target> opened`.
 ---
 --- Until //gs c fightend (or fightopen off), the recasts are watched: one that
@@ -33,7 +34,7 @@
 ---
 --- @file    shared/jobs/geo/functions/logic/fight_opening.lua
 --- @author  ejouanchicot
---- @version 1.0
+--- @version 1.1 - Ecliptic Attrition only on a Blaze of Glory luopan
 --- @date    Created: 2026-11-14 (moved out of bolster_follow.lua)
 ---============================================================================
 
@@ -76,7 +77,7 @@ local DONE = {
 
 --- The opening for this state (pure: tested in scripts/atelier/fight_opening_test.lua).
 --- @param allow table {bolster, bog, ea = bool}: what the target lists
---- @param s table {bolster_up, bolster_ready, bog_ready, ea_ready, luopan, bubble_bolster = bool}
+--- @param s table {bolster_up, bolster_ready, bog_ready, ea_ready, luopan, luopan_bog, bubble_bolster = bool}
 --- @return table steps Ability names in order
 --- @return boolean ea_after Ecliptic Attrition once the next bubble is placed
 function FightOpening.plan(allow, s)
@@ -98,17 +99,16 @@ function FightOpening.plan(allow, s)
         steps[#steps + 1] = 'Blaze of Glory'
         return steps, allow.ea == true and s.ea_ready == true
     end
-    if allow.ea and s.ea_ready then
-        if s.luopan then return {'Ecliptic Attrition'}, false end
-        return steps, true
-    end
+    -- Ecliptic Attrition never on a luopan without Blaze of Glory: kept for the next one (the player, 2026-11-14)
+    if allow.ea and s.ea_ready and s.luopan and s.luopan_bog then return {'Ecliptic Attrition'}, false end
     return steps, false
 end
 
 local function current_state()
     local ready = AbilityHelper.is_ability_ready
     return {bolster_up = BF.bolster_up(), bolster_ready = ready('Bolster'), bog_ready = ready('Blaze of Glory'),
-        ea_ready = ready('Ecliptic Attrition'), luopan = BF.luopan_out(), bubble_bolster = BF.placed_under_bolster()}
+        ea_ready = ready('Ecliptic Attrition'), luopan = BF.luopan_out(), luopan_bog = BF.placed_with_bog(),
+        bubble_bolster = BF.placed_under_bolster()}
 end
 
 --- Queue these steps for the fight `st`; Ecliptic Attrition after the next bubble when asked.
@@ -243,6 +243,11 @@ function FightOpening.on_bubble_placed()
     if not until_ then return end
     windower._geo_ea_after = nil
     if os.clock() > until_ then return end
+    -- the Blaze of Glory before it refused: this bubble has none, Ecliptic Attrition waits for the next one
+    if not BF.placed_with_bog() then
+        trace('bubble placed without Blaze of Glory: no Ecliptic Attrition')
+        return
+    end
     trace('bubble placed: Ecliptic Attrition')
     local since = os.clock()
     queue().queue('Ecliptic Attrition', {

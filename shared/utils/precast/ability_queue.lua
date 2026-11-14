@@ -19,6 +19,9 @@
 ---                         precast is cancelled (the bot sends it again), so it
 ---                         does not cut ours. Never Stun, never a spell let
 ---                         through by allow_next (this code's own recasts).
+---                         A Cure held back is sent again once the hold is over,
+---                         unless a spell is already under way (the bot sent it
+---                         again itself): the player's choice, 2026-11-14.
 ---   note_end(spell)       From the aftercast: when a spell / an ability ended.
 ---
 --- Times live on `windower` (they outlive a GearSwap load); the queued abilities
@@ -31,7 +34,7 @@
 ---
 --- @file    shared/utils/precast/ability_queue.lua
 --- @author  ejouanchicot
---- @version 1.0
+--- @version 1.1 - a Cure held back is sent again after the hold
 --- @date    Created: 2026-11-14
 ---============================================================================
 
@@ -52,6 +55,13 @@ local RANK = {['Full Circle'] = 1, ['Bolster'] = 2, ['Blaze of Glory'] = 3, ['Wi
 
 --- Spells never held back.
 local NEVER_HELD = {['Stun'] = true}
+local AGAIN_AFTER = 0.1    -- a held Cure goes this long after the hold ends
+
+--- A held spell sent again after the hold: the Cures (Cure, Cura, Curaga). A bot may judge the HP high enough by
+--- then and never send it again; one cast by hand on the alt would be lost.
+local function sent_again_after_hold(spell)
+    return tostring(spell.english):find('^Cur') ~= nil
+end
 
 local items = {}          -- this load's queue
 local running = false
@@ -214,7 +224,26 @@ function AbilityQueue.allow_next(spell_name)
     windower._jaq_allow = {spell = spell_name, expires = now() + ALLOW_FOR}
 end
 
---- Precast: a spell inside the hold after one of our abilities is cancelled (the bot sends it again).
+--- The held Cure once the hold is over: let through and sent on the same target, unless a spell is already
+--- under way (the bot sent it again itself). Target by id, no brackets (raw ids in send_command).
+local function send_again(spell, hold_until)
+    local name = spell.english
+    local target = spell.target and (spell.target.id or spell.target.name)
+    if not target then return end
+    coroutine.schedule(function()
+        local casting = rawget(_G, 'midaction')
+        if casting and casting() then
+            trace('%s not sent again: a spell is already under way', name)
+            return
+        end
+        AbilityQueue.allow_next(name)
+        trace('%s sent again after the hold', name)
+        send_command(('input /ma "%s" %s'):format(name, tostring(target)))
+    end, math.max(0, hold_until - now()) + AGAIN_AFTER)
+end
+
+--- Precast: a spell inside the hold after one of our abilities is cancelled (the bot sends it again; a Cure is
+--- sent again by this code too, see send_again).
 --- @param spell table GearSwap spell
 --- @param eventArgs table
 --- @return boolean True when cancelled
@@ -234,6 +263,8 @@ function AbilityQueue.hold_check(spell, eventArgs)
     if logged[spell.english] ~= windower._jaq_hold_until then
         logged[spell.english] = windower._jaq_hold_until
         trace('%s held back (%.1f s left)', tostring(spell.english), windower._jaq_hold_until - t)
+        -- once per spell and hold, as the trace: a bot spamming it gets one send again
+        if sent_again_after_hold(spell) then send_again(spell, windower._jaq_hold_until) end
     end
     return true
 end

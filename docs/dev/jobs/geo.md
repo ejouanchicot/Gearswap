@@ -199,6 +199,8 @@ flowchart TD
   dropped when `wanted` stops holding, on recast, or after 20 s. For 1.5 s after one of
   ours (`windower._jaq_hold_until`), `hold_check` (in `GEO_PRECAST`, after the
   CooldownChecker) cancels the spells reaching the precast: the bot sends them again.
+  A Cure (Cure, Cura, Curaga) held back is also sent again by the queue 0.1 s after the
+  hold, on its target's id, unless a spell is under way by then (the bot sent it first).
   Never Stun, never a spell let through by `allow_next` (the recasts of
   `geo_auto_abilities`, `indiensure`). `geo_full_circle` and Widened Compass still send
   their ability at once from the precast, and tell the queue (`sent_outside`).
@@ -218,7 +220,10 @@ flowchart TD
   Full Circle and Blaze of Glory on a luopan from before it, Blaze of Glory with none,
   nothing on a luopan placed under it; Bolster ready, [Full Circle], Bolster, Blaze of
   Glory; else Blaze of Glory ([Full Circle] first) then Ecliptic Attrition after the
-  bot's bubble (`on_bubble_placed`, within 45 s); else Ecliptic Attrition. `opened` goes
+  bot's bubble (`on_bubble_placed`, within 45 s, and only if that bubble went out with
+  Blaze of Glory); else Ecliptic Attrition only on a luopan out placed with Blaze of
+  Glory, nothing otherwise (kept for the next Blaze of Glory, the player's choice,
+  2026-11-14). `opened` goes
   back once none of them waits in the queue (13 s at most). Until `//gs c fightend`
   (or `fightopen off`), the Bolster and Blaze of Glory recasts are read every 2 s: one
   above 5 s that reads 0 the next time was given back by a COR. Bolster (Wild Card):
