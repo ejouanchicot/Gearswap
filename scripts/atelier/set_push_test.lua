@@ -48,8 +48,8 @@ local SetPush = require('shared/utils/atelier/set_push')
 -- the line the set's ring1 / ring2 is written with in the preview
 local function rings(r)
     local after = r.after or ''
-    return (after:match('ring1%s*=%s*([^,\n]+)') or 'none'):gsub('%s+$', ''),
-        (after:match('ring2%s*=%s*([^,\n]+)') or 'none'):gsub('%s+$', '')
+    return (after:match('ring1%s*=%s*([^,}\n]+)') or 'none'):gsub('%s+$', ''),
+        (after:match('ring2%s*=%s*([^,}\n]+)') or 'none'):gsub('%s+$', '')
 end
 
 for _, loaded in ipairs({false, true}) do
@@ -72,6 +72,37 @@ for _, loaded in ipairs({false, true}) do
     check(tag .. 'a ring named once: ring1 by its name', e, "'Shneddick Ring +1'")
     check(tag .. 'a ring named once: ring2 by its name', g, "'Shneddick Ring +1'")
 end
+
+-- one slot of the pair pushed, the other already holding a copy of that ring (2026-11-07, WAR NaeglingKC.Group:
+-- ring2 alone pushed, written Acc.MoonlightRing1 next to the set's ring1 = Acc.MoonlightRing1; 16 such sets)
+local template = JobAdder.empty_sets(read('_master/sets/pld_sets.lua'))
+local function with_idle(body)
+    local t = template:gsub('\nsets%.idle = {}\n', '\nsets.idle = ' .. body .. '\n', 1)
+    local w = io.open(sets_dir .. 'pld_sets.lua', 'wb'); w:write(t); w:close()
+end
+for _, loaded in ipairs({false, true}) do
+    player.main_job = loaded and 'PLD' or 'WAR'
+    sets = loaded and {idle = {}, engaged = {}} or nil
+    local tag = loaded and 'job loaded: ' or 'job not loaded: '
+    with_idle('{ring1 = ChirichRing1}')
+    local _, b = rings(SetPush.preview('PLD', 'sets.idle\nring2\tone\tChirich Ring +1'))
+    check(tag .. 'ring2 alone next to ring1 = ChirichRing1: the other copy', b, 'ChirichRing2')
+    with_idle('{ring1 = ChirichRing2}')
+    _, b = rings(SetPush.preview('PLD', 'sets.idle\nring2\tone\tChirich Ring +1'))
+    check(tag .. 'ring2 alone next to ring1 = ChirichRing2: the other copy', b, 'ChirichRing1')
+    with_idle('{ring2 = ChirichRing1}')
+    local a = rings(SetPush.preview('PLD', 'sets.idle\nring1\tone\tChirich Ring +1'))
+    check(tag .. 'ring1 alone next to ring2 = ChirichRing1: the other copy', a, 'ChirichRing2')
+    with_idle('{ring1 = StikiRing1}')
+    _, b = rings(SetPush.preview('PLD', 'sets.idle\nring2\tone\tChirich Ring +1'))
+    check(tag .. 'ring2 alone next to another ring: unchanged', b, 'ChirichRing1')
+end
+-- the job loaded, ring1 not written in the set's own table (it comes from its base): read from the set in memory
+player.main_job = 'PLD'
+with_idle('{}')
+sets = {idle = {left_ring = {name = 'Chirich Ring +1', bag = 'wardrobe 1'}}, engaged = {}}
+local _, b = rings(SetPush.preview('PLD', 'sets.idle\nring2\tone\tChirich Ring +1'))
+check('job loaded: ring1 inherited (wardrobe 1), ring2 alone: the other copy', b, 'ChirichRing2')
 
 os.execute('rmdir /s /q "' .. win(root) .. '" 2>nul')
 print(('%d checks, %d failed'):format(done, failed))

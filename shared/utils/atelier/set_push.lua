@@ -183,9 +183,13 @@ local function piece_key(value)
     return value.name .. '|' .. table.concat(type(value.augments) == 'table' and value.augments or {}, '|')
 end
 
-local function note(by_copy, by_name, value, expr, all)
+local function note(by_copy, by_name, value, expr, all, copies)
     local key = piece_key(value)
     if not key then return end
+    if copies and not copies[expr] then
+        copies[expr] = {name = type(value) == 'table' and value.name or value,
+            bag = type(value) == 'table' and type(value.bag) == 'string' and value.bag:lower() or nil}
+    end
     if not by_copy[key] then by_copy[key] = expr end
     if all then
         all[key] = all[key] or {}
@@ -200,7 +204,7 @@ end
 
 --- The pieces of the gear modules the file requires (`local Armor = require('.../armor')`),
 --- through the names the file gives them (`local Nyame = Armor.Nyame` -> Nyame.feet_b).
-local function module_pieces(text, by_copy, by_name, all)
+local function module_pieces(text, by_copy, by_name, all, copies)
     local modules = {}
     for name, mod in text:gmatch('local%s+([%a_][%w_]*)%s*=%s*require%s*%(?%s*[\'"]([^\'"]+)[\'"]') do
         local ok, m = pcall(require, mod)
@@ -212,7 +216,7 @@ local function module_pieces(text, by_copy, by_name, all)
         table.sort(keys)
         for _, k in ipairs(keys) do
             local v = tbl[k]
-            if type(v) == 'table' and type(v.name) == 'string' then note(by_copy, by_name, v, prefix .. '.' .. k, all) end
+            if type(v) == 'table' and type(v.name) == 'string' then note(by_copy, by_name, v, prefix .. '.' .. k, all, copies) end
         end
     end
     for alias, root, field in text:gmatch('local%s+([%a_][%w_]*)%s*=%s*([%a_][%w_]*)%.([%a_][%w_]*)') do
@@ -232,19 +236,20 @@ local function text_piece(tbl)
     if not name then return nil end
     local augs, list = {}, tbl:match('augments%s*=%s*(%b{})')
     for _, a in (list or ''):gmatch([[(['"])(.-)%1]]) do augs[#augs + 1] = a end
-    return {name = name, augments = augs}
+    local _, bag = tbl:match([[bag%s*=%s*(['"])(.-)%1]])
+    return {name = name, augments = augs, bag = bag}
 end
 
 --- The pieces the file itself defines (`local SouvHead = {name = ...}`, `Cichol.da = {name = ...}`), read from its text:
 --- a job the game has not loaded has no sets in memory to tell what each variable holds.
-local function text_pieces(text, by_copy, by_name, all)
+local function text_pieces(text, by_copy, by_name, all, copies)
     for var, tbl in text:gmatch('\n%s*local%s+([%a_][%w_]*)%s*=%s*(%b{})') do
         local p = text_piece(tbl)
-        if p then note(by_copy, by_name, p, var, all) end
+        if p then note(by_copy, by_name, p, var, all, copies) end
     end
     for var, key, tbl in text:gmatch('\n%s*([%a_][%w_]*)%.([%a_][%w_]*)%s*=%s*(%b{})') do
         local p = var ~= 'sets' and text_piece(tbl)
-        if p then note(by_copy, by_name, p, var .. '.' .. key, all) end
+        if p then note(by_copy, by_name, p, var .. '.' .. key, all, copies) end
     end
 end
 
@@ -252,11 +257,12 @@ end
 --- without augments; then the pieces of its gear modules and the ones the file defines (read from its text).
 --- loaded: the job is the one in memory, its sets also tell what each variable they use holds (that wins).
 --- Third: {copy key = every name the file has for it}, for the two copies of a ring kept apart by their bag.
+--- Fourth: {name = {name, bag}}: what each name holds (bag lowercase, nil when not pinned).
 local function variables(text, loaded)
-    local by_copy, by_name, all = {}, {}, {}
-    module_pieces(text, by_copy, by_name, all)
-    text_pieces(text, by_copy, by_name, all)
-    if not loaded then return by_copy, by_name, all end
+    local by_copy, by_name, all, copies = {}, {}, {}, {}
+    module_pieces(text, by_copy, by_name, all, copies)
+    text_pieces(text, by_copy, by_name, all, copies)
+    if not loaded then return by_copy, by_name, all, copies end
     local used_copy, used_name = {}, {}
     for _, def in ipairs(SetWriter.definitions(text)) do
         for _, e in ipairs(def.entries) do
@@ -264,14 +270,14 @@ local function variables(text, loaded)
             -- another set's piece (sets.Cure.left_ear) only exists below that set's definition: written into a
             -- set above it, the file stops loading (PLD FC.CureSelf, 2026-10-06); the piece is written plainly
             if expr and expr:match('^[%a_][%w_]*[%.%[][%w_%.%[%]\'"]*$') and expr ~= 'empty' and not expr:match('^sets[%.%[]') then
-                note(used_copy, used_name, loaded_piece(def.keys, e.slot), expr, all)
+                note(used_copy, used_name, loaded_piece(def.keys, e.slot), expr, all, copies)
             end
         end
     end
     -- what the sets already write wins over the modules' other names for the same piece
     for k, v in pairs(used_copy) do by_copy[k] = v end
     for k, v in pairs(used_name) do by_name[k] = v end
-    return by_copy, by_name, all
+    return by_copy, by_name, all, copies
 end
 
 --- The request body as {path, slots = {slot = {kind, name, augs}}}.
@@ -298,12 +304,31 @@ local function parse_body(body)
     return req
 end
 
--- The slots of a pair (SetWriter.ORDER names), the second one by the first
-local PAIRS = {ear2 = 'ear1', ring2 = 'ring1'}
+-- The slots of a pair (SetWriter.ORDER names), each with the other one: the second slot first, so that when both are
+-- asked it is the one that takes the other copy
+local PAIRS = {{'ear2', 'ear1'}, {'ring2', 'ring1'}, {'ear1', 'ear2'}, {'ring1', 'ring2'}}
+
+--- What a set already holds in a slot, for the pair check of changes_of: {expr} when its table writes the slot
+--- (def: the set's own definition), else {name, bag} from the set the game loaded (keys: inherited from its base
+--- too); nil when not known (a job not loaded, the slot from a base).
+local function holder(text, def, keys, loaded)
+    return function(slot)
+        for _, e in ipairs(def and def.entries or {}) do
+            if e.slot == slot then return {expr = text:sub(e.expr_from, e.expr_to)} end
+        end
+        local v = loaded and keys and loaded_piece(keys, slot)
+        if type(v) == 'table' and type(v.name) == 'string' then
+            return {name = v.name, bag = type(v.bag) == 'string' and v.bag:lower() or nil}
+        end
+        if type(v) == 'string' then return {name = v} end
+        return nil
+    end
+end
 
 --- {slot = expr | false} for SetWriter.edit.
-local function changes_of(req, text, loaded)
-    local by_copy, by_name, all = variables(text, loaded)
+--- held: holder() of the set written (or of its base for a new one), nil when not known
+local function changes_of(req, text, loaded, held)
+    local by_copy, by_name, all, copies = variables(text, loaded)
     local out = {}
     for slot, p in pairs(req.slots) do
         if p.kind == 'inherit' then out[slot] = false
@@ -316,12 +341,31 @@ local function changes_of(req, text, loaded)
     end
     -- the same piece in both slots of a pair, the file naming its copies apart (ChirichRing1 in wardrobe 1,
     -- ChirichRing2 in wardrobe 2): one name for both asked twice for the copy of one bag, and the game equipped
-    -- one ring; the second slot takes the file's other name for that piece
-    for second, first in pairs(PAIRS) do
-        local p = req.slots[second]
-        if p and out[second] and out[second] == out[first] and p.name and p.name ~= '' then
-            for _, expr in ipairs(all[p.name .. '|' .. table.concat(p.augs, '|')] or {}) do
-                if expr ~= out[first] then out[second] = expr break end
+    -- one ring (2026-10-31). The other slot is the one asked with it, else the one the set already holds: a push of
+    -- ring2 alone wrote Acc.MoonlightRing1 next to the set's own ring1 = Acc.MoonlightRing1 (WAR NaeglingKC.Group,
+    -- 2026-11-07; 16 sets of Tetsouo and Kaories). The slot asked takes the file's other name for that piece
+    for _, pair in ipairs(PAIRS) do
+        local slot, other = pair[1], pair[2]
+        local p, mine = req.slots[slot], out[slot]
+        if p and mine and p.name and p.name ~= '' then
+            local o
+            if req.slots[other] then o = out[other] and {expr = out[other]} or nil
+            elseif held then o = held(other) end
+            if o and o.expr then
+                local c = copies[o.expr]
+                o.name, o.bag = o.name or (c and c.name), o.bag or (c and c.bag)
+            end
+            local c = copies[mine]
+            local same = o and (o.expr == mine
+                or (c and c.bag and o.bag and o.name == p.name and c.bag == o.bag))
+            if same then
+                for _, expr in ipairs(all[p.name .. '|' .. table.concat(p.augs, '|')] or {}) do
+                    local e = copies[expr]
+                    if expr ~= mine and expr ~= o.expr and not (e and e.bag and o.bag and e.bag == o.bag) then
+                        out[slot] = expr
+                        break
+                    end
+                end
             end
         end
     end
@@ -435,7 +479,7 @@ local function create_new(job, req, keys, loaded)
         if text and parent_ok and base_ok then
             local base_path = base_keys and (bdef and SetWriter.spelling(text, bdef) or path_string(base_keys)) or nil
             local out, done, nkeys = SetWriter.create_at(text, place(text, keys, pdef, parent, bdef), path_string(keys),
-                base_path, keys, changes_of(req, text, loaded))
+                base_path, keys, changes_of(req, text, loaded, holder(text, bdef, base_keys, loaded)))
             return file, text, out, done, nil, nkeys
         end
     end
@@ -450,7 +494,7 @@ local function rewrite(job, req)
     if abs then
         -- "+ Set" names a set the file writes already: open it in the page instead
         if req.create then return nil, 'exists' end
-        local out, done = SetWriter.edit(text, def, changes_of(req, text, loaded))
+        local out, done = SetWriter.edit(text, def, changes_of(req, text, loaded, holder(text, def, def.keys or keys, loaded)))
         return abs, text, out, done, def, def.keys
     end
     if req.create then return create_new(job, req, keys, loaded) end
@@ -468,10 +512,10 @@ local function rewrite(job, req)
             while d.keys and d.keys[n + 1] and d.keys[n + 1] == keys[n + 1] do n = n + 1 end
             if d.keys and n >= best and n > 0 then closest, best = d, n end
         end
-        local out, done, nkeys = SetWriter.create_plain(ftext, closest, path_string(keys), keys, changes_of(req, ftext, loaded))
+        local out, done, nkeys = SetWriter.create_plain(ftext, closest, path_string(keys), keys, changes_of(req, ftext, loaded, holder(ftext, nil, keys, loaded)))
         return file, ftext, out, done, nil, nkeys
     end
-    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext, loaded), after)
+    local out, done = SetWriter.create(btext, base, name, changes_of(req, btext, loaded, holder(btext, base, base.keys, loaded)), after)
     return babs, btext, out, done, nil, keys
 end
 

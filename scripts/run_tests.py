@@ -97,7 +97,8 @@ def read_cache():
 
 
 # A test that needs an argument to know what it tests
-ARGS = {'scripts/audit/test_automove_cast.lua': ['shared/utils/movement/automove.lua'],
+ARGS = {'scripts/check_same_copy.lua': ['Tetsouo', 'Kaories'],
+        'scripts/audit/test_automove_cast.lua': ['shared/utils/movement/automove.lua'],
         # every character's jobs with 2 subjobs each; the whole sweep and the broken files: run it by hand
         'scripts/loadcheck/check_load.py': ['--quick', '--no-inject']}
 # Not tests: a tool (fight_run_check plays a run for a character given by hand)
@@ -127,8 +128,11 @@ def tests(full):
     out = [('python', 'scripts/check_syntax.py'), ('python', 'scripts/atelier/make_package_test.py'),
            ('python', 'scripts/check_overlay.py'),
            ('python', 'scripts/loadcheck/check_load.py')]
+    # check_same_copy.lua: a set asking one copy of a ring (or earring) for both slots, in the characters' own set
+    # files (gitignored: like check_overlay, only where they are)
+    out.append(('lua5.1', 'scripts/check_same_copy.lua'))
     if not all(os.path.isdir(c) for c in ('Tetsouo', 'Kaories')):
-        out = [x for x in out if x[1] != 'scripts/check_overlay.py']
+        out = [x for x in out if x[1] not in ('scripts/check_overlay.py', 'scripts/check_same_copy.lua')]
     out += [('lua5.1', t.replace(os.sep, '/')) for t in lua]
     out += [('node', t.replace(os.sep, '/')) for t in js if os.path.exists(t)]
     # RUN_TESTS_SKIP: tests left out this time, comma-separated (scripts/atelier/cycle.sh has just run the click tests)
