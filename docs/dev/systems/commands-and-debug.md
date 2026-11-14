@@ -258,7 +258,7 @@ All the data of `//gs c sortie` is the character's `_common/tools/SORTIE_CONFIG.
 
 1. **Boss check** (`sortie_boss.lua`, 2026-11-14). A target load is refused while another boss of `bosses` is in combat within 50 yalms and this one is not; a `fight` with `behind` and `mob` is refused unless this target's boss is around and alive. No boss known, or the game unreadable: no check. `force` as last word skips it. A refused command does not drop the fight under way.
 2. Any other `sortie` command drops the fight under way (`cancel_fight`: its late answers are ignored, the alt gets `gs c fightopen off`, and `gs c fightend` when an opening was live). The state is on `windower._sortie_fight` / `_sortie_fight_live`, so it survives a reload.
-3. **Placement** (`behind` and `mob`): the alt gets `gs c behind first <me> <target> [id=<n>] <mob>` and answers `sortie <target> placed` once behind (its own wait 12 s, ours 14 s).
+3. **Placement** (`behind` and `mob`): the alt gets `gs c behind first <me> <target> [id=<n>] <mob>` and answers `sortie <target> placed` once behind (its own wait 20 s, ours 22 s).
 4. **Opening** (`fight_ja`): the alt gets `gs c fightopen <me> <target> <bolster,bog,ea>`, chooses from its recasts and answers `opened` (ours waits 15 s at most). Without `fight_ja`: Full Circle, unless `full_circle = false`.
 5. The fight profile loads like any other (with `behind` when set). With an opening, the alt keeps watching its recasts (a COR's Wild Card or Random Deal) until the next `sortie` command sends `fightend`.
 

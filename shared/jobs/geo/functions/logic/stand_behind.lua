@@ -28,6 +28,14 @@
 --- (addons/Silmaril/lib/Moving.lua): windower.ffxi.run(-atan2(dy, dx)), the
 --- lock-on lifted first (a locked character does not run straight).
 ---
+--- Fast (asked 2026-11-14: 27 s to be placed on a Leech): a moving monster is
+--- run after, the run aimed again at every look (0.1 s) at the spot behind where
+--- it is now. 3 runs in a row that end short of the spot (a kited monster, a
+--- wall, a monster turning to face the GEO) and it stands 10 s before trying
+--- again: the bot casts meanwhile. While a run is under way, the bot's spells
+--- are held back at the precast (hold_check; never Stun nor a Cure): one
+--- started mid-run stopped it 5 times in that placement.
+---
 --- Safety: never moves while a spell or ability is under way (moving cancels
 --- it); one run lasts 4 s at most; a spot farther than 20 yalms is not run to;
 --- only acts while locked on a monster (in a follow or an escort it never is);
@@ -37,8 +45,8 @@
 ---
 --- @file    shared/jobs/geo/functions/logic/stand_behind.lua
 --- @author  ejouanchicot
---- @version 1.0
---- @date    Created: 2026-11-13
+--- @version 1.1 - runs after a moving monster, the bot's spells held during a run
+--- @date    Created: 2026-11-13 | Updated: 2026-11-14
 ---============================================================================
 
 local StandBehind = {}
@@ -56,9 +64,20 @@ local LOCK = 10           -- default of stand_behind_lock
 local BACK = 2            -- default of stand_behind_back: seconds pushed off the locked place before walking back
 local MAX_MISSES = 3      -- runs back that end without arriving before the GEO takes where it stands as its place
                           -- (pushed against a wall, hits faster than it walks back: no endless running, review)
-local ARRIVAL_WAIT = 12   -- seconds `first` waits for the placement before telling the leader anyway
-local STILL = 1.5         -- seconds the monster must have stood still before the GEO walks to it
+local ARRIVAL_WAIT = 20   -- seconds `first` waits for the placement before telling the leader anyway (12 told it
+                          -- before the GEO was there: the fight profile's spells then cut its runs, 2026-11-14)
+local RELIFT_EVERY = 1    -- seconds between two lifts of a lock-on the bot put back during a run
+local RELIFT_MAX = 3      -- lifts again in one run (4 s)
+local CHASE_MAX = 3       -- runs in a row ending short of the spot before a pause (kited, a wall, facing the GEO)
+local CHASE_PAUSE = 10    -- seconds it then stands, the bot casting (no pause: it ran without end, review 2026-11-14);
+                          -- doubled at each pause in a row (60 at most), back to 10 once it reaches its spot
+local STILL = 1.5         -- seconds without moving before the monster counts as standing (the stay-put lock)
 local STILL_MOVE = 0.3    -- yalms the monster may shift between two looks and still count as standing
+local NEAR = 5            -- yalms off the spot under which a WALKING monster is waited for, not run after: close to
+                          -- it, the spot moves as fast as she runs and she stuck to its back for 4 s (2026-11-14
+                          -- 20:56, 21:05, 21:12, each time a Leech walking to its tank)
+local NEAR_STILL = 0.5    -- seconds without moving before that monster counts as stopped
+local NO_PROGRESS = 1     -- seconds of a run without getting 0.3 yalm closer: the run ends (stuck)
 local FACE_OFF = math.rad(35) -- facing further off the monster than this: turned towards it
 local FACE_EVERY = 1      -- seconds between two turns
 local MONSTER = 16        -- spawn_type of a monster
@@ -159,20 +178,34 @@ local function missed_back(st, me)
     return true
 end
 
-local function stop_action(st, mob, me)
+local function stop_action(st, mob, me, now, off)
+    local secs = st.running_since and now and (now - st.running_since) or nil
     st.running_since = nil
-    return {stop = true, face = mob and StandBehind.angle(me.x, me.y, mob.x, mob.y) or nil}
+    return {stop = true, face = mob and StandBehind.angle(me.x, me.y, mob.x, mob.y) or nil, secs = secs, off = off}
 end
 
 --- A run over (arrived, 4 s, or too far): stop facing the mob; a run back to the locked place counts its misses.
-local function end_run(st, mob, me, off, locked)
+--- Not there yet behind a monster: the next run goes at once; the CHASE_MAX-th short run in a row pauses CHASE_PAUSE s.
+local function end_run(st, mob, me, off, locked, now)
     st.away_since, st.resume = nil, false
-    local adopted = false
+    local adopted, gave_up = false, nil
     if locked then
         if off <= ARRIVED then st.misses = 0 else adopted = missed_back(st, me) end
+    elseif off <= ARRIVED then
+        st.chase_misses, st.pauses = 0, 0
+    elseif off <= MAX_RUN then
+        st.chase_misses = (st.chase_misses or 0) + 1
+        if st.chase_misses >= CHASE_MAX then
+            st.pauses = (st.pauses or 0) + 1
+            local pause = math.min(60, CHASE_PAUSE * 2 ^ (st.pauses - 1))
+            st.chase_misses, st.pause_until, gave_up = 0, (now or 0) + pause, pause
+        else
+            st.resume = true
+        end
     end
-    local act = stop_action(st, mob, me)
+    local act = stop_action(st, mob, me, now, off)
     act.adopted = adopted or nil
+    act.gave_up = gave_up
     return act
 end
 
@@ -180,8 +213,8 @@ end
 --- @param st table Run state (running_since, away_since, first, resume; dist: yalms behind, nil = Silmaril's;
 ---   lock: seconds on the spot before staying put for good, locked: in place for good behind that mob id (lock_x,
 ---   lock_y: that place, walked back to when knocked off it after `back` seconds; lock_mx, lock_my: the monster then);
----   mob_moving: the monster moved within the last STILL seconds - a moving monster is never run after: the GEO
----   walked after a Leech that followed its tank, 4 s runs that never arrived, every 12 s, 2026-11-13)
+---   mob_moving: the monster moved within the last STILL seconds - run after all the same, aimed again at each look;
+---   chase_misses: runs in a row that ended short of the spot, CHASE_MAX of them and it stands until pause_until)
 --- @param now number Seconds
 --- @param me table This character's mob
 --- @param mob table|nil The monster (nil: none)
@@ -197,26 +230,31 @@ function StandBehind.step(st, now, me, mob, casting, settle)
     if not x then return {unlocked = true} end
     local off = distance(me.x, me.y, x, y)
     if st.running_since then
-        if casting or st.mob_moving then st.resume = true return stop_action(st, nil, me) end
-        if off <= ARRIVED or now - st.running_since > MOVE_LIMIT or off > MAX_RUN then
-            return end_run(st, mob, me, off, locked)
+        if casting then st.resume = true return stop_action(st, nil, me, now, off) end
+        if off < (st.run_best or math.huge) - 0.3 then st.run_best, st.run_best_at = off, now end
+        if off <= ARRIVED or now - st.running_since > MOVE_LIMIT or off > MAX_RUN
+                or now - (st.run_best_at or now) > NO_PROGRESS then
+            return end_run(st, mob, me, off, locked, now)
         end
         return {run = StandBehind.angle(me.x, me.y, x, y)}
     end
     if casting then return nil end
     if off <= TOLERANCE then
-        st.away_since, st.resume = nil, false
+        st.away_since, st.resume, st.chase_misses, st.pauses = nil, false, 0, 0
         if locked then return nil end
         return hold_spot(st, now, mob, me)
     end
     st.in_place_since = nil
-    -- the monster moving: the wait starts again once it stands still
-    if st.mob_moving then st.away_since = nil return nil end
+    -- after CHASE_MAX short runs: stands until pause_until (the bot casts), then tries again
+    if st.pause_until and now < st.pause_until then st.away_since = nil return nil end
+    -- close to a monster still walking: wait until it stops (far off, it is run after: the first approach)
+    if off <= NEAR and st.mob_last and now - st.mob_last.since < NEAR_STILL then return nil end
     if off > MAX_RUN then return nil end
     st.away_since = st.away_since or now
     if st.first or st.resume or now - st.away_since >= wait then
         st.first, st.resume, st.running_since, st.run_back = false, false, now, locked
-        return {run = StandBehind.angle(me.x, me.y, x, y)}
+        st.run_best, st.run_best_at = off, now
+        return {run = StandBehind.angle(me.x, me.y, x, y), off = off}
     end
     return nil
 end
@@ -333,11 +371,20 @@ end
 local function apply(st, act, p)
     if act.run then
         if not st.running_logged then
-            trace('%s (target %s)', st.run_back and 'run back to its locked place (knocked off it)' or 'run to the spot behind',
-                tostring(st.target_id))
+            trace('%s (target %s, %.1f yalms off, monster %s)',
+                st.run_back and 'run back to its locked place (knocked off it)' or 'run to the spot behind',
+                tostring(st.target_id), act.off or -1, st.mob_moving and 'moving' or 'standing')
             -- once per run: a locked character does not run straight, and Silmaril's Fighting locks on again at
             -- once; lifted at every look, the lock went on and off and the GEO spun (2026-11-13)
             if p.target_locked then send_command('input /lockon') end
+            st.lifts, st.lifted_at = 0, os.clock()
+        elseif p.target_locked and os.clock() - (st.lifted_at or 0) >= RELIFT_EVERY and (st.lifts or 0) < RELIFT_MAX then
+            -- the bot locked it again mid-run: locked, she ran into the monster and stuck there 4 s, 3.2 yalms off
+            -- the spot (2026-11-14 20:56, 21:05: every run once the fight profile was on). Lifted again, at most
+            -- once a second (every look spun her, 2026-11-13)
+            send_command('input /lockon')
+            st.lifts, st.lifted_at = (st.lifts or 0) + 1, os.clock()
+            trace('lock-on lifted again: the bot locked it during the run')
         end
         st.running_logged = true
         windower.ffxi.run(act.run)
@@ -348,8 +395,11 @@ local function apply(st, act, p)
     elseif act.stop then
         windower.ffxi.run(false)
         if act.face then windower.ffxi.turn(act.face) end
-        trace('stopped%s%s', act.face and ', facing the mob' or ' (cast, monster moving, or mob gone)',
-            act.adopted and ('; ' .. MAX_MISSES .. ' runs back never arrived: this is its place now') or '')
+        trace('stopped%s after %s s, %s yalms off, %s%s%s', act.face and ', facing the mob' or ' (cast or mob gone)',
+            act.secs and ('%.1f'):format(act.secs) or '?', act.off and ('%.1f'):format(act.off) or '?',
+            p.target_locked and 'locked on' or 'not locked',
+            act.adopted and ('; ' .. MAX_MISSES .. ' runs back never arrived: this is its place now') or '',
+            act.gave_up and ('; ' .. CHASE_MAX .. ' runs short of the spot: stands ' .. act.gave_up .. ' s') or '')
         st.running_logged = false
     end
 end
@@ -451,6 +501,28 @@ function StandBehind.resume()
         trace('on again after a load')
         loop(windower._load_gen, st.token)
     end
+end
+
+--- Precast: while a run is under way, the bot's spells are cancelled (it sends them again once she stands): a spell
+--- started mid-run stopped it, 5 times in one placement (2026-11-14). Never Stun nor a Cure (Cure, Cura, Curaga: a
+--- Cure the JA queue sends again carries allow_next, held here it was lost); a run left on past its 4 s (a loop
+--- gone) holds nothing.
+--- @param spell table GearSwap spell
+--- @param eventArgs table
+--- @return boolean True when cancelled
+function StandBehind.hold_check(spell, eventArgs)
+    local st = windower._stand_behind
+    if not (st and st.on and st.running_since) or spell.action_type ~= 'Magic' or spell.english == 'Stun'
+            or tostring(spell.english):find('^Cur') then
+        return false
+    end
+    if os.clock() - st.running_since > MOVE_LIMIT + 1 then return false end
+    eventArgs.cancel = true
+    if st.held_logged ~= st.running_since then
+        st.held_logged = st.running_since
+        trace('%s held back: running to the spot', tostring(spell.english))
+    end
+    return true
 end
 
 --- //gs c behind                                behind the locked monster

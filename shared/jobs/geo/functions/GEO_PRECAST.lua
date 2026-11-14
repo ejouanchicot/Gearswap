@@ -104,6 +104,13 @@ function job_precast(spell, action, spellMap, eventArgs)
     if ok_q and held then
         return
     end
+    -- Running to the spot behind the monster: the bot's spell waits until she stands, never Stun (stand_behind.lua)
+    local ok_b, held_b = pcall(function()
+        return require('shared/jobs/geo/functions/logic/stand_behind').hold_check(spell, eventArgs)
+    end)
+    if ok_b and held_b then
+        return
+    end
 
     -- THIRD: Entrust / Full Circle first, when the character turned them on
     -- (geo/combat/GEO_CONFIG.lua)

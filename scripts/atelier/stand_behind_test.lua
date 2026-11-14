@@ -104,7 +104,7 @@ SB.step(st, 0, far, MOB, false, S)
 act = SB.step(st, 4.5, far, MOB, false, S)
 check('run longer than 4 s: stop', act and act.stop)
 
--- a moving monster is never run after: the wait starts again once it stands still
+-- a moving monster is run after (2026-11-14: 27 s to be placed); it counts as standing again after 1.5 s
 st = {}
 SB.note_movement(st, {id = 9, x = 0, y = 0}, 0)
 check('first sight: taken as standing', st.mob_moving == false)
@@ -117,18 +117,86 @@ check('1 s without moving: still counted as moving', st.mob_moving == true)
 SB.note_movement(st, {id = 9, x = 2, y = 0}, 2.6)
 check('1.6 s without moving: standing', st.mob_moving == false)
 
-st = {}
-SB.step(st, 0, far, MOB, false, S)               -- off the spot, wait starts
-st.mob_moving = true
-check('monster moving: no run', SB.step(st, 8, far, MOB, false, S) == nil)
-check('monster moving: wait restarted', st.away_since == nil)
-st.mob_moving = false
-check('standing again: waits from zero', SB.step(st, 9, far, MOB, false, S) == nil)
-act = SB.step(st, 16.1, far, MOB, false, S)
-check('standing 7 s off the spot: walks back', act and act.run ~= nil)
-st.mob_moving = true
-act = SB.step(st, 16.6, far, MOB, false, S)
-check('monster moves during a run: stop', act and act.stop and st.running_since == nil)
+st = {first = true, mob_moving = true}
+act = SB.step(st, 0, far, MOB, false, S)
+check('monster moving: first run at once', act and act.run ~= nil)
+act = SB.step(st, 0.5, far, MOB, false, S)
+check('monster moves during a run: keeps running', act and act.run ~= nil and st.running_since ~= nil)
+-- the spot moves with the monster: the run aims at where it is now
+local MOVED = {spawn_type = 16, hpp = 100, x = 14, y = 3, heading = 0, model_size = 1}
+local mx, my = SB.spot(MOVED, far)
+act = SB.step(st, 1, far, MOVED, false, S)
+check('run aimed again at the moved spot', act and act.run and near(act.run, SB.angle(far.x, far.y, mx, my)))
+-- 4 s without catching it: the next run goes at once, up to 3; then it stands 10 s (the bot casts)
+act = SB.step(st, 4.1, far, MOVED, false, S)
+check('chase 1 ended short: stop', act and act.stop)
+check('  next run at once', SB.step(st, 4.2, far, MOVED, false, S).run ~= nil)
+SB.step(st, 8.3, far, MOVED, false, S)
+check('chase 2: next run at once', SB.step(st, 8.4, far, MOVED, false, S).run ~= nil)
+act = SB.step(st, 12.5, far, MOVED, false, S)
+check('chase 3 ended short: gives up', act and act.stop and act.gave_up)
+check('kited: stands during the pause', SB.step(st, 20, far, MOVED, false, S) == nil)
+check('  even with resume asked', SB.step(st, 22.4, far, MOVED, false, S) == nil)
+act = SB.step(st, 22.6, far, MOVED, false, S)
+check('pause over: off the spot since, walks again', SB.step(st, 30, far, MOVED, false, S) ~= nil or act ~= nil)
+-- a monster standing, the spot out of reach (a wall, the monster facing the GEO): never runs without end
+do
+    local wall = {}
+    local stuck = at(sx + 3, sy)
+    local runs, ran = 0, 0
+    local t = 0
+    wall.first = true
+    while t < 120 do
+        local a = SB.step(wall, t, stuck, MOB, false, S)
+        if a and a.run and not wall.counted then runs, wall.counted = runs + 1, true end
+        if a and a.stop then wall.counted = false end
+        if wall.running_since then ran = ran + 0.1 end
+        t = t + 0.1
+    end
+    check('wall: pauses between the runs', ran < 45, ('%d runs, %.0f s running'):format(runs, ran))
+end
+-- the trace numbers: the run start tells how far, the stop how long
+st = {first = true}
+act = SB.step(st, 0, far, MOB, false, S)
+check('run start: yalms off given', act and act.off and math.abs(act.off - 5) < 1e-6)
+act = SB.step(st, 1.2, there, MOB, false, S)
+check('stop: seconds given', act and act.stop and near(act.secs, 1.2))
+
+-- stuck (no 0.3 yalm closer in 1 s): the run ends, it does not push 4 s against the monster
+st = {first = true}
+SB.step(st, 0, far, MOB, false, S)
+check('stuck 0.9 s: still running', SB.step(st, 0.9, far, MOB, false, S).run ~= nil)
+act = SB.step(st, 1.1, far, MOB, false, S)
+check('stuck 1 s: run over', act and act.stop)
+-- close to a monster still walking: waits for it to stop (it stuck to the Leech's back, 2026-11-14 21:12)
+do
+    local near = at(sx + 3, sy)
+    st = {mob_last = {id = 9, x = 0, y = 0, since = 10}, mob_moving = true, resume = true}
+    check('near, monster walking: waits', SB.step(st, 10.2, near, MOB, false, S) == nil)
+    act = SB.step(st, 10.6, near, MOB, false, S)
+    check('near, monster stopped 0.5 s: runs', act and act.run ~= nil)
+    st = {first = true, mob_last = {id = 9, x = 0, y = 0, since = 10}, mob_moving = true}
+    check('far, monster walking: runs at once', SB.step(st, 10.1, at(sx + 8, sy), MOB, false, S).run ~= nil)
+end
+
+-- the bot's spells held while running, never Stun, nothing once stopped
+do
+    local clock = 100
+    local real_clock = os.clock
+    os.clock = function() return clock end
+    windower._stand_behind = {on = true, running_since = 99}
+    local args = {}
+    check('running: a spell held', SB.hold_check({action_type = 'Magic', english = 'Indi-Fury'}, args) and args.cancel == true)
+    check('running: Stun never', not SB.hold_check({action_type = 'Magic', english = 'Stun'}, {}))
+    check('running: a Cure never', not SB.hold_check({action_type = 'Magic', english = 'Cure IV'}, {}))
+    check('running: an ability not held', not SB.hold_check({action_type = 'Ability', english = 'Entrust'}, {}))
+    clock = 106
+    check('a run past its 4 s (loop gone): nothing held', not SB.hold_check({action_type = 'Magic', english = 'Dia'}, {}))
+    windower._stand_behind = {on = true}
+    check('standing: nothing held', not SB.hold_check({action_type = 'Magic', english = 'Dia'}, {}))
+    windower._stand_behind = nil
+    os.clock = real_clock
+end
 
 -- facing the monster while standing (the turn sent with the stop of a run was lost: back to the mob)
 do
@@ -292,6 +360,25 @@ local lockons = 0
 for _, c in ipairs(sent_cmds) do if c == 'input /lockon' then lockons = lockons + 1 end end
 check('one /lockon for the whole run', lockons == 1, tostring(lockons))
 SB.stop('test')
+
+-- the bot locks it again mid-run (fight profile on): lifted again, at most once a second, 3 times a run
+-- (2026-11-14 20:56 / 21:05: locked, she ran into the Leech and stuck there 4 s)
+do
+    local real_clock, t = os.clock, 0
+    os.clock = function() return t end
+    sent_cmds = {}
+    me_mob = {x = spotx + 12, y = spoty, model_size = 0.6}
+    scheduled = {}
+    SB.command({})
+    -- getting closer 2 yalms a second: the run goes on its full 4 s
+    for _ = 1, 35 do t = t + 0.1 me_mob = {x = me_mob.x - 0.2, y = spoty, model_size = 0.6} tick_all() end
+    local n = 0
+    for _, c in ipairs(sent_cmds) do if c == 'input /lockon' then n = n + 1 end end
+    check('locked again mid-run: lifted again, 1 + 3 at most', n == 4, tostring(n))
+    SB.stop('test')
+    os.clock = real_clock
+end
+
 
 -- stand_behind_lock: on the spot 10 s with the monster standing, the GEO stays put for good behind it
 do

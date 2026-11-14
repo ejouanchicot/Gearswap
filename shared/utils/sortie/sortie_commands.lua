@@ -344,8 +344,8 @@ local function continue_fight(cfg, target, key, pending)
     coroutine.schedule(function() load_fight(cfg, target, pending) end, AFTER_FULL_CIRCLE * first)
 end
 
---- Seconds the fight waits for the alt's `placed` before going on anyway (its own wait is 12 s).
-local PLACED_WAIT = 14
+--- Seconds the fight waits for the alt's `placed` before going on anyway (its own wait is 20 s).
+local PLACED_WAIT = 22
 
 --- A target with a `prep` profile, once the fight starts (`sortie <target>
 --- fight`, sent by the trigger of the prep profile: SORTIE_CONFIG.lua). The

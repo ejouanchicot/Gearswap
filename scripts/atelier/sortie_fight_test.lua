@@ -116,11 +116,11 @@ end
 check('placed twice, the 14 s wait: one opening', opens, 1)
 check('opened then the waits: one profile', loads2, 1)
 
--- 2c. no answer at all: opening at 14 s, profile at 29 s
+-- 2c. no answer at all: opening at 22 s, profile at 37 s (the alt's own wait is 20 s, 2026-11-14)
 sent, now, queue = {}, 0, {}
 Sortie.handle({'leechmob', 'fight'}); run_queue()
-check('no answer: opening at 14 s', has('send Kaories gs c fightopen Tetsouo leechmob bog'), 14)
-check('no answer: profile at 29 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 29)
+check('no answer: opening at 22 s', has('send Kaories gs c fightopen Tetsouo leechmob bog'), 22)
+check('no answer: profile at 37 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 37)
 
 -- 2d. 2026-11-13: a wrong `fight`, then another target: the fight is dropped, its late answers ignored
 sent, now, queue = {}, 0, {}
