@@ -23,6 +23,7 @@ Object.assign(T.fr, {statGrp_dark: 'Magie noire',
   statObj_aspirPot: 'MP aspirés (max)', statD_aspirPot: 'skill / 3 + 20 jusqu’à 300, puis skill × 0,4 (Aspir III : × 0,8) ; × (1 + puissance) × l’attaque magique de ténèbres (Pixie Hairpin +1 : × 1,28). Ni MAB ni INT (BG Wiki Aspir III)',
   statObj_absorbPot: 'Puissance Absorb', statD_absorbPot: 'l’effet « Absorb » des pièces (Erra Pendant, Mekosuchus Blade…) ; le skill ne change pas la puissance des Absorb (BG Wiki Dark Magic)',
   statObj_darkTime: 'Durée Absorb', statD_darkTime: '90 s × (1 + durée Absorb + durée de magie noire des pièces) ; les % sont additionnés (supposé, BG ne le dit pas)',
+  statObj_darkRecast: 'Recast d’Absorb-TP', statD_darkRecast: '60 s × (1 − (haste d’équipement, 25 % au plus, + haste magique des buffs choisis, 43,75 % au plus)) × (1 − Fast Cast / 2), jamais sous 12 s ; Fast Cast (80 % au plus) et haste comptés sur le set midcast (BG Wiki Spell Recast)',
   statObj_absorbTp: 'TP absorbés', statD_absorbTp: 'le % des pièces « Absorb-TP » (Heathen’s Gauntlets +3 : +30 %, BG Wiki Absorb-TP)',
   statObj_bioDot: 'HP par tick (Bio)', statD_bioDot: 'par le skill jusqu’au plafond du tier : Bio III floor((skill + 59) / 27), 17 au plus ; Bio II 5 à 8 de 200 à 291 de skill ; Bio I 3 (BG Wiki)',
   statObj_dreadSpikes: 'HP absorbables (Dread Spikes)', statD_dreadSpikes: 'HP au lancement × 50 % × (1 + puissance des pièces : Heathen’s Cuirass, Crepuscular Scythe) + 10 % des HP avec 1200 points de job de DRK (BG Wiki Dread Spikes)',
@@ -32,6 +33,7 @@ Object.assign(T.fr, {statGrp_dark: 'Magie noire',
   darkNoteDread: 'Calculé avec les HP du set ({h}) : Dread Spikes ne lit ni le skill ni l’INT.{j}', darkNoteDreadJp: ' Les +10 % des 1200 points de job de DRK sont comptés.',
   darkNoteDrain: 'Drain II et III : BG ne donne pas leur formule, celle de Drain sert de repère (elle classe les sets pareil).',
   darkNoteAspir: 'Aspir II : pas de formule sur BG, celle d’Aspir sert de repère.',
+  darkNoteRecast: 'Recast : règle BG Wiki (plancher 12 s), haste magique des buffs choisis comptée : {h} %. Sans buff de haste dans le panneau, le recast est celui d’un combat sans haste.',
   darkNoteNether: 'Nether Void (+50 % et plus avec la Heathen’s Flanchard) n’est pas compté : c’est une capacité, son set à lui.'});
 Object.assign(T.en, {statGrp_dark: 'Dark magic',
   statObj_darkSkill: 'Dark magic skill', statD_darkSkill: 'your skill without gear + the pieces’ skill (“All magic skills” in)',
@@ -40,6 +42,7 @@ Object.assign(T.en, {statGrp_dark: 'Dark magic',
   statObj_aspirPot: 'MP drained (max)', statD_aspirPot: 'skill / 3 + 20 to 300, then skill × 0.4 (Aspir III: × 0.8); × (1 + potency) × the dark magic attack (Pixie Hairpin +1: × 1.28). No MAB, no INT (BG Wiki Aspir III)',
   statObj_absorbPot: 'Absorb potency', statD_absorbPot: 'the pieces’ “Absorb” effect (Erra Pendant, Mekosuchus Blade…); skill does not change the Absorbs’ potency (BG Wiki Dark Magic)',
   statObj_darkTime: 'Absorb length', statD_darkTime: '90 s × (1 + the pieces’ Absorb duration + dark magic duration); the % added (assumed, BG does not say)',
+  statObj_darkRecast: 'Absorb-TP recast', statD_darkRecast: '60 s × (1 − (gear haste, 25 % at most, + the chosen buffs’ magic haste, 43.75 % at most)) × (1 − Fast Cast / 2), never under 12 s; Fast Cast (80 % at most) and haste counted on the midcast set (BG Wiki Spell Recast)',
   statObj_absorbTp: 'TP absorbed', statD_absorbTp: 'the pieces’ “Absorb-TP” % (Heathen’s Gauntlets +3: +30 %, BG Wiki Absorb-TP)',
   statObj_bioDot: 'HP per tick (Bio)', statD_bioDot: 'by skill up to the tier’s cap: Bio III floor((skill + 59) / 27), 17 at most; Bio II 5 to 8 from 200 to 291 of skill; Bio I 3 (BG Wiki)',
   statObj_dreadSpikes: 'HP to absorb (Dread Spikes)', statD_dreadSpikes: 'HP at the cast × 50 % × (1 + the pieces’ potency: Heathen’s Cuirass, Crepuscular Scythe) + 10 % of the HP with a DRK’s 1200 job points (BG Wiki Dread Spikes)',
@@ -49,6 +52,7 @@ Object.assign(T.en, {statGrp_dark: 'Dark magic',
   darkNoteDread: 'Worked out with the set’s HP ({h}): Dread Spikes reads neither skill nor INT.{j}', darkNoteDreadJp: ' The +10 % of a DRK’s 1200 job points counted.',
   darkNoteDrain: 'Drain II and III: BG gives no formula, Drain’s stands in (it ranks the sets the same).',
   darkNoteAspir: 'Aspir II: no formula on BG, Aspir’s stands in.',
+  darkNoteRecast: 'Recast: BG Wiki’s rule (12 s floor), the chosen buffs’ magic haste counted: {h} %. With no haste buff in the panel, the recast is a fight’s without haste.',
   darkNoteNether: 'Nether Void (+50 %, more with the Heathen’s Flanchard) is not counted: it is an ability, with a set of its own.'});
 
 // The kinds, by the words of the set's name after sets.midcast (the first that fits): Absorb-TP before the Absorbs,
@@ -78,16 +82,23 @@ function darkContext(s){
     // the Endark II gift (BG Wiki: job point gift level 100) and Dread Spikes' +10 % (1200), a DRK's
     endarkII: S.job === 'DRK' && jp >= 100, dreadJp: S.job === 'DRK' && jp >= 1200};
 }
-const darkObjectives = s => { const d = darkContext(s); return d ? DARK_OBJS[d.kind] : null; };
+// Absorb-TP: its TP absorbed come from a DRK's gloves (Heathen's Gauntlets); any other job (a GEO/DRK) looks for the
+// shortest recast, then magic accuracy: once at the 12 s floor, more Fast Cast or haste gains nothing and the rest goes
+// to magic accuracy (GEO_DRK_Absorb-TP_recast.md §5-6, chosen by the player 2026-11-13; on Aminon the party's
+// debuffs land the spell more than the caster's accuracy; SPEC notes/docs-perso/absorb-tp-recast-2026-11-13)
+const darkObjsOf = kind => kind === 'absorbtp' && S.job !== 'DRK' ? ['darkRecast', 'darkAcc', 'cmp'] : DARK_OBJS[kind];
+const darkObjectives = s => { const d = darkContext(s); return d ? darkObjsOf(d.kind) : null; };
 function darkRelevant(s){
   const d = darkContext(s);
-  return d ? [...new Set([...DARK_OBJS[d.kind], 'darkSkill', 'darkAcc', 'cmp', 'fc', 'sird', 'hp', 'pdtRed', 'mdtRed'])] : [];
+  return d ? [...new Set([...darkObjsOf(d.kind), 'darkSkill', 'darkAcc', 'cmp', 'fc', 'sird', 'hp', 'pdtRed', 'mdtRed'])] : [];
 }
 // The context's part for the figures (stat_opt.js statContext)
 function darkBase(s){
   const d = darkContext(s);
   return d ? {darkKind: d.kind, darkSkill: d.skill, int: d.int, tInt: d.tInt, aspirIII: d.aspirIII, bioTier: d.bioTier,
-    endarkII: d.endarkII, dreadJp: d.dreadJp, darkDur: d.kind === 'absorb' ? 90 : 0} : null;
+    endarkII: d.endarkII, dreadJp: d.dreadJp, darkDur: d.kind === 'absorb' ? 90 : 0,
+    // the magic haste of the buffs chosen on the page (Haste II, the Marches, Indi-Haste): Absorb-TP's recast
+    mhaste: d.kind === 'absorbtp' && typeof buffTotals === 'function' ? buffTotals().mhaste || 0 : 0} : null;
 }
 // A piece's part (stat_opt.js statVec; its Magic Accuracy, Magic Accuracy skill and INT are enfeeble.js enfVec's):
 // dark magic skill ("All magic skills" in), Drain / Aspir potency, the Absorbs' potency ("Absorb" effect: Erra
@@ -116,6 +127,7 @@ function darkNote(s){
   const sp = d.kind === 'aspir' && d.aspirIII ? 'Aspir III' : d.kind === 'bio' ? ['Bio', 'Bio II', 'Bio III'][d.bioTier - 1]
     : d.kind === 'endark' && d.endarkII ? 'Endark II' : DARK_SPELL[d.kind];
   const more = d.kind === 'drain' ? ' ' + t('darkNoteDrain') + ' ' + t('darkNoteNether') : d.kind === 'aspir' && !d.aspirIII ? ' ' + t('darkNoteAspir')
-    : d.kind === 'absorb' ? ' ' + t('darkNoteNether') : '';
+    : d.kind === 'absorb' ? ' ' + t('darkNoteNether')
+    : d.kind === 'absorbtp' && S.job !== 'DRK' ? ' ' + t('darkNoteRecast', {h: Math.round((darkBase(s) || {}).mhaste * 10) / 10 || 0}) : '';
   return t('darkNote', {sp, k: d.skill, i: d.int, t: d.target ? t('darkNoteTarget', {tg: d.target, ti: d.tInt}) : ''}) + more;
 }

@@ -20,7 +20,7 @@
     //   takes it (Shield Barrier); Phalanx = the spell's potency from the enhancing skill + Phalanx received; Enmity up to
     //   its cap (+200, buffs counted); Fast Cast up to 80; damage taken with the -50 % cap, then the II stats (-87.5 %)
     var STAT_KEYS = ["hp", "hp%", "def", "vit", "mnd", "dt", "pdt", "mdt", "pdt2", "mdt2", "bdt", "enmity", "phalanx", "enh", "heal", "sird",
-        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja", "hw", "crecv", "absorb",
+        "fc", "meva", "mdb", "ecrit", "cure", "cure2", "curerecv", "refresh", "regen", "enhdur", "cmp", "ss", "div", "enl", "shield", "block", "statusRes", "eleRes", "lossRed", "move", "ja", "hw", "crecv", "absorb", "haste",
         "res_fire", "res_ice", "res_wind", "res_earth", "res_lightning", "res_water", "res_light", "res_dark",
         "petdt", "petregen", "charm", "geoskill", "indisec", "indipct",
         // a BST's pet (the page's bst_pet.js): Accuracy, Attack, Haste, Store TP, Double Attack, levels (a weapon's apart)
@@ -318,7 +318,7 @@
     var STAT_STEP = {def: 25, meva: 25};
     // the objectives: every one a figure where more is better
     O.STAT_OBJS = ["def", "hp", "hpLow", "cureSelf", "enmity", "phalanx", "fc", "sird", "meva", "mdb", "pdtRed", "mdtRed", "ecritRed", "cure", "cmp", "refresh", "regen", "enhdur", "stoneskin", "enlight", "enhSkill", "divSkill", "enhTime", "refreshTick", "refreshMp", "regenTick", "regenHp", "gainPot", "temper", "enspell", "barEle", "aquaveil", "cureEnm", "blockGear", "statusRes", "eleRes", "ceLoss", "eleCover", "luDt", "luRegen", "luCharm", "geomancy", "geoSkill", "indiTime", "enfPot", "enfTime", "enfAcc", "enfEff", "enfSkill", "cursna", "healSkill", "auspice", "barStatus", "esunaPlus", "erasePlus", "naVeil", "divAcc", "mab",
-        "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "bioDot", "dreadSpikes", "endark",
+        "darkSkill", "darkAcc", "drainPot", "aspirPot", "absorbPot", "darkTime", "absorbTp", "darkRecast", "bioDot", "dreadSpikes", "endark",
         "petAcc", "petAtk", "petHaste", "petStp", "petDa", "petDt", "petMdt", "petRegen", "petMab", "petMacc", "petInt", "petMelee", "petTpb", "chr", "macc", "charmPlus", "charmDur", "rewardPot", "rewardRecast", "mnd", "move", "jaPlus", "holyWater", "cursnaRecv", "absorb",
         // a Bard's songs (atelier/opt_song.js)
         "songPlus", "songPot", "songDurPct", "songTime", "songTimeShort", "songSkill", "songAcc"];

@@ -152,6 +152,15 @@
         if (!two) return 12 + Math.floor(skill / 20) * 3 - Math.floor(skill / 40);
         return skill >= 500 ? Math.floor((Math.floor((skill + 2) * 5 / 66) + 7) * 2.5) : Math.floor(Math.floor((skill + 400) / 20) * 2.5);
     };
+    // Absorb-TP's recast in seconds (SPEC notes/docs-perso/absorb-tp-recast-2026-11-13, BG Wiki Spell_Recast): 60 s
+    // x (1 - (gear haste, 256/1024 at most, + magic haste, 448/1024 at most) / 1024) x (1 - floor(Fast Cast / 2) / 100),
+    // never under 20 % of the 60 s. The Fast Cast and the gear haste are the midcast set's (worn when the spell goes),
+    // the magic haste the buffs chosen on the page. Kept as a negative figure: less is better
+    O.absorbTpRecast = function (fc, gearHastePct, magicHastePct) {
+        var gear = Math.min(256, Math.floor(gearHastePct * 1024 / 100)), magic = Math.min(448, Math.floor(magicHastePct * 1024 / 100));
+        var mul = (1 - (gear + magic) / 1024) * (1 - Math.floor(Math.min(80, fc) / 2) / 100);
+        return Math.round(60 * Math.max(0.2, mul) * 10 + 1e-6) / 10;   // 1e-6: 20.25 is 20.2499... in floats
+    };
     O.darkFigures = function (f, t, b) {
         if (!b.darkKind) return;
         var g = function (k) { return t[k] || 0; };
@@ -164,6 +173,7 @@
         f.absorbPot = g("absorbpot");
         f.darkTime = Math.floor((b.darkDur || 0) * (1 + (g("absorbdur") + g("darkdur")) / 100) + 1e-9);
         f.absorbTp = g("abstp");
+        f.darkRecast = -O.absorbTpRecast(Math.min(80, g("fc") + (b.fc || 0)), g("haste"), b.mhaste || 0);
         f.bioDot = bioDot(b.bioTier || 1, skill);
         // the HP of the set worn at the cast (f.hp): BG Wiki "Current HP x 0.5 x (1 + Equipment Modifiers) + Job Point Trait"
         f.dreadSpikes = Math.floor(f.hp * (0.5 * (1 + g("dreadpot") / 100) + (b.dreadJp ? 0.1 : 0)));
