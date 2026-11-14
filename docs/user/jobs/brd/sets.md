@@ -63,8 +63,7 @@ weapon. No `sets.MoveSpeed` on the engaged set.
 | `sets.precast.WS['Name']` | That weaponskill: the provided file has `Savage Blade`, `Evisceration`, `Rudra's Storm`, `Mordant Rime`, `Ruthless Stroke` |
 | `sets.precast.WS` | Any other weaponskill |
 
-On top, Moonshade Earring goes in `ear1` when its +250 TP reaches the next step (2000
-or 3000 TP). Aeneas and Centovente count as TP bonus when held, in either hand. The
+On top, Moonshade Earring goes in `ear1` when it adds more damage than the set piece it replaces. Aeneas and Centovente count as TP bonus when held, in either hand. The
 list lives in `BRD_TP_CONFIG.lua`; how it works: [TP bonus gear](../../features/tp-bonus.md).
 
 ## Job abilities
@@ -215,11 +214,11 @@ Magic']` as an empty set and none of the other three.
   town, as on every job. Since 2026-09-29 this holds even when you engage while
   running (before, the movement pieces could stay on until your next action).
 - **Weapon sets on idle.** The weapon sets go on idle as well, town included.
-- **TP bonus earring.** Moonshade Earring in `ear1` on weaponskills when it reaches the
-  next TP step ([Weaponskills](#weaponskills)).
-- **Combat Mode.** When shown on BRD and On, it locks `main`, `sub` **and `range`**: no
-  instrument can change, so songs keep whatever instrument you wear and Honor March /
-  Aria of Passion fail without theirs. See
+- **TP bonus earring.** Moonshade Earring in `ear1` on weaponskills when it adds more damage than the set piece it replaces
+  ([Weaponskills](#weaponskills)).
+- **Combat Mode.** When shown on BRD and On, it locks `main` and `sub` only: the weapons
+  keep your TP, while instruments and ammo still change (a song's instrument, a weaponskill's
+  ammo) - swapping an instrument and an ammo does not cost TP (seen in game, 2026-11-13). See
   [keybinds](../../guides/keybinds.md#combat-mode-every-job).
 
 ## Sets in the provided file that nothing reads

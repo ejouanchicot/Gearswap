@@ -82,7 +82,7 @@ The buff sets go on or come off a moment after the buff comes or goes.
 | `sets.precast.WS['Victory Smite'].Impetus`, `["Ascetic's Fury"].Impetus` | That weaponskill with Impetus up, on top of it and of `sets.buff.Impetus`: **only the pieces that change**. Add one for any weaponskill |
 | `sets.precast.WS['Dragon Kick'].Footwork`, `['Tornado Kick'].Footwork` | That kick with Footwork up, on top of it and of `sets.buff.Footwork`: only the pieces that change |
 
-Moonshade Earring is added by itself when it reaches the next TP step, after
+Moonshade Earring is added by itself when it adds more damage than the set piece it replaces, after
 the Impetus / Footwork sets: [TP bonus](../../features/tp-bonus.md) (`MNK_TP_CONFIG.lua`).
 
 ## Spells (subjob)

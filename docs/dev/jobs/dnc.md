@@ -60,7 +60,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 159 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/utils/dnc/waltz_manager.lua` | 259 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
 | `shared/utils/drg/auto_jump.lua` | 226 | Jump before WS on /DRG, run by `WSPrecastHandler.handle` (every job) |
-| `shared/utils/precast/ability_helper.lua` | 465 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
+| `shared/utils/precast/ability_helper.lua` | 472 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
 | `shared/utils/buffs/buff_command.lua` | 70 | `//gs c buff` of every job: `_G.job_buff_extra` (DNC), then the `job` and `subjob` lists of `_common/combat/BUFF_CONFIG.lua`, through `self_buff_manager.lua` |
 | `_master/config/dnc/DNC_STATES.lua` | 212 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -68,7 +68,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/dnc/DNC_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/dnc/DNC_LOCKSTYLE.lua` | 62 | Lockstyle 2, `by_subjob`, `get_style` |
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
-| `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
+| `_master/config/dnc/DNC_TP_CONFIG.lua` | 79 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
 | `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
 | `_master/config/dnc/DNC_CONFIG.lua` | 16 | The job's own settings (`auto_presto = true`), read through `auto_options.lua` / `job_config.lua` |
 | `_master/config/dnc/DNC_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |

@@ -51,7 +51,7 @@ from `H2H_WS_DATABASE.lua`.
 | `shared/jobs/mnk/functions/logic/set_builder.lua` | 108 | Idle and engaged: base selection, buff layers, Mote layers, weapon, movement |
 | `_master/config/mnk/MNK_STATES.lua` | 72 | Mote mode options, `MainWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/mnk/MNK_KEYBINDS.lua` | 33 | Data only: 4 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('MNK', ...)` |
-| `_master/config/mnk/MNK_TP_CONFIG.lua` | 41 | `pieces` (Moonshade 250), `weapons` (commented Godhands 500 example), `get_weapon_bonus`, sets `_G.MNKTPConfig` |
+| `_master/config/mnk/MNK_TP_CONFIG.lua` | 52 | `pieces` (Moonshade 250), `weapons` (commented Godhands 500 example), `get_weapon_bonus`, sets `_G.MNKTPConfig` |
 | `_master/config/mnk/MNK_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/mnk/MNK_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/mnk/MNK_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |

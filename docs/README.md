@@ -49,6 +49,7 @@ New here? Read, in this order: [installation](user/getting-started/installation.
 | [Job changes](user/guides/how-it-works.md#job-and-subjob-changes) | What happens when you change job or subjob |
 | [Midcast watchdog](user/features/watchdog.md) | Gear recovery when a cast is never confirmed |
 | [Cleanse](user/features/cleanse.md) | `//gs c cleanse`: debuffs off you and your box group, every debuff and what removes it |
+| [TP bonus gear](user/features/tp-bonus.md) | Moonshade Earring and the other TP Bonus pieces: when they go on before a weaponskill (the Atelier's table, the fTP formula, the 2000 / 3000 steps) |
 
 ## Jobs
 

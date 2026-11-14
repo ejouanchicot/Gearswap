@@ -58,7 +58,7 @@ function; line numbers are deliberately not used.
 | `_master/config/sam/SAM_KEYBINDS.lua` | 53 | Data only: 4 binds handed to `KeybindManager.create('SAM', ...)` |
 | `_master/config/sam/SAM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/sam/SAM_HUD.lua` | 30 | Per-job HUD section / row order (empty lists) |
-| `_master/config/sam/SAM_TP_CONFIG.lua` | 110 | `_G.SAMTPConfig`: `hagakure_jp_gifts`, pieces, weapons, `get_weapon_bonus`, `get_hagakure_bonus` |
+| `_master/config/sam/SAM_TP_CONFIG.lua` | 121 | `_G.SAMTPConfig`: `hagakure_jp_gifts`, pieces, weapons, `get_weapon_bonus`, `get_hagakure_bonus` |
 | `_master/config/sam/SAM_LOCKSTYLE.lua` | 32 | `default = 2`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30) |
 | `_master/config/sam/SAM_MACROBOOK.lua` | 62 | `default`, `solo[sub]` (book 2 page 1), empty `dualbox` |
 | `_master/config/sam/SAM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |

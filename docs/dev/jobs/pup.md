@@ -51,7 +51,7 @@ What PUP adds on top of the shared pipeline:
 | `shared/jobs/pup/functions/logic/set_builder.lua` | 187 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |
 | `_master/config/pup/PUP_STATES.lua` | 83 | Mote mode options, `MainWeapon`, `PetMode`, `PetWS`, `FastCast`, `AutoMedicine` |
 | `_master/config/pup/PUP_KEYBINDS.lua` | 39 | Data only: 5 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('PUP', ...)` |
-| `_master/config/pup/PUP_TP_CONFIG.lua` | 49 | `pieces` (Moonshade 250), empty `weapons`, `pet_ws_tp = 1000`, `get_weapon_bonus`, sets `_G.PUPTPConfig` |
+| `_master/config/pup/PUP_TP_CONFIG.lua` | 60 | `pieces` (Moonshade 250), empty `weapons`, `pet_ws_tp = 1000`, `get_weapon_bonus`, sets `_G.PUPTPConfig` |
 | `_master/config/pup/PUP_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/pup/PUP_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/pup/PUP_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |

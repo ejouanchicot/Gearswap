@@ -91,7 +91,7 @@ would look for their set there instead of `sets.precast.JA`.
 | `sets.precast.WS.Acc` | WS Mode Acc (or Offense Mode Acc), weaponskill without its own set |
 | `sets.precast.WS['<Name>'].Acc` | Same, for a weaponskill with its own set (add it) |
 
-Moonshade Earring is added by itself when it reaches the next TP step:
+Moonshade Earring is added by itself when it adds more damage than the set piece it replaces:
 [TP bonus](../../features/tp-bonus.md) (`DRG_TP_CONFIG.lua`).
 
 ## Spells (subjob) and the Healing Breath trigger

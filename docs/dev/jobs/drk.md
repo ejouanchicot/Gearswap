@@ -58,7 +58,7 @@ function; line numbers are deliberately not used.
 | `_master/config/drk/DRK_KEYBINDS.lua` | 42 | Data only: 3 binds handed to `KeybindManager.create('DRK', ...)` |
 | `_master/config/drk/DRK_CUSTOM.lua` | 119 | Player modes and gear rules (examples commented out) |
 | `_master/config/drk/DRK_HUD.lua` | 30 | Per-job HUD section / row order (empty lists) |
-| `_master/config/drk/DRK_TP_CONFIG.lua` | 77 | `_G.DRKTPConfig`: Moonshade +250, Anguta +500, `get_weapon_bonus` |
+| `_master/config/drk/DRK_TP_CONFIG.lua` | 88 | `_G.DRKTPConfig`: Moonshade +250, Anguta +500, `get_weapon_bonus` |
 | `_master/config/drk/DRK_LOCKSTYLE.lua` | 70 | `default = 1`, `by_subjob` (SAM/WAR 1, NIN 2, DNC 3), `get_style` |
 | `_master/config/drk/DRK_MACROBOOK.lua` | 77 | `default`, `solo[sub]` (book 1 pages 1-4), `dualbox` RDM/COR/GEO (books 2-4) |
 | `_master/config/drk/DRK_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |

@@ -220,6 +220,10 @@ With **Every item in the game**:
 - **Ambuscade capes** you do not hold are built at each material's maximum
   (thread, dust, dye, sap, resin), the pet's options included for BST, SMN and
   PUP, so a cape counts for what it can really give.
+- **Skirmish armour** (Yorium, Acro, Taeon, Telchine, Helios), **Reive capes**
+  and **Oseem pieces** you do not hold are built the same way, each augment at
+  its maximum; a Skirmish piece or Reive cape you hold can be shown at its
+  maximum too, with the augments it lacks named.
 - **Rank of the pieces to get** (Rang des pièces à avoir): the rank pieces you
   do not hold, family by family, under **Odyssey**, **Limbus** and **Nolan**.
   Each family (Nyame, Sakpata's, Sworn...) shows how many pieces your job
@@ -249,6 +253,22 @@ work out: it is judged on its stats. Its optimizer, in the same column,
 offers the objectives that mean something for the set (in order, **then, as
 tiebreakers**), **Required minimums (0 = none)**, and the same search
 settings (Pieces, Calculation, Special). **Back to the defaults** resets it.
+
+Some sets start with objectives of their own:
+
+- **BRD songs**: a buff song looks for its Song+ up to the song family's cap,
+  then its length, then damage taken, and keeps the skill the song needs
+  (Honor March 900...) as a floor; a debuff song looks for its accuracy first;
+  a dummy song for the shortest length. The instrument is never changed.
+- **GEO**: a Geo- set looks for Geomancy+, then the Geomancy + Handbell skill
+  (counted up to 900 together: past it nothing more), Bagua Charm and
+  Conserve MP; an Indi- set for Geomancy+, the skill and the **Indi duration**;
+  an Entrust set for the Indi duration and Conserve MP (Geomancy+ does nothing
+  to an entrusted Indi-). Once your own skills reach 900, the skill objective
+  is left out.
+- **BST Reward**: Reward potency up to its +50 % cap, then the recast down to
+  23 s, then MND; the pet food in the ammo slot is never touched, and a body
+  that removes the six ailments is kept.
 
 ## Buffs & target
 

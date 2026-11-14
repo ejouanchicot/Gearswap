@@ -60,7 +60,7 @@ drift.
 | `_master/config/run/RUN_HUD.lua` | 31 | HUD section / row order for RUN (empty lists = the default) |
 | `_master/config/run/RUN_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/run/RUN_MACROBOOK.lua` | 77 | Books 15-20 (same numbers as PLD) |
-| `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` (Moonshade piece, Lionheart weapon), loaded by the entry |
+| `_master/config/run/RUN_TP_CONFIG.lua` | 85 | `_G.RUNTPConfig` (Moonshade piece, Lionheart weapon), loaded by the entry |
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
 | `_master/config/run/RUN_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/run_sets.lua` | 455 | Template sets (flat) |

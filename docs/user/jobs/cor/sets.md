@@ -117,8 +117,8 @@ get the automatic Obi / Orpheus belt when it helps.
 | `sets.precast.WS.Marksmanship` | Any gun weaponskill without its own set (Leaden Salute, Last Stand, Wildfire, Hot Shot...). Empty in the provided file, so it is `sets.precast.WS` until you fill it |
 | `sets.precast.WS['Name']` | One weaponskill: `['Leaden Salute']`, `['Last Stand']`, `['Evisceration']`... Checked first: a named set wins over `.Marksmanship` and `sets.precast.WS` |
 
-- Moonshade Earring (TP bonus +250) goes on by itself in the left ear when it lifts your
-  TP to the next step (2000 or 3000); the list is in `cor/combat/COR_TP_CONFIG.lua`. It
+- Moonshade Earring (TP bonus +250) goes on by itself in the left ear when it adds more damage than the set piece it replaces
+  ([TP bonus](../../features/tp-bonus.md)); the list is in `cor/combat/COR_TP_CONFIG.lua`. It
   never removes a Moonshade your weaponskill set already wears.
 - Your gun's TP bonus is counted in that calculation, on every weaponskill: Anarchy +2
   and Fomalhaut from the `ranged_weapons` list of `COR_TP_CONFIG.lua`; a gun not listed

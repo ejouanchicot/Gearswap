@@ -90,7 +90,7 @@ Then, on top: Mote's defense and Kiting sets, your weapons; with /NIN or
 | `sets.precast.WS['<Name>']` | Any other weaponskill, if you add it |
 | `sets.precast.WS.Acc`, `sets.precast.WS['Name'].Acc` | WS Mode Acc; with WS Mode Normal, Ranged Mode Acc (bow, gun, crossbow) or Offense Mode Acc (melee) |
 
-Moonshade Earring is added by itself when it reaches the next TP step:
+Moonshade Earring is added by itself when it adds more damage than the set piece it replaces:
 [TP bonus](../../features/tp-bonus.md) (`RNG_TP_CONFIG.lua`). Hachirin-no-Obi or
 Orpheus's Sash goes on by itself for Trueflight and Wildfire when you own
 them (`//gs c belt`).

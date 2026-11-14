@@ -70,7 +70,7 @@ function; line numbers are deliberately not used.
 | `_master/config/thf/THF_HUD.lua` | 31 | Per-job HUD section / row order (empty lists) |
 | `_master/config/thf/THF_LOCKSTYLE.lua` | 40 | `default = 1`, `by_subjob`, no `get_style` (`LockstyleManager` reads `by_subjob` itself since 2026-10-30) |
 | `_master/config/thf/THF_MACROBOOK.lua` | 72 | Book/page per subjob and per dual-box partner job |
-| `_master/config/thf/THF_TP_CONFIG.lua` | 70 | Moonshade piece, weapon TP bonus table, `_G.THFTPConfig` |
+| `_master/config/thf/THF_TP_CONFIG.lua` | 81 | Moonshade piece, weapon TP bonus table, `_G.THFTPConfig` |
 | `_master/config/thf/THF_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/thf_sets.lua` | 923 | Template sets (flat) |
 | `shared/data/job_abilities/THF_JA_DATABASE.lua` + `thf/*.lua` | | `JA_DATABASE_FACTORY.create('THF')`, read by the ability message handler (messages only) |

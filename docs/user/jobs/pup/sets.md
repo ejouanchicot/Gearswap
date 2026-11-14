@@ -113,7 +113,7 @@ for their set there instead of `sets.precast.JA`.
 | `sets.precast.WS['Victory Smite']`, `['Shijin Spiral']`, `['Stringing Pummel']`, `['Howling Fist']`, `['Asuran Fists']` | That weaponskill |
 | `sets.precast.WS.Acc`, `sets.precast.WS['Name'].Acc` | WS Mode Acc, or Offense Mode Acc |
 
-Moonshade Earring is added by itself when it reaches the next TP step:
+Moonshade Earring is added by itself when it adds more damage than the set piece it replaces:
 [TP bonus](../../features/tp-bonus.md) (`PUP_TP_CONFIG.lua`).
 
 ## Spells (subjob)

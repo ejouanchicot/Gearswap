@@ -217,7 +217,7 @@ nothing: only a set found by spell name stays.
 
 `sets.precast.WS`, `sets.precast.WS['Name']` (the provided file: Savage Blade,
 Sanguine Blade, Seraph Blade, Chant du Cygne, Requiescat). Moonshade Earring is
-added by itself when it reaches the next TP step: [TP bonus](../../features/tp-bonus.md)
+added by itself when it adds more damage than the set piece it replaces: [TP bonus](../../features/tp-bonus.md)
 (`RDM_TP_CONFIG.lua`).
 
 ## Job abilities

@@ -49,7 +49,7 @@ What RNG adds on top of the shared pipeline:
 | `shared/jobs/rng/functions/logic/set_builder.lua` | 118 | Idle and engaged: HybridMode, town, Mote layers, weapons (main, sub, range), movement |
 | `_master/config/rng/RNG_STATES.lua` | 80 | Mote mode options, `RangeWeapon`, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/rng/RNG_KEYBINDS.lua` | 42 | Data only: 7 entries (+ 3 commented weaponskill examples) handed to `KeybindManager.create('RNG', ...)` |
-| `_master/config/rng/RNG_TP_CONFIG.lua` | 45 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.RNGTPConfig` |
+| `_master/config/rng/RNG_TP_CONFIG.lua` | 56 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.RNGTPConfig` |
 | `_master/config/rng/RNG_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only |
 | `_master/config/rng/RNG_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/rng/RNG_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |

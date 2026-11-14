@@ -94,7 +94,7 @@ weaponskill set, on every weaponskill (only the pieces that enhance Climactic, e
 Maculele Tiara).
 
 **Moonshade Earring**: after the weaponskill set, the code puts Moonshade Earring in
-the left ear only when its +250 TP lifts you to the next step (2000 or 3000 TP). The
+the left ear only when it adds more damage than the set piece it replaces ([TP bonus](../../features/tp-bonus.md)). The
 TP Bonus of the weapons you hold is counted first (Aeneas +500, Centovente +1000, in
 either hand). Piece, slot and weapons are in `DNC_TP_CONFIG.lua`. Leave Moonshade out
 of your weaponskill sets: the code adds it when it helps.
@@ -150,7 +150,7 @@ is worn on spells without a set of their own.
   without using a jump. Off: Ctrl+Numpad7.
 - **Weaponskill variant by buff**: see Weaponskills. Always on; leave the variant sets
   out to disable.
-- **Moonshade Earring** added only when it reaches the next TP step (Weaponskills).
+- **Moonshade Earring** added only when it adds more damage than the set piece it replaces (Weaponskills).
 - **Samba cancelled when you lack the TP**: a samba is stopped with a message when your
   TP is below its cost (Drain Samba 100, II 250, III 400, Aspir Samba 100, II 250,
   Haste Samba 350). Never under Trance.

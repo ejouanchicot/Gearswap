@@ -241,8 +241,7 @@ the Enmity family.
 - **Weaponskill slots follow the weapon actually in hand** (the `stance_weapon` of
   `PLD_WEAPONS.lua`, Burtgang in Tanking with the author's file, whatever `MainWeapon`
   says).
-- **TP bonus**: a Moonshade Earring is added to a weaponskill only when it reaches the
-  next TP step; Sequence counts as +500 when held
+- **TP bonus**: a Moonshade Earring is added to a weaponskill only when it adds more damage than the set piece it replaces; Sequence counts as +500 when held
   ([TP bonus gear](../../features/tp-bonus.md)).
 - **Automatic HP ordering on PLD too**: at each swap the pieces are ranked by the HP
   they gain over what you wear, so max HP never dips mid-swap

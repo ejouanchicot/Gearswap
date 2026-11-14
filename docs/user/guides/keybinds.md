@@ -196,7 +196,8 @@ key replaces the job's.
 ## Combat Mode (every job)
 
 Combat Mode On keeps your weapons where they are (main, sub, range; ammo too on
-BLM, GEO and WHM): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
+BLM and WHM; on GEO and BRD main and sub only, so the handbell, the instruments and
+the ammo still change, which costs no TP): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
 GEO, RDM, SCH and WHM by default, with their usual key, hidden elsewhere. Shown on
 another job, its key is Alt+Numpad0 unless you pick one.
 

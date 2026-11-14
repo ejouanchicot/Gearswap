@@ -54,8 +54,13 @@ function, not a line number.
 | `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | Header only, kept for the 12-module layout |
 | `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/geo/functions/logic/bolster_follow.lua` | `BolsterFollow.note_cast`, `on_buff_change`: Blaze of Glory under Bolster, Ecliptic Attrition or Full Circle once it ends (key `bolster_follow`) |
-| `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options (keys `auto_entrust`, `auto_full_circle` of `GEO_CONFIG.lua`) |
+| `shared/jobs/geo/functions/logic/bolster_follow.lua` | `BolsterFollow.note_cast` (the luopan placed with Blaze of Glory / under Bolster or not), `on_buff_change`: Bolster gained, Full Circle on a luopan from before it then Blaze of Glory; Bolster lost, Ecliptic Attrition or Full Circle (key `bolster_follow`) |
+| `shared/jobs/geo/functions/logic/fight_opening.lua` | `FightOpening.plan`, `open_fight`, `fight_end`, `on_bubble_placed`: the Sortie fight opening (`//gs c fightopen`), the recasts given back by a COR during the fight |
+| `shared/utils/precast/ability_queue.lua` | `AbilityHelper.queue()`: our job abilities one at a time in the bot's gaps, the bot's spells held 1.5 s after each |
+| `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options (keys `auto_entrust`, `auto_full_circle` of `GEO_CONFIG.lua`), and `widened_compass_on` (Widened Compass before a Geo- on the listed monsters) |
+| `shared/jobs/geo/functions/logic/stand_behind.lua` | `StandBehind.command`, `start`, `stop`, `resume`, `unload`: `//gs c behind [off \| first ...]`, the GEO walks behind its locked monster, nobody engaged (keys `stand_behind_*`) |
+| `shared/jobs/geo/functions/logic/luopan_behind.lua` | `listen`, `skip_while_out`: a Geo- aimed at a monster placed behind it (`luopan_behind`, only while `behind` is on) or ahead of it while it walks (`luopan_lead`), by the offset of the outgoing action packet |
+| `shared/utils/messages/party_callouts.lua` | `PartyCallouts.listen('GEO')` from `GEO_PRECAST`: the spells of `party_callouts` told in party chat once they land or are resisted |
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
 | `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement |
 | `shared/data/spells/NUKE_TIERS.lua` | Tier table for Fire..Water (V-base), the -ra (III-base) and Aspir (III-base), shared with RDM |
@@ -68,7 +73,7 @@ function, not a line number.
 | `_master/config/geo/GEO_MACROBOOK.lua` | Book 5 page 1 for every subjob; dual-box block empty |
 | `_master/config/geo/GEO_TP_CONFIG.lua` | `_G.GEOTPConfig`: `pieces` (Moonshade 250), `weapons = {}` |
 | `_master/config/geo/GEO_REFILL.lua` | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
-| `_master/config/geo/GEO_CONFIG.lua` | Template of the job's own settings (`auto_entrust`, `auto_full_circle` false, `escort_indi = 'Indi-Regen'`) |
+| `_master/config/geo/GEO_CONFIG.lua` | Template of the job's own settings (`auto_entrust`, `auto_full_circle`, `bolster_follow` false, `widened_compass_on = {}`, `escort_indi = 'Indi-Regen'`, `luopan_behind`, `luopan_lead` 0, `party_callouts = {}`, `stand_behind_settle` 7, `stand_behind_distance` 0, `stand_behind_lock` 10, `stand_behind_back` 2) |
 | `_master/sets/geo_sets.lua` | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_geo.lua` + `data/jobs/geo_messages.lua` | Indi / Geo cast line with element colour, nuke refinement messages |
 | `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | Indi- / Geo- entries (description, element) read by `message_geo` |
@@ -171,15 +176,56 @@ flowchart TD
   - `geo_full_circle` (key `auto_full_circle`): a `Geo-` while `pet.isvalid` and Full Circle is ready
     is cancelled (`eventArgs.cancel`), Full Circle goes out, and the Geo- is
     re-sent on the same target id 2 s later. `windower._geo_full_circle_replay`
-    (5 s) lets that re-send through without a second Full Circle.
-- `logic/bolster_follow.lua` (key `bolster_follow` of `GEO_CONFIG.lua`, read by
-  `JobConfig.get`, default false): `GEO_BUFFS` hands it every buff change,
-  `GEO_PRECAST` every Geo- that goes out (`note_cast`: `windower._geo_luopan_bog`
-  = Blaze of Glory up). Bolster gained with no luopan (`get_mob_by_target('pet')`):
-  Blaze of Glory. Bolster lost with a luopan: Ecliptic Attrition if it was placed
-  with Blaze of Glory, else Full Circle. Each step is tried 3 times, 1.5 s then
-  2 s apart, until it went through; `windower._geo_bolster_seq` drops the tries of
-  an older Bolster event. Test: `scripts/atelier/bolster_follow_test.lua`.
+    (5 s) lets that re-send through without a second Full Circle. Not while
+    `//gs c behind` is on.
+  - `widened_compass_on` (a list of monster names, `{}` = off, since 2026-11-14): a
+    `Geo-` cast on one of them while Widened Compass is ready and not up is
+    cancelled, Widened Compass goes out, and the Geo- is re-sent once its buff is up
+    (`AbilityHelper.try_ability_smart`). Silmaril never uses Widened Compass.
+- **Luopan behind** (`logic/luopan_behind.lua`, since 2026-11-14): with
+  `luopan_behind` set (yalms, 5 = Silmaril's Back offset) and `//gs c behind` on, a
+  Geo- aimed at a monster is placed that far behind it, by the X/Y/Z offset of the
+  outgoing action packet (Silmaril's own way), and a Geo- while a luopan is out is
+  cancelled before it is sent (`skip_while_out`, the game would refuse it). With
+  `luopan_lead` set and `behind` off, a Geo- on a monster still walking to its
+  target lands ahead of it, half the way, at most that many yalms. Trace tag `LUOPAN`.
+- The ability queue (`shared/utils/precast/ability_queue.lua`, `AbilityHelper.queue()`):
+  Silmaril and this code used to send their actions blind to each other, and the game
+  refused one or the other (message 88). Every job ability this code sends on the GEO
+  goes through it: one at a time, by rank (Full Circle > Bolster > Blaze of Glory >
+  Ecliptic Attrition), never twice the same; sent once no spell is under way, 3.5 s
+  after the last spell and 1.5 s after the last ability (`note_end`, from `GEO_AFTERCAST`,
+  the bot's too); checked 1 s later (`done`), sent again when refused (3 tries);
+  dropped when `wanted` stops holding, on recast, or after 20 s. For 1.5 s after one of
+  ours (`windower._jaq_hold_until`), `hold_check` (in `GEO_PRECAST`, after the
+  CooldownChecker) cancels the spells reaching the precast: the bot sends them again.
+  Never Stun, never a spell let through by `allow_next` (the recasts of
+  `geo_auto_abilities`, `indiensure`). `geo_full_circle` and Widened Compass still send
+  their ability at once from the precast, and tell the queue (`sent_outside`).
+  Trace tag `JA`. Test: `scripts/atelier/ability_queue_test.lua`.
+- `logic/bolster_follow.lua`: `GEO_PRECAST` hands it every Geo- that goes out
+  (`note_cast`: `windower._geo_luopan_bog` = Blaze of Glory up,
+  `windower._geo_luopan_bolster` = Bolster up; the latter cleared when Bolster ends,
+  its boost ends with it). The reactions (key `bolster_follow` of `GEO_CONFIG.lua`,
+  read by `JobConfig.get`, default false), from `GEO_BUFFS`: Bolster gained with a
+  luopan out (`get_mob_by_target('pet')`), Full Circle (Bolster does not boost a luopan
+  already placed, BG-Wiki), then Blaze of Glory; with none, Blaze of Glory. Bolster
+  lost with a luopan: Ecliptic Attrition if it was placed with Blaze of Glory, else
+  Full Circle. All through the queue. Test: `scripts/atelier/bolster_follow_test.lua`.
+- `logic/fight_opening.lua`: `//gs c fightopen <leader> <target> <bolster,bog,ea>`,
+  sent by `//gs c sortie <target> fight` (bot off). `plan` picks the abilities from this
+  character's recasts and buffs, only those the target's `fight_ja` lists: under Bolster,
+  Full Circle and Blaze of Glory on a luopan from before it, Blaze of Glory with none,
+  nothing on a luopan placed under it; Bolster ready, [Full Circle], Bolster, Blaze of
+  Glory; else Blaze of Glory ([Full Circle] first) then Ecliptic Attrition after the
+  bot's bubble (`on_bubble_placed`, within 45 s); else Ecliptic Attrition. `opened` goes
+  back once none of them waits in the queue (13 s at most). Until `//gs c fightend`
+  (or `fightopen off`), the Bolster and Blaze of Glory recasts are read every 2 s: one
+  above 5 s that reads 0 the next time was given back by a COR. Bolster (Wild Card):
+  the opening again. Blaze of Glory (Random Deal), no Bolster up and the luopan placed
+  without it: [Full Circle], Blaze of Glory, Ecliptic Attrition after the bot's new
+  bubble. Ecliptic Attrition alone: nothing. The watch stops at a newer load and after
+  45 min. Test: `scripts/atelier/fight_opening_test.lua`.
 - `_G.geo_entrust_pending` is raised optimistically on the Entrust ability;
   aftercast lowers it again when Entrust was interrupted.
 - `job_post_precast` applies the stored TP gear. Mote's default precast picks
@@ -254,8 +300,9 @@ flowchart TD
   (F10 / F11 / Alt+F10) and `sets.idle.Pet` have no effect on GEO.
 - The luopan appearing or leaving re-equips through Mote's `pet_change`,
   which calls `handle_equipping_gear`.
-- Combat Mode: the shared hook on `handle_equipping_gear` disables main, sub,
-  range and ammo when On and enables them when Off unless a craft session is
+- Combat Mode: the shared hook on `handle_equipping_gear` disables main and
+  sub when On (`SLOTS_BY_JOB.GEO`; range and ammo too until 2026-11-13: the handbell
+  and an ammo swap without losing TP) and enables them when Off unless a craft session is
   active ([keybinds](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)).
   `job_update` only refreshes the HUD.
 
@@ -329,6 +376,9 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 | `indi` | `/ma "<MainIndi>" <me>` |
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
 | `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default `JobConfig.get('GEO', 'escort_indi', 'Indi-Regen')`, [JobConfig](../systems/factories-and-helpers.md#jobconfig-sharedutilscorejob_configlua)); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; with a fourth word (a Silmaril profile folder, sent by `sortie escort` when the config has `escort.profile`), `sm off; sm load <profile>; sm follow off` is sent first and the `/ma` still goes out (since 2026-10-17: Silmaril casting it waited for the end-of-cast packet, and when Sortie lost that packet it cast the Indi- a second time; the load only makes Silmaril see the next fight profile's Indi- as new). The follow also starts on GearSwap's `indi_change` (gained, element of the escort Indi-), for the same lost packet; `MessageSortie.show_alt_escort` |
+| `fightopen <leader> <target> <words>` / `fightopen off` / `fightend` | The Sortie fight opening and its end (`logic/fight_opening.lua`, above) |
+| `behind` / `behind off` / `behind first <leader> <target> [id=<n>] <mob>` | `logic/stand_behind.lua`: walks behind the monster it is locked on (half the melee range, or `stand_behind_distance`), back there once it stayed off the spot `stand_behind_settle` s; once still there `stand_behind_lock` s it stays put (knocked back, it walks back after `stand_behind_back` s). Never moves during a spell or ability, one run 4 s at most, never to a spot farther than 20 yalms; stops on zone, another job, `escort`; a newer load resumes it. `first` (sent by `//gs c sortie <target> fight`) goes behind that monster and answers `sortie <target> placed` to the leader. Trace tag `BEHIND` |
+| `indiensure <Indi-X> [seconds]` | Sent by `//gs c sortie` with a profile load: after 10 s (or `seconds`), casts the Indi- only if the last Indi- put up (`windower._geo_last_indi`) is another one |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
 | `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` |
@@ -376,6 +426,10 @@ T = in `_master/sets/geo_sets.lua`.
 | `<char>/_common/display/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
 | PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` (both skipped with `pettp = false` in `_common/tools/ADDONS_CONFIG.lua`) |
 | `<char>/geo/combat/GEO_CONFIG.lua` `escort_indi` | `'Indi-Regen'` | `escort` without an Indi- (`JobConfig.get`) |
+| `<char>/geo/combat/GEO_CONFIG.lua` `widened_compass_on` | `{}` | `geo_auto_abilities.lua` |
+| `<char>/geo/combat/GEO_CONFIG.lua` `luopan_behind`, `luopan_lead` | 0, 0 (off) | `logic/luopan_behind.lua` |
+| `<char>/geo/combat/GEO_CONFIG.lua` `party_callouts` | `{}` (off) | `party_callouts.lua` |
+| `<char>/geo/combat/GEO_CONFIG.lua` `stand_behind_settle`, `stand_behind_distance`, `stand_behind_lock`, `stand_behind_back` | 7, 0, 10, 2 | `logic/stand_behind.lua` (`//gs c behind`) |
 
 ## State & lifetime
 

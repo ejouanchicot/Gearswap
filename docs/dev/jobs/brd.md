@@ -71,7 +71,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/brd/BRD_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 305 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
 | `_master/config/brd/BRD_TIMING_CONFIG.lua` | 30 | `ROTATION_DELAYS.after_song` 3.0 / `after_locked_song` 1.0 (song queue), `ABILITY_DELAYS.nt_combo_delay` 2.0 (`//gs c nt`) |
-| `_master/config/brd/BRD_TP_CONFIG.lua` | 70 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
+| `_master/config/brd/BRD_TP_CONFIG.lua` | 81 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
 | `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30; also by `lockstyle_pieces.lua`, for `//gs c lockscan`) |
 | `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
 | `_master/config/brd/BRD_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
@@ -226,7 +226,7 @@ status set right after it.
 
 GearSwap's own `check_spell` lets Honor March / Aria of Passion through
 without the instrument worn only while the `range` slot is enabled
-(`helper_functions.lua`); see Combat Mode in Known issues.
+(`helper_functions.lua`); Combat Mode no longer locks `range` on BRD (see Known issues).
 
 ### Main instrument
 
@@ -685,13 +685,13 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
 
 ## Known issues
 
-- **Combat Mode breaks the instruments on BRD** (confirmed in code). When shown
-  and On, `combat_mode.lua` disables `range` (`DEFAULT_SLOTS`), so every
-  instrument `equip` is dropped: dummy songs use the worn instrument, the main
-  instrument never changes, and GearSwap's `check_spell` refuses Honor March /
-  Aria of Passion ("You do not know that spell") unless Marsyas / Loughnashade
-  is already worn. `spell_gear_lock.lua` only opens the lock for Dispelga.
-  Combat Mode is hidden on BRD by default.
+- Fixed 2026-11-13 (working tree, not yet committed on 2026-11-14): Combat Mode
+  broke the instruments on BRD. When shown and On, `combat_mode.lua` disabled
+  `range` (`DEFAULT_SLOTS`), so every instrument `equip` was dropped and GearSwap's
+  `check_spell` refused Honor March / Aria of Passion unless Marsyas / Loughnashade
+  was already worn. `SLOTS_BY_JOB.BRD` is now `{'main', 'sub'}`: swapping an
+  instrument or an ammo does not cost TP (seen in game by the player, 2026-11-13).
+  Combat Mode stays hidden on BRD by default.
 - Fixed 2026-09-28: Shining Fantasia (fifth dummy song) was sung in
   `sets.midcast.BardSong` because `MidcastFallback` re-routed dummy songs; the
   router now calls `MidcastFallback.skip(spell)`.

@@ -138,8 +138,9 @@ The provided file has `sets.precast.JA['Bolster']`, `['Life Cycle']`,
   for every element) or Aspir (Aspir III, II, Aspir) on recast or too
   expensive becomes the next lower tier you know. The replacement uses its own
   sets.
-- **Combat Mode.** `CombatMode` On locks main, sub, range and ammo: no set,
-  Entrust set included, can change them. If you define `sets.CombatMode` (the
+- **Combat Mode.** `CombatMode` On locks main and sub: no set, Entrust set included,
+  can change them. The handbell and the ammo still change (Dunna on the spells, an ammo
+  on a weaponskill): swapping them does not cost TP (seen in game, 2026-11-13). If you define `sets.CombatMode` (the
   provided file has none), it is put on when you turn Combat Mode On, just
   before the lock; without it, what you wear is locked. Off unlocks them.
 - **Automatic belt.** The shared Obi / Orpheus belt goes on over your nukes;

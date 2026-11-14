@@ -68,7 +68,7 @@ the sets files (structure and set names only).
 | `_master/config/blu/BLU_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
-| `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
+| `_master/config/blu/BLU_TP_CONFIG.lua` | 50 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` |
 | `_master/config/blu/BLU_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/config/blu/BLU_CONFIG.lua` | 21 | Template of `<Character>/blu/combat/BLU_CONFIG.lua`: `auto_unbridled = false`, `expiacion_window = false` |
 | `_master/config_global/WEAPON_CONFIG.lua` | - | `equip_without_set = false` |

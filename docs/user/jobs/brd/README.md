@@ -73,7 +73,7 @@ depends on the subjob.
 | `!numpad9` | Alts mirror | always (common key) | yes |
 | `!z` | Sneak on you and every alt | always (common key) | yes |
 | `!x` | Invisible on you and every alt | always (common key) | yes |
-| `!numpad0` | Cycle Combat Mode (weapon lock) | **not bound by default**: only after `//gs c combatmode show`. Read the warning under [Shared features](#shared-features-on-this-job) first | only when shown |
+| `!numpad0` | Cycle Combat Mode (weapon lock) | **not bound by default**: only after `//gs c combatmode show` (what it locks: [Shared features](#shared-features-on-this-job)) | only when shown |
 | `!numpad.` | Cycle Treasure Mode: Off, Tag, Full | **not bound by default**: only after `//gs c th show` | only when shown |
 | `^f1`-`^f8`, `!f1`-`!f8` | Your temporary keys | only the ones you create with `//gs c tb` | no |
 
@@ -178,7 +178,7 @@ starts, after its recast check, never by the command.
 | Obi / Orpheus | Added to elemental weaponskills (Aeolian Edge...) and subjob nukes when the day, weather or distance gives enough (`//gs c belt`). Songs never get it |
 | Dual Wield tiers | Only while you hold two weapons (/NIN, /DNC). The template declares `sets.DW` and its four tiers empty: fill them (empty: nothing changes). Auto DW can be turned off on this job alone in `_common/gear/DW_CONFIG.lua` (`jobs = { BRD = false }`). An Engaged Mode (or Kraken Club, `PDTKC`) can have its own: `sets.DW.Acc.NoHaste`, `sets.DW.SB.MaxHaste`..., worn before the common ones |
 | Treasure Mode | Off and hidden. `//gs c th show`, then add `sets.TreasureHunter` to your set file (the template has none) |
-| Combat Mode | Off and hidden. **On BRD it also locks the instrument slot**: no instrument can change, dummy songs use whatever you wear, and Honor March / Aria of Passion are refused unless Marsyas / Loughnashade is already on. Leave it hidden unless you want exactly that |
+| Combat Mode | Off and hidden. When shown and On, it locks main and sub only: your weapons keep your TP, while the songs' instruments and a weaponskill's ammo still change (swapping them does not cost TP) |
 | Weapon without a set | With `equip_without_set = true` in `_common/gear/WEAPON_CONFIG.lua`, a Main / Sub Weapon value with no set equips that weapon by name |
 | Your own modes | `BRD_CUSTOM.lua`: extra modes, keys and gear rules without code. Your rules never touch the instrument or ammo while you sing |
 | Midcast watchdog | Puts your gear back if a cast result never arrives (`FastCast` mode, no key, default 80) |

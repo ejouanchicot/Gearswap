@@ -140,10 +140,10 @@ Roll 52, Consume Mana 55, Ebullience 55, Gallant's Roll 55, Rapture 55, Wizard's
 |------|-------|---------|------|
 | `UNIVERSAL_WS_DATABASE.lua` | 140 | - | Facade: `resolve()` merges the file of the WS's own skill into `_G.WS_DATABASE`; `ensure_weapon_type()` |
 | `SWORD_WS_DATABASE.lua` | 302 | 18 | Standard schema |
-| `DAGGER_WS_DATABASE.lua` | 301 | 18 | Alternate schema (see below) |
+| `DAGGER_WS_DATABASE.lua` | 410 | 18 | Alternate schema (see below) |
 | `H2H_WS_DATABASE.lua` | 293 | 17 | Standard schema |
 | `GREATSWORD_WS_DATABASE.lua` | 254 | 15 | Standard schema |
-| `GREATAXE_WS_DATABASE.lua` | 260 | 15 | Standard schema |
+| `GREATAXE_WS_DATABASE.lua` | 263 | 15 | Standard schema |
 | `AXE_WS_DATABASE.lua` | 243 | 15 | Standard schema |
 | `SCYTHE_WS_DATABASE.lua` | 255 | 15 | Standard schema |
 | `POLEARM_WS_DATABASE.lua` | 254 | 15 | Standard schema |
@@ -217,7 +217,10 @@ aggregators.
 | `hits` | number | `0` for self-target utilities (Starlight, Moonlight, Dagan, Myrkr) |
 | `element` | string or nil | |
 | `skillchain` | array of property names | |
-| `ftp` | `{[1000]=n, [2000]=n, [3000]=n}` | |
+| `ftp` | `{[1000]=n, [2000]=n, [3000]=n}` | A TP missing = unknown. Read by the TP piece decision (`tp_piece_decision.lua`: the same value at the three TP = fixed fTP, no TP piece) and by `build_ws_table.py` |
+| `replicating` | boolean, optional | Every hit uses the fTP (the TP piece formula then counts the whole damage) |
+| `tp_effect` | string, optional | What the TP raises when the fTP stays the same: `crit`, `accuracy`, `duration`, `effect_chance`, `mp` |
+| `source` | table, optional | Where the values come from, since 2026-11-12: `measured` > `jp` (wiki.ffo.jp) > `bg` (BG-Wiki) > `lsb` (LandSandBoat); `all` = every field, plus `date`, `note`, `unknown`. A value without it reads as `bg` |
 | `skill_required` | number | |
 | `jobs` | `{JOB = level}` | |
 | `special_notes` | string, optional | |
@@ -228,7 +231,10 @@ aggregators.
 `DAGGER_WS_DATABASE.lua` uses different keys: `description`, `skill_level`, `job_levels`,
 `stat_modifiers` (string such as `"100% DEX"`), `sc_properties`, `requires_quest`, `quest_name`,
 `requires_merit`, `merit_ranks`, `special_weapons` (array of `{weapon, level, type, bonus|aftermath}`),
-`element`, `notes`. It has no `type`, `mods`, `hits`, `ftp`, `skill_required`, `jobs` or `skillchain`.
+`element`, `notes`. Since 2026-11-12 its 18 entries also carry `type`, `hits`, `mods`, `ftp`, `replicating`,
+`tp_effect`, `crit` (Evisceration), `attack` (Viper Bite, Mandalic Stab) and `source`, as in the standard
+schema (sources in `notes/docs-perso/moonshade-ftp-2026-11-11/sources/`). It still has no `skill_required`,
+`jobs` or `skillchain`.
 The announcement only needs `description`, so it works; `//gs c info` shows only the fields it knows.
 `main_or_sub` (array of job codes, Viper Bite, Cyclone, Energy Drain, Aeolian Edge) lists the jobs one of
 which must be the main or the subjob (BG Wiki). The Atelier export reads `jobs` or `job_levels` and

@@ -3,8 +3,8 @@
 This is the entry point to the developer documentation of the GearSwap Tetsouo
 project. It explains how the whole thing fits together in one read, then points
 to the detailed pages. Every page under `docs/dev/` was written from the code
-(first on 2026-09-19; citations re-checked and pages updated on 2026-09-25,
-after that day's audit fixes) and cites `path:line`, or `file` + function name
+(first on 2026-09-19; every page checked against the code again on 2026-11-11,
+and the changes up to 2026-11-14 added) and cites `path:line`, or `file` + function name
 where a line number would add nothing but drift. Engine paths are relative to `D:\Windower Tetsouo\addons\GearSwap\`
 and marked *(engine)*; everything else is relative to the repo root
 (`addons/GearSwap/data`).
@@ -28,7 +28,8 @@ Mote-Include:
   HUD, player modes from `<JOB>_CUSTOM.lua`, HP equip priority, dual-box (job
   exchange, alt commands, `alts` / `main`, alt window), Sneak / Invisible on
   the box group (`//gs c stealth`), debuff removal on the box group
-  (`//gs c cleanse`), Sortie commands (per-character `SORTIE_CONFIG.lua`), warp,
+  (`//gs c cleanse`), Sortie commands (per-character `SORTIE_CONFIG.lua`, the
+  fight run for a GEO alt: [Sortie fight](systems/commands-and-debug.md#sortie-fight)), warp,
   wardrobe organizer, refill, watchdogs, factories for lockstyle and macrobook.
 - **Data** under `shared/data/`: spell, job ability and weaponskill databases,
   and the generated equipment HP/MP table (`shared/data/equipment/ITEM_HP_MP.lua`).
@@ -322,8 +323,9 @@ Interactions, Invariants & gotchas, Extending, Known issues):
   the author's disk for `clone_character.py`. Paths to them in these pages
   describe that local layout.
 
-- `docs/user/` (tracked, public): user guides. Several pages are stale (key
-  layout, job count, commands).
+- `docs/user/` (tracked, public): the player pages, one hub per job plus its
+  `states.md` and `sets.md`; checked against the code with these pages (index:
+  [docs/README.md](../README.md)).
 - `scripts/` (tracked):
   - `check_syntax.py`: parses every Lua file, live folders included, with Lua
     5.1 (`python scripts/check_syntax.py [subtree]`, exit 1 on a parse error).

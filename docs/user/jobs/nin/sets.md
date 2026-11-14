@@ -126,7 +126,7 @@ Utsusemi and Migawari (`sets.midcast.Elemental`): it would be found before
 | `sets.precast.WS['Name']` | That weaponskill (the provided file: Blade: Hi, Shun, Metsu, Ku, Ten, Chi, Teki, To, Ei, Savage Blade, Aeolian Edge) |
 | `sets.precast.WS.Acc`, `sets.precast.WS['Name'].Acc` | WS Mode `Acc` (`^numpad5`), or Offense Mode `Acc` while WS Mode is `Normal` |
 
-Moonshade Earring is added by itself when it reaches the next TP step:
+Moonshade Earring is added by itself when it adds more damage than the set piece it replaces:
 [TP bonus](../../features/tp-bonus.md) (`NIN_TP_CONFIG.lua`). Blade: Chi, Teki, To,
 Ei and Aeolian Edge also get the Obi / Orpheus belt by itself.
 

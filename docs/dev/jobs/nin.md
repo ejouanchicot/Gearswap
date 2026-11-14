@@ -53,7 +53,7 @@ and spell messages (`NIN_JA_DATABASE`, `NINJUTSU_DATABASE`).
 | `shared/jobs/nin/functions/logic/set_builder.lua` | 153 | Idle and engaged: base, buff layers, Mote layers, weapons, movement (night set) |
 | `_master/config/nin/NIN_STATES.lua` | 77 | Mote mode options, `MainWeapon`, `SubWeapon`, `MagicBurstMode`, `FastCast`, `AutoMedicine` |
 | `_master/config/nin/NIN_KEYBINDS.lua` | 39 | Data only: 6 entries (+ 2 commented per-weapon examples) handed to `KeybindManager.create('NIN', ...)` |
-| `_master/config/nin/NIN_TP_CONFIG.lua` | 42 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.NINTPConfig` |
+| `_master/config/nin/NIN_TP_CONFIG.lua` | 53 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.NINTPConfig` |
 | `_master/config/nin/NIN_CUSTOM.lua` | 117 | Player modes and gear rules, commented examples only |
 | `_master/config/nin/NIN_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/nin/NIN_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |

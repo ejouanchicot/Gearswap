@@ -68,7 +68,7 @@ numbers are avoided because they drift.
 | `shared/utils/drg/auto_jump.lua` | 226 | Auto-Jump before a WS on /DRG, run by `WSPrecastHandler.handle` for every job; `attach` gives every job `state.JumpAuto` |
 | `shared/utils/drg/jump_landing.lua` | 92 | `JumpLanding.after(name, done)`: a Jump's TP read once it landed (its action packet through `ActionListener`, then the TP moving, 0.6 s at most after it; sent again at 1.2 s if it did not go off; 3.0 s at most), used by Auto-Jump and `//gs c jump` / `tp` |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 92 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
-| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 239 | TP bonus piece selection (shared) |
+| `shared/utils/weaponskill/tp_bonus_calculator.lua` | 283 | TP bonus piece selection (shared) |
 | `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 125 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_CONFIG.lua` | 27 | The job's switches, read through `JobConfig` / `AutoOptions`: `retaliation_cancel`, the `berserk` and `defender` chains, `add_sam` |
@@ -76,7 +76,7 @@ numbers are avoided because they drift.
 | `_master/config/war/WAR_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/war/WAR_HUD.lua` | 31 | HUD section / row order for WAR (empty lists = the default) |
 | `_master/config/war/WAR_WS_CONFIG.lua` | 111 | `max_slots = 5`, WS list per weapon key, `get(weapon)` |
-| `_master/config/war/WAR_TP_CONFIG.lua` | 212 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
+| `_master/config/war/WAR_TP_CONFIG.lua` | 223 | `_G.WARTPConfig`: Savagery / Agoge, Fencer JP, pieces, weapons, Fencer detection |
 | `_master/config/war/WAR_LOCKSTYLE.lua` | 71 | `default = 4`, `by_subjob`, `get_style` |
 | `_master/config/war/WAR_MACROBOOK.lua` | 106 | `solo[sub]`, `dualbox[alt_job][sub]`, `default` (book 22 page 1) |
 | `_master/config/war/WAR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |

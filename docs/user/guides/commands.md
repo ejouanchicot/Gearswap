@@ -66,7 +66,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `wo global` / `wo global preview` (`global dry`) | Same as `wo` / `wo preview` (older names) |
 | `wo recover` (`unlock`) / `wo reset` | Release the slots if a run was interrupted / clear a run stuck after a crash and release the slots |
 | `rf` (`refill`) | Restock consumables from the Mog Case, Sack and Satchel, put the surplus back, and the usable items this list does not name (which ones: `store_foreign`, [configuration](configuration.md#refill-job_refilllua)); also sent to your other boxes |
-| `naked` (or `equip naked`) | Remove every piece. A locked slot (Combat Mode, craft, `gs disable`) keeps its piece |
+| `naked` (or `equip naked`) | Remove every piece. Locked slots are unlocked first (Combat Mode, WHM Melee, your own locks) and lock again at the next gear change; only a craft session keeps all its gear, and Doom keeps its neck, rings and waist |
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
@@ -126,7 +126,7 @@ unlocked wardrobes the rest, and no wardrobe is protected.
 | `alt <name> [args]` | Run an alt command even when a local command has the same name |
 | `<name>` | An alt command, when no local command has that name |
 | `altsync`, `altbuffs`, `altdebug` | Alt buff reports: ask again / show / trace |
-| `sortie ...` | Sortie orders: your stance for a target, and a Silmaril profile for your alt. Exists only on a character that has `_common/tools/SORTIE_CONFIG.lua` (the author's, Tetsouo's, is the example: his alt, targets, stances); without it the command says it is not set up and the help does not list it. With Tetsouo's file, on PLD it also sets Phalanx SIRD (Off for `aminon`, On for every other target) and `sortie escort` turns Regen On, only with /SCH as subjob |
+| `sortie ...` | Sortie orders: your stance for a target, and a Silmaril profile for your alt. Exists only on a character that has `_common/tools/SORTIE_CONFIG.lua` (the author's, Tetsouo's, is the example: his alt, targets, stances); without it the command says it is not set up and the help does not list it. With Tetsouo's file, on PLD it also sets Phalanx SIRD (Off for `aminon`, On for every other target) and `sortie escort` turns Regen On, only with /SCH or /RUN as subjob. A target can have a prep profile loaded before the pull: `sortie <target> fight` then runs the fight (the alt walks behind the boss first when the target asks for it, opens with Bolster / Blaze of Glory / Ecliptic Attrition from its own recasts, then loads the fight profile); a target with `auto_fight` starts the fight by itself once the party claims the monster. A command meant for another boss than the one around is refused; add `force` as the last word to send it anyway. Every key of the file: [commands-and-debug, Sortie config](../../dev/systems/commands-and-debug.md#sortie-config) |
 
 The boxes also send each other commands you never type: `altjobupdate`,
 `requestjob`, `setalt`, `altbuff`, `altbuffsync`, `altreport`, `altmirror`,

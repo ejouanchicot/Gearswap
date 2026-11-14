@@ -63,7 +63,7 @@ Write a weaponskill set as `set_combine(sets.precast.WS, {...})`, never `{}`: an
 set with the weaponskill's name is still "its own set", so it would hide
 `sets.precast.WS` and change nothing.
 
-TP bonus: a Moonshade Earring is added only when it reaches the next TP step, and a held
+TP bonus: a Moonshade Earring is added only when it adds more damage than the set piece it replaces, and a held
 Lionheart counts +500 ([TP bonus gear](../../features/tp-bonus.md), `RUN_TP_CONFIG.lua`).
 
 ## Job abilities
@@ -135,8 +135,8 @@ family such as `sets.midcast.BarElement`, then the skill set).
   in precast (`sets.precast.FC.CureSelf`) and midcast (CureSelf / CureOther).
 - **Runes swap nothing** with the provided file: `sets.precast.JA` is empty, so your
   idle or engaged gear stays on.
-- **TP bonus**: Moonshade Earring added to a weaponskill only when it reaches the next
-  TP step ([TP bonus gear](../../features/tp-bonus.md)).
+- **TP bonus**: Moonshade Earring added to a weaponskill only when it adds more damage than the set piece it replaces
+  ([TP bonus gear](../../features/tp-bonus.md)).
 - `//gs c rune` and `//gs c aoe` only send the ability or spell; the gear is then chosen
   as for any other rune or blue spell.
 - RUN has no automatic ability before a spell or weaponskill, no slot lock, no ward or

@@ -202,9 +202,9 @@ commands such as `Fight`, `Heel`, `Stay`, `Leave`.
 BST has no weaponskill mode, so only these plain names are read. A weaponskill
 under 1000 TP is cancelled with a message.
 
-**TP bonus earring, by itself:** when a Moonshade Earring would carry your TP to
-the next step (2000 or 3000), it is put in the left ear on top of the weaponskill
-set. The piece and its bonus come from `BST_TP_CONFIG.lua` (`pieces`), which also
+**TP bonus earring, by itself:** when a Moonshade Earring adds more damage than
+the set's earring it replaces, it is put in the left ear on top of the weaponskill
+set ([TP bonus](../../features/tp-bonus.md)). The piece and its bonus come from `BST_TP_CONFIG.lua` (`pieces`), which also
 counts your Fencer bonus (`fencer_jp_gifts`). No set is needed for this.
 
 ## Subjob magic

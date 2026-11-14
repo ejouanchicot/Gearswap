@@ -73,7 +73,7 @@ the sets files (structure and set names only).
 | `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (no `get_style`: read by `LockstyleManager` itself since 2026-10-30) |
 | `_master/config/rdm/RDM_MACROBOOK.lua` | 42 | `default` book 2 page 1, `solo[sub]`, empty `dualbox` |
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
-| `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
+| `_master/config/rdm/RDM_TP_CONFIG.lua` | 86 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
 | `_master/config/rdm/RDM_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/rdm_sets.lua` | 577 | Template sets (flat) |
 | `_master/Kaories/config/rdm/*`, `_master/Kaories/sets/rdm_sets.lua` | 7 files, 631 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; its own `RDM_REFILL.lua` list; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |

@@ -51,7 +51,7 @@ What SCH adds on top of the shared pipeline:
 | `shared/jobs/sch/functions/logic/set_builder.lua` | 113 | Idle (base, Sublimation, Mote layers, weapons, movement) and engaged |
 | `_master/config/sch/SCH_STATES.lua` | 88 | Modes (see below) |
 | `_master/config/sch/SCH_KEYBINDS.lua` | 46 | 9 mode keys + 5 action keys, `KeybindManager.create('SCH', ...)` |
-| `_master/config/sch/SCH_TP_CONFIG.lua` | 44 | Moonshade 250, empty `weapons`, sets `_G.SCHTPConfig` |
+| `_master/config/sch/SCH_TP_CONFIG.lua` | 55 | Moonshade 250, empty `weapons`, sets `_G.SCHTPConfig` |
 | `_master/config/sch/SCH_CUSTOM.lua` | 120 | Player modes and gear rules, commented examples only |
 | `_master/config/sch/SCH_HUD.lua` | 32 | HUD section / row order (empty = default) |
 | `_master/config/sch/SCH_LOCKSTYLE.lua` | 27 | `default = 1` |

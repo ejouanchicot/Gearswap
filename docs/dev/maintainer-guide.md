@@ -403,6 +403,27 @@ name walks the whole item list. Use `shared/utils/equipment/item_index.lua`
 `refill/item_resolver.lua` and `weaponskill/ws_slots.lua` (until 2026-09-28 each built its own index, again on every
 job load). Add a lookup there rather than a new scan.
 
+### `table.concat` is quadratic in game
+
+In game, `table` is shared with the GearSwap addon, and Windower's
+`addons/libs/tables.lua` (`function table.concat`, line 538) replaces Lua's own with a loop that adds one
+piece at a time: every piece copies all the text built so far. Measured on
+2026-11-13: the Atelier export's catalog of Kaories RDM/WHM (300 KB of JSON)
+took 315 MB of Lua memory in game, 6 MB once joined two by two. Offline Lua has
+the real `table.concat`, so no offline test shows it unless it loads
+`tables.lua` (`scripts/atelier/text_join_test.lua` does). Build any long text
+(JSON, a file) with `shared/utils/core/text_join.lua` (`TextJoin.join(parts, sep)`);
+a handful of short pieces can keep `table.concat`.
+
+### Never send the client's `/equip <slot> empty` in a row
+
+Sent several times in a row, the game's own `/equip <slot> empty` made the
+client free one of its item-name records twice and crash (0xc0000374, full dump
+of 2026-11-13, 4 crashes out of 4). Empty slots through GearSwap (`equip` with
+`empty`, `//gs c naked`, which enables the slots it empties first since
+2026-11-13: [commands-and-debug.md](systems/commands-and-debug.md#common-commands-commoncommandshandle_command)).
+The wardrobe organizer's Phase 0 and PorterPacker no longer need it.
+
 ---
 
 ## 3. The gear wrapper chain

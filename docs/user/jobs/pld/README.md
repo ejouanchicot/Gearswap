@@ -152,7 +152,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
 | Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
 | Recast announce | An action refused on recast can tell the party, per action, from `_common/combat/RECAST_CONFIG.lua` |
-| TP bonus | Moonshade Earring added to a weaponskill only when it reaches the next TP step; Sequence counts +500 ([TP bonus](../../features/tp-bonus.md)) |
+| TP bonus | Moonshade Earring added to a weaponskill only when it adds more damage than the set piece it replaces; Sequence counts +500 ([TP bonus](../../features/tp-bonus.md)) |
 
 ## Configuration files for this job
 

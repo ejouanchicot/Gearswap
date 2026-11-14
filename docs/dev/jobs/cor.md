@@ -73,7 +73,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
 | `_master/config/cor/COR_MACROBOOK.lua` | 68 | Book 3 page 1; `dualbox` commented; unused `get_macrobook` |
 | `_master/config/cor/COR_CONFIG.lua` | 16 | The job's own settings, read through `JobConfig` (`refresh_mp_below = 50`) |
-| `_master/config/cor/COR_TP_CONFIG.lua` | 61 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
+| `_master/config/cor/COR_TP_CONFIG.lua` | 72 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500) |
 | `_master/config/cor/COR_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/sets/cor_sets.lua` | 450 | Template sets (flat; `sets.SingleWield` and `sets.DW.*` declared empty, with a commented example above each) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 564 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |

@@ -17,7 +17,7 @@ Everything below was re-read on disk on 2026-09-28. Since the previous revision 
 | `shared/utils/warp/casting/item_user.lua` | 743 | Ring sequence: readiness check, lock, equip, wait, use, post-use monitor, restore |
 | `shared/utils/warp/casting/cast_helpers.lua` | 92 | `has_item()` over inventory + wardrobes, ring name to id table |
 | `shared/utils/warp/warp_detector.lua` | 243 | Spell/item classification, `ActionListener` subscription (`warp_detector`) made on every load (inert, see Known issues) |
-| `shared/utils/warp/warp_equipment.lua` | 199 | Module-flag lock/unlock of slots, fed by the detector and `warp lock` |
+| `shared/utils/warp/warp_equipment.lua` | 211 | Module-flag lock/unlock of slots, fed by the detector and `warp lock` |
 | `shared/utils/warp/warp_precast.lua` | 80 | Equips `sets.precast.FC` for transport spells (through the precast hook) |
 | `shared/utils/warp/warp_item_database.lua` | 14 | Alias: `return require('shared/utils/warp/database/warp_database_core')` |
 | `shared/utils/warp/database/warp_database_core.lua` | 268 | Destination keys, lazy module routing, lookups |
@@ -216,7 +216,7 @@ A movement interruption of the item is not seen by either listener (the item-int
 
 ### Automatic detection (inert)
 
-The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:165-191`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:127-149`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
+The design: `WarpDetector`'s action subscription (`init_action_listener`, `warp_detector.lua:165-191`; `ActionListener` key `warp_detector`, one raw listener for every module, so it does not cost a GearSwap event cycle per action) recognises the player's warp item use (category 9, id looked up in the database) and calls every callback in `_G.warp_detector_callbacks` with `('item', warp_data)`; `WarpEquipment` registers one that calls `on_warp_item`, which calls `lock('item', duration, tag, slot)` (`warp_equipment.lua:139-161`): `disable()` the slot and schedule `unlock(true)` after `duration + 3` s.
 
 In the code on disk the item lock never engages: `init_action_listener()` calls `clear_callbacks()` first, which drops the callback `WarpEquipment.init()` registered just before, and the listener reads the item id from `act.param` instead of `act.targets[1].actions[1].param`. The comment in `WarpEquipment.init()` says so and warns against just swapping the two calls (database slots such as `ears` and `item` are not GearSwap slot names, and the ring commands already lock `ring1` themselves). The listener itself is registered on every load. The only live path into `WarpEquipment.lock()` is `//gs c warp lock` (all slots, `lock('manual', 10)`, released after 13 s).
 

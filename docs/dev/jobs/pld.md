@@ -69,7 +69,7 @@ numbers are avoided because they drift.
 | `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: `max_slots = 2`, the two weaponskills each sword offers |
 | `_master/config/pld/PLD_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/pld/PLD_MACROBOOK.lua` | 76 | Book 15/18/20 per subjob, dual-box table |
-| `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
+| `_master/config/pld/PLD_TP_CONFIG.lua` | 86 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic / manual rotation |
 | `_master/config/pld/PLD_CONFIG.lua` | 19 | `auto_divine_emblem`, `auto_majesty` (both `true`): the switches of the two precast auto-abilities, read through `shared/utils/core/auto_options.lua` |
 | `_master/config/pld/PLD_WEAPONS.lua` | 29 | `shields`, `stance_weapon`, `grips` for the set builder; every line commented (examples only), so nothing is forced but the default grip |

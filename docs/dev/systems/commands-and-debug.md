@@ -190,7 +190,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 
 | Command (aliases) | Args | Effect | Route |
 |---|---|---|---|
-| `naked` | - | `equip()` every slot to `empty`, prints "All slots cleared." Does not `enable` disabled slots (Mote's own `naked` did) | `handle_naked` |
+| `naked` | - | `equip()` every slot to `empty`, prints "All slots cleared." Since 2026-11-13 (`9e0747a8`) it first `enable`s the slots it empties (`naked_unlock_slots`): Combat Mode, WHM Melee ON and CUSTOM locks no longer keep their piece, and come back by themselves at the next update. Two exceptions: during a craft session nothing is enabled, and under Doom neck, both rings and waist stay locked. It also marks the bags busy for PorterPacker (`bags_quiet.lua` `mark_busy`) | `handle_naked` |
 | `equip naked` | `naked` (any case) | Same as `naked`. `equip` alone or with another argument prints "Usage: //gs c equip naked" and returns true | router branch |
 | `checksets` | - | `EquipmentChecker.check_job_equipment(job_name)` | `handle_checksets` -> `equipment/equipment_checker.lua` |
 | `gearscan` | - | Reads the augments of every equipment piece in every bag (except temporary and recycle), writes `<Character>/saved/gear_augments.lua` for HP priority, shows a summary | router branch -> `equipment/gear_scan.lua` `GearScan.run`, see [equipment-and-inventory.md](equipment-and-inventory.md#gear-scan) |
@@ -226,7 +226,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `buff` (`buffs`, `buffself`, `selfbuff`, `smartbuff`) | - | Every job: `_G.job_buff_extra` first when the job defines it (DNC: dance and samba), then the main job's `job` list, then the subjob's `subjob` list (skipped on a level-0 subjob), from `_common/combat/BUFF_CONFIG.lua` (defaults: BLM Stoneskin, Blink, Aquaveil, Ice Spikes; /WAR Berserk, Aggressor, Warcry; /SAM Hasso (two-handed weapon only), Third Eye; /NIN Utsusemi: Ni else Ichi; /DNC Haste Samba (350 TP); /WHM Reraise). What is up or on recast is listed, what the jobs cannot use is left out quietly, the rest goes through the shared action queue one after the other. A buff up with less than `refresh_below` percent left is recast (`cancel_first` ones cancelled first); a debuff landing during the queue is handled by `buff_guard.lua`. No list applied: a warning naming the file | `buffs/buff_command.lua` `BuffCommand.apply`, see [midcast-and-buffs.md](midcast-and-buffs.md#buff-command-and-engine) |
 | `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/_common/travel/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
 | `cleanse` | none, `self`, `check`, `help` (any other word); internal `local <name>`, `cast <spell> <name>`, `report <name> <body>` | Debuffs off this character and every other member of the box group (own spell, partner, item), settings in `<Character>/_common/combat/CLEANSE_CONFIG.lua` | `debuff/cleanse.lua` `Cleanse.handle`, see [cleanse.md](cleanse.md) |
-| `sortie` | `<target>` (the `targets` or `aliases` of the config), `escort [Indi-X]`, the `orders` (`off`, `judgment`, `fullcircle` in Tetsouo's), `list` (also with no argument), `help` | Only for a character with `_common/tools/SORTIE_CONFIG.lua` (see [Sortie config](#sortie-config)); without it every `sortie` word prints the warning `sortie: not set up for this character (_common/tools/SORTIE_CONFIG.lua)`. A target sets this character's stance and the target states, then tells the alt `sm load <profile_root><profile>`, `sm follow off`, `sm on` and its Indi- (`sm load` names a folder; Silmaril picks the file of the alt's current job and subjob there). A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
+| `sortie` | `<target> [fight] [force]` (the `targets` or `aliases` of the config), `escort [Indi-X]`, the `orders` (`off`, `judgment`, `fullcircle` in Tetsouo's), `list` (also with no argument), `help`; internal `<target> placed` / `<target> opened` (the alt's answers) | Only for a character with `_common/tools/SORTIE_CONFIG.lua` (see [Sortie config](#sortie-config)); without it every `sortie` word prints the warning `sortie: not set up for this character (_common/tools/SORTIE_CONFIG.lua)`. A target sets this character's stance and the target states, the alt's states (`gs c set ...`), then tells the alt `sm load <profile_root><profile>`, `sm follow <follow>` or `sm follow off`, `gs c behind` or `gs c behind off`, `sm on`, and `gs c indiensure <Indi->` when the bot cannot be trusted to cast it (`sm load` names a folder; Silmaril picks the file of the alt's current job and subjob there). A target with `prep` loads the prep profile; `<target> fight` then runs the fight (see [Sortie fight](#sortie-fight)). Since 2026-11-14 a command meant for another boss is refused (`sortie_boss.lua`), `force` as last word skips that check. A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
 
 #### Sortie config
 
@@ -242,6 +242,27 @@ All the data of `//gs c sortie` is the character's `_common/tools/SORTIE_CONFIG.
 | `aliases` | `{alias = target}` | Bosses fought the same way (Tetsouo: `degei`, `skomora`, `ghatjot`, `dhartok` -> `melee`) |
 | `escort` | `{indi, profile, states = {SUB = {...}}}` | `sortie escort [Indi-X]`: `indi` is the default Indi- (`Indi-Regen` when missing); `profile` (optional) is a Silmaril profile folder under `profile_root` whose only module is that Indi-: with it the escort loads that profile with Silmaril left off while the alt still casts the Indi- by hand (the alt's `gs c escort <indi> <leader> <profile>`, since 2026-10-17), and `load_profile` no longer casts a target's Indi- by hand, since Silmaril casts a profile's Indi- whenever its name differs from the previous profile's; the by-hand cast remains right after a reload (`profile_indi` is nil), for an Indi- typed after `escort`, and when `profile` is absent; `states` per subjob of this character, set first (Tetsouo: `SCH = {'Regen on'}`, PLD's /SCH Regen). Then the alt gets `sm off` and `gs c escort <Indi> <me>` |
 | `orders` | `{name = {command, action?}}` | One-shot console command to the alt; `action` is the text shown, none = "Silmaril OFF". A `sm off` order also records Silmaril off in the alts window (`AltGroup.note`) |
+| `by_job` | `{JOB = {key = value}}` | Another main job of this character fights its own way: the keys it names replace the ones above, its `targets` replace only the targets of the same name (Tetsouo: DNC, its own `profile_root` and `stances`) |
+| `alt_target_states` | `{"State Value", ...}` | Sent to the alt (`gs c set ...`) for every target, before its profile starts; a target's `alt_states` win (Tetsouo: `LuopanMode DPS`, Gartell `LuopanMode DT`) |
+| `targets.<name>.prep` | `{profile, indi, summary, follow?, behind?}` | A profile loaded first, before the pull; `follow` = the player the alt follows with it (else follow off). `//gs c sortie <name> fight` (typed, sent by a trigger of the prep profile, or by `auto_fight`) moves on to the target's own profile |
+| `targets.<name>.fight_ja` | `{'Bolster', 'Blaze of Glory', 'Ecliptic Attrition'}` | The abilities the alt may open the fight with, chosen from its own recasts and buffs (`//gs c fightopen` on the GEO, see [geo.md](../jobs/geo.md)) |
+| `targets.<name>.full_circle` | `false` | Without `fight_ja`: the fight sends no Full Circle before its profile |
+| `targets.<name>.full_circle_first` | `true` | A load stops the bot, dismisses the alt's luopan with Full Circle, then loads the profile 1.5 s later |
+| `targets.<name>.behind`, `.mob` | `true`, monster name | The alt walks behind its locked monster in that profile (`//gs c behind`). With `mob`, the fight starts with that placement (`gs c behind first ...`) and goes on once the alt answers `placed` (or after 14 s) |
+| `targets.<name>.auto_fight` | `true` (with `prep` and `mob`) | After the prep, `sortie_watch.lua` watches for a new claim of that monster by the party or alliance and runs `<name> fight` once, as if typed (stops on any other `sortie` command, a zone change, a newer load, or after 30 min) |
+| `bosses` | `{typed name = 'Boss'}` | The boss each command is for (else the target's `mob`): see [Sortie fight](#sortie-fight) |
+
+#### Sortie fight
+
+`//gs c sortie <target> fight` (`start_fight`, `sortie_commands.lua`), for a target with `prep`:
+
+1. **Boss check** (`sortie_boss.lua`, 2026-11-14). A target load is refused while another boss of `bosses` is in combat within 50 yalms and this one is not; a `fight` with `behind` and `mob` is refused unless this target's boss is around and alive. No boss known, or the game unreadable: no check. `force` as last word skips it. A refused command does not drop the fight under way.
+2. Any other `sortie` command drops the fight under way (`cancel_fight`: its late answers are ignored, the alt gets `gs c fightopen off`, and `gs c fightend` when an opening was live). The state is on `windower._sortie_fight` / `_sortie_fight_live`, so it survives a reload.
+3. **Placement** (`behind` and `mob`): the alt gets `gs c behind first <me> <target> [id=<n>] <mob>` and answers `sortie <target> placed` once behind (its own wait 12 s, ours 14 s).
+4. **Opening** (`fight_ja`): the alt gets `gs c fightopen <me> <target> <bolster,bog,ea>`, chooses from its recasts and answers `opened` (ours waits 15 s at most). Without `fight_ja`: Full Circle, unless `full_circle = false`.
+5. The fight profile loads like any other (with `behind` when set). With an opening, the alt keeps watching its recasts (a COR's Wild Card or Random Deal) until the next `sortie` command sends `fightend`.
+
+Checked offline (`scripts/atelier/sortie_fight_test.lua`, `sortie_watch_test.lua`, `stand_behind_test.lua`, `fight_opening_test.lua`); the Blaze of Glory then Ecliptic Attrition opening seen in game on Vampire Leech (commit `3860c16c`, 2026-11-14), the rest not yet.
 
 **Box group and alt**
 
@@ -338,7 +359,7 @@ Mote-native commands that still reach Mote: `update`, `toggle`, `cycle`, `cycleb
 | `handle_alt_command(cmd, args)` | `AltCommands.handle(cmd, args, runs_locally)` (module resolved once per sandbox by the local `alt_commands()`) | router |
 | `handle_craft`, `handle_fish`, `handle_uncraft` | Aliases of `CraftCommands.*` | router |
 | `handle_testcolors()` | Colour chart | router |
-| `handle_naked()` | Every slot `empty` | router |
+| `handle_naked()` | Enables the slots it may (not during a craft, not Doom's four), then every slot `empty` | router |
 | `handle_lockstyle()` | Reads global `select_default_lockstyle`; broadcasts `ls` | router |
 | `handle_dressup()` | `LockstyleManager.toggle_dressup()` + message | router |
 | `handle_warp_commands(cmdParams)` | `WarpCommands.handle_command`, or the load diagnostic | router |
@@ -516,6 +537,24 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `TAG` | Treasure Hunter tagging |
   | `ROLL` | COR roll hold (`cor/functions/logic/roll_hold.lua`) |
   | `RDM` | RDM cast-by-name |
+  | `STALL` | `trace_log.lua` `start_stall_watch`: a check due every 0.05 s that comes at least 0.1 s late writes `<n> ms frozen` (a load, a long handler); the due time lives on `windower`, so the freeze of a load is seen by the next load's first check |
+  | `EXPORT` | `atelier/atelier_export.lua` (2026-11-13): each export step, JSON key and the final text with its time and the Lua memory it grew (`TraceLog.memory_kb`), and `failed: <error>` |
+  | `ATELIER` | `atelier/set_push.lua`: a push history the page could not read, kept aside as `.bad` |
+  | `SYNC` | `dualbox/dualbox_sync_ipc.lua`: messages sent and received between the boxes |
+  | `REFILL` | `inventory/refill_manager.lua`: each refill decision |
+  | `BUFF` | `buffs/buff_guard.lua`: a debuff met by the `//gs c buff` queue or `//gs c songs` |
+  | `CURE` | `debuff/uncurable_debuffs.lua`: a cure item that did not take its debuff off, the mark laid or lifted |
+  | `LOGS` | `core/log_keeper.lua`: a journal moved to `.old.log`, dated files deleted |
+  | `DEAL` | `combat/random_deal_watch.lua` (`//gs c dealwatch`): a Random Deal or Wild Card, who used it, whether it reached this character |
+  | `DW` | `equipment/dual_wield.lua`: the engaged mode, the tier and the set chosen |
+  | `JA` | `precast/ability_queue.lua`: the job abilities queued, sent, refused and dropped, the bot's spells held back (GEO, see [geo.md](../jobs/geo.md)) |
+  | `CALLOUT` | `messages/party_callouts.lua`: each listed spell seen land or be resisted, with its message id, told in party chat or not |
+  | `SORTIE` | `sortie/sortie_watch.lua`: the watch of an `auto_fight` target, the claim seen, the fight started |
+  | `BEHIND`, `LUOPAN`, `OPENING` | GEO `logic/stand_behind.lua` (`//gs c behind`), `logic/luopan_behind.lua` (a Geo- placed behind or ahead of its monster), `logic/fight_opening.lua` (`//gs c fightopen`) |
+  | `SONGS` | BRD `logic/song_queue.lua`, `song_owner.lua`, `song_opening.lua`: `//gs c songs`, who sang which song |
+  | `READY` | BST `logic/ready_hold.lua`: a Ready move's set held until the pet's move lands |
+  | `ENGAGED`, `IDLE`, `WS` | the set builders of BLU, MNK, NIN (`ENGAGED`) and SCH (`IDLE`), MNK's weaponskill mode (`WS`, `MNK_PRECAST.lua`): the set path and what went on top |
+  | `UNBRIDLED`, `BST` | BLU `logic/unbridled.lua` (Unbridled Learning before a spell), BST's pet monitor error (`shared/entry/bst.lua`) |
   | `HUD`, `REGION`, `WARP`, `SAMBA`, `EXPIACION`, `TRACE` | HUD section toggles, region config, warp item use, DNC samba, BLU Expiacion guard, start/stop marks |
 
 - The COR check `//gs c rolldebug` writes its own `<Character>/logs/rolls/rolldebug.log` (see [COR](../jobs/cor.md)), separate from the trace.
@@ -589,7 +628,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 - `table.unpack` is Windower's (`libs/tables.lua`). `table.unpack(t)` is `unpack(t)`, but `table.unpack(t, 2)` returns `t[2]` only, not `t[2..n]`.
 - A common name or a warp alias (and `<alias>all`) always beats a job command checked after `is_common_command`. Before naming a new job command, grep `CommonCommands.is_common_command` and `warp_command_registry.lua`. Watch the short aliases: `cc`, `pt`, `op`, `ns`, `ld`, `td`, `ar`, `mm` are warp destinations, and any word ending in `all` whose base is an alias is a warp broadcast.
 - An alt-config key never beats a job command. However, a job command that returns without setting `eventArgs.handled = true` falls through to Mote, and so to the alt's command of that name. Example: WAR's `berserk` when `buff_war` is nil.
-- `naked` from CommonCommands does not re-enable disabled slots: slots disabled by `gs disable` (or by Combat Mode, CUSTOM locks, craft) keep their gear while the message says all slots were cleared. The wardrobe organizer enables slots before it sends `naked` (`wardrobe/lib/phases.lua`, Phase 0).
+- `naked` from CommonCommands enables the slots it empties since 2026-11-13, except during a craft session (every slot keeps its gear) and Doom's neck, rings and waist. Before, a locked slot kept its piece while the message said all slots were cleared, and PorterPacker fell back on the client's `/equip <slot> empty`, which crashed the game (0xc0000374, a double free in the client, full dump of 2026-11-13). Never send `/equip <slot> empty` in a row from code: the wardrobe organizer dropped it too (`wardrobe/lib/phases.lua`, Phase 0, see [wardrobe-organizer.md](wardrobe-organizer.md)).
 - `refill` and `lockstyle` always broadcast to the dual-box partner. This includes the `gs c rf` sent by craft and the `gs c ls` / `gs c rf` the wardrobe organizer sends when it finishes.
 - `debugprecast` has an effect only on BRD, RDM and RUN, the jobs that read `_G.PrecastDebugState`. On BST it toggles a different flag.
 - `info` loads the complete ability, spell and weaponskill databases on first use.

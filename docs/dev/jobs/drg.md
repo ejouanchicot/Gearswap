@@ -47,7 +47,7 @@ What DRG adds on top of the shared pipeline:
 | `shared/jobs/drg/functions/logic/jumps.lua` | 81 | `order`, `pick`, `execute` (`//gs c jump`) |
 | `_master/config/drg/DRG_STATES.lua` | 71 | Mote mode options, `MainWeapon`, `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/drg/DRG_KEYBINDS.lua` | 35 | Data only: 5 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('DRG', ...)` |
-| `_master/config/drg/DRG_TP_CONFIG.lua` | 51 | `pieces` (Moonshade 250), empty `weapons`, `jumps` order, `get_weapon_bonus`, sets `_G.DRGTPConfig` |
+| `_master/config/drg/DRG_TP_CONFIG.lua` | 62 | `pieces` (Moonshade 250), empty `weapons`, `jumps` order, `get_weapon_bonus`, sets `_G.DRGTPConfig` |
 | `_master/config/drg/DRG_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
 | `_master/config/drg/DRG_HUD.lua` | 31 | HUD section / row order (empty = default) |
 | `_master/config/drg/DRG_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |

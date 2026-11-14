@@ -72,8 +72,8 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
   `BRD_SONG_CONFIG.lua`): `lullaby` can become Horde Lullaby II, `lullaby2` Foe
   Lullaby, `elegy` Battlefield Elegy, `requiem` Foe Requiem VI, a Threnody II its
   Threnody.
-- Combat Mode (hidden on BRD) also locks the instrument slot: see
-  [README.md](README.md#shared-features-on-this-job) before showing it.
+- Combat Mode (hidden on BRD) locks main and sub only: the instruments still change
+  ([README.md](README.md#shared-features-on-this-job)).
 - **Next song as a dummy** (optional switch): add to your `BRD_CUSTOM.lua`
 
   ```lua

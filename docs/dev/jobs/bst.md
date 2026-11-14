@@ -71,7 +71,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `_master/config/bst/BST_LOCKSTYLE.lua` | 65 | Lockstyle 6 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/bst/BST_MACROBOOK.lua` | 61 | Book 12 page 1; `dualbox` GEO/DNC 13, COR/DNC 14, RDM/DNC 12 |
 | `_master/config/bst/BST_PET_DATA.lua` | 179 | 25 jug pets (broth, species, ecosystem, job), `ecosystems` index, three list getters -> `_G.BSTBeastPetData` |
-| `_master/config/bst/BST_TP_CONFIG.lua` | 179 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
+| `_master/config/bst/BST_TP_CONFIG.lua` | 190 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 151 | Monster correlation matrix (BG-Wiki Killer pages, 2026-10-27), loaded by the entry into `_G.BSTEcosystemData` (optional): said in the chat on an `Ecosystem` change and when a pet comes out |
 | `_master/config/bst/BST_REFILL.lua` | 42 | Refill list, every line commented (`extra`, `default`, `subjobs` examples): `//gs c rf` uses the common list of `REFILL_CONFIG.lua` until one is uncommented |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |

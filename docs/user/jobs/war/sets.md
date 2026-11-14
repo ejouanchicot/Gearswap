@@ -81,7 +81,7 @@ same set, and UkonvasaraAFM3 / NaeglingKC are built from it.
 
 Weaponskills in your slots without a set of their own (Steel Cyclone, Decimation, Sonic
 Thrust, Black Halo...) use `sets.precast.WS`. TP bonus pieces (Moonshade Earring, Boii
-Cuisses +3) are added only when they reach the next TP step: see
+Cuisses +3) are added only when they add more damage than the set pieces they replace: see
 [tp-bonus.md](../../features/tp-bonus.md).
 
 ## Job abilities
@@ -129,8 +129,8 @@ midcast set at all**: spells are cast in whatever you are wearing.
   is sent again.
 - **Retaliation cancel**: with Retaliation up, moving for 5 seconds while not engaged
   cancels it (needs the Windower `Cancel` addon). No gear involved.
-- **TP bonus**: Moonshade Earring and Boii Cuisses +3 only when they reach the next TP
-  step; Chango, Warcry and Fencer are counted ([tp-bonus.md](../../features/tp-bonus.md)).
+- **TP bonus**: Moonshade Earring and Boii Cuisses +3 only when they add more damage than
+  the set pieces they replace; Chango, Warcry and Fencer are counted ([tp-bonus.md](../../features/tp-bonus.md)).
 - `//gs c berserk`, `defender`, `thirdeye`, `tp` only send abilities; each one then
   wears its own `sets.precast.JA` set.
 
