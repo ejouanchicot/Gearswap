@@ -48,6 +48,9 @@ local function write_ask()
     if not f then return end
     f:write(('window.ATELIER_UPDATE_ASK = {at: %d, within: %d};\n'):format(os.time(), ASK_SECONDS))
     f:close()
+    -- the page's index says the file is there: the page loads it only then (atelier/src/legacy/load.ts)
+    local ok, Export = pcall(require, 'shared/utils/atelier/atelier_export')
+    if ok and Export and Export.write_index then pcall(Export.write_index) end
 end
 
 --- //gs c version and //gs c upgrade (not "update": Mote's own command, which re-equips the gear).

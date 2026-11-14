@@ -260,11 +260,14 @@ local function write_index()
         end
     end
     table.sort(page_files)
+    -- //gs c upgrade's call to the update screen (shared/utils/core/release_info.lua): the page loads the file only
+    -- when it is there
+    local update_ask = windower.file_exists(data_path('atelier/update_ask.js')) and true or false
     -- the spells behind each family set (shared/utils/atelier/atelier_families.lua)
     local ok_f, families = pcall(function() return require('shared/utils/atelier/atelier_families').collect() end)
     return write(data_path('atelier/index.js'), 'window.ATELIER_INDEX = ' .. json(entries) .. ';\nwindow.ATELIER_LIVE_FILES = '
         .. json(live) .. ';\nwindow.ATELIER_PAGE_FILES = ' .. json(page_files) .. ';\nwindow.ATELIER_FAMILIES = '
-        .. json(ok_f and families or {}) .. ';\n')
+        .. json(ok_f and families or {}) .. ';\nwindow.ATELIER_UPDATE_ASK_FILE = ' .. tostring(update_ask) .. ';\n')
 end
 
 --- The stages of a build, in order: each fills `data`. Kept apart so the export after a load runs them a few

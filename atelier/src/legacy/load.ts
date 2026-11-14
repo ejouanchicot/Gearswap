@@ -5,7 +5,7 @@
 //
 // @file    atelier/src/legacy/load.ts
 // @author  ejouanchicot
-import {LEGACY_DATA, LEGACY_SCRIPTS, LEGACY_STYLES} from './files';
+import {LEGACY_DATA, LEGACY_SCRIPTS, LEGACY_STYLES, LEGACY_UPDATE_ASK} from './files';
 
 const stamp = (): string => '?v=' + Date.now();
 
@@ -39,5 +39,7 @@ function loadScriptsInOrder(srcs: readonly string[]): Promise<void> {
 export async function loadLegacy(): Promise<void> {
   const v = stamp();
   await Promise.all(LEGACY_STYLES.map(name => loadStyle(`atelier/app/css/${name}.css${v}`)));
-  await loadScriptsInOrder(LEGACY_DATA.map(src => src + v).concat(LEGACY_SCRIPTS.map(name => `atelier/app/js/${name}.js${v}`)));
+  await loadScriptsInOrder(LEGACY_DATA.map(src => src + v));
+  const ask = (window as unknown as {ATELIER_UPDATE_ASK_FILE?: boolean}).ATELIER_UPDATE_ASK_FILE ? [LEGACY_UPDATE_ASK + v] : [];
+  await loadScriptsInOrder(ask.concat(LEGACY_SCRIPTS.map(name => `atelier/app/js/${name}.js${v}`)));
 }

@@ -9,9 +9,12 @@
 export const LEGACY_STYLES: readonly string[] = ['base', 'sets', 'setlist', 'panels', 'combat', 'tabs', 'themes', 'motion',
   'moogle', 'optrun', 'guide', 'cursor', 'tips', 'config', 'fit', 'card'];
 
-/** What the game writes for the page before its code: the targets, the list of the exports (atelier/index.js) and
- *  //gs c upgrade's call to the update screen (atelier/update_ask.js, shared/utils/core/release_info.lua) */
-export const LEGACY_DATA: readonly string[] = ['atelier/targets.js', 'atelier/index.js', 'atelier/update_ask.js'];
+/** What the game writes for the page before its code: the targets and the list of the exports (atelier/index.js) */
+export const LEGACY_DATA: readonly string[] = ['atelier/targets.js', 'atelier/index.js'];
+
+/** //gs c upgrade's call to the update screen (shared/utils/core/release_info.lua), loaded only when the index says it
+ *  is there (window.ATELIER_UPDATE_ASK_FILE): asked for while missing, it left an error in the console at each opening */
+export const LEGACY_UPDATE_ASK = 'atelier/update_ask.js';
 
 /** The old page's scripts (atelier/app/js/<name>.js); events.js last: it reads the data and draws the page */
 export const LEGACY_SCRIPTS: readonly string[] = ['i18n', 'job_icons', 'core', 'icon_hd', 'icon_cache', 'state_help_data', 'state_help_fr', 'player_words', 'game_icons', 'keys',

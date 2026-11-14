@@ -117,8 +117,11 @@ function updLoadScript(src){
     el.onload = el.onerror = () => { el.remove(); done(); }; document.head.appendChild(el); });
 }
 async function updFindLink(){
-  await updLoadScript('atelier/link_last.js');
-  if (S.char) await updLoadScript(`atelier/link_${S.char}.js`);
+  // only the link files the index lists (atelier/index.js ATELIER_LIVE_FILES, as events.js): asking for a missing one
+  // (a character played on another PC) left an error in the console. No index: asked as before
+  const listed = f => !window.ATELIER_LIVE_FILES || window.ATELIER_LIVE_FILES.includes(f);
+  if (listed('atelier/link_last.js')) await updLoadScript('atelier/link_last.js');
+  if (S.char && listed(`atelier/link_${S.char}.js`)) await updLoadScript(`atelier/link_${S.char}.js`);
   const all = window.ATELIER_LINK || {}, names = [S.char, window.ATELIER_LINK_LAST].concat(Object.keys(all));
   let old = false, slow = false;
   for (const c of names.filter((c, i, a) => c && all[c] && a.indexOf(c) === i)) {
