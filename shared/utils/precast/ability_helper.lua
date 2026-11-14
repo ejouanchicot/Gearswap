@@ -462,4 +462,11 @@ function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
     end
 end
 
+--- The queue of job abilities sent in the bot's gaps (one at a time, by rank, never twice), with the hold
+--- of the bot's spells after each: shared/utils/precast/ability_queue.lua.
+--- @return table AbilityQueue
+function AbilityHelper.queue()
+    return require('shared/utils/precast/ability_queue')
+end
+
 return AbilityHelper

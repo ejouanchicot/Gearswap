@@ -64,12 +64,22 @@ local function full_circle_first(spell, eventArgs)
         windower._geo_full_circle_replay = nil
         return false
     end
+    local Queue = AbilityHelper.queue()
+    -- a Full Circle already waiting in the ability queue (Bolster came): that one goes, the bot casts again after
+    if Queue.queued('Full Circle') then
+        eventArgs.cancel = true
+        return true
+    end
     if not AbilityHelper.is_ability_ready('Full Circle') then return false end
     eventArgs.cancel = true
     send_command('input /ja "Full Circle" <me>')
+    Queue.sent_outside('Full Circle')
     local cast = ('input /ma "%s" %s'):format(spell.english, spell.target.id)
     windower._geo_full_circle_replay = {spell = spell.english, expires = os.clock() + REPLAY_WINDOW}
-    coroutine.schedule(function() send_command(cast) end, FULL_CIRCLE_DELAY)
+    coroutine.schedule(function()
+        Queue.allow_next(spell.english)
+        send_command(cast)
+    end, FULL_CIRCLE_DELAY)
     return true
 end
 
@@ -110,6 +120,7 @@ local function compass_first(spell, eventArgs)
     end
     eventArgs.cancel = true
     send_command('input /ja "Widened Compass" <me>')
+    AbilityHelper.queue().sent_outside('Widened Compass')
     local state = {expires = os.clock() + COMPASS_GUARD, replay = false}
     windower._geo_compass_wait = state
     local cast = ('input /ma "%s" %s'):format(spell.english, target.id)
@@ -117,6 +128,7 @@ local function compass_first(spell, eventArgs)
         if windower._geo_compass_wait ~= state then return end
         state.replay = true
         state.expires = os.clock() + COMPASS_GUARD
+        AbilityHelper.queue().allow_next(spell.english)
         send_command(cast)
     end, COMPASS_WAIT)
     return true

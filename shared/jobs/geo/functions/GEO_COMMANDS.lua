@@ -254,15 +254,16 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- //gs c fightopen <leader> <target> <bolster,bog,ea> | off: sent by //gs c sortie <target> fight, bot off.
-    -- The opening abilities chosen from this character's recasts and buffs, then `sortie <target> opened` back
-    -- (shared/jobs/geo/functions/logic/bolster_follow.lua).
-    if command == 'fightopen' then
-        local BolsterFollow = require('shared/jobs/geo/functions/logic/bolster_follow')
-        if cmdParams[2] == 'off' then
-            BolsterFollow.cancel_open()
+    -- //gs c fightopen <leader> <target> <bolster,bog,ea> | off, and //gs c fightend: sent by //gs c sortie.
+    -- The opening abilities chosen from this character's recasts and buffs, then `sortie <target> opened` back;
+    -- the recasts given back by a COR used until the fight is over
+    -- (shared/jobs/geo/functions/logic/fight_opening.lua).
+    if command == 'fightopen' or command == 'fightend' then
+        local FightOpening = require('shared/jobs/geo/functions/logic/fight_opening')
+        if command == 'fightend' or cmdParams[2] == 'off' then
+            FightOpening.fight_end()
         elseif cmdParams[2] and cmdParams[3] then
-            BolsterFollow.open_fight(cmdParams[2], cmdParams[3], cmdParams[4])
+            FightOpening.open_fight(cmdParams[2], cmdParams[3], cmdParams[4])
         end
         eventArgs.handled = true
         return
@@ -274,7 +275,11 @@ function job_self_command(cmdParams, eventArgs)
         local indi = cmdParams[2]
         if indi then
             coroutine.schedule(function()
-                if windower._geo_last_indi ~= indi then send_command('input /ma "' .. indi .. '" <me>') end
+                if windower._geo_last_indi ~= indi then
+                    -- ours: not held back after an ability (shared/utils/precast/ability_queue.lua)
+                    require('shared/utils/precast/ability_queue').allow_next(indi)
+                    send_command('input /ma "' .. indi .. '" <me>')
+                end
             end, tonumber(cmdParams[3]) or INDI_ENSURE_WAIT)
         end
         eventArgs.handled = true

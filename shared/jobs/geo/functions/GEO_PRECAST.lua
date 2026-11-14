@@ -98,6 +98,12 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
+    -- One of our queued abilities just went: the bot's spell is held back 1.5 s so it does not cut it, never Stun
+    -- (shared/utils/precast/ability_queue.lua)
+    if require('shared/utils/precast/ability_queue').hold_check(spell, eventArgs) then
+        return
+    end
+
     -- THIRD: Entrust / Full Circle first, when the character turned them on
     -- (geo/combat/GEO_CONFIG.lua)
     require('shared/jobs/geo/functions/logic/geo_auto_abilities').apply(spell, eventArgs)

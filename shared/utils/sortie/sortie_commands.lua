@@ -281,10 +281,16 @@ end
 local function fight_pending() return windower._sortie_fight end
 
 --- Drop the fight under way, if any: its late answers and scheduled steps are ignored, the alt stops its opening.
+--- A fight already loaded with an opening (windower._sortie_fight_live) is told over too: the alt watches its
+--- recasts until then (//gs c fightend, shared/jobs/geo/functions/logic/fight_opening.lua).
 --- @param cfg table Sortie config
 local function cancel_fight(cfg)
-    local pending = windower._sortie_fight
-    if not pending then return end
+    local pending, live = windower._sortie_fight, windower._sortie_fight_live
+    windower._sortie_fight_live = nil
+    if not pending then
+        if live then to_alt(cfg, 'gs c fightend') end
+        return
+    end
     windower._sortie_fight = nil
     to_alt(cfg, 'gs c fightopen off')
     local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
@@ -295,22 +301,25 @@ end
 local function load_fight(cfg, target, pending)
     if fight_pending() ~= pending then return end
     windower._sortie_fight = nil
+    -- with an opening, the alt keeps watching its recasts until the next order says the fight is over
+    if target.fight_ja and #target.fight_ja > 0 then windower._sortie_fight_live = pending.key end
     load_profile(cfg, target.profile, target.indi, nil, target.behind)
     if messages() then
         messages().show_target_loaded(target.profile, cfg.alt, target.indi, target.summary)
     end
 end
 
---- Seconds the fight waits for the alt's `opened` before loading the profile anyway (3 abilities, then up to 4.5 s
---- waiting for Blaze of Glory's buff: bolster_follow.lua finish_open).
-local OPENED_WAIT = 10
+--- Seconds the fight waits for the alt's `opened` before loading the profile anyway: up to 3 abilities, each in a
+--- gap after the last spell (3.5 s) and ability (1.5 s), checked 1 s after it went (ability_queue.lua); the alt
+--- answers by 13 s at the latest (fight_opening.lua).
+local OPENED_WAIT = 15
 
 --- `fight_ja` names -> the alt's //gs c fightopen words.
 local OPENING_WORDS = {['Bolster'] = 'bolster', ['Blaze of Glory'] = 'bog', ['Ecliptic Attrition'] = 'ea'}
 
 --- After the placement: the opening abilities, then the fight profile. With `fight_ja`, the alt chooses them from
---- its own recasts and buffs (//gs c fightopen, shared/jobs/geo/functions/logic/bolster_follow.lua: Full Circle
---- only when a luopan is out and Bolster is not up) and answers `sortie <target> opened`. Without, as before:
+--- its own recasts and buffs (//gs c fightopen, shared/jobs/geo/functions/logic/fight_opening.lua: Full Circle
+--- only on a luopan Bolster does not boost) and answers `sortie <target> opened`. Without, as before:
 --- Full Circle unless `full_circle = false`, then the profile.
 local function continue_fight(cfg, target, key, pending)
     if fight_pending() ~= pending then return end

@@ -89,12 +89,12 @@ check('fight: behind with the fight profile', has('send Kaories gs c behind') ~=
 run_queue()
 local loads = 0
 for _, x in ipairs(sent) do if x.cmd == 'send Kaories sm load Kaories/Sortie/GEO/LeechAuto' then loads = loads + 1 end end
-check('opened, then the 10 s wait: the profile once', loads, 1)
+check('opened, then the 15 s wait: the profile once', loads, 1)
 
--- 2a. no `opened`: the profile after 8 s
+-- 2a. no `opened`: the profile after 15 s (OPENED_WAIT)
 sent, now, queue = {}, 0, {}
 Sortie.handle({'leechtest', 'fight'}); run_queue()
-check('no opened: profile at 10 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 10)
+check('no opened: profile at 15 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 15)
 
 -- 2b. with `mob`: placement first; nothing else until the alt answers `placed`
 sent, now, queue = {}, 0, {}
@@ -116,11 +116,11 @@ end
 check('placed twice, the 14 s wait: one opening', opens, 1)
 check('opened then the waits: one profile', loads2, 1)
 
--- 2c. no answer at all: opening at 14 s, profile at 22 s
+-- 2c. no answer at all: opening at 14 s, profile at 29 s
 sent, now, queue = {}, 0, {}
 Sortie.handle({'leechmob', 'fight'}); run_queue()
 check('no answer: opening at 14 s', has('send Kaories gs c fightopen Tetsouo leechmob bog'), 14)
-check('no answer: profile at 24 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 24)
+check('no answer: profile at 29 s', has('send Kaories sm load Kaories/Sortie/GEO/LeechAuto'), 29)
 
 -- 2d. 2026-11-13: a wrong `fight`, then another target: the fight is dropped, its late answers ignored
 sent, now, queue = {}, 0, {}
@@ -176,6 +176,35 @@ windower.ffxi.get_mob_array = nil
 sent, now, queue = {}, 0, {}
 Sortie.handle({'melee'}); run_queue()
 check('nothing under way: nothing to stop', has('send Kaories gs c fightopen off'), nil)
+
+-- 2e. a fight loaded with an opening: the next order tells the alt it is over (//gs c fightend: it stops
+-- watching its recasts, shared/jobs/geo/functions/logic/fight_opening.lua), once
+sent, now, queue = {}, 0, {}
+Sortie.handle({'leechtest', 'fight'}); run_queue(1)
+now = 1
+Sortie.handle({'leechtest', 'opened'}); run_queue()
+check('loaded: no fightend yet', has('send Kaories gs c fightend'), nil)
+now = 100
+Sortie.handle({'melee'}); run_queue()
+check('another target after the load: fightend', has('send Kaories gs c fightend'), 100)
+check('  and no fightopen off (nothing pending)', has('send Kaories gs c fightopen off'), nil)
+sent = {}
+Sortie.handle({'melee'}); run_queue()
+check('fightend told once', has('send Kaories gs c fightend'), nil)
+for _, order in ipairs({'escort', 'off'}) do
+    sent, now, queue = {}, 0, {}
+    Sortie.handle({'leechtest', 'fight'}); run_queue(1)
+    now = 1
+    Sortie.handle({'leechtest', 'opened'}); run_queue()
+    Sortie.handle({order}); run_queue()
+    check(order .. ' after the load: fightend', has('send Kaories gs c fightend') ~= nil, true)
+end
+-- a fight dropped before its load: fightopen off, no fightend
+sent, now, queue = {}, 0, {}
+Sortie.handle({'leechtest', 'fight'}); run_queue(1)
+Sortie.handle({'melee'}); run_queue()
+check('dropped before the load: fightopen off', has('send Kaories gs c fightopen off') ~= nil, true)
+check('  no fightend', has('send Kaories gs c fightend'), nil)
 
 -- 3. a target with no fight_ja and no follow behaves as before
 sent, now = {}, 0
