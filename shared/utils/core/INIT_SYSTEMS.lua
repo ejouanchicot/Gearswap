@@ -500,6 +500,25 @@ LoadGate.defer(3.0, function()
     end
 end, 'critical modules check')
 
+-- The game's item descriptions (Windower res/item_descriptions.lua, ~5 MB, ~150 ms to read): read once per
+-- //lua load, here at the end of the load, rather than inside the first spell or weaponskill that needs them
+-- (shared/utils/precast/cast_time.lua, weapon_tp_bonus.lua, the BRD songs). Audit 2026-11-14 P3-1: Kaories' Indi-
+-- cast 3 s after a load waited 150-180 ms in its precast, six times a day. The export reads them seconds later
+-- anyway (atelier_export_char.lua): the same cost, moved out of an action. `windower` outlives //gs reload as the
+-- resources do; //lua reload resets both.
+-- require('resources') in the user's sandbox is the addon's own copy (user_functions.lua include_user): what it reads
+-- is kept for every later reader.
+if not windower._item_descriptions_read then
+    pcall(function()
+        local t0 = os.clock()
+        local r = require('resources')
+        local book = r and r.item_descriptions
+        windower._item_descriptions_read = book ~= nil
+        require('shared/utils/debug/trace_log').log('LOAD', 'item descriptions %s (%d ms)',
+            book ~= nil and 'read' or 'NOT read', math.floor((os.clock() - t0) * 1000 + 0.5))
+    end)
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GLOBAL PROBE BASELINE (last, so it sees everything the load created)
 ---  ═══════════════════════════════════════════════════════════════════════════

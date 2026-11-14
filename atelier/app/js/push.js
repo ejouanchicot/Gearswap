@@ -169,9 +169,12 @@ function deletedKeep(paths){
 }
 // Each kept push or delete on the exports of its job not newer than it; one every export of its job is newer than
 // is dropped (the files hold it, and maybe more since)
-function pushedApply(){
+// only: one character's pushes (the page's start reads that character's exports first: events.js readExports); the
+// others are kept as they are
+function pushedApply(only){
   if (!S.pushed || !S.pushed.length) return;
   S.pushed = S.pushed.filter(x => {
+    if (only && x.c !== only) return true;
     const old = Object.values(exportsOf(x.c, x.j)).filter(d => (d.at || '') <= x.at);
     for (const d of old) {
       if (x.gone) { dropSets(d, x.gone); continue; }

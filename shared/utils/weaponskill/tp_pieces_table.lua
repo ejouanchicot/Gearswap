@@ -38,8 +38,9 @@
 --- g = what the pieces add to the weaponskill's average damage (0.262 = +26.2 %),
 --- once the set pieces they replace are taken off.
 --- Read as data, never run (shared/utils/core/lua_data.lua), once per load and
---- only the job's file; forget() after the Atelier writes one again
---- (shared/utils/atelier/atelier_live.lua /save).
+--- only the job's file, and not even then while the file is the one read at an
+--- earlier load (windower._tp_pieces_kept); forget() after the Atelier writes one
+--- again (shared/utils/atelier/atelier_live.lua /save).
 ---
 --- @file shared/utils/weaponskill/tp_pieces_table.lua
 --- @author ejouanchicot
@@ -72,7 +73,25 @@ function TPPiecesTable.read(job)
     if not f then return nil end
     local text = f:read('*a')
     f:close()
-    local data = require('shared/utils/core/lua_data').parse(text)
+    -- the table read at an earlier load, while the file is the same (`windower` outlives //gs reload and job
+    -- changes: a WAR table took ~40 ms to read in game at each load, 2026-11-14); //lua reload reads it again
+    local kept = type(windower) == 'table' and windower._tp_pieces_kept or nil
+    local was = kept and kept[path]
+    local data, t0 = nil, os.clock()
+    if was and was.text == text then
+        data = was.data
+    else
+        data = require('shared/utils/core/lua_data').parse(text)
+        if type(windower) == 'table' then
+            windower._tp_pieces_kept = windower._tp_pieces_kept or {}
+            windower._tp_pieces_kept[path] = {text = text, data = data}
+        end
+    end
+    pcall(function()
+        require('shared/utils/debug/trace_log').log('TP', 'table %s: %s, %d bytes, %d ms', job,
+            data == nil and 'not data' or (was and was.data == data) and 'kept' or 'parsed', #text,
+            math.floor((os.clock() - t0) * 1000 + 0.5))
+    end)
     cache[job] = type(data) == 'table' and type(data[job]) == 'table' and data or false
     return cache[job] or nil
 end

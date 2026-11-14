@@ -193,6 +193,18 @@ put('tp_pieces_WAR.lua', [[return {WAR = {at = 'w2', weaponskills = {}}}]])
 job_check('rewritten, still the one read until forget()', Table.date('WAR') == 'w')
 Table.forget()
 job_check('after forget(): read again', Table.date('WAR') == 'w2')
+-- a new load (//gs reload: the module's own cache gone, `windower` kept): the same file is not parsed again
+local parses, LuaData = 0, require('shared/utils/core/lua_data')
+local real_parse = LuaData.parse
+LuaData.parse = function(t) parses = parses + 1 return real_parse(t) end
+package.loaded['shared/utils/weaponskill/tp_pieces_table'] = nil
+local Reloaded = require('shared/utils/weaponskill/tp_pieces_table')
+job_check('next load, same file: kept, not parsed again', Reloaded.date('WAR') == 'w2' and parses == 0)
+put('tp_pieces_WAR.lua', [[return {WAR = {at = 'w3', weaponskills = {}}}]])
+package.loaded['shared/utils/weaponskill/tp_pieces_table'] = nil
+Reloaded = require('shared/utils/weaponskill/tp_pieces_table')
+job_check('next load, file changed: read again', Reloaded.date('WAR') == 'w3' and parses == 1)
+LuaData.parse = real_parse
 os.remove(DIR .. 'tp_pieces_WAR.lua')
 os.remove(DIR .. 'tp_pieces_PLD.lua')
 

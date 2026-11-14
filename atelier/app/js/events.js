@@ -400,23 +400,17 @@ function readExports(first, done){
   // (every character of the index: `chars` above only knows those whose exports are still under saved/)
   const own = window.ATELIER_PAGE_FILES || [...new Set(index.map(e => e.char || (e.file.match(/^([^/]+)\//) || [])[1]).filter(Boolean))]
     .flatMap(c => [`${c}/atelier/overrides/list_layout.js`, `${c}/atelier/overrides/bag_plan.js`]);
-  loadScripts(index.map(e => e.file + stamp).concat(live, own.map(f => f + stamp)), () => {
+  // at the page's start, the exports of the character the last visit showed first, the others' read once the page is
+  // drawn: every export before drawing (88 files, 35 MB) took the opening from 0.87 s to 1.2-1.7 s (audit 2026-11-14 P2-3)
+  const charOf = e => e.char || (e.file.match(/^([^/]+)\//) || [])[1];
+  const mine = first && S.char && index.some(e => charOf(e) === S.char) ? index.filter(e => charOf(e) === S.char) : index;
+  const later = mine === index ? [] : index.filter(e => charOf(e) !== S.char);
+  loadScripts(mine.map(e => e.file + stamp).concat(live, own.map(f => f + stamp)), () => {
     listRead(); bpRead();
     if (first) { setInterval(() => { liveTick(); linkTick(); }, 2000); setTimeout(() => { liveTick(); linkTick(); }, 50);
       // the game's descriptions of every item: a piece a set names but no bag holds still has its stats
       setTimeout(() => loadCatalog(() => loadRanked(() => { canonAll(); if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) render(); })), 300); }
-    // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
-    DATA = {}; CHARS = {}; DATA_GEN++;
-    const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
-      const m = ((DATA[c] = DATA[c] || {})[j] = DATA[c][j] || {});
-      if (!m[s] || (m[s].at || '') < (d.at || '')) m[s] = d; };
-    const legacy = window.ATELIER || {}, subs = window.ATELIER_SUBS || {};
-    for (const c in legacy) for (const j in legacy[c]) put(c, j, legacy[c][j]);
-    for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
-    for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
-    // a character the game opened its door for with nothing exported yet (a new player, its job with no file:
-    // data/default.lua): listed with no job, so that the page reaches the game and offers "+ Add a job" (add_job.js)
-    for (const c in window.ATELIER_LIVE || {}) if (!CHARS[c]) CHARS[c] = {jobs: []};
+    exportsToData();
     if (!CHARS[S.char]) { S.char = Object.keys(CHARS)[0]; S.job = null; }
     // nothing exported yet: the welcome page (atelier/src/screens/home)
     if (!S.char) { S.job = null; if (done) done(); render(); return; }
@@ -426,12 +420,33 @@ function readExports(first, done){
       if ((window.ATELIER_LIVE || {})[S.char]) S.backTo = {char: S.char, job: S.job, section: S.section};
       S.job = null;
     }
-    // the pushes newer than their job's exports, laid on them again (push.js pushedApply)
-    pushedApply();
+    // the pushes newer than their job's exports, laid on them again (push.js pushedApply); the other characters'
+    // once their exports are read (a push without its export is let go)
+    pushedApply(later.length ? S.char : null);
     if (!first) canonAll();
     if (done) done();
     render();
+    if (later.length) loadScripts(later.map(e => e.file + stamp), () => {
+      exportsToData(); pushedApply();
+      if (window.ATELIER_CATALOG || (window.FFXI && FFXI.RANKED)) canonAll();
+      render();
+    });
   });
+}
+// The exports read (window.ATELIER_SUBS, ATELIER) into DATA and CHARS: the newest export of each job and subjob
+function exportsToData(){
+  // <JOB>_<SUB>.js fill ATELIER_SUBS[char][job][sub]; a <JOB>.js of before 2026-10-01 fills ATELIER[char][job]
+  DATA = {}; CHARS = {}; DATA_GEN++;
+  const put = (c, j, d) => { if (!d || !d.sets) return; const s = d.sub || 'NONE';
+    const m = ((DATA[c] = DATA[c] || {})[j] = DATA[c][j] || {});
+    if (!m[s] || (m[s].at || '') < (d.at || '')) m[s] = d; };
+  const legacy = window.ATELIER || {}, subs = window.ATELIER_SUBS || {};
+  for (const c in legacy) for (const j in legacy[c]) put(c, j, legacy[c][j]);
+  for (const c in subs) for (const j in subs[c]) for (const s in subs[c][j]) put(c, j, subs[c][j][s]);
+  for (const c in DATA) CHARS[c] = {jobs: Object.keys(DATA[c])};
+  // a character the game opened its door for with nothing exported yet (a new player, its job with no file:
+  // data/default.lua): listed with no job, so that the page reaches the game and offers "+ Add a job" (add_job.js)
+  for (const c in window.ATELIER_LIVE || {}) if (!CHARS[c]) CHARS[c] = {jobs: []};
 }
 // The files were exported again: their data read in place. Not location.reload(): a page opened from the disk can
 // be refused it by the browser ("Unsafe attempt to load URL file:///...", 2026-10-10), and the button then stayed on

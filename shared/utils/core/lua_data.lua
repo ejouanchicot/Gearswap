@@ -39,7 +39,13 @@ end
 --- A quoted string starting at `at`: the position after it and its value.
 local function quoted(text, at)
     local quote, out, i = text:sub(at, at), {}, at + 1
+    -- the next character that matters: the quote, a backslash or a line end (whatever else is taken as it is)
+    local special = quote == '"' and '["\\\r\n]' or "['\\\r\n]"
     while i <= #text do
+        local j = text:find(special, i)
+        if not j then return nil end
+        if j > i then out[#out + 1] = text:sub(i, j - 1) end
+        i = j
         local c = text:sub(i, i)
         if c == quote then return i + 1, table.concat(out) end
         -- Lua 5.1 ends a line at "\n" and at a lone "\r" alike (llex.c): an unfinished string either way
@@ -73,7 +79,7 @@ function LuaData.tokens(text)
     while i <= n do
         local c = text:sub(i, i)
         if c:match('%s') then
-            i = i + 1
+            i = (text:find('[^%s]', i) or n + 1)
         elseif text:sub(i, i + 1) == '--' then
             local after = long_bracket(text, i + 2)
             -- a line comment ends at "\n" or at a lone "\r", as Lua's own reader has it: ended at "\n" only, code
