@@ -44,6 +44,10 @@ ADDITIONS = {
         ('Windower.lua', 'function player_run(value)'),
         ('Engine.lua', 'movement()'),
     ]),
+    'GeoRange': ('a shorter casting range for the Geo- spells', [
+        ('Spells.lua', 'function get_all_spells()'),
+        ('Sync.lua', 'send_packet(get_all_spells())'),
+    ]),
 }
 
 

@@ -45,7 +45,7 @@ local function reload()
     return require('shared/utils/sortie/sortie_commands')
 end
 local function by_hand()
-    for _, c in ipairs(sent) do if c:find('/ma "Indi%-') then return c end end
+    for _, c in ipairs(sent) do if c:find('/ma "Indi%-') or c:find('indiensure') then return c end end
     return nil
 end
 
@@ -53,7 +53,7 @@ end
 local Sortie = reload()
 sent = {}
 Sortie.handle({'melee'})
-check('first load after a game start: by hand', by_hand(), 'send Kaories /ma "Indi-Fury" <me>')
+check('first load after a game start: checked by the alt', by_hand(), 'send Kaories gs c indiensure Indi-Fury')
 
 -- 2. the next target: Silmaril's profile casts it, nothing by hand
 sent = {}

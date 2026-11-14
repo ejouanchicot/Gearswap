@@ -47,8 +47,18 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.geo_escort_on_aftercast(spell)
     end
 
+    -- When this character's last spell ended: a job ability right after it is refused (logic/bolster_follow.lua)
+    if spell.action_type == 'Magic' then windower._geo_cast_end = os.clock() end
+
+    -- A bubble placed: Ecliptic Attrition on it when //gs c fightopen asked for it (logic/bolster_follow.lua)
+    if spell.skill == 'Geomancy' and spell.english and spell.english:find("^Geo%-") and not spell.interrupted then
+        require('shared/jobs/geo/functions/logic/bolster_follow').on_bubble_placed()
+    end
+
     -- Clear Entrust pending flag after Indi spell completes (buff consumed)
     if spell.skill == 'Geomancy' and spell.english and spell.english:find("^Indi%-") and not spell.interrupted then
+        -- the last Indi- this character put up, for //gs c indiensure (on windower: outlives a load)
+        if spell.target and spell.target.type == 'SELF' then windower._geo_last_indi = spell.english end
         _G.geo_entrust_pending = false
     end
 

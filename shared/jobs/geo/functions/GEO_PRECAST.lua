@@ -20,6 +20,15 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- A Geo- aimed at a monster lands behind it when geo/combat/GEO_CONFIG.lua sets luopan_behind
+-- (shared/jobs/geo/functions/logic/luopan_behind.lua): its packet listener, once per load
+pcall(function() require('shared/jobs/geo/functions/logic/luopan_behind').listen() end)
+-- Stun / Absorb-TP told in party chat when geo/combat/GEO_CONFIG.lua lists them in party_callouts
+-- (shared/utils/messages/party_callouts.lua): its action listener, once per load
+pcall(function() require('shared/utils/messages/party_callouts').listen('GEO') end)
+-- //gs c behind on before this load goes on (shared/jobs/geo/functions/logic/stand_behind.lua)
+pcall(function() require('shared/jobs/geo/functions/logic/stand_behind').resume() end)
+
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
@@ -93,6 +102,10 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- (geo/combat/GEO_CONFIG.lua)
     require('shared/jobs/geo/functions/logic/geo_auto_abilities').apply(spell, eventArgs)
     if eventArgs.cancel or eventArgs.handled then
+        return
+    end
+    -- A Geo- while a luopan is out, with luopan_behind on: the game would refuse it (luopan_behind.lua)
+    if require('shared/jobs/geo/functions/logic/luopan_behind').skip_while_out(spell, eventArgs) then
         return
     end
     require('shared/jobs/geo/functions/logic/bolster_follow').note_cast(spell)

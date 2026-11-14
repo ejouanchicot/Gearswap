@@ -252,6 +252,8 @@ end
 ---   (gearswap.lua): only that nil is read here
 --- @return void
 function file_unload(next_file)
+    -- //gs c behind: a run under way stops here, or nothing would ever stop it (logic/stand_behind.lua)
+    pcall(function() require('shared/jobs/geo/functions/logic/stand_behind').unload() end)
     -- Unload PetTP addon (external addon, must be unloaded manually)
     -- Silent unload - addon handles its own messaging
     if windower._geo_pettp_loaded then

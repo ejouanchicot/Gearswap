@@ -23,6 +23,9 @@ local CycleHandler = nil
 local MessageCommands = nil
 local GeoSpellRefiner = nil
 
+--- Seconds //gs c indiensure leaves the bot to cast the Indi- itself before casting it.
+local INDI_ENSURE_WAIT = 10   -- the pull bubble goes first (cast + the bot's 2.7 s after it), then its Indi-
+
 --- `//gs c escort` timings, in seconds.
 local ESCORT_JA_DELAY = 2          -- Full Circle -> Indi- (job ability delay)
 local ESCORT_DEFAULT_CAST = 3      -- cast time when the spell is not found
@@ -32,10 +35,18 @@ local ESCORT_FOLLOW_MARGIN = 3     -- safety net: follow anyway this long after 
 local escort_pending = nil
 local escort_seq = 0
 
+--- Seconds before the follow goes again after an escort that loaded a profile.
+local ESCORT_FOLLOW_AGAIN = 2
+
 local function escort_follow()
-    local leader = escort_pending.leader
+    local leader, reloaded = escort_pending.leader, escort_pending.reloaded
     escort_pending = nil
     send_command('sm follow ' .. leader)
+    -- Right after a profile load, the bot sometimes drops this follow (trace 2026-11-13 20:45: sent, Kaories stood
+    -- still; the same command without a load, 20:47, worked). The cause is not found in its code: sent once more.
+    if reloaded then
+        coroutine.schedule(function() send_command('sm follow ' .. leader) end, ESCORT_FOLLOW_AGAIN)
+    end
 end
 
 --- Called from job_aftercast: follow the leader once the escort Indi- is over
@@ -235,7 +246,44 @@ function job_self_command(cmdParams, eventArgs)
     -- is loaded but Silmaril stays off: the Indi- is still cast here. The load
     -- is only so Silmaril sees the next fight profile's Indi- as new and casts
     -- it (it compares the names of two profiles loaded one after the other).
+    -- Stand behind the locked monster, nobody engaged: //gs c behind [off]
+    -- (shared/jobs/geo/functions/logic/stand_behind.lua; sent by //gs c sortie)
+    if command == 'behind' then
+        require('shared/jobs/geo/functions/logic/stand_behind').command({select(2, unpack(cmdParams))})
+        eventArgs.handled = true
+        return
+    end
+
+    -- //gs c fightopen <leader> <target> <bolster,bog,ea> | off: sent by //gs c sortie <target> fight, bot off.
+    -- The opening abilities chosen from this character's recasts and buffs, then `sortie <target> opened` back
+    -- (shared/jobs/geo/functions/logic/bolster_follow.lua).
+    if command == 'fightopen' then
+        local BolsterFollow = require('shared/jobs/geo/functions/logic/bolster_follow')
+        if cmdParams[2] == 'off' then
+            BolsterFollow.cancel_open()
+        elseif cmdParams[2] and cmdParams[3] then
+            BolsterFollow.open_fight(cmdParams[2], cmdParams[3], cmdParams[4])
+        end
+        eventArgs.handled = true
+        return
+    end
+
+    -- //gs c indiensure <Indi-X> [seconds]: sent by //gs c sortie with a profile load. Silmaril casts a new
+    -- profile's Indi- itself; this casts it only if, after the wait, the last Indi- put up is still another one.
+    if command == 'indiensure' then
+        local indi = cmdParams[2]
+        if indi then
+            coroutine.schedule(function()
+                if windower._geo_last_indi ~= indi then send_command('input /ma "' .. indi .. '" <me>') end
+            end, tonumber(cmdParams[3]) or INDI_ENSURE_WAIT)
+        end
+        eventArgs.handled = true
+        return
+    end
+
     if command == 'escort' then
+        -- following the leader now: no more walking behind a monster
+        pcall(function() require('shared/jobs/geo/functions/logic/stand_behind').stop('escort') end)
         local indi = cmdParams[2] or require('shared/utils/core/job_config').get('GEO', 'escort_indi', 'Indi-Regen')
         local leader = cmdParams[3]
         local profile = cmdParams[4]
@@ -261,7 +309,8 @@ function job_self_command(cmdParams, eventArgs)
             local cast_time = spell and spell.cast_time or ESCORT_DEFAULT_CAST
             escort_seq = escort_seq + 1
             local my_seq = escort_seq
-            escort_pending = {spell = indi, element = spell and spell.element, leader = leader, seq = my_seq}
+            escort_pending = {spell = indi, element = spell and spell.element, leader = leader, seq = my_seq,
+                reloaded = profile ~= nil}
             coroutine.schedule(function()
                 if escort_pending and escort_pending.seq == my_seq then escort_follow() end
             end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN)

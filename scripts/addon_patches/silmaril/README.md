@@ -24,6 +24,15 @@ for up to 2 seconds: the spell is interrupted (the alt's Geo- and Indi-). The fi
 `movement` and `input_message` and reads the character's own cast packets. Checked with stand-ins outside
 the game only; the Sortie log's `INTERRUPTED` lines (SortieLog) say whether the alt had moved.
 
+## GeoRange
+
+A shorter casting range for the Geo- spells as the desktop program sees it (2026-11-13). The program takes
+the game's range value (12) times its own table: about 20-21 yalms, while the game refused a Geo- at 18.6. A
+trigger answering with a Geo- (the bubble at the pull) then tried too far, was refused and waited 3 s each
+time. The file rewrites the range of the Geo- in the spell list the addon sends at the sync (`GEO_RANGE = 10`,
+about 15 yalms). Checked outside the game only. The program reads the spell list once per run: `//lua r silmaril` on every
+box, then close and start the desktop program again.
+
 ## StateReport
 
 It lets GearSwap show the addon's real state and replaces the addon's own boxes by the GearSwap alt window.

@@ -22,6 +22,9 @@
 ---   //gs c sortie fullcircle        alt dismisses its luopan
 ---   //gs c sortie list              list the targets
 ---
+--- A target with `auto_fight = true` and a `mob`: its prep watches for that
+--- monster and runs the fight once the party claims it (shared/utils/sortie/sortie_watch.lua).
+---
 --- @file    shared/utils/sortie/sortie_commands.lua
 --- @author  ejouanchicot
 --- @version 1.0
@@ -244,12 +247,20 @@ end
 --- @param cfg table Sortie config
 --- @param profile string Folder under cfg.profile_root
 --- @param indi string|nil The profile's Indi-
-local function load_profile(cfg, profile, indi)
+--- @param follow string|nil A player the alt follows with this profile (a target's `follow`), nil: follow off
+--- @param behind boolean|nil The alt walks behind its locked monster (a target's `behind`: //gs c behind on the
+---   GEO, shared/jobs/geo/functions/logic/stand_behind.lua); any other profile stops it
+local function load_profile(cfg, profile, indi, follow, behind)
     to_alt(cfg, 'sm load ' .. (cfg.profile_root or '') .. profile)
-    to_alt(cfg, 'sm follow off')
+    to_alt(cfg, follow and ('sm follow ' .. follow) or 'sm follow off')
+    -- never both: two things steering the alt's run at once (Silmaril's follow and //gs c behind)
+    to_alt(cfg, (behind and not follow) and 'gs c behind' or 'gs c behind off')
     to_alt(cfg, 'sm on')
-    note({on = true, follow = false})
-    if indi and not indi_by_bot(cfg) then to_alt(cfg, '/ma "' .. indi .. '" <me>') end
+    note({on = true, follow = follow or false})
+    -- Not cast here at once: Silmaril casts a profile's Indi- whenever its name differs from the previous
+    -- profile's, and both went (2026-11-13). The alt checks a few seconds later and casts it only if nobody did
+    -- (//gs c indiensure, shared/jobs/geo/functions/GEO_COMMANDS.lua).
+    if indi and not indi_by_bot(cfg) then to_alt(cfg, 'gs c indiensure ' .. indi) end
     set_profile_indi(indi)
 end
 
@@ -258,17 +269,113 @@ end
 --- alt is stopped (the prep profile would cast its Geo- again), dismisses
 --- the prep luopan (a profile never casts a Geo- while one is out), then
 --- loads the fight profile like any other load, once Full Circle has gone
---- through (sent with it, the spell is refused).
---- This character's stance is left as it is.
+--- through (sent with it, the spell is refused). A target's `fight_ja` (Bolster, Blaze of Glory) go out one by one
+--- in between, with the bot still off: its first Geo- then carries them (Aminon, asked 2026-11-13).
+--- `full_circle = false`: no Full Circle, the abilities go at once (a prep that never puts a luopan up, as Aminon's:
+--- the player, 2026-11-13). This character's stance is left as it is.
 --- @param cfg table Sortie config
 --- @param target table Entry of cfg.targets
-local function start_fight(cfg, target)
-    to_alt(cfg, 'sm off')
-    to_alt(cfg, '/ja "Full Circle" <me>')
-    coroutine.schedule(function() load_profile(cfg, target.profile, target.indi) end, AFTER_FULL_CIRCLE)
+--- The fight under way (from `<target> fight` to its profile load), on `windower`: the alt's answers come through
+--- commands, maybe after a GearSwap load. Any other //gs c sortie order drops it (2026-11-13: `triboulex` pressed
+--- after a wrong `aminon fight` did not stop it, and Bolster went on Triboulex).
+local function fight_pending() return windower._sortie_fight end
+
+--- Drop the fight under way, if any: its late answers and scheduled steps are ignored, the alt stops its opening.
+--- @param cfg table Sortie config
+local function cancel_fight(cfg)
+    local pending = windower._sortie_fight
+    if not pending then return end
+    windower._sortie_fight = nil
+    to_alt(cfg, 'gs c fightopen off')
+    local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if ok and MessageFormatter then MessageFormatter.show_warning('sortie: ' .. pending.key .. ' fight dropped') end
+end
+
+--- The last step of a fight: its profile, once (the pending fight still the same).
+local function load_fight(cfg, target, pending)
+    if fight_pending() ~= pending then return end
+    windower._sortie_fight = nil
+    load_profile(cfg, target.profile, target.indi, nil, target.behind)
     if messages() then
         messages().show_target_loaded(target.profile, cfg.alt, target.indi, target.summary)
     end
+end
+
+--- Seconds the fight waits for the alt's `opened` before loading the profile anyway (3 abilities, then up to 4.5 s
+--- waiting for Blaze of Glory's buff: bolster_follow.lua finish_open).
+local OPENED_WAIT = 10
+
+--- `fight_ja` names -> the alt's //gs c fightopen words.
+local OPENING_WORDS = {['Bolster'] = 'bolster', ['Blaze of Glory'] = 'bog', ['Ecliptic Attrition'] = 'ea'}
+
+--- After the placement: the opening abilities, then the fight profile. With `fight_ja`, the alt chooses them from
+--- its own recasts and buffs (//gs c fightopen, shared/jobs/geo/functions/logic/bolster_follow.lua: Full Circle
+--- only when a luopan is out and Bolster is not up) and answers `sortie <target> opened`. Without, as before:
+--- Full Circle unless `full_circle = false`, then the profile.
+local function continue_fight(cfg, target, key, pending)
+    if fight_pending() ~= pending then return end
+    local words = {}
+    for _, ability in ipairs(target.fight_ja or {}) do words[#words + 1] = OPENING_WORDS[ability] end
+    if #words > 0 then
+        pending.stage = 'opening'
+        to_alt(cfg, ('gs c fightopen %s %s %s'):format(me(), key, table.concat(words, ',')))
+        coroutine.schedule(function() load_fight(cfg, target, pending) end, OPENED_WAIT)
+        return
+    end
+    pending.stage = 'loading'
+    local first = target.full_circle == false and 0 or 1
+    if first == 1 then to_alt(cfg, '/ja "Full Circle" <me>') end
+    coroutine.schedule(function() load_fight(cfg, target, pending) end, AFTER_FULL_CIRCLE * first)
+end
+
+--- Seconds the fight waits for the alt's `placed` before going on anyway (its own wait is 12 s).
+local PLACED_WAIT = 14
+
+--- The fight, placement first when the target has `behind` and `mob`: the alt, bot and follow off, walks behind
+--- that monster (//gs c behind first, shared/jobs/geo/functions/logic/stand_behind.lua) and answers
+--- `sortie <target> placed`; only then the rest goes (continue_fight). Pending on `windower`: the answer comes
+--- through a command, maybe after a GearSwap load.
+--- @param mob_id number|nil The monster to go behind (the one the watch saw claimed), nil: the nearest of that name
+local function start_fight(cfg, target, key, mob_id)
+    local pending = {key = key, stage = 'placing'}
+    windower._sortie_fight = pending
+    to_alt(cfg, 'sm off')
+    if not (target.behind and target.mob) then return continue_fight(cfg, target, key, pending) end
+    to_alt(cfg, 'sm follow off')
+    local id = mob_id and (' id=' .. mob_id) or ''
+    to_alt(cfg, ('gs c behind first %s %s%s %s'):format(me(), key, id, target.mob))
+    coroutine.schedule(function()
+        if fight_pending() == pending and pending.stage == 'placing' then continue_fight(cfg, target, key, pending) end
+    end, PLACED_WAIT)
+    if messages() then messages().show_alt_action(cfg.alt, 'going behind ' .. target.mob .. ' first') end
+end
+
+--- The alt's answers: `placed` (//gs c behind first) and `opened` (//gs c fightopen), each taken once, and only
+--- for the fight under way at that stage.
+local function on_answer(cfg, target, key, phase)
+    local pending = fight_pending()
+    if not (pending and pending.key == key) then return end
+    if phase == 'placed' and pending.stage == 'placing' then
+        continue_fight(cfg, target, key, pending)
+    elseif phase == 'opened' and pending.stage == 'opening' then
+        load_fight(cfg, target, pending)
+    end
+end
+
+--- Refused when the boss around is not this command's (shared/utils/sortie/sortie_boss.lua).
+--- @return boolean True when refused (the player told)
+local function wrong_boss(cfg, name, key, target, phase, force)
+    if force then return false end
+    -- `fight` checked only where the alt walks to that monster first: Leshonn's and Gartell's come from a Silmaril
+    -- trigger once the boss is engaged, and a false refusal there would leave the fight profile unloaded
+    if phase == 'fight' and not (target.behind and target.mob) then return false end
+    local ok, why = pcall(function()
+        return require('shared/utils/sortie/sortie_boss').refusal(cfg, name, key, target, phase)
+    end)
+    if not (ok and why) then return false end
+    local okm, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if okm and MessageFormatter then MessageFormatter.show_warning('sortie: ' .. why) end
+    return true
 end
 
 --- Stance for this character, profile for the alt, Silmaril on. A target
@@ -278,15 +385,22 @@ end
 --- @param name string Target as typed
 --- @param phase string|nil 'fight', or nil
 --- @return boolean handled
-local function engage_target(cfg, name, phase)
+local function engage_target(cfg, name, phase, force)
     local key = (cfg.aliases or {})[name] or name
     local target = cfg.targets[key]
     if not target then
         if messages() then messages().show_unknown_target(name) end
         return true
     end
+    if phase == 'placed' or phase == 'opened' then
+        on_answer(cfg, target, key, phase)
+        return true
+    end
+    if wrong_boss(cfg, name, key, target, phase, force) then return true end
+    -- only now: a refused command must not drop the fight under way (review 2026-11-14)
+    cancel_fight(cfg)
     if phase == 'fight' then
-        if target.prep then start_fight(cfg, target) end
+        if target.prep then start_fight(cfg, target, key) end
         return true
     end
     take_stance(cfg, target)
@@ -295,7 +409,21 @@ local function engage_target(cfg, name, phase)
         to_alt(cfg, 'gs c set ' .. setting)
     end
     local step = target.prep or target
-    load_profile(cfg, step.profile, step.indi)
+    if step.full_circle_first then
+        -- a pull bubble answered by a Silmaril trigger is marked done only once its spell goes: a luopan still out
+        -- at the load gets it refused again and again, and the trigger blocks the bot (2026-11-13). Bot off, the old
+        -- luopan dismissed (refused without effect when there is none), the profile once the ability is through.
+        to_alt(cfg, 'sm off')
+        to_alt(cfg, '/ja "Full Circle" <me>')
+        coroutine.schedule(function() load_profile(cfg, step.profile, step.indi, step.follow, step.behind) end,
+            AFTER_FULL_CIRCLE)
+    else
+        load_profile(cfg, step.profile, step.indi, step.follow, step.behind)
+    end
+    if target.prep and target.auto_fight and target.mob then
+        require('shared/utils/sortie/sortie_watch').start(key, target.mob, function(mob) start_fight(cfg, target, key, mob and mob.id) end)
+        if messages() then messages().show_alt_action(cfg.alt, 'fight once ' .. target.mob .. ' is claimed') end
+    end
     if messages() then
         local shown = key ~= name
             and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. step.profile .. ')')
@@ -381,18 +509,34 @@ function SortieCommands.handle(args)
     elseif sub == 'help' then
         if messages() then messages().show_help(list_entries(cfg), cfg.alt) end
         return true
-    elseif sub == 'escort' then
+    end
+    -- any other order ends a watch for a claimed monster and a fight under way (the alt's answers aside)
+    local answer = rest[1] and (rest[1]:lower() == 'placed' or rest[1]:lower() == 'opened')
+    if not answer then
+        pcall(function() require('shared/utils/sortie/sortie_watch').stop('sortie ' .. sub) end)
+    end
+    -- the fight under way is dropped by an escort or another target (engage_target, after its boss check); an
+    -- order (judgment, fullcircle...) leaves it going
+    if sub == 'escort' then cancel_fight(cfg) end
+    if sub == 'escort' then
         return escort(cfg, rest)
     elseif orders[sub] then
         local order = orders[sub]
         to_alt(cfg, order.command)
-        if order.command == 'sm off' then note({on = false}) end
+        if order.command == 'sm off' then
+            cancel_fight(cfg)
+            note({on = false})
+            to_alt(cfg, 'gs c behind off')
+        end
         if messages() then
             if order.action then messages().show_alt_action(cfg.alt, order.action) else messages().show_alt_off(cfg.alt) end
         end
         return true
     end
-    return engage_target(cfg, sub, rest[1] and rest[1]:lower())
+    -- //gs c sortie <target> [fight] force: past the boss check (sortie_boss.lua), when it is wrong
+    local force = rest[#rest] and rest[#rest]:lower() == 'force'
+    if force then rest[#rest] = nil end
+    return engage_target(cfg, sub, rest[1] and rest[1]:lower(), force)
 end
 
 _G.SortieCommands = SortieCommands
