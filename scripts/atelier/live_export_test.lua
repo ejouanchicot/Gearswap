@@ -14,6 +14,7 @@ player = {name = 'Tetsouo', main_job = 'WAR', sub_job = 'SAM'}
 local calls = {}
 local Export = {state = nil, enabled_v = true}
 function Export.enabled() return Export.enabled_v end
+function Export.failed_recently() return false end
 function Export.spread_result() return Export.state, Export.state == 'ready' and '{"sets":1}' or nil end
 function Export.export_spread(no_file) calls[#calls + 1] = 'spread no_file=' .. tostring(no_file); Export.state = Export.on_spread end
 function Export.build() calls[#calls + 1] = 'build'; return {sets = 1} end
