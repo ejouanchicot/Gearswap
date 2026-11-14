@@ -29,6 +29,8 @@ let TP_TABLE_BUSY = false;
 // the tables the game refused (a body over its limit, a write error): not sent again until they change
 const TP_TABLE_FAILED = {};
 const TP_STEPS_MEMO = {};
+// The last table written this session, by character and job: {at, skipped} (the weaponskill head shows it, tpTableStatus)
+const TP_TABLE_STATUS = {};
 
 // The job's TP pieces (the export's tp_rule), as FFXI.opt.tpBest reads them, or null
 function tpTableRule(){
@@ -149,6 +151,7 @@ async function tpTableAfterExport(c, d, tries = 0){
   const sig = tpTableSig(inputs, rule), kept = d.tp_pieces || {};
   if ((kept[d.job] && kept[d.job].sig === sig) || TP_TABLE_FAILED[d.job + '|' + sig]) return;
   TP_TABLE_BUSY = true;
+  render();   // the weaponskill head says it is being worked out
   try {
     const {sets, weaponskills, skipped} = await tpTableJob(inputs, rule);
     if (data() !== d) return;
@@ -156,12 +159,26 @@ async function tpTableAfterExport(c, d, tries = 0){
     const done = await saveFile('tp_pieces_' + d.job + '.lua', tpTableLua(mine), true);
     if (done) {
       d.tp_pieces = mine;
+      TP_TABLE_STATUS[c + '|' + d.job] = {at: mine[d.job].at, skipped};
       S.toast = t('tpTableSaved', {job: d.job}) + (skipped.length ? ' · ' + t('tpTableSkipped', {ws: skipped.join(', ')}) : '');
       render();
     }
     else TP_TABLE_FAILED[d.job + '|' + sig] = true;
   } catch (e) { console.warn('tp_table', e); TP_TABLE_FAILED[d.job + '|' + sig] = true; }
-  finally { TP_TABLE_BUSY = false; }
+  finally { TP_TABLE_BUSY = false; render(); }
+}
+// The line under the weaponskill head's TP (atelier/src/screens/sets/wshead.ts): the table the game uses for this job,
+// when it was worked out, being worked out now, or none yet. '' without the job's TP pieces. A toast shows only on some
+// screens: on the sets' one the player saw nothing when the buffs changed (2026-11-14)
+function tpTableStatus(){
+  const d = data();
+  if (!d || !tpTableRule()) return '';
+  if (TP_TABLE_BUSY) return t('tpTableBusy');
+  const st = TP_TABLE_STATUS[S.char + '|' + d.job], kept = (d.tp_pieces || {})[d.job];
+  const at = st ? st.at : kept && kept.at;
+  if (!at) return t('tpTableNone');
+  const when = String(at).slice(11) || String(at);
+  return t('tpTableAt', {at: when}) + (st && st.skipped.length ? ' · ' + t('tpTableSkipped', {ws: st.skipped.join(', ')}) : '');
 }
 // The buffs ticked in the page changed and held still TP_WATCH_CALM ms: the job's table worked out again (it is
 // worked out with them). Nothing more when they are the ones of the table written (tpTableAfterExport's signature)

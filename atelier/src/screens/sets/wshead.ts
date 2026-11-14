@@ -17,6 +17,8 @@ export type WsWeapon = {k: 'menus'; menus: WeaponMenu[]}
 export interface WsTp {
   line: WsLine; chips: Array<{v: string; label: string; pressed: boolean; title: string}>; input: {value: string; ph: string; title: string};
   res: null | {total: number; over: string}; fallback: string; tb: {total: number; bits: string}; old: string;
+  /** the TP pieces table the game uses for this job (tp_table.js tpTableStatus), '' without one */
+  table: string;
 }
 /** A set for weaponskills in general: the weaponskill it is worked out on, and the others it can be */
 export interface WsGeneric { line: WsLine; key: string; options: WsOption[] }
@@ -73,7 +75,7 @@ function tpOf(s: LegacyAny): WsTp {
     input: {value: wsTp && !steps.includes(+wsTp) ? String(wsTp) : '', ph: t('tpOther'), title: t('ttWsTpOther')},
     // past 3000 the game keeps 3000: what is over is TP Bonus spent for nothing
     res: parts ? {total: parts.total, over: parts.raw > 3000 ? t('tpOver', {t: parts.raw, n: parts.raw - 3000}) : ''} : null,
-    fallback: !r ? t(live ? 'tpAsking' : 'tpDefault') : '', tb: {total: tb.total, bits}, old: parts && r && !r.worn_aware ? t('tpOldCode') : ''};
+    fallback: !r ? t(live ? 'tpAsking' : 'tpDefault') : '', tb: {total: tb.total, bits}, old: parts && r && !r.worn_aware ? t('tpOldCode') : '', table: tpTableStatus()};
 }
 
 // the weaponskill a set for weaponskills in general is worked out on (ws_page.js genericWsOf): the rule's by default
