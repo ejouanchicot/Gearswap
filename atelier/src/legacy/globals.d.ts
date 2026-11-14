@@ -65,6 +65,8 @@ declare const JOBS: Array<[string, string, string]>;
 declare const ROLES: string[];
 declare const ROLE_COLOR: Record<string, string>;
 declare const CHARS: Record<string, {jobs: string[]}>;
+/** bumped each time the exports are read again (core.js): the key of what is kept per data */
+declare let DATA_GEN: number;
 declare const EXPORT_VERSION: number;
 /** The text of a key in the page's language, {name} filled (i18n.js) */
 declare function t(key: string, args?: Record<string, unknown>): string;

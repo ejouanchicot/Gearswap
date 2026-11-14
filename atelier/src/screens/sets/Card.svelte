@@ -62,6 +62,7 @@
     <div class="cvwhen" title={title.factsTip || title.when || undefined}>{#if title.when}<span class="setwhen">{title.when}</span>{/if}{#if title.facts.length}<span class="wsfacts">{#each title.facts as f, i (i)}<span>{f}</span>{/each}</span>{/if}<code class="path wspath" title={title.pathTip}>{title.path}</code></div>
     {#if view.versions.k === 'grid'}<div class="setvers grid cvgrid"><span class="kicker">{view.versions.label}</span><div class="vergrid" role="group" style="--n:{view.versions.cols.length}"><span></span>{#each view.versions.cols as c (c)}<span class="vh">{c}</span>{/each}{#each view.versions.rows as r, i (i)}<span class="vr">{r.label}</span>{#each r.cells as b, j (j)}{#if b}{@render ver(b)}{:else}<i class="vnone">—</i>{/if}{/each}{/each}</div></div>{/if}
     {#if ctx && ctx.warn}<p class="kwarn subwarn"><span>{ctx.warn.text}</span> <button class="btn" data-subfix={ctx.warn.sub}>{ctx.warn.fix}</button></p>{/if}
+    {#if ctx && ctx.stale}<p class="kwarn subwarn"><span>{ctx.stale}</span></p>{/if}
     {#if view.ctl && view.ctl.k === 'ws'}<div class="setctl cvws"><WsHead view={view.ctl.view} /></div>{/if}
     {#if view.trial && view.trial.k !== 'idle'}<div class="trybar"><TrialRow row={view.trial.row} /></div>{/if}
   </header>

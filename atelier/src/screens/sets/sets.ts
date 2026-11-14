@@ -14,7 +14,9 @@ export interface SubWarn { text: string; sub: string; fix: string }
 // of three cells (the player's choice A, 2026-11-08: a thin line was not seen): the party, the profile loaded (else
 // "none", the cells keep their place), the target; a way to Buffs & target. The subjob's warning goes under the set's
 // title (Card.svelte)
-export interface CtxBar { title: string; head: string; cells: Array<{icon: string; label: string; value: string}>; edit: {title: string; label: string}; warn: SubWarn | null }
+export interface CtxBar { title: string; head: string; cells: Array<{icon: string; label: string; value: string}>; edit: {title: string; label: string}; warn: SubWarn | null;
+  /** the export shown is older than another subjob's of the job, and their sets differ (staleWarn) */
+  stale: string | null }
 export interface SetsView { ctx: CtxBar; listW: number | null; list: SetListView; card: CardOrPage | null; figures: FiguresView | null }
 
 const st = (): LegacyAny => S;
@@ -26,6 +28,25 @@ function subWarn(): SubWarn | null {
   const L = ((S as LegacyAny)._live || {})[S.char as string], d = data() as LegacyAny;
   if (!L || !L.ok || L.job !== S.job || !d || !L.sub || L.sub === 'NONE' || L.sub === d.sub) return null;
   return {text: t('subWarn', {g: L.job + '/' + L.sub, p: S.job + '/' + d.sub}), sub: L.sub, fix: t('subFix', {s: L.sub})};
+}
+
+// The export shown older than another subjob's export of the same job, their sets not the same: the sets file changed
+// since this subjob was last exported (each subjob's export is made only while the game is on it). Seen 2026-11-14: WAR
+// /DNC still showed both Moonlight Rings in wardrobe 1 after the fix, /SAM had them right. Kept per data generation
+let STALE_MEMO: {key: string; text: string | null} = {key: '', text: null};
+function staleWarn(): string | null {
+  const d = data() as LegacyAny;
+  if (!d || d.sameAs || !d.at || !Array.isArray(d.sets)) return null;
+  const key = [DATA_GEN, S.char, S.job, d.sub, d.at].join('|');
+  if (STALE_MEMO.key === key) return STALE_MEMO.text;
+  const names = (x: LegacyAny) => JSON.stringify((x.sets || []).map((s: LegacyAny) => [s.path, Object.keys(s.pieces || {}).sort()
+    .map(k => k + '=' + ((s.pieces[k] || {}).name || '') + '@' + ((s.pieces[k] || {}).bag || ''))]));
+  const newer = (Object.values(exportsOf(S.char as string, S.job as string)) as LegacyAny[])
+    .filter(x => x !== d && x.at && x.at > d.at && Array.isArray(x.sets)).sort((a, b) => (b.at > a.at ? 1 : -1))[0];
+  const text = newer && names(newer) !== names(d)
+    ? t('staleSub', {s: S.job + '/' + d.sub, at: d.at, o: S.job + '/' + newer.sub, oat: newer.at}) : null;
+  STALE_MEMO = {key, text};
+  return text;
 }
 
 export function setsView(): SetsView | null {
@@ -42,7 +63,7 @@ export function setsView(): SetsView | null {
     {icon: playerIcon('gi:crossed-swords'), label: t('ui2CtxParty'), value: buffTier()},
     {icon: playerIcon('gi:tied-scroll'), label: t('ui2CtxProf'), value: profActive() || t('ui2CtxNone')},
     {icon: playerIcon('gi:bullseye'), label: t('ui2CtxFoe'), value: enemyKey(b.enemy)}],
-    edit: {title: t('ttCtxEdit'), label: t('ui2CtxEdit')}, warn};
+    edit: {title: t('ttCtxEdit'), label: t('ui2CtxEdit')}, warn, stale: staleWarn()};
   const card = vis.length ? cardView(cards[sel], sel, bypath, q) : null;
   let figures: FiguresView | null = null;
   if (vis.length) { const sv = shownSet(cards[sel], sel);

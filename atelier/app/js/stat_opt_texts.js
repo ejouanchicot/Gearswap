@@ -80,7 +80,8 @@ Object.assign(T.fr, {
   statObj_jaPlus: 'Pièces de l’ability', statD_jaPlus: 'les pièces dont la description ou les augments nomment cette ability (Cab. Surcoat pour Fealty, Cab. Leggings pour Sentinel) : autant que possible',
   statAll: 'Tous les objectifs (+{n})', statFewer: 'Seulement ceux de ce set',
   statKept: 'Objectifs ou planchers changés à la main sur ce set.', statReset: 'Réglages par défaut',
-  subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.', subFix: 'Passer en /{s}',
+  subWarn: 'En jeu tu es {g}, la page montre {p} : stats de base, traits et sets sont ceux de l’autre sub.',
+  staleSub: 'Les sets de {s} datent de {at}, ceux de {o} sont plus récents ({oat}) et différents : passe en {s} en jeu, ou « Relire les fichiers », pour les mettre à jour.', subFix: 'Passer en /{s}',
   aliasCount: 'aussi pour {n} autre(s)', aliasTip: '{a} est le même set que {s} (une ligne « = » dans ton fichier) : le modifier modifie les deux.', statThen: 'puis, pour départager', statNone: '—', statFloors: 'Minimums obligatoires (0 = aucun)', statFloorsWhy: 'Les objectifs disent quoi maximiser, dans l’ordre. Un minimum est obligatoire : un set en dessous perd toujours. Exemple : perte d’inimitié réduite ≥ 60, puis le plus d’évasion magique possible.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Crit. ennemis ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Perte d’inimitié réduite ≥',
   statWhy: 'Les sets sans dégâts à calculer (repos, Enmity, Phalanx, Fast Cast, Cure…) se jugent sur leurs stats : la recherche ' +
@@ -171,7 +172,8 @@ Object.assign(T.en, {
   statObj_jaPlus: 'Ability pieces', statD_jaPlus: 'the pieces whose description or augments name this ability (Cab. Surcoat for Fealty, Cab. Leggings for Sentinel): as many as can be',
   statAll: 'All objectives (+{n})', statFewer: 'Only this set’s',
   statKept: 'Objectives or limits changed by hand on this set.', statReset: 'Back to the defaults',
-  subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.', subFix: 'Show /{s}',
+  subWarn: 'In game you are {g}, the page shows {p}: base stats, traits and sets are the other subjob’s.',
+  staleSub: 'The {s} sets date from {at}, the {o} ones are newer ({oat}) and differ: go {s} in game, or “Reread the files”, to bring them up to date.', subFix: 'Show /{s}',
   aliasCount: 'also for {n} other(s)', aliasTip: '{a} is the same set as {s} (a “=” line in your file): changing it changes both.', statThen: 'then, as tiebreakers', statNone: '—', statFloors: 'Required minimums (0 = none)', statFloorsWhy: 'The objectives say what to maximize, in order. A minimum is required: a set under it always loses. Example: enmity loss cut ≥ 60, then the most magic evasion.', statHpMin: 'HP ≥', statHpMax: 'HP ≤', statSird: 'SIRD ≥', statFc: 'Fast Cast ≥',
   statEcrit: 'Enemy crit ≤', statEnm: 'Enmity ≥', statPhx: 'Phalanx ≥', statCeLoss: 'Enmity loss cut ≥',
   statWhy: 'Sets with no damage to calculate (idle, Enmity, Phalanx, Fast Cast, Cure…) are judged on their stats: the search adds up ' +
