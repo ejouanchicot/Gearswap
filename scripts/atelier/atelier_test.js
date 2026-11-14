@@ -13,7 +13,9 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
 (async () => {
   // a name declared in two of the page's files breaks it or replaces a function without a word: checked first
   if (!require('./atelier_names_check').check()) { console.log('FAIL names declared twice'); process.exit(1); }
-  const browser = await puppeteer.launch({executablePath: CHROME, headless: 'new', args: ['--allow-file-access-from-files']});
+  // each step is its own call to the page, 10 min at most (the whole visit in one call outlived Puppeteer's 180 s:
+  // audit 2026-11-14)
+  const browser = await puppeteer.launch({executablePath: CHROME, headless: 'new', protocolTimeout: 600000, args: ['--allow-file-access-from-files']});
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
@@ -23,10 +25,19 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
   // the built page (atelier/src/) loads the old page's scripts after the document: drawn once its bridge says so
   await page.waitForFunction(() => window.__atelier && window.__atelier.loaded, {timeout: 60000});
   await new Promise(r => setTimeout(r, 6000));
-  const report = await page.evaluate(async () => {
+  // the helpers live in the page between two steps (window.__T): what each step found is kept there
+  await page.evaluate(() => {
     const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
     const tryIt = async (label, fn) => { try { await fn(); out.push('ok   ' + label); } catch (e) { out.push('FAIL ' + label + ': ' + e.message + ' @ ' + (e.stack || '').split('\n')[1]); } };
-    for (const c of Object.keys(DATA)) for (const j of Object.keys(DATA[c])) {
+    window.__T = {out, wait, tryIt, open: p => { S.selPath = Object.assign({}, S.selPath, {WAR: p}); S._found = null; render(); }};
+  });
+  // one step: a call to the page; a call that dies (its time out) is a FAIL line, the next steps still run
+  const step = async (label, fn, ...args) => {
+    try { await page.evaluate(fn, ...args); }
+    catch (e) { await page.evaluate((l, m) => window.__T.out.push('FAIL ' + l + ': ' + m), label, String(e.message).slice(0, 200)).catch(() => {}); }
+  };
+  const jobs = await page.evaluate(() => Object.keys(DATA).flatMap(c => Object.keys(DATA[c]).map(j => [c, j])));
+  for (const [c, j] of jobs) await step(c + ' ' + j, async (c, j) => { const {tryIt} = window.__T;
       await tryIt(`${c} ${j} every set`, async () => {
         S.char = c; S.job = j; S.section = 'sets'; render();
         const paths = (data() || {sets: []}).sets.filter(x => !x.empty).map(x => x.path);
@@ -37,28 +48,46 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
         for (const sec of ['keys', 'modes', 'macro', 'functions', 'merits', 'sim', 'combat', 'perso', 'jobcfg']) { S.section = sec; render(); bad(sec); }
         S.section = 'sets'; render();
       });
-    }
-    S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets';
-    const open = p => { S.selPath = Object.assign({}, S.selPath, {WAR: p}); S._found = null; render(); };
+  }, c, j);
+  await step('Tetsouo WAR', () => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; });
+  await step('buffs window', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('buffs window', async () => { open('sets.precast.WS.Upheaval'); S.section = 'combat'; render(); await wait(100); S.section = 'sets'; render(); });
+  });
+  await step('target window', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('target window', async () => { openTargetPick(); await wait(100); closeOverlay(); });
+  });
+  await step('drawer each slot (WS)', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('drawer each slot (WS)', async () => { open('sets.precast.WS.Upheaval');
       for (const sl of SLOTS) { openSlot(S.sel.WAR, sl); await wait(20); } closeOverlay(); });
+  });
+  await step('drawer each slot (engaged)', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('drawer each slot (engaged)', async () => { open('sets.engaged.NaeglingKC');
       for (const sl of SLOTS) { openSlot(S.sel.WAR, sl); await wait(20); } closeOverlay(); });
+  });
+  await step('compare window', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('compare window', async () => { open('sets.engaged.Naegling'); openCompare(shownSet(S._cards[S.sel.WAR], S.sel.WAR)); await wait(50); closeOverlay(); });
+  });
+  await step('profiles Solo / Group / Full', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('profiles Solo / Group / Full', async () => { for (const tier of ['Solo', 'Group', 'Full']) { setBuffTier(tier); render(); } });
+  });
+  await step('subjobs', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('subjobs', async () => { for (const sub of ['SAM', 'DNC', 'DRG', 'NIN']) { S.subs['Tetsouo|WAR'] = sub; render(); } });
+  });
+  await step('optimizer engaged improve (short)', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('optimizer engaged improve (short)', async () => {
       open('sets.engaged.Naegling'); S._optScratch = false; optimizeEngaged(shownSet(S._cards[S.sel.WAR], S.sel.WAR));
       for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
       if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
       closeOverlay(); render(); });
+  });
+  await step('optimizer WS improve (short)', async () => { const {wait, open, tryIt} = window.__T;
     await tryIt('optimizer WS improve (short)', async () => {
       open('sets.precast.WS.Upheaval'); S._optScratch = false; await optimizeWs(shownSet(S._cards[S.sel.WAR], S.sel.WAR));
       for (let i = 0; i < 300 && S._optBusy; i++) await wait(200);
       if (S._optBusy) { optStop(); throw new Error('still busy after 60 s'); }
       closeOverlay(); render(); });
+  });
+  await step('optimizer WS every version', async () => { const {wait, open, tryIt} = window.__T;
     // every version of a weaponskill set in one go (opt_all.js): the four support versions of a WAR's, each searched
     await tryIt('optimizer WS every version', async () => {
       open('sets.precast.WS.Upheaval'); optAllOpen(shownSet(S._cards[S.sel.WAR], S.sel.WAR));
@@ -70,6 +99,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       if (!recs.every(r => r.skip || r.best > 0)) throw new Error('a version without a figure');
       if (S._optBusy) throw new Error('still busy once finished');
       optAllStop(); render(); });
+  });
+  await step('slot menu: lock, then the picker', async () => { const {wait, open, tryIt} = window.__T;
     // a click on a slot opens its menu (trial.js): lock it, then choose a piece from it
     await tryIt('slot menu: lock, then the picker', async () => { open('sets.engaged.Naegling'); await wait(120);   // (the list scrolls to the set's row: a scroll closes a slot menu)
       const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), slot = () => document.querySelector('.slot[data-slot="head"]');
@@ -83,6 +114,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       if (document.querySelector('#overlay').hidden) throw new Error('the picker did not open');
       closeOverlay(); toggleLock(s, 'head');
       if (lockedSlots(s).length) throw new Error('still locked'); });
+  });
+  await step('locked slots survive the optimizer', async () => { const {wait, open, tryIt} = window.__T;
     // a locked slot keeps what it shows through a search: a tried piece, and a slot left as the set has it
     await tryIt('locked slots survive the optimizer', async () => { open('sets.engaged.Naegling');
       const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), k = trialKey(s), name = sl => (withWeapons(s).pieces[sl] || {}).name;
@@ -99,6 +132,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       delete S.trial[k]; unlockAll(s); render();
       if (got[0] !== other.name) throw new Error('locked head changed: ' + got[0] + ' in place of ' + other.name);
       if (got[1] !== waist) throw new Error('locked waist changed: ' + got[1] + ' in place of ' + waist); });
+  });
+  await step('a piece excluded from the searches', async () => { const {wait, open, tryIt} = window.__T;
     // a piece left out of the searches (trial.js): not among the choices, not started from, and back with one click
     await tryIt('a piece excluded from the searches', async () => { open('sets.engaged.Naegling');
       const s = shownSet(S._cards[S.sel.WAR], S.sel.WAR), slotOf = sl => document.querySelector('.slot[data-slot="' + sl + '"]');
@@ -116,6 +151,8 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       S.excluded[S.char] = {[name]: 'missing'}; if (isExcluded(name)) throw new Error('a piece in the bags is still excluded');
       setExcluded(name, true); if (!isExcluded(name) || excludedOf()[name] !== 'owned') throw new Error('a held piece excluded on purpose came back');
       S.excluded[S.char] = {}; save(); });
+  });
+  await step('add a set window', async () => { const {wait, open, tryIt} = window.__T;
     // "+ Set" (add_set.js): every kind of the catalog, its list, the search, the first set to create up to step 3
     await tryIt('add a set window', async () => { S.subs['Tetsouo|WAR'] = 'SAM'; render();
       if (!catalogEntries()) throw new Error('no catalog in the WAR export: run //gs c atelier on WAR');
@@ -131,9 +168,11 @@ const PAGE = 'file:///' + path.resolve(__dirname, '../../atelier/index.html').sp
       if (!document.querySelector('.awrecap')) throw new Error('no summary');
       awClick({awexpert: ''}); if (!document.querySelector('.awline')) throw new Error('the experts list is empty');
       closeOverlay(); });
-    await tryIt('stop a search at once', async () => { open('sets.engaged.Naegling'); optimizeEngaged(shownSet(S._cards[S.sel.WAR], S.sel.WAR)); await wait(300); optStop(); if (S._optBusy) throw new Error('busy after stop'); });
-    return out.join('\n');
   });
+  await step('stop a search at once', async () => { const {wait, open, tryIt} = window.__T;
+    await tryIt('stop a search at once', async () => { open('sets.engaged.Naegling'); optimizeEngaged(shownSet(S._cards[S.sel.WAR], S.sel.WAR)); await wait(300); optStop(); if (S._optBusy) throw new Error('busy after stop'); });
+  });
+  const report = await page.evaluate(() => window.__T.out.join('\n'));
   console.log(report);
   console.log(errors.length ? 'ERRORS:\n' + [...new Set(errors)].slice(0, 20).join('\n') : 'no page error');
   await browser.close();

@@ -13,6 +13,11 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
   const info = () => page.evaluate(() => `pkg ${S._pkg} name "${PKG.name}" (${(document.querySelector('#pkgname') || {}).value}) focus ${document.activeElement.id} caret ${document.activeElement.selectionStart} jobs ${PKG.jobs.join('')} box ${PKG.box} partner "${PKG.partner}" (${(document.querySelector('#pkgpartner') || {}).value}) region ${PKG.region} pressed ${document.querySelectorAll('#view [aria-pressed="true"]').length} kind ${(document.querySelector('.pkg p.small') || {}).textContent} text ${document.getElementById('view').textContent.replace(/\s+/g, ' ').length}`);
   await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); }); await wait(300);
+  // the Page menu first: its entries exist only while it is open (TopBar.svelte, since 2026-11-02)
+  for (const i of [0, 1, 2, 3]) {
+    if (await page.evaluate(() => !!document.querySelector('[data-pkgopen]'))) break;
+    await page.evaluate(i => { const b = document.querySelectorAll('.tmenu:not(.tchar) > .tmbtn')[i]; if (b) b.click(); }, i); await wait(200);
+  }
   await page.evaluate(() => document.querySelector('[data-pkgopen]').click()); await wait(400);
   out.push('open: ' + await info());
   await page.evaluate(() => { PKG.known = [{name: 'Kaories', jobs: ['COR', 'GEO', 'PLD', 'RDM'], role: 'alt', overlay: true}, {name: 'Nouveau', jobs: ['WAR'], role: 'main', overlay: false}]; render(); }); await wait(200);

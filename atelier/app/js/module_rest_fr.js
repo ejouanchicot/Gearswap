@@ -158,6 +158,8 @@ const MOD_REST_FR = {
     ['targets.*.states', 'Modes propres à cette cible', 'Sous la forme « mode valeur ».'],
     ['targets.*.prep', 'Préparation avant le pull', 'Un profil chargé d’abord, avec son propre Indi- et son résumé.'],
     ['targets.*.prep.profile', 'Profil de préparation', ''], ['targets.*.prep.indi', 'Indi- de préparation', ''], ['targets.*.prep.summary', 'Résumé affiché', ''],
+    ['bosses', 'Boss de chaque commande', '//gs c sortie <nom> est refusé tant qu’un autre de ces boss se bat autour et pas celui-ci ; « <nom> fight » seulement si ce boss est là.'],
+    ['bosses.*', 'Boss de « {1} »', 'Son nom dans le jeu.'],
     ['aliases', 'Cibles identiques', 'Les boss combattus exactement pareil partagent une cible.'], ['aliases.*', '{1} se combat comme', 'Le nom de la cible utilisée.'],
     ['escort', 'Escorte', '//gs c sortie escort : l’alt pose son Indi- et te suit.'], ['escort.indi', 'Indi- de l’escorte', 'Celui utilisé quand aucun n’est nommé.'], ['escort.profile', 'Profil de l’escorte', ''],
     ['escort.states', 'Modes posés pendant l’escorte', 'Par sub.'], ['escort.states.*', 'Avec le sub /{1}', 'Sous la forme « mode valeur ».'],
@@ -218,6 +220,7 @@ const MOD_REST_FR = {
   '{JOB}_TP_CONFIG.lua': [
     ['moonshade', 'Moonshade Earring', 'La boucle à TP Bonus et le bonus qu’elle donne.'], ['moonshade.tp_bonus', 'TP Bonus', ''],
     ['pieces', 'Pièces à TP Bonus', ''], ['weapons', 'Armes à TP Bonus', ''],
+    ['replaces', 'Valeur d’une pièce du set retirée', 'Sans la table de l’Atelier, les pièces TP ne partent que si elles apportent plus que ça par pièce du set enlevée (0.03 = 3 %, 0 = dès qu’elles apportent quelque chose).'],
   ],
   '{JOB}_WEAPONS.lua': [
     ['shields', 'Bouclier de chaque arme', 'Par posture, puis par arme.'], ['shields.*', 'Posture {1}', ''], ['shields.*.*', 'Avec {2}', 'Le bouclier porté avec cette arme dans cette posture.'],

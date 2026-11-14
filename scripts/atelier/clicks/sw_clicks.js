@@ -12,7 +12,7 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   await page.waitForFunction(() => typeof render === 'function'); await new Promise(r => setTimeout(r, 4000));
   const out = [], wait = ms => new Promise(r => setTimeout(r, ms));
   const info = () => page.evaluate(() => `sub ${data().sub} warn ${(document.querySelector('.subwarn') || {}).textContent}`);
-  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, job: 'WAR', sub: 'SAM'})}); render(); }); await wait(300);
+  await page.evaluate(() => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'sets'; render(); /* the game on another subjob than the page's (the export's sub moves with the game: SAM since 2026-11) */ const other = data().sub === 'SAM' ? 'DRG' : 'SAM'; S._live = Object.assign({}, S._live, {Tetsouo: Object.assign({}, S._live.Tetsouo, {ok: true, job: 'WAR', sub: other})}); render(); }); await wait(300);
   out.push('warn: ' + await info());
   await page.evaluate(() => document.querySelector('[data-subfix]').click()); await wait(400);
   out.push('fixed: ' + await info());

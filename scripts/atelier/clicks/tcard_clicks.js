@@ -16,6 +16,9 @@ const puppeteer = require(path.join(__dirname, '../lib/browser.js')).puppeteer;
   const keys = await page.evaluate(() => Object.keys(TARGETS).filter((k, i) => i % 40 === 0).slice(0, 8));
   for (const k of keys) {
     await page.evaluate(k => { S.char = 'Tetsouo'; S.job = 'WAR'; S.section = 'combat'; S._pbOtherOpen = true; const b = buffState(); for (const x of Object.keys(b)) delete b[x]; b.enemy = k; b.dia = 'Dia II'; b.foeJa = ['Armor Break']; render(); }, k); await wait(250);
+    // the target card shows only with the foe's panel open (CombatScreen.svelte foeOpen, since 2026-11-02)
+    await page.evaluate(() => { const b = [...document.querySelectorAll('.linkbtn[aria-expanded]')].find(x => x.closest('.kfoe, div') && x.previousElementSibling && x.previousElementSibling.matches('[data-tgtpick]'));
+      if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); }); await wait(150);
     out.push(k + ': ' + await card());
   }
   await page.evaluate(() => document.querySelector('.pbotherb [data-poff]').click()); await wait(300);

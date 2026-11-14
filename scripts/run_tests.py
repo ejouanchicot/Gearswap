@@ -50,7 +50,13 @@ REPORTS = {'scripts/audit/calc_check.js', 'scripts/audit/calc_round_check.js', '
 SLOW = {'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_modules_test.js', 'scripts/atelier/atelier_clicks_test.js',
         'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js',
         'scripts/atelier/make_package_test.py', 'scripts/atelier/make_package_page_test.js',
-        'scripts/loadcheck/check_load.py'}
+        'scripts/loadcheck/check_load.py',
+        # they open Chrome on the page (BRD songs, engaged modes)
+        'scripts/atelier/eng_modes_test.js', 'scripts/atelier/song_figures_test.js', 'scripts/atelier/song_read_test.js',
+        'scripts/atelier/song_search_test.js'}
+# scripts/atelier/*_test.js run by hand only: enh_figures_test.js compares against a reference it saves itself
+# (--save / --compare)
+MANUAL_JS = {'scripts/atelier/enh_figures_test.js'}
 # They write into the characters' real exports and atelier/index.js, then put them back: run alone, after the
 # others (atelier_test.js, the packages and the load check read those files)
 ALONE = {'scripts/atelier/offline_export_page_test.js', 'scripts/atelier/offline_export_test.js'}
@@ -108,6 +114,13 @@ def tests(full):
           + ['scripts/atelier/atelier_modules_test.js', 'scripts/atelier/offline_export_page_test.js',
              'scripts/atelier/offline_export_test.js', 'scripts/atelier/atelier_test.js', 'scripts/atelier/atelier_clicks_test.js'])
     js += ['scripts/atelier/make_package_page_test.js']
+    # the augment tables' checks (atelier/gear/: also run by their *_build.py, not when augments_parse.js changes)
+    js += ['atelier/gear/augments_parse_test.js', 'atelier/gear/oseem_check.js', 'atelier/gear/reive_check.js',
+           'atelier/gear/skirmish_check.js']
+    # every other scripts/atelier/*_test.js: a new one is run without being added here (absorb_tp_recast, macro_edit,
+    # the BRD songs, the engaged modes were run by nothing: audit 2026-11-14 P2-5)
+    js += [t for t in (x.replace(os.sep, '/') for x in sorted(glob.glob('scripts/atelier/*_test.js')))
+           if t not in js and t not in MANUAL_JS]
     # check_overlay.py: a re-clone would give every live file back as it is (the overlays had fallen behind the
     # live again with nothing to say so, audit 2026-10-28 E); it reads the gitignored live folders, so it only runs
     # where they are
