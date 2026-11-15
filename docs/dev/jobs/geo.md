@@ -54,7 +54,7 @@ function, not a line number.
 | `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | Header only, kept for the 12-module layout |
 | `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/geo/functions/logic/bolster_follow.lua` | `BolsterFollow.note_cast` (the luopan placed with Blaze of Glory / under Bolster or not), `on_buff_change`: Bolster gained, Full Circle on a luopan from before it then Blaze of Glory; Bolster lost, Ecliptic Attrition or Full Circle (key `bolster_follow`) |
+| `shared/jobs/geo/functions/logic/bolster_follow.lua` | `BolsterFollow.note_cast` (the luopan placed with Blaze of Glory / under Bolster or not), `on_buff_change`: Bolster gained, Full Circle on a luopan from before it then Blaze of Glory; Bolster lost, Ecliptic Attrition or Full Circle, or, Bolster ready again in a Sortie fight that lists it (Wild Card), Bolster then the Bolster-gained steps (key `bolster_follow`) |
 | `shared/jobs/geo/functions/logic/fight_opening.lua` | `FightOpening.plan`, `open_fight`, `fight_end`, `on_bubble_placed`: the Sortie fight opening (`//gs c fightopen`), the recasts given back by a COR during the fight |
 | `shared/utils/precast/ability_queue.lua` | `AbilityHelper.queue()`: our job abilities one at a time in the bot's gaps, the bot's spells held 1.5 s after each |
 | `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options (keys `auto_entrust`, `auto_full_circle` of `GEO_CONFIG.lua`), and `widened_compass_on` (Widened Compass before a Geo- on the listed monsters) |
@@ -227,7 +227,12 @@ flowchart TD
   back once none of them waits in the queue (13 s at most). Until `//gs c fightend`
   (or `fightopen off`), the Bolster and Blaze of Glory recasts are read every 2 s: one
   above 5 s that reads 0 the next time was given back by a COR. Bolster (Wild Card):
-  the opening again. Blaze of Glory (Random Deal), no Bolster up and the luopan placed
+  the opening again; given back while Bolster is still up, the opening has nothing to
+  do, so `bolster_follow.lua` uses it when Bolster ends: Bolster first (a Full Circle
+  before it would lose the bubble if Bolster failed), then Full Circle and Blaze of
+  Glory once it is up, Ecliptic Attrition kept (only while `windower._geo_fight`
+  is a fight of this load, still watched, whose target lists `bolster`; trace tag
+  BOLSTER; Aminon 2026-11-14). Blaze of Glory (Random Deal), no Bolster up and the luopan placed
   without it: [Full Circle], Blaze of Glory, Ecliptic Attrition after the bot's new
   bubble. Ecliptic Attrition alone: nothing. The watch stops at a newer load and after
   45 min. Test: `scripts/atelier/fight_opening_test.lua`.

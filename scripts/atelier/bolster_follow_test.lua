@@ -52,6 +52,12 @@ send_command = function(cmd)
     if ja == 'Full Circle' then game.luopan = false end
     game.ready[ja] = false
     Queue.note_end({action_type = 'Ability'})
+    if ja == 'Bolster' then   -- the buff shows a moment later
+        coroutine.schedule(function()
+            game.buffs['Bolster'] = true
+            BF_ref.on_buff_change('Bolster', true)
+        end, 0.5)
+    end
 end
 _G.midaction = function() return false end
 windower = {ffxi = {get_mob_by_target = function()
@@ -70,11 +76,15 @@ package.loaded['shared/utils/core/job_config'] = {get = function(job, key, defau
     return default
 end}
 local BF = require('shared/jobs/geo/functions/logic/bolster_follow')
+BF_ref = BF
 
 local function fresh()
     game = {buffs = {}, luopan = false, ready = {}}
     option, sent, refuse, jobs, now = true, {}, {}, {}, 0
     windower._geo_luopan_bog, windower._geo_luopan_bolster = nil, nil
+    windower._geo_fight, windower._load_gen = nil, 1
+    -- the queue's last ability / spell / hold live on windower: a case must not inherit the previous one's clock
+    windower._jaq_spell_end, windower._jaq_ability_end, windower._jaq_hold_until, windower._jaq_allow = nil, nil, nil, nil
     Queue = dofile('shared/utils/precast/ability_queue.lua')
 end
 local function cast_geo()
@@ -173,6 +183,72 @@ check('option off: luopan still tracked', BF.placed_under_bolster(), true)
 bolster(false)
 check('option off: nothing', #sent, 0)
 check('option off: Bolster over still counted', BF.placed_under_bolster(), false)
+
+-- 10. Wild Card under Bolster (Aminon 2026-11-14): Bolster ends ready, a fight that lists it is on
+local function in_fight(allow_bolster)
+    windower._geo_fight = {allow = {bolster = allow_bolster, bog = true, ea = true}, load_gen = 1, watch_until = 1e9}
+end
+fresh()
+in_fight(true)
+bolster(true)
+cast_geo()                       -- placed under Bolster with BoG
+game.ready['Bolster'] = true     -- the Wild Card
+game.ready['Blaze of Glory'] = true   -- back by then (4 min later in game: 00:30:06 -> 00:34:26)
+sent = {}
+bolster(false)
+check('Bolster ready at its end: Bolster first (the bubble kept if it fails)', sent[1], 'input /ja "Bolster" <me>')
+check('  then Full Circle on the old bubble', sent[2], 'input /ja "Full Circle" <me>')
+check('  then BoG on the new Bolster', sent[3], 'input /ja "Blaze of Glory" <me>')
+check('  no Ecliptic Attrition', count('Ecliptic Attrition'), 0)
+check('  nothing else', #sent, 3)
+
+-- 11. the same with no luopan out: Bolster, then BoG
+fresh()
+in_fight(true)
+game.buffs['Bolster'] = true
+sent = {}
+bolster(false)
+check('no luopan: Bolster first', sent[1], 'input /ja "Bolster" <me>')
+check('  then BoG', sent[2], 'input /ja "Blaze of Glory" <me>')
+check('  nothing else', #sent, 2)
+
+-- 12. Bolster ready but no fight, a fight without Bolster, or a fight of an older load: the old reaction (EA)
+for _, case in ipairs({{'no fight', function() end},
+        {'fight without Bolster', function() in_fight(false) end},
+        {'fight of an older load', function() in_fight(true) windower._geo_fight.load_gen = 0 end},
+        {'fight no longer watched', function() in_fight(true) windower._geo_fight.watch_until = -1 end}}) do
+    fresh()
+    case[2]()
+    bolster(true)
+    cast_geo()
+    game.ready['Bolster'] = true
+    sent = {}
+    bolster(false)
+    check(case[1] .. ': EA as before', sent[1], 'input /ja "Ecliptic Attrition" <me>')
+    check(case[1] .. ': no Bolster', count('Bolster'), 0)
+end
+
+-- 12b. Bolster refused every time: the old bubble stays (no Full Circle without Bolster)
+fresh()
+in_fight(true)
+bolster(true)
+cast_geo()
+game.ready['Bolster'] = true
+refuse['Bolster'] = 99
+sent = {}
+bolster(false)
+check('Bolster refused: no Full Circle', count('Full Circle'), 0)
+check('  the bubble still out', game.luopan, true)
+
+-- 13. Bolster on recast at its end, in the fight: EA as before
+fresh()
+in_fight(true)
+bolster(true)
+cast_geo()
+game.ready['Bolster'] = false
+sent = {}
+bolster(false)
+check('in fight, Bolster on recast: EA', sent[1], 'input /ja "Ecliptic Attrition" <me>')
 
 print(('%d checks, %d failed'):format(done, failed))
 os.exit(failed == 0 and 0 or 1)

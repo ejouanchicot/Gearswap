@@ -18,13 +18,24 @@
 ---   Bolster lost, luopan out       -> placed with Blaze of Glory: Ecliptic
 ---                                     Attrition on it; placed without: Full
 ---                                     Circle, the bot places it again
+---   Bolster lost, Bolster ready     -> (given back by a Wild Card while it was
+---     in a fight that lists Bolster    up) Bolster; once gained, Full Circle and
+---                                     Blaze of Glory as above, and Ecliptic
+---                                     Attrition kept. Bolster first: a Full
+---                                     Circle before it would lose the bubble
+---                                     if Bolster then failed (death, Amnesia),
+---                                     and leave the bot a gap to place one
+---                                     without it (review 2026-11-15). Aminon 2026-11-14: the
+---                                     Wild Card came under Bolster, nothing
+---                                     remembered it, and Bolster had to be
+---                                     used by hand 40 s after it ended.
 --- Every ability goes through the ability queue (one at a time, in the bot's
 --- gaps, never twice: shared/utils/precast/ability_queue.lua).
 ---
 --- @file    shared/jobs/geo/functions/logic/bolster_follow.lua
 --- @author  ejouanchicot
---- @version 2.0 - ability queue, luopan placed under Bolster or not
---- @date    Created: 2026-10-17 | Updated: 2026-11-14
+--- @version 2.1 - Bolster again when it ends ready (Wild Card under Bolster)
+--- @date    Created: 2026-10-17 | Updated: 2026-11-15
 ---============================================================================
 
 local BolsterFollow = {}
@@ -36,6 +47,11 @@ local function enabled()
 end
 
 local function queue() return AbilityHelper.queue() end
+
+local function trace(fmt, ...)
+    local args = {...}
+    pcall(function() require('shared/utils/debug/trace_log').log('BOLSTER', fmt, unpack(args)) end)
+end
 
 --- Read from the game: the steps run in coroutines, where GearSwap's `pet` and
 --- `buffactive` may not have caught up yet.
@@ -82,7 +98,26 @@ local function on_bolster_gained()
     BolsterFollow.replace_luopan(bolster_up)
 end
 
+--- A Sortie fight of this load, still watched, whose target lists Bolster (fight_opening.lua open_fight sets it).
+local function fight_wants_bolster()
+    local fight = windower._geo_fight
+    return type(fight) == 'table' and type(fight.allow) == 'table' and fight.allow.bolster == true
+        and fight.load_gen == windower._load_gen and os.clock() < (fight.watch_until or 0)
+end
+
+--- Bolster ready as it ends (a Wild Card under it): Bolster; once up, on_bolster_gained dismisses the old luopan
+--- (Full Circle) and adds Blaze of Glory, as for any Bolster.
+--- @return boolean True when queued
+local function bolster_again()
+    if not (fight_wants_bolster() and AbilityHelper.is_ability_ready('Bolster')) then return false end
+    trace('Bolster ended and ready again: Bolster%s', luopan_out() and ', then Full Circle and Blaze of Glory' or '')
+    queue().queue('Bolster', {wanted = function() return fight_wants_bolster() and not bolster_up() end,
+        done = bolster_up})
+    return true
+end
+
 local function on_bolster_lost()
+    if bolster_again() then return end
     if not luopan_out() then return end
     if BolsterFollow.placed_with_bog() then
         queue().queue('Ecliptic Attrition', {
